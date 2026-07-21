@@ -1,0 +1,7 @@
+skip_title=三份材料;
+skip_overview=纳叶利用筹集到的材料成功制作出追踪装置。你们打算使用这一装置继续追查核心的下落。;
+spine=纳叶<lights=1,faces=shy>;mid_txt=咳，现在不是做这些的时候……正事要紧。<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=smile>;mid_txt=哈哈，纳叶说得没错，等我们彻底解决这桩事，到时候再好好庆祝一下！<name=厄晞斯>;
+spine=厄晞斯<lights=1,faces=enmity>;mid_txt=回去吧。现在，该办正事了！<name=厄晞斯>;

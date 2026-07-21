@@ -1,0 +1,125 @@
+
+bee_large.png
+size: 441,441
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 156, 133
+  size: 50, 55
+  orig: 50, 55
+  offset: 0, 0
+  index: -1
+10
+  rotate: false
+  xy: 299, 42
+  size: 47, 56
+  orig: 47, 56
+  offset: 0, 0
+  index: -1
+11
+  rotate: false
+  xy: 222, 110
+  size: 96, 89
+  orig: 96, 89
+  offset: 0, 0
+  index: -1
+12
+  rotate: false
+  xy: 156, 196
+  size: 58, 58
+  orig: 58, 58
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 219, 29
+  size: 56, 26
+  orig: 56, 26
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 230, 207
+  size: 96, 111
+  orig: 96, 111
+  offset: 0, 0
+  index: -1
+3_bei
+  rotate: false
+  xy: 334, 164
+  size: 96, 111
+  orig: 96, 111
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 360, 283
+  size: 55, 76
+  orig: 68, 89
+  offset: 7, 7
+  index: -1
+5
+  rotate: false
+  xy: 326, 106
+  size: 107, 50
+  orig: 107, 50
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 8, 31
+  size: 93, 52
+  orig: 93, 52
+  offset: 0, 0
+  index: -1
+7
+  rotate: false
+  xy: 230, 326
+  size: 122, 107
+  orig: 122, 107
+  offset: 0, 0
+  index: -1
+8
+  rotate: false
+  xy: 219, 63
+  size: 72, 39
+  orig: 84, 51
+  offset: 6, 6
+  index: -1
+9
+  rotate: false
+  xy: 8, 262
+  size: 214, 171
+  orig: 226, 184
+  offset: 6, 6
+  index: -1
+chi1_1
+  rotate: false
+  xy: 8, 91
+  size: 119, 78
+  orig: 132, 89
+  offset: 6, 6
+  index: -1
+chi1_2
+  rotate: false
+  xy: 360, 367
+  size: 68, 66
+  orig: 68, 66
+  offset: 0, 0
+  index: -1
+chi2_1
+  rotate: false
+  xy: 8, 177
+  size: 140, 77
+  orig: 152, 89
+  offset: 6, 6
+  index: -1
+chi2_2
+  rotate: false
+  xy: 135, 59
+  size: 76, 66
+  orig: 76, 66
+  offset: 0, 0
+  index: -1

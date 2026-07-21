@@ -1,0 +1,90 @@
+
+golem_biolazer.png
+size: 954,954
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 8, 377
+  size: 598, 300
+  orig: 598, 305
+  offset: 0, 3
+  index: -1
+body2
+  rotate: false
+  xy: 8, 685
+  size: 640, 261
+  orig: 640, 261
+  offset: 0, 0
+  index: -1
+body3
+  rotate: false
+  xy: 620, 150
+  size: 169, 140
+  orig: 370, 140
+  offset: 201, 0
+  index: -1
+body3_h
+  rotate: false
+  xy: 837, 843
+  size: 109, 103
+  orig: 109, 103
+  offset: 0, 0
+  index: -1
+body4
+  rotate: false
+  xy: 8, 60
+  size: 416, 309
+  orig: 416, 309
+  offset: 0, 0
+  index: -1
+eyeL
+  rotate: false
+  xy: 837, 500
+  size: 35, 67
+  orig: 194, 194
+  offset: 139, 63
+  index: -1
+eyeR
+  rotate: false
+  xy: 837, 575
+  size: 49, 71
+  orig: 194, 194
+  offset: 72, 58
+  index: -1
+face
+  rotate: false
+  xy: 797, 155
+  size: 147, 135
+  orig: 194, 194
+  offset: 30, 32
+  index: -1
+head
+  rotate: false
+  xy: 620, 298
+  size: 194, 194
+  orig: 194, 194
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 432, 80
+  size: 180, 289
+  orig: 180, 289
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: false
+  xy: 656, 500
+  size: 173, 446
+  orig: 173, 446
+  offset: 0, 0
+  index: -1
+leg3
+  rotate: false
+  xy: 837, 654
+  size: 105, 181
+  orig: 105, 181
+  offset: 0, 0
+  index: -1

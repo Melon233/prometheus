@@ -1,0 +1,111 @@
+
+summon_fire_elemental.png
+size: 2458,2458
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+S_huzi
+  rotate: false
+  xy: 2058, 2331
+  size: 263, 119
+  orig: 263, 119
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 8, 2132
+  size: 369, 318
+  orig: 369, 318
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 1577, 2105
+  size: 296, 66
+  orig: 296, 66
+  offset: 0, 0
+  index: -1
+body3
+  rotate: false
+  xy: 1577, 2179
+  size: 313, 271
+  orig: 313, 271
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 2329, 2231
+  size: 121, 219
+  orig: 121, 219
+  offset: 0, 0
+  index: -1
+other1
+  rotate: false
+  xy: 2238, 2196
+  size: 22, 29
+  orig: 22, 29
+  offset: 0, 0
+  index: -1
+other2
+  rotate: false
+  xy: 2204, 2181
+  size: 26, 44
+  orig: 26, 44
+  offset: 0, 0
+  index: -1
+red1
+  rotate: false
+  xy: 2058, 2183
+  size: 138, 140
+  orig: 138, 140
+  offset: 0, 0
+  index: -1
+red2
+  rotate: false
+  xy: 1898, 2231
+  size: 152, 219
+  orig: 152, 219
+  offset: 0, 0
+  index: -1
+yellow
+  rotate: false
+  xy: 385, 2135
+  size: 290, 315
+  orig: 290, 315
+  offset: 0, 0
+  index: -1
+yellow2
+  rotate: false
+  xy: 683, 2135
+  size: 290, 315
+  orig: 290, 315
+  offset: 0, 0
+  index: -1
+yellow3
+  rotate: false
+  xy: 981, 2135
+  size: 290, 315
+  orig: 290, 315
+  offset: 0, 0
+  index: -1
+yellow4
+  rotate: false
+  xy: 1279, 2135
+  size: 290, 315
+  orig: 290, 315
+  offset: 0, 0
+  index: -1
+you
+  rotate: false
+  xy: 2204, 2233
+  size: 91, 90
+  orig: 91, 90
+  offset: 0, 0
+  index: -1
+zuo
+  rotate: false
+  xy: 1898, 2122
+  size: 129, 101
+  orig: 129, 101
+  offset: 0, 0
+  index: -1

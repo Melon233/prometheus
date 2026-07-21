@@ -1,0 +1,13 @@
+
+stage_statue1.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+石像
+  rotate: false
+  xy: 2, 2
+  size: 462, 742
+  orig: 530, 854
+  offset: 34, 56
+  index: -1

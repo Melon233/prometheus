@@ -1,0 +1,335 @@
+
+golem_cernunna_close.png
+size: 1144,1144
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+b_hair_1
+  rotate: false
+  xy: 161, 99
+  size: 196, 344
+  orig: 196, 344
+  offset: 0, 0
+  index: -1
+b_hair_2
+  rotate: false
+  xy: 161, 783
+  size: 334, 353
+  orig: 334, 353
+  offset: 0, 0
+  index: -1
+body_1
+  rotate: false
+  xy: 809, 968
+  size: 302, 168
+  orig: 302, 168
+  offset: 0, 0
+  index: -1
+body_2
+  rotate: false
+  xy: 477, 516
+  size: 192, 228
+  orig: 192, 228
+  offset: 0, 0
+  index: -1
+dai
+  rotate: false
+  xy: 661, 11
+  size: 68, 75
+  orig: 68, 75
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 145, 37
+  size: 141, 54
+  orig: 141, 54
+  offset: 0, 0
+  index: -1
+eye_b
+  rotate: false
+  xy: 854, 332
+  size: 141, 54
+  orig: 141, 54
+  offset: 0, 0
+  index: -1
+eye_k
+  rotate: false
+  xy: 867, 133
+  size: 141, 54
+  orig: 141, 54
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 545, 300
+  size: 186, 208
+  orig: 186, 208
+  offset: 0, 0
+  index: -1
+hair_img
+  rotate: false
+  xy: 1017, 543
+  size: 108, 137
+  orig: 108, 137
+  offset: 0, 0
+  index: -1
+l_arm_low
+  rotate: false
+  xy: 8, 22
+  size: 129, 131
+  orig: 129, 131
+  offset: 0, 0
+  index: -1
+l_arm_up
+  rotate: false
+  xy: 581, 14
+  size: 72, 72
+  orig: 72, 72
+  offset: 0, 0
+  index: -1
+l_ear
+  rotate: false
+  xy: 854, 394
+  size: 106, 125
+  orig: 106, 125
+  offset: 0, 0
+  index: -1
+l_fager_1
+  rotate: false
+  xy: 294, 23
+  size: 51, 68
+  orig: 51, 68
+  offset: 0, 0
+  index: -1
+l_fager_2
+  rotate: false
+  xy: 829, 57
+  size: 68, 68
+  orig: 68, 68
+  offset: 0, 0
+  index: -1
+l_fager_3
+  rotate: false
+  xy: 739, 60
+  size: 82, 66
+  orig: 82, 66
+  offset: 0, 0
+  index: -1
+l_fager_4
+  rotate: false
+  xy: 1049, 360
+  size: 73, 63
+  orig: 73, 63
+  offset: 0, 0
+  index: -1
+l_hair_1
+  rotate: false
+  xy: 807, 528
+  size: 92, 162
+  orig: 92, 162
+  offset: 0, 0
+  index: -1
+l_hair_2
+  rotate: false
+  xy: 739, 311
+  size: 107, 200
+  orig: 107, 200
+  offset: 0, 0
+  index: -1
+l_img
+  rotate: false
+  xy: 1049, 431
+  size: 70, 104
+  orig: 70, 104
+  offset: 0, 0
+  index: -1
+l_jiao
+  rotate: false
+  xy: 503, 864
+  size: 298, 272
+  orig: 298, 272
+  offset: 0, 0
+  index: -1
+l_leg
+  rotate: false
+  xy: 977, 274
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+r_leg
+  rotate: false
+  xy: 977, 274
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+l_leg_low
+  rotate: false
+  xy: 965, 697
+  size: 72, 125
+  orig: 72, 125
+  offset: 0, 0
+  index: -1
+l_leg_up
+  rotate: false
+  xy: 704, 698
+  size: 97, 158
+  orig: 97, 158
+  offset: 0, 0
+  index: -1
+lb_leg
+  rotate: false
+  xy: 1035, 304
+  size: 42, 48
+  orig: 42, 48
+  offset: 0, 0
+  index: -1
+lb_leg_low
+  rotate: false
+  xy: 907, 527
+  size: 102, 162
+  orig: 102, 162
+  offset: 0, 0
+  index: -1
+lb_leg_up
+  rotate: false
+  xy: 677, 519
+  size: 122, 171
+  orig: 122, 171
+  offset: 0, 0
+  index: -1
+neck
+  rotate: false
+  xy: 503, 752
+  size: 193, 104
+  orig: 193, 104
+  offset: 0, 0
+  index: -1
+r_arm
+  rotate: false
+  xy: 497, 10
+  size: 76, 76
+  orig: 76, 76
+  offset: 0, 0
+  index: -1
+r_arm_low
+  rotate: false
+  xy: 365, 8
+  size: 124, 140
+  orig: 124, 140
+  offset: 0, 0
+  index: -1
+r_ear
+  rotate: false
+  xy: 809, 703
+  size: 148, 119
+  orig: 148, 119
+  offset: 0, 0
+  index: -1
+r_fager_1
+  rotate: false
+  xy: 977, 218
+  size: 43, 48
+  orig: 43, 48
+  offset: 0, 0
+  index: -1
+r_fager_2
+  rotate: false
+  xy: 979, 64
+  size: 46, 61
+  orig: 46, 61
+  offset: 0, 0
+  index: -1
+r_fager_3
+  rotate: false
+  xy: 905, 68
+  size: 66, 57
+  orig: 66, 57
+  offset: 0, 0
+  index: -1
+r_fager_4
+  rotate: false
+  xy: 477, 456
+  size: 58, 52
+  orig: 58, 52
+  offset: 0, 0
+  index: -1
+r_hair_1
+  rotate: false
+  xy: 365, 156
+  size: 172, 287
+  orig: 172, 287
+  offset: 0, 0
+  index: -1
+r_hair_2
+  rotate: false
+  xy: 545, 94
+  size: 186, 198
+  orig: 186, 198
+  offset: 0, 0
+  index: -1
+r_img
+  rotate: false
+  xy: 809, 830
+  size: 228, 130
+  orig: 228, 130
+  offset: 0, 0
+  index: -1
+r_jiao
+  rotate: false
+  xy: 161, 451
+  size: 308, 324
+  orig: 308, 324
+  offset: 0, 0
+  index: -1
+r_leg_low
+  rotate: false
+  xy: 968, 394
+  size: 73, 125
+  orig: 73, 125
+  offset: 0, 0
+  index: -1
+r_leg_up
+  rotate: false
+  xy: 867, 195
+  size: 102, 129
+  orig: 102, 129
+  offset: 0, 0
+  index: -1
+rb_leg
+  rotate: false
+  xy: 497, 97
+  size: 39, 51
+  orig: 39, 51
+  offset: 0, 0
+  index: -1
+rb_leg_low
+  rotate: false
+  xy: 1045, 792
+  size: 85, 168
+  orig: 85, 168
+  offset: 0, 0
+  index: -1
+rb_leg_up
+  rotate: false
+  xy: 739, 134
+  size: 120, 169
+  orig: 120, 169
+  offset: 0, 0
+  index: -1
+weapon_qiang
+  rotate: false
+  xy: 8, 161
+  size: 145, 975
+  orig: 145, 975
+  offset: 0, 0
+  index: -1
+weiba
+  rotate: false
+  xy: 1045, 688
+  size: 86, 96
+  orig: 86, 96
+  offset: 0, 0
+  index: -1

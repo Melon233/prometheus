@@ -1,0 +1,20 @@
+
+link2.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+link3.2
+  rotate: false
+  xy: 544, 383
+  size: 31, 192
+  orig: 158, 192
+  offset: 52, 0
+  index: -1
+link4
+  rotate: false
+  xy: 8, 558
+  size: 528, 17
+  orig: 528, 17
+  offset: 0, 0
+  index: -1

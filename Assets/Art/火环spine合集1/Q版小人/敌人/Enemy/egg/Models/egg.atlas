@@ -1,0 +1,48 @@
+
+egg.png
+size: 563,563
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+egg
+  rotate: false
+  xy: 8, 306
+  size: 254, 73
+  orig: 329, 81
+  offset: 37, 4
+  index: -1
+eggwhite
+  rotate: false
+  xy: 153, 482
+  size: 254, 73
+  orig: 329, 81
+  offset: 37, 4
+  index: -1
+eggwhiteb
+  rotate: false
+  xy: 153, 401
+  size: 254, 73
+  orig: 329, 81
+  offset: 37, 4
+  index: -1
+shell
+  rotate: false
+  xy: 8, 387
+  size: 137, 168
+  orig: 137, 168
+  offset: 0, 0
+  index: -1
+shell1
+  rotate: false
+  xy: 415, 426
+  size: 133, 129
+  orig: 133, 129
+  offset: 0, 0
+  index: -1
+shell2
+  rotate: false
+  xy: 415, 298
+  size: 140, 120
+  orig: 140, 120
+  offset: 0, 0
+  index: -1

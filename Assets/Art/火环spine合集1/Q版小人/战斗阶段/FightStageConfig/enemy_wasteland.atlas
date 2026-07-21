@@ -1,0 +1,230 @@
+
+enemy_wasteland.png
+size: 1782,1782
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 732, 27
+  size: 100, 139
+  orig: 100, 139
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 1565, 117
+  size: 108, 124
+  orig: 108, 124
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 1691, 1601
+  size: 79, 173
+  orig: 79, 173
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 1640, 261
+  size: 100, 116
+  orig: 100, 116
+  offset: 0, 0
+  index: -1
+b_1
+  rotate: false
+  xy: 1469, 61
+  size: 88, 180
+  orig: 88, 180
+  offset: 0, 0
+  index: -1
+b_2
+  rotate: false
+  xy: 1691, 1448
+  size: 76, 145
+  orig: 76, 145
+  offset: 0, 0
+  index: -1
+b_2_1
+  rotate: false
+  xy: 1691, 1304
+  size: 79, 136
+  orig: 79, 136
+  offset: 0, 0
+  index: -1
+b_3
+  rotate: false
+  xy: 1358, 40
+  size: 103, 201
+  orig: 103, 201
+  offset: 0, 0
+  index: -1
+b_4
+  rotate: false
+  xy: 1711, 606
+  size: 63, 146
+  orig: 63, 146
+  offset: 0, 0
+  index: -1
+b_body
+  rotate: false
+  xy: 434, 174
+  size: 453, 330
+  orig: 502, 333
+  offset: 49, 2
+  index: -1
+b_forehoof1
+  rotate: false
+  xy: 659, 512
+  size: 216, 565
+  orig: 216, 572
+  offset: 0, 7
+  index: -1
+b_forehoof2
+  rotate: false
+  xy: 261, 28
+  size: 165, 465
+  orig: 179, 475
+  offset: 10, 10
+  index: -1
+b_head
+  rotate: false
+  xy: 317, 564
+  size: 334, 513
+  orig: 356, 563
+  offset: 5, 29
+  index: -1
+b_hindhoof1
+  rotate: false
+  xy: 883, 535
+  size: 260, 552
+  orig: 260, 577
+  offset: 0, 5
+  index: -1
+b_hindhoof2
+  rotate: false
+  xy: 1151, 569
+  size: 289, 518
+  orig: 294, 532
+  offset: 5, 10
+  index: -1
+b_mane1
+  rotate: false
+  xy: 1358, 249
+  size: 274, 111
+  orig: 274, 115
+  offset: 0, 0
+  index: -1
+b_mane2
+  rotate: false
+  xy: 1351, 368
+  size: 256, 179
+  orig: 262, 179
+  offset: 6, 0
+  index: -1
+b_mane3
+  rotate: false
+  xy: 1151, 23
+  size: 199, 255
+  orig: 201, 261
+  offset: 2, 1
+  index: -1
+b_neck
+  rotate: false
+  xy: 468, 1085
+  size: 355, 498
+  orig: 355, 500
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 835, 1442
+  size: 543, 332
+  orig: 543, 332
+  offset: 0, 0
+  index: -1
+forehoof1
+  rotate: false
+  xy: 8, 11
+  size: 245, 482
+  orig: 245, 490
+  offset: 0, 8
+  index: -1
+forehoof2
+  rotate: false
+  xy: 895, 70
+  size: 248, 457
+  orig: 251, 466
+  offset: 0, 9
+  index: -1
+head
+  rotate: false
+  xy: 8, 1105
+  size: 452, 478
+  orig: 462, 493
+  offset: 9, 9
+  index: -1
+hindhoof1
+  rotate: false
+  xy: 1386, 1264
+  size: 297, 510
+  orig: 306, 517
+  offset: 9, 7
+  index: -1
+hindhoof2
+  rotate: false
+  xy: 1448, 760
+  size: 264, 496
+  orig: 264, 503
+  offset: 0, 7
+  index: -1
+mane1
+  rotate: false
+  xy: 434, 30
+  size: 290, 136
+  orig: 290, 148
+  offset: 0, 0
+  index: -1
+mane2
+  rotate: false
+  xy: 1448, 555
+  size: 255, 197
+  orig: 260, 197
+  offset: 5, 0
+  index: -1
+mane3
+  rotate: false
+  xy: 1151, 286
+  size: 192, 275
+  orig: 219, 310
+  offset: 0, 10
+  index: -1
+mane4
+  rotate: false
+  xy: 1615, 385
+  size: 98, 162
+  orig: 98, 162
+  offset: 0, 0
+  index: -1
+neck
+  rotate: false
+  xy: 8, 501
+  size: 301, 596
+  orig: 304, 596
+  offset: 3, 0
+  index: -1
+tail
+  rotate: false
+  xy: 831, 1095
+  size: 471, 339
+  orig: 484, 340
+  offset: 8, 1
+  index: -1
+tail2
+  rotate: false
+  xy: 8, 1591
+  size: 819, 183
+  orig: 862, 486
+  offset: 20, 141
+  index: -1

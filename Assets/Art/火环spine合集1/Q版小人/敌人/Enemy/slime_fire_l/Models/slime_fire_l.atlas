@@ -1,0 +1,104 @@
+
+slime_fire_l.png
+size: 2525,2525
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Leye
+  rotate: false
+  xy: 847, 1571
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Leye2
+  rotate: false
+  xy: 847, 1310
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Reye
+  rotate: false
+  xy: 847, 319
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+Reye2
+  rotate: false
+  xy: 1093, 319
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+body1
+  rotate: false
+  xy: 1047, 1214
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body4
+  rotate: false
+  xy: 8, 1194
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body5
+  rotate: false
+  xy: 847, 576
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body6
+  rotate: false
+  xy: 1686, 275
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body7
+  rotate: false
+  xy: 1047, 1852
+  size: 971, 665
+  orig: 1123, 1123
+  offset: 75, 118
+  index: -1
+up1
+  rotate: false
+  xy: 8, 556
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+up2
+  rotate: false
+  xy: 8, 1832
+  size: 1031, 685
+  orig: 1123, 1123
+  offset: 66, 192
+  index: -1
+up2_1
+  rotate: false
+  xy: 2026, 1964
+  size: 437, 553
+  orig: 1123, 1123
+  offset: 86, 190
+  index: -1
+up2_2
+  rotate: false
+  xy: 1886, 913
+  size: 499, 511
+  orig: 1123, 1123
+  offset: 349, 370
+  index: -1
+up2_3
+  rotate: false
+  xy: 2026, 1432
+  size: 417, 524
+  orig: 1123, 1123
+  offset: 662, 284
+  index: -1

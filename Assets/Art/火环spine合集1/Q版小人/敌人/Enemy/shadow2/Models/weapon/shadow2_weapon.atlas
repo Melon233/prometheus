@@ -1,0 +1,13 @@
+
+shadow2_weapon.png
+size: 256,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+weapon
+  rotate: false
+  xy: 8, 8
+  size: 184, 185
+  orig: 232, 227
+  offset: 15, 26
+  index: -1

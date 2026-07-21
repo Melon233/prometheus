@@ -1,0 +1,20 @@
+
+city_mood.png
+size: 234,234
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jingya
+  rotate: false
+  xy: 142, 80
+  size: 84, 146
+  orig: 85, 160
+  offset: 1, 7
+  index: -1
+wenhao
+  rotate: false
+  xy: 8, 77
+  size: 126, 149
+  orig: 126, 154
+  offset: 0, 3
+  index: -1

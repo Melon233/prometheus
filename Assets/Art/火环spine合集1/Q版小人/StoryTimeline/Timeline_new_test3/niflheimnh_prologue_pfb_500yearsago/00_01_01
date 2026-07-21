@@ -1,0 +1,7 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=克莱朵<lights=1,faces=shock>;mid_txt=……微光。<name=？？？,cv=VO_MS_Chp0_Task1_1_1>;
+spine=克莱朵<lights=1,faces=sad>;mid_txt=真遗憾，我连你的墓志铭都想好了。<name=？？？,cv=VO_MS_Chp0_Task1_1_2>;
+spine=克莱朵<lights=1,faces=sad>;mid_txt=……这便是你所谓的奇迹？脆弱、渺小，一触即碎……愚蠢至极。<name=？？？,cv=VO_MS_Chp0_Task1_1_3>;
+spine=克莱朵<lights=1,faces=sad>;mid_txt=…………<name=？？？,cv=VO_MS_Chp0_Task1_1_4>;
+spine=克莱朵<lights=1,faces=idleface>;mid_txt=按照约定，我帮你这最后一次。<name=？？？,cv=VO_MS_Chp0_Task1_1_5>;

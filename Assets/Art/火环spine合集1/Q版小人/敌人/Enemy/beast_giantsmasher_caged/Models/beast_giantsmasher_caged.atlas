@@ -1,0 +1,265 @@
+
+beast_giantsmasher_caged.png
+size: 1874,1874
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 1127, 1396
+  size: 496, 470
+  orig: 522, 498
+  offset: 10, 14
+  index: -1
+face
+  rotate: false
+  xy: 910, 77
+  size: 342, 227
+  orig: 356, 233
+  offset: 5, 3
+  index: -1
+hand_l01
+  rotate: false
+  xy: 1495, 585
+  size: 150, 177
+  orig: 150, 177
+  offset: 0, 0
+  index: -1
+hand_l02
+  rotate: false
+  xy: 1495, 770
+  size: 133, 190
+  orig: 133, 190
+  offset: 0, 0
+  index: -1
+hand_r01
+  rotate: false
+  xy: 1631, 1425
+  size: 157, 177
+  orig: 157, 178
+  offset: 0, 1
+  index: -1
+hand_r02
+  rotate: false
+  xy: 1594, 1144
+  size: 122, 125
+  orig: 122, 125
+  offset: 0, 0
+  index: -1
+ice/jiao01
+  rotate: false
+  xy: 8, 1387
+  size: 556, 479
+  orig: 582, 496
+  offset: 17, 14
+  index: -1
+ice/jiao03
+  rotate: false
+  xy: 1123, 968
+  size: 463, 420
+  orig: 484, 437
+  offset: 15, 7
+  index: -1
+jiao01
+  rotate: false
+  xy: 8, 910
+  size: 547, 469
+  orig: 582, 496
+  offset: 17, 14
+  index: -1
+jiao01_fire
+  rotate: false
+  xy: 572, 1397
+  size: 547, 469
+  orig: 582, 496
+  offset: 17, 14
+  index: -1
+jiao02
+  rotate: false
+  xy: 521, 339
+  size: 449, 305
+  orig: 478, 316
+  offset: 16, 4
+  index: -1
+jiao03
+  rotate: false
+  xy: 563, 652
+  size: 458, 420
+  orig: 484, 437
+  offset: 15, 7
+  index: -1
+jiao03_fire
+  rotate: false
+  xy: 1029, 540
+  size: 458, 420
+  orig: 484, 437
+  offset: 15, 7
+  index: -1
+l_yandi
+  rotate: false
+  xy: 1526, 210
+  size: 92, 68
+  orig: 92, 68
+  offset: 0, 0
+  index: -1
+l_yanqiu
+  rotate: false
+  xy: 1431, 319
+  size: 63, 56
+  orig: 63, 56
+  offset: 0, 0
+  index: -1
+l_yany
+  rotate: false
+  xy: 978, 600
+  size: 43, 44
+  orig: 43, 44
+  offset: 0, 0
+  index: -1
+l_yanz
+  rotate: false
+  xy: 1796, 1432
+  size: 53, 51
+  orig: 53, 51
+  offset: 0, 0
+  index: -1
+leg_l01
+  rotate: false
+  xy: 1260, 15
+  size: 258, 289
+  orig: 265, 298
+  offset: 1, 7
+  index: -1
+leg_l02
+  rotate: false
+  xy: 1431, 383
+  size: 180, 149
+  orig: 183, 150
+  offset: 1, 1
+  index: -1
+leg_r01
+  rotate: false
+  xy: 1631, 1610
+  size: 234, 256
+  orig: 242, 260
+  offset: 4, 4
+  index: -1
+leg_r02
+  rotate: false
+  xy: 1631, 1277
+  size: 185, 140
+  orig: 187, 140
+  offset: 0, 0
+  index: -1
+luo
+  rotate: false
+  xy: 1029, 970
+  size: 80, 102
+  orig: 80, 102
+  offset: 0, 0
+  index: -1
+r_yandi
+  rotate: false
+  xy: 1594, 974
+  size: 54, 41
+  orig: 54, 41
+  offset: 0, 0
+  index: -1
+r_yanqiu
+  rotate: false
+  xy: 1526, 161
+  size: 44, 41
+  orig: 44, 41
+  offset: 0, 0
+  index: -1
+r_yany
+  rotate: false
+  xy: 910, 39
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+r_yanz
+  rotate: false
+  xy: 521, 863
+  size: 34, 39
+  orig: 34, 39
+  offset: 0, 0
+  index: -1
+suo_01
+  rotate: false
+  xy: 1594, 1023
+  size: 75, 113
+  orig: 75, 113
+  offset: 0, 0
+  index: -1
+suo_02
+  rotate: false
+  xy: 1677, 1028
+  size: 52, 108
+  orig: 52, 108
+  offset: 0, 0
+  index: -1
+suo_03
+  rotate: false
+  xy: 1737, 1048
+  size: 63, 108
+  orig: 75, 108
+  offset: 7, 0
+  index: -1
+suo_04
+  rotate: false
+  xy: 1796, 1491
+  size: 70, 111
+  orig: 70, 111
+  offset: 0, 0
+  index: -1
+suo_05
+  rotate: false
+  xy: 1724, 1164
+  size: 68, 105
+  orig: 68, 105
+  offset: 0, 0
+  index: -1
+suo_06
+  rotate: false
+  xy: 1526, 286
+  size: 82, 89
+  orig: 82, 89
+  offset: 0, 0
+  index: -1
+wei
+  rotate: false
+  xy: 500, 33
+  size: 402, 298
+  orig: 424, 312
+  offset: 10, 6
+  index: -1
+xiaba
+  rotate: false
+  xy: 978, 312
+  size: 445, 220
+  orig: 469, 224
+  offset: 12, 3
+  index: -1
+xq
+  rotate: false
+  xy: 8, 437
+  size: 505, 465
+  orig: 525, 497
+  offset: 14, 16
+  index: -1
+zui
+  rotate: false
+  xy: 8, 15
+  size: 484, 414
+  orig: 510, 432
+  offset: 15, 10
+  index: -1
+zuihuan
+  rotate: false
+  xy: 572, 1080
+  size: 543, 309
+  orig: 575, 325
+  offset: 14, 9
+  index: -1

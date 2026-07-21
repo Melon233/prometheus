@@ -1,0 +1,13 @@
+skip_title=新的开始;
+skip_overview=你们看到了此行的目的地——海恩城——屹立于风雪之间，如水晶般的城市。;
+spine=海芙温<lights=1,faces=kira>;mid_txt=看到了吗？那儿就是我们的目标——海恩城！<name=海芙温>;
+hide=spine;
+hide=txt;
+spine=主角|海芙温<lights=1|0,faces=shy|idleface>;mid_txt=好漂亮的城市，就像是水晶一样……<name=/player/>;
+spine=主角|海芙温<lights=0|1,faces=shy|happy>;mid_txt=对吧对吧，晚上的海恩城会亮起灯，那时候才漂亮呢！我还想让纳叶带我出城看，结果她就是不同意！<name=海芙温>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=happy>;mid_txt=当然，我不会因为这种事影响自己的睡眠。<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=active>;mid_txt=哈哈，晚上出城可不安全，但你下次可以约我一起。<name=厄晞斯>;

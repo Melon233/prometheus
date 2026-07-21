@@ -1,0 +1,237 @@
+
+artifact_paper_grammar_elite.png
+size: 1615,1615
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+armLl
+  rotate: false
+  xy: 1338, 38
+  size: 178, 214
+  orig: 188, 224
+  offset: 0, 0
+  index: -1
+armLu
+  rotate: false
+  xy: 838, 391
+  size: 179, 260
+  orig: 198, 260
+  offset: 10, 0
+  index: -1
+armRlA
+  rotate: false
+  xy: 590, 974
+  size: 251, 191
+  orig: 261, 208
+  offset: 0, 8
+  index: -1
+armRlB
+  rotate: false
+  xy: 1474, 1288
+  size: 132, 71
+  orig: 161, 100
+  offset: 12, 11
+  index: -1
+armRlBack
+  rotate: false
+  xy: 742, 9
+  size: 198, 174
+  orig: 198, 174
+  offset: 0, 0
+  index: -1
+armRlC
+  rotate: false
+  xy: 1495, 1025
+  size: 67, 104
+  orig: 101, 134
+  offset: 18, 16
+  index: -1
+armRu
+  rotate: false
+  xy: 601, 335
+  size: 229, 316
+  orig: 244, 320
+  offset: 9, 0
+  index: -1
+armRuBack
+  rotate: false
+  xy: 860, 198
+  size: 222, 185
+  orig: 222, 185
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 1044, 1220
+  size: 422, 387
+  orig: 445, 412
+  offset: 11, 13
+  index: -1
+bodyBack
+  rotate: false
+  xy: 1166, 605
+  size: 362, 348
+  orig: 396, 368
+  offset: 19, 19
+  index: -1
+bottom
+  rotate: false
+  xy: 1250, 405
+  size: 139, 192
+  orig: 161, 205
+  offset: 9, 0
+  index: -1
+death_1
+  rotate: false
+  xy: 8, 952
+  size: 574, 655
+  orig: 574, 655
+  offset: 0, 0
+  index: -1
+death_2
+  rotate: false
+  xy: 590, 1173
+  size: 446, 434
+  orig: 446, 434
+  offset: 0, 0
+  index: -1
+handL1
+  rotate: false
+  xy: 1495, 1137
+  size: 107, 82
+  orig: 124, 104
+  offset: 6, 9
+  index: -1
+handR1
+  rotate: false
+  xy: 1256, 260
+  size: 163, 137
+  orig: 172, 158
+  offset: 9, 14
+  index: -1
+headA
+  rotate: false
+  xy: 8, 305
+  size: 273, 346
+  orig: 328, 361
+  offset: 44, 7
+  index: -1
+headB
+  rotate: false
+  xy: 1474, 1227
+  size: 109, 53
+  orig: 163, 106
+  offset: 22, 29
+  index: -1
+headBack
+  rotate: false
+  xy: 948, 48
+  size: 187, 142
+  orig: 207, 159
+  offset: 10, 12
+  index: -1
+headC
+  rotate: false
+  xy: 565, 46
+  size: 169, 92
+  orig: 198, 119
+  offset: 14, 13
+  index: -1
+lance
+  rotate: false
+  xy: 8, 659
+  size: 1150, 285
+  orig: 1152, 313
+  offset: 2, 14
+  index: -1
+ropeA
+  rotate: false
+  xy: 1090, 245
+  size: 158, 143
+  orig: 190, 173
+  offset: 15, 16
+  index: -1
+ropeB
+  rotate: false
+  xy: 1102, 961
+  size: 385, 251
+  orig: 416, 276
+  offset: 15, 15
+  index: -1
+shoulderLa
+  rotate: false
+  xy: 1143, 16
+  size: 187, 221
+  orig: 209, 246
+  offset: 11, 12
+  index: -1
+shoulderRa
+  rotate: false
+  xy: 289, 369
+  size: 304, 282
+  orig: 315, 291
+  offset: 0, 9
+  index: -1
+shoulderRb
+  rotate: false
+  xy: 1474, 1486
+  size: 133, 121
+  orig: 159, 147
+  offset: 15, 13
+  index: -1
+shoulderRc
+  rotate: false
+  xy: 341, 44
+  size: 216, 94
+  orig: 234, 119
+  offset: 6, 12
+  index: -1
+shoulderlb
+  rotate: false
+  xy: 1474, 1367
+  size: 108, 111
+  orig: 128, 136
+  offset: 9, 13
+  index: -1
+topDecoA
+  rotate: false
+  xy: 1427, 319
+  size: 160, 278
+  orig: 184, 285
+  offset: 18, 0
+  index: -1
+topDecoB
+  rotate: false
+  xy: 341, 146
+  size: 220, 215
+  orig: 234, 230
+  offset: 6, 8
+  index: -1
+topDecoC
+  rotate: false
+  xy: 8, 31
+  size: 325, 266
+  orig: 339, 290
+  offset: 3, 12
+  index: -1
+topDecoD
+  rotate: false
+  xy: 569, 191
+  size: 283, 136
+  orig: 308, 158
+  offset: 13, 13
+  index: -1
+visor1
+  rotate: false
+  xy: 849, 978
+  size: 245, 187
+  orig: 264, 196
+  offset: 8, 5
+  index: -1
+visor2
+  rotate: false
+  xy: 1025, 396
+  size: 217, 201
+  orig: 229, 217
+  offset: 0, 7
+  index: -1

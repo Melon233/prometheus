@@ -1,0 +1,41 @@
+
+collect_res_rankup_ice_1_ctnr.png
+size: 598,598
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A1
+  rotate: false
+  xy: 8, 94
+  size: 348, 496
+  orig: 348, 496
+  offset: 0, 0
+  index: -1
+B1
+  rotate: false
+  xy: 364, 387
+  size: 216, 203
+  orig: 216, 203
+  offset: 0, 0
+  index: -1
+B2
+  rotate: false
+  xy: 484, 91
+  size: 106, 98
+  orig: 106, 98
+  offset: 0, 0
+  index: -1
+B3
+  rotate: false
+  xy: 364, 197
+  size: 180, 182
+  orig: 180, 182
+  offset: 0, 0
+  index: -1
+B4
+  rotate: false
+  xy: 364, 78
+  size: 112, 111
+  orig: 112, 111
+  offset: 0, 0
+  index: -1

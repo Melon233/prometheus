@@ -1,0 +1,391 @@
+
+niflheim_npc_sorek.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L3
+  rotate: false
+  xy: 290, 199
+  size: 66, 63
+  orig: 89, 84
+  offset: 12, 10
+  index: -1
+Z_Larm_1
+  rotate: false
+  xy: 897, 134
+  size: 116, 124
+  orig: 116, 124
+  offset: 0, 0
+  index: -1
+Z_Larm_2
+  rotate: false
+  xy: 174, 17
+  size: 98, 119
+  orig: 98, 119
+  offset: 0, 0
+  index: -1
+Z_Lear_1
+  rotate: false
+  xy: 795, 236
+  size: 94, 128
+  orig: 94, 128
+  offset: 0, 0
+  index: -1
+Z_Lear_2
+  rotate: false
+  xy: 678, 90
+  size: 82, 60
+  orig: 82, 60
+  offset: 0, 0
+  index: -1
+Z_Lear_3
+  rotate: false
+  xy: 941, 899
+  size: 70, 115
+  orig: 70, 115
+  offset: 0, 0
+  index: -1
+Z_Lhand_1
+  rotate: false
+  xy: 290, 139
+  size: 64, 52
+  orig: 64, 52
+  offset: 0, 0
+  index: -1
+Z_Lhand_wo
+  rotate: false
+  xy: 941, 678
+  size: 67, 65
+  orig: 184, 238
+  offset: 96, 22
+  index: -1
+Z_Lhand_zhang
+  rotate: false
+  xy: 530, 154
+  size: 140, 98
+  orig: 140, 98
+  offset: 0, 0
+  index: -1
+Z_Lhand_zhang2
+  rotate: false
+  xy: 773, 101
+  size: 84, 63
+  orig: 140, 98
+  offset: 35, 24
+  index: -1
+Z_Lleg_1
+  rotate: false
+  xy: 691, 509
+  size: 98, 193
+  orig: 98, 193
+  offset: 0, 0
+  index: -1
+Z_Lleg_2
+  rotate: false
+  xy: 930, 410
+  size: 79, 123
+  orig: 79, 123
+  offset: 0, 0
+  index: -1
+Z_Rarm_1
+  rotate: false
+  xy: 797, 534
+  size: 125, 138
+  orig: 125, 138
+  offset: 0, 0
+  index: -1
+Z_Rarm_2
+  rotate: false
+  xy: 691, 368
+  size: 96, 133
+  orig: 98, 133
+  offset: 0, 0
+  index: -1
+Z_Rarm_3
+  rotate: false
+  xy: 678, 158
+  size: 87, 72
+  orig: 87, 72
+  offset: 0, 0
+  index: -1
+Z_Rear_1
+  rotate: false
+  xy: 8, 243
+  size: 133, 120
+  orig: 133, 128
+  offset: 0, 8
+  index: -1
+Z_Rear_2
+  rotate: false
+  xy: 865, 52
+  size: 134, 74
+  orig: 134, 74
+  offset: 0, 0
+  index: -1
+Z_Rear_3
+  rotate: false
+  xy: 685, 238
+  size: 97, 122
+  orig: 97, 122
+  offset: 0, 0
+  index: -1
+Z_Rhand_1
+  rotate: false
+  xy: 941, 826
+  size: 72, 65
+  orig: 72, 65
+  offset: 0, 0
+  index: -1
+Z_Rhand_wo
+  rotate: false
+  xy: 941, 751
+  size: 69, 67
+  orig: 173, 228
+  offset: 20, 12
+  index: -1
+Z_Rleg_1
+  rotate: false
+  xy: 797, 372
+  size: 98, 154
+  orig: 98, 154
+  offset: 0, 0
+  index: -1
+Z_Rleg_2
+  rotate: false
+  xy: 930, 541
+  size: 81, 129
+  orig: 81, 129
+  offset: 0, 0
+  index: -1
+Z_beard
+  rotate: false
+  xy: 149, 241
+  size: 71, 21
+  orig: 71, 21
+  offset: 0, 0
+  index: -1
+Z_coat_1
+  rotate: false
+  xy: 583, 371
+  size: 100, 331
+  orig: 100, 331
+  offset: 0, 0
+  index: -1
+Z_coat_2
+  rotate: false
+  xy: 798, 680
+  size: 135, 334
+  orig: 135, 334
+  offset: 0, 0
+  index: -1
+Z_eye
+  rotate: false
+  xy: 480, 94
+  size: 120, 52
+  orig: 120, 52
+  offset: 0, 0
+  index: -1
+Z_eye_close
+  rotate: false
+  xy: 280, 8
+  size: 155, 47
+  orig: 323, 260
+  offset: 108, 74
+  index: -1
+Z_eye_shock
+  rotate: false
+  xy: 8, 156
+  size: 147, 72
+  orig: 323, 260
+  offset: 113, 68
+  index: -1
+Z_eyebow
+  rotate: false
+  xy: 768, 15
+  size: 132, 29
+  orig: 132, 29
+  offset: 0, 0
+  index: -1
+Z_eyelash
+  rotate: false
+  xy: 369, 173
+  size: 153, 102
+  orig: 153, 102
+  offset: 0, 0
+  index: -1
+Z_eyewhite
+  rotate: false
+  xy: 622, 24
+  size: 138, 58
+  orig: 138, 58
+  offset: 0, 0
+  index: -1
+Z_face
+  rotate: false
+  xy: 338, 758
+  size: 248, 256
+  orig: 248, 256
+  offset: 0, 0
+  index: -1
+Z_lingjie_1
+  rotate: false
+  xy: 362, 63
+  size: 110, 102
+  orig: 110, 102
+  offset: 0, 0
+  index: -1
+Z_maozi_1
+  rotate: false
+  xy: 369, 283
+  size: 170, 147
+  orig: 170, 147
+  offset: 0, 0
+  index: -1
+Z_mianyi_1
+  rotate: false
+  xy: 594, 710
+  size: 196, 304
+  orig: 196, 304
+  offset: 0, 0
+  index: -1
+Z_mouth
+  rotate: false
+  xy: 530, 512
+  size: 24, 6
+  orig: 24, 6
+  offset: 0, 0
+  index: -1
+Z_mouth1
+  rotate: false
+  xy: 562, 529
+  size: 12, 9
+  orig: 12, 9
+  offset: 0, 0
+  index: -1
+Z_mouth_shock
+  rotate: false
+  xy: 530, 592
+  size: 42, 28
+  orig: 323, 260
+  offset: 191, 43
+  index: -1
+Z_nose
+  rotate: false
+  xy: 530, 526
+  size: 24, 12
+  orig: 24, 12
+  offset: 0, 0
+  index: -1
+Z_nose_shock
+  rotate: false
+  xy: 480, 21
+  size: 134, 61
+  orig: 323, 260
+  offset: 124, 49
+  index: -1
+Z_pifeng_1
+  rotate: false
+  xy: 338, 438
+  size: 184, 312
+  orig: 184, 312
+  offset: 0, 0
+  index: -1
+Z_toufa_1
+  rotate: false
+  xy: 8, 21
+  size: 158, 105
+  orig: 158, 105
+  offset: 0, 0
+  index: -1
+Z_toufa_2
+  rotate: false
+  xy: 8, 735
+  size: 322, 279
+  orig: 322, 279
+  offset: 0, 0
+  index: -1
+Z_toufa_3
+  rotate: false
+  xy: 163, 144
+  size: 119, 84
+  orig: 119, 84
+  offset: 0, 0
+  index: -1
+Z_xianglian_1
+  rotate: false
+  xy: 768, 54
+  size: 77, 39
+  orig: 77, 39
+  offset: 0, 0
+  index: -1
+Z_yaodai_1
+  rotate: false
+  xy: 8, 371
+  size: 162, 59
+  orig: 162, 59
+  offset: 0, 0
+  index: -1
+Z_youbingfa_1
+  rotate: false
+  xy: 773, 172
+  size: 104, 56
+  orig: 111, 56
+  offset: 7, 0
+  index: -1
+Z_youlianzi_1
+  rotate: false
+  xy: 547, 260
+  size: 130, 103
+  orig: 130, 103
+  offset: 0, 0
+  index: -1
+Z_youmaoling_1
+  rotate: false
+  xy: 178, 270
+  size: 183, 160
+  orig: 183, 160
+  offset: 0, 0
+  index: -1
+Z_zuobingfa_1
+  rotate: false
+  xy: 280, 84
+  size: 72, 47
+  orig: 72, 47
+  offset: 0, 0
+  index: -1
+Z_zuolianzi_1
+  rotate: false
+  xy: 530, 671
+  size: 45, 79
+  orig: 45, 79
+  offset: 0, 0
+  index: -1
+Z_zuomaoling_1
+  rotate: false
+  xy: 903, 266
+  size: 102, 136
+  orig: 102, 136
+  offset: 0, 0
+  index: -1
+ciya
+  rotate: false
+  xy: 530, 546
+  size: 27, 12
+  orig: 27, 12
+  offset: 0, 0
+  index: -1
+e_death_tear2
+  rotate: false
+  xy: 530, 628
+  size: 34, 35
+  orig: 34, 35
+  offset: 0, 0
+  index: -1
+mouth2
+  rotate: false
+  xy: 530, 566
+  size: 45, 18
+  orig: 55, 26
+  offset: 5, 4
+  index: -1

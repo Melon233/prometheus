@@ -1,0 +1,412 @@
+
+golem_biocannon.png
+size: 2103,2103
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+backfoot_L
+  rotate: false
+  xy: 1171, 1415
+  size: 121, 153
+  orig: 121, 153
+  offset: 0, 0
+  index: -1
+backfoot_R
+  rotate: false
+  xy: 1036, 1415
+  size: 127, 153
+  orig: 127, 153
+  offset: 0, 0
+  index: -1
+backhead
+  rotate: false
+  xy: 1085, 610
+  size: 306, 322
+  orig: 306, 322
+  offset: 0, 0
+  index: -1
+body1
+  rotate: false
+  xy: 1080, 1090
+  size: 289, 317
+  orig: 289, 324
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 1020, 940
+  size: 323, 109
+  orig: 323, 109
+  offset: 0, 0
+  index: -1
+body3
+  rotate: false
+  xy: 1677, 1321
+  size: 360, 247
+  orig: 360, 247
+  offset: 0, 0
+  index: -1
+body4
+  rotate: false
+  xy: 1737, 968
+  size: 200, 130
+  orig: 200, 130
+  offset: 0, 0
+  index: -1
+body5
+  rotate: false
+  xy: 1143, 13
+  size: 150, 228
+  orig: 150, 228
+  offset: 0, 0
+  index: -1
+body6
+  rotate: false
+  xy: 1676, 48
+  size: 176, 250
+  orig: 176, 250
+  offset: 0, 0
+  index: -1
+bupian1
+  rotate: false
+  xy: 479, 929
+  size: 148, 114
+  orig: 148, 114
+  offset: 0, 0
+  index: -1
+bupian2
+  rotate: false
+  xy: 635, 929
+  size: 107, 114
+  orig: 107, 114
+  offset: 0, 0
+  index: -1
+bupian3
+  rotate: false
+  xy: 1449, 303
+  size: 84, 96
+  orig: 84, 96
+  offset: 0, 0
+  index: -1
+bupian4
+  rotate: false
+  xy: 1823, 1121
+  size: 63, 54
+  orig: 63, 54
+  offset: 0, 0
+  index: -1
+bupian5
+  rotate: false
+  xy: 1945, 967
+  size: 56, 73
+  orig: 56, 73
+  offset: 0, 0
+  index: -1
+bupian6
+  rotate: false
+  xy: 1823, 1183
+  size: 93, 130
+  orig: 93, 130
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 750, 930
+  size: 118, 119
+  orig: 118, 119
+  offset: 0, 0
+  index: -1
+fire/body1
+  rotate: false
+  xy: 1152, 285
+  size: 289, 317
+  orig: 289, 324
+  offset: 0, 0
+  index: -1
+fire/body3
+  rotate: false
+  xy: 1676, 444
+  size: 360, 247
+  orig: 360, 247
+  offset: 0, 0
+  index: -1
+fire/body5
+  rotate: false
+  xy: 969, 11
+  size: 166, 230
+  orig: 182, 260
+  offset: 16, 14
+  index: -1
+fire/shoulder_R
+  rotate: false
+  xy: 669, 589
+  size: 408, 332
+  orig: 408, 332
+  offset: 0, 0
+  index: -1
+fire/weibo_1
+  rotate: false
+  xy: 305, 582
+  size: 356, 339
+  orig: 356, 346
+  offset: 0, 0
+  index: -1
+forntfoot_L
+  rotate: false
+  xy: 1449, 407
+  size: 206, 242
+  orig: 206, 242
+  offset: 0, 0
+  index: -1
+frontfoot_R
+  rotate: false
+  xy: 1399, 657
+  size: 238, 276
+  orig: 238, 276
+  offset: 0, 0
+  index: -1
+fronthead
+  rotate: false
+  xy: 8, 929
+  size: 463, 460
+  orig: 463, 460
+  offset: 0, 0
+  index: -1
+ice/body1
+  rotate: false
+  xy: 1377, 1095
+  size: 289, 317
+  orig: 289, 324
+  offset: 0, 0
+  index: -1
+ice/body3
+  rotate: false
+  xy: 1676, 699
+  size: 360, 247
+  orig: 360, 247
+  offset: 0, 0
+  index: -1
+ice/body5
+  rotate: false
+  xy: 795, 11
+  size: 166, 230
+  orig: 182, 260
+  offset: 16, 14
+  index: -1
+ice/shoulder_R
+  rotate: false
+  xy: 664, 1057
+  size: 408, 332
+  orig: 408, 332
+  offset: 0, 0
+  index: -1
+ice/weibo_1
+  rotate: false
+  xy: 8, 193
+  size: 356, 339
+  orig: 356, 346
+  offset: 0, 0
+  index: -1
+ice/weibo_2
+  rotate: false
+  xy: 698, 1576
+  size: 666, 519
+  orig: 666, 519
+  offset: 0, 0
+  index: -1
+fire/weibo_2
+  rotate: false
+  xy: 698, 1576
+  size: 666, 519
+  orig: 666, 519
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 1301, 24
+  size: 367, 253
+  orig: 408, 281
+  offset: 31, 13
+  index: -1
+mouth2
+  rotate: false
+  xy: 1459, 1427
+  size: 86, 141
+  orig: 408, 281
+  offset: 8, 45
+  index: -1
+mouth_bupian1
+  rotate: false
+  xy: 1860, 70
+  size: 167, 237
+  orig: 227, 437
+  offset: 26, 150
+  index: -1
+mouth_bupian2
+  rotate: false
+  xy: 479, 1051
+  size: 177, 338
+  orig: 186, 364
+  offset: 9, 14
+  index: -1
+shadow
+  rotate: false
+  xy: 8, 1397
+  size: 682, 698
+  orig: 690, 698
+  offset: 0, 0
+  index: -1
+shoulder_R
+  rotate: false
+  xy: 736, 249
+  size: 408, 332
+  orig: 408, 332
+  offset: 0, 0
+  index: -1
+tooth1
+  rotate: false
+  xy: 1492, 950
+  size: 134, 137
+  orig: 134, 137
+  offset: 0, 0
+  index: -1
+tooth2
+  rotate: false
+  xy: 1663, 306
+  size: 170, 130
+  orig: 170, 130
+  offset: 0, 0
+  index: -1
+tooth3
+  rotate: false
+  xy: 396, 18
+  size: 234, 209
+  orig: 234, 209
+  offset: 0, 0
+  index: -1
+tooth4
+  rotate: false
+  xy: 1634, 954
+  size: 95, 133
+  orig: 95, 133
+  offset: 0, 0
+  index: -1
+tooth5
+  rotate: false
+  xy: 106, 13
+  size: 184, 172
+  orig: 184, 172
+  offset: 0, 0
+  index: -1
+tooth6
+  rotate: false
+  xy: 298, 23
+  size: 90, 162
+  orig: 90, 162
+  offset: 0, 0
+  index: -1
+tooth7
+  rotate: false
+  xy: 638, 19
+  size: 149, 208
+  orig: 149, 208
+  offset: 0, 0
+  index: -1
+tooth8
+  rotate: false
+  xy: 1674, 1106
+  size: 141, 207
+  orig: 141, 207
+  offset: 0, 0
+  index: -1
+weiba1
+  rotate: false
+  xy: 1300, 1420
+  size: 151, 148
+  orig: 151, 148
+  offset: 0, 0
+  index: -1
+weiba10
+  rotate: false
+  xy: 1553, 1428
+  size: 116, 140
+  orig: 116, 140
+  offset: 0, 0
+  index: -1
+weiba2
+  rotate: false
+  xy: 1841, 315
+  size: 91, 121
+  orig: 91, 121
+  offset: 0, 0
+  index: -1
+weiba3
+  rotate: false
+  xy: 8, 8
+  size: 90, 177
+  orig: 100, 189
+  offset: 6, 6
+  index: -1
+weiba4
+  rotate: false
+  xy: 1351, 941
+  size: 133, 141
+  orig: 148, 158
+  offset: 7, 8
+  index: -1
+weiba5
+  rotate: false
+  xy: 1945, 1048
+  size: 129, 127
+  orig: 138, 136
+  offset: 2, 9
+  index: -1
+weiba6
+  rotate: false
+  xy: 1945, 1183
+  size: 144, 130
+  orig: 144, 130
+  offset: 0, 0
+  index: -1
+weiba7
+  rotate: false
+  xy: 876, 931
+  size: 136, 118
+  orig: 136, 118
+  offset: 0, 0
+  index: -1
+weiba8
+  rotate: false
+  xy: 906, 1411
+  size: 122, 157
+  orig: 122, 157
+  offset: 0, 0
+  index: -1
+weiba9
+  rotate: false
+  xy: 698, 1409
+  size: 200, 159
+  orig: 217, 173
+  offset: 8, 8
+  index: -1
+weiba_anbu
+  rotate: false
+  xy: 8, 540
+  size: 289, 381
+  orig: 311, 410
+  offset: 12, 13
+  index: -1
+weibo_1
+  rotate: false
+  xy: 372, 235
+  size: 356, 339
+  orig: 356, 346
+  offset: 0, 0
+  index: -1
+weibo_2
+  rotate: false
+  xy: 1372, 1576
+  size: 666, 519
+  orig: 666, 519
+  offset: 0, 0
+  index: -1

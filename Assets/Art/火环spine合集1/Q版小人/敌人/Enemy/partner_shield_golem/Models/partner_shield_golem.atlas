@@ -1,0 +1,160 @@
+
+partner_shield_golem.png
+size: 808,808
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 517, 569
+  size: 240, 231
+  orig: 240, 231
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 328, 139
+  size: 172, 130
+  orig: 172, 130
+  offset: 0, 0
+  index: -1
+crown
+  rotate: false
+  xy: 517, 425
+  size: 230, 136
+  orig: 232, 137
+  offset: 2, 1
+  index: -1
+eyes
+  rotate: false
+  xy: 8, 15
+  size: 143, 79
+  orig: 143, 83
+  offset: 0, 4
+  index: -1
+eyes2
+  rotate: false
+  xy: 159, 15
+  size: 143, 79
+  orig: 143, 83
+  offset: 0, 4
+  index: -1
+face
+  rotate: false
+  xy: 328, 277
+  size: 173, 175
+  orig: 175, 176
+  offset: 1, 1
+  index: -1
+handL
+  rotate: false
+  xy: 328, 460
+  size: 181, 340
+  orig: 181, 340
+  offset: 0, 0
+  index: -1
+handL2
+  rotate: false
+  xy: 8, 102
+  size: 312, 338
+  orig: 313, 352
+  offset: 1, 0
+  index: -1
+handR
+  rotate: false
+  xy: 8, 448
+  size: 312, 352
+  orig: 313, 352
+  offset: 1, 0
+  index: -1
+horn1
+  rotate: false
+  xy: 582, 104
+  size: 57, 85
+  orig: 57, 85
+  offset: 0, 0
+  index: -1
+horn2
+  rotate: false
+  xy: 647, 106
+  size: 49, 78
+  orig: 49, 78
+  offset: 0, 0
+  index: -1
+horn3
+  rotate: false
+  xy: 637, 286
+  size: 108, 131
+  orig: 108, 131
+  offset: 0, 0
+  index: -1
+horn4
+  rotate: false
+  xy: 420, 49
+  size: 81, 82
+  orig: 81, 82
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 765, 771
+  size: 35, 29
+  orig: 35, 29
+  offset: 0, 0
+  index: -1
+mouth2
+  rotate: false
+  xy: 765, 734
+  size: 35, 29
+  orig: 35, 29
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 328, 67
+  size: 84, 64
+  orig: 84, 64
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 509, 292
+  size: 120, 125
+  orig: 120, 125
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 664, 192
+  size: 56, 86
+  orig: 56, 86
+  offset: 0, 0
+  index: -1
+stone4
+  rotate: false
+  xy: 508, 157
+  size: 66, 112
+  orig: 66, 112
+  offset: 0, 0
+  index: -1
+stone5
+  rotate: false
+  xy: 582, 48
+  size: 46, 48
+  orig: 46, 48
+  offset: 0, 0
+  index: -1
+stone6
+  rotate: false
+  xy: 582, 197
+  size: 74, 81
+  orig: 74, 81
+  offset: 0, 0
+  index: -1
+stone7
+  rotate: false
+  xy: 509, 62
+  size: 65, 87
+  orig: 65, 87
+  offset: 0, 0
+  index: -1

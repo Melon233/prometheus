@@ -1,0 +1,237 @@
+
+common_cleb_npc.png
+size: 1246,1246
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+00/Z_Lhand
+  rotate: false
+  xy: 1060, 281
+  size: 103, 87
+  orig: 184, 238
+  offset: 80, 14
+  index: -1
+00/Z_Lhand2
+  rotate: false
+  xy: 1058, 186
+  size: 103, 87
+  orig: 184, 238
+  offset: 80, 14
+  index: -1
+00/Z_Lhand_woquan
+  rotate: false
+  xy: 932, 32
+  size: 103, 87
+  orig: 184, 238
+  offset: 80, 14
+  index: -1
+00/Z_Rhand
+  rotate: false
+  xy: 715, 13
+  size: 101, 94
+  orig: 173, 228
+  offset: 0, 0
+  index: -1
+00/Z_Rhand2
+  rotate: false
+  xy: 630, 8
+  size: 77, 82
+  orig: 173, 228
+  offset: 11, 0
+  index: -1
+00/Z_Rhand3
+  rotate: false
+  xy: 932, 127
+  size: 101, 94
+  orig: 173, 228
+  offset: 0, 0
+  index: -1
+00/Z_Rhand_woquan
+  rotate: false
+  xy: 1043, 84
+  size: 101, 94
+  orig: 173, 228
+  offset: 0, 0
+  index: -1
+01/hat1
+  rotate: false
+  xy: 8, 862
+  size: 404, 376
+  orig: 605, 816
+  offset: 83, 364
+  index: -1
+01/hat2
+  rotate: false
+  xy: 830, 988
+  size: 354, 250
+  orig: 605, 816
+  offset: 146, 348
+  index: -1
+01/weapon
+  rotate: false
+  xy: 536, 178
+  size: 160, 550
+  orig: 218, 654
+  offset: 29, 52
+  index: -1
+02/Z_Larm1
+  rotate: false
+  xy: 218, 28
+  size: 121, 157
+  orig: 184, 238
+  offset: 16, 52
+  index: -1
+02/Z_Lleg1
+  rotate: false
+  xy: 853, 527
+  size: 154, 188
+  orig: 195, 286
+  offset: 30, 98
+  index: -1
+02/Z_Lleg2
+  rotate: false
+  xy: 1060, 376
+  size: 116, 167
+  orig: 195, 286
+  offset: 44, 0
+  index: -1
+02/Z_Rarm1
+  rotate: false
+  xy: 347, 33
+  size: 120, 170
+  orig: 173, 228
+  offset: 40, 46
+  index: -1
+02/Z_Rleg1
+  rotate: false
+  xy: 704, 115
+  size: 122, 135
+  orig: 186, 310
+  offset: 35, 108
+  index: -1
+02/Z_Rleg2
+  rotate: false
+  xy: 834, 63
+  size: 90, 158
+  orig: 186, 310
+  offset: 41, 12
+  index: -1
+02/Z_body
+  rotate: false
+  xy: 8, 42
+  size: 202, 143
+  orig: 238, 314
+  offset: 15, 15
+  index: -1
+02/Z_chest
+  rotate: false
+  xy: 690, 740
+  size: 218, 212
+  orig: 238, 314
+  offset: 13, 76
+  index: -1
+02/Z_hair1
+  rotate: false
+  xy: 704, 496
+  size: 141, 236
+  orig: 466, 541
+  offset: 162, 195
+  index: -1
+02/Z_hair2
+  rotate: false
+  xy: 704, 258
+  size: 137, 230
+  orig: 466, 541
+  offset: 254, 227
+  index: -1
+02/Z_hair3
+  rotate: false
+  xy: 965, 295
+  size: 87, 224
+  orig: 466, 541
+  offset: 325, 213
+  index: -1
+02/Z_hair4
+  rotate: false
+  xy: 346, 211
+  size: 182, 293
+  orig: 466, 541
+  offset: 117, 170
+  index: -1
+02/Z_hair5
+  rotate: false
+  xy: 849, 229
+  size: 108, 259
+  orig: 466, 541
+  offset: 287, 172
+  index: -1
+02/Z_hair7
+  rotate: false
+  xy: 8, 193
+  size: 330, 311
+  orig: 466, 541
+  offset: 64, 186
+  index: -1
+02/coat1
+  rotate: false
+  xy: 1015, 551
+  size: 134, 164
+  orig: 605, 816
+  offset: 201, 246
+  index: -1
+02/coat2
+  rotate: false
+  xy: 418, 561
+  size: 104, 167
+  orig: 605, 816
+  offset: 327, 246
+  index: -1
+02/hat1
+  rotate: false
+  xy: 8, 512
+  size: 402, 342
+  orig: 605, 816
+  offset: 83, 406
+  index: -1
+02/hat2
+  rotate: false
+  xy: 420, 960
+  size: 402, 278
+  orig: 605, 816
+  offset: 81, 339
+  index: -1
+02/pendant1
+  rotate: false
+  xy: 630, 98
+  size: 53, 72
+  orig: 605, 816
+  offset: 310, 320
+  index: -1
+02/pendant2
+  rotate: false
+  xy: 965, 231
+  size: 85, 56
+  orig: 605, 816
+  offset: 273, 350
+  index: -1
+02/skirt
+  rotate: false
+  xy: 916, 723
+  size: 255, 257
+  orig: 605, 816
+  offset: 202, 43
+  index: -1
+02/tape1
+  rotate: false
+  xy: 475, 53
+  size: 147, 117
+  orig: 605, 816
+  offset: 248, 245
+  index: -1
+Z_face
+  rotate: false
+  xy: 420, 736
+  size: 262, 216
+  orig: 322, 259
+  offset: 31, 23
+  index: -1

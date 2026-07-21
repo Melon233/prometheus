@@ -1,0 +1,6 @@
+skip_title=朱红眼眸的猫;
+skip_overview=你们抵达高处，却仍未发现那位情报商人的踪迹。或许你们应该爬得更高一些…;
+spine=纳叶|海芙温<lights=0|1,faces=idleface|amazed>;mid_txt=我觉得这里已经很高了，大家有找到那只猫猫吗？<name=海芙温>;
+spine=纳叶|海芙温<lights=0|0,faces=idleface|amazed>;mid_txt=呜！呜呜呜——！<name=艾洛尔>;
+spine=纳叶|海芙温<lights=1|0,faces=serious|amazed>;mid_txt=……艾洛尔告诉我，它在上面看见了一个奇怪的人。<name=纳叶>;
+spine=纳叶|海芙温<lights=1|0,faces=serious|amazed>;mid_txt=应该有其他路可以上去，我们再找找。<name=纳叶>;

@@ -1,0 +1,5 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=克莱朵<lights=1,faces=idleface>;mid_txt=不出意外，你会以这副姿态直至永恒……呵，襁褓之子，这模样倒挺适合你的。<name=？？？,cv=VO_MS_Chp0_Task1_2_1>;
+spine=克莱朵<lights=1,faces=idleface>;mid_txt=那么，再见——<name=？？？,cv=VO_MS_Chp0_Task1_2_2>;
+spine=克莱朵<lights=1,faces=idleface>;mid_txt=再见……吗？真是一句奢侈的问候啊……<name=？？？,cv=VO_MS_Chp0_Task1_2_3>;

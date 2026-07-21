@@ -1,0 +1,188 @@
+
+niflheimsoldier.png
+size: 1838,7383
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body_01
+  rotate: false
+  xy: 8, 9
+  size: 1822, 1327
+  orig: 1822, 1327
+  offset: 0, 0
+  index: -1
+body_02
+  rotate: false
+  xy: 1146, 44
+  size: 319, 372
+  orig: 319, 372
+  offset: 0, 0
+  index: -1
+body_03
+  rotate: false
+  xy: 1485, 5216
+  size: 322, 372
+  orig: 322, 372
+  offset: 0, 0
+  index: -1
+body_04
+  rotate: false
+  xy: 1158, 4974
+  size: 579, 416
+  orig: 588, 430
+  offset: 9, 14
+  index: -1
+body_06
+  rotate: false
+  xy: 1300, 2873
+  size: 523, 552
+  orig: 523, 552
+  offset: 0, 0
+  index: -1
+body_07
+  rotate: false
+  xy: 1072, 2219
+  size: 545, 778
+  orig: 545, 778
+  offset: 0, 0
+  index: -1
+body_08
+  rotate: false
+  xy: 1647, 800
+  size: 162, 240
+  orig: 162, 240
+  offset: 0, 0
+  index: -1
+body_09
+  rotate: false
+  xy: 1678, 2160
+  size: 131, 148
+  orig: 131, 148
+  offset: 0, 0
+  index: -1
+body_10
+  rotate: false
+  xy: 540, 13
+  size: 598, 164
+  orig: 598, 164
+  offset: 0, 0
+  index: -1
+body_11
+  rotate: false
+  xy: 985, 3913
+  size: 691, 1054
+  orig: 691, 1054
+  offset: 0, 0
+  index: -1
+body_12
+  rotate: false
+  xy: 364, 1725
+  size: 583, 1432
+  orig: 583, 1432
+  offset: 0, 0
+  index: -1
+body_13
+  rotate: false
+  xy: 8, 4010
+  size: 781, 1437
+  orig: 781, 1437
+  offset: 0, 0
+  index: -1
+body_14
+  rotate: false
+  xy: 1200, 3320
+  size: 560, 585
+  orig: 560, 585
+  offset: 0, 0
+  index: -1
+body_15
+  rotate: false
+  xy: 1434, 377
+  size: 368, 203
+  orig: 368, 203
+  offset: 0, 0
+  index: -1
+body_16
+  rotate: false
+  xy: 1470, 539
+  size: 355, 253
+  orig: 355, 269
+  offset: 0, 16
+  index: -1
+body_17
+  rotate: false
+  xy: 8, 5455
+  size: 673, 1921
+  orig: 673, 1921
+  offset: 0, 0
+  index: -1
+body_18
+  rotate: false
+  xy: 8, 1689
+  size: 705, 2313
+  orig: 705, 2313
+  offset: 0, 0
+  index: -1
+body_19
+  rotate: false
+  xy: 1166, 1345
+  size: 533, 866
+  orig: 533, 866
+  offset: 0, 0
+  index: -1
+body_20
+  rotate: false
+  xy: 8, 463
+  size: 910, 1326
+  orig: 910, 1326
+  offset: 0, 0
+  index: -1
+head_01
+  rotate: false
+  xy: 1362, 3850
+  size: 461, 367
+  orig: 461, 367
+  offset: 0, 0
+  index: -1
+head_02
+  rotate: false
+  xy: 51, 7283
+  size: 20, 53
+  orig: 20, 53
+  offset: 0, 0
+  index: -1
+head_03
+  rotate: false
+  xy: 1473, 53
+  size: 303, 316
+  orig: 303, 316
+  offset: 0, 0
+  index: -1
+head_04
+  rotate: false
+  xy: 8, 7293
+  size: 47, 83
+  orig: 47, 83
+  offset: 0, 0
+  index: -1
+head_05
+  rotate: false
+  xy: 450, 21
+  size: 82, 142
+  orig: 82, 142
+  offset: 0, 0
+  index: -1
+head_06
+  rotate: false
+  xy: 1729, 249
+  size: 80, 122
+  orig: 80, 122
+  offset: 0, 0
+  index: -1
+head_07
+  rotate: false
+  xy: 1552, 2190
+  size: 148, 226
+  orig: 148, 230
+  offset: 0, 0
+  index: -1

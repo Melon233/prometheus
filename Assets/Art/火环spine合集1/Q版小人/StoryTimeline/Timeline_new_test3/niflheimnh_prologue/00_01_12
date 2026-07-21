@@ -1,0 +1,7 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=海芙温<lights=1,faces=amazed>;mid_txt=哇…竟然是类人型影兽？！这么大块头？我从来都没见到过！<name=海芙温,cv=VO_MS_Chp0_Task1_12_1>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=hurt>;mid_txt=恐怕它就是令洞窟坍塌的元凶……拔出武器，/player/。<name=纳叶,cv=VO_MS_Chp0_Task1_12_2>;
+spine=纳叶<lights=1,faces=serious>;mid_txt=——小心，它过来了！。<name=纳叶,cv=VO_MS_Chp0_Task1_12_3>;

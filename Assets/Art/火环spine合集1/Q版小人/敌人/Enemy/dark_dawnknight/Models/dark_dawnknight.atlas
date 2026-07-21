@@ -1,0 +1,202 @@
+
+dark_dawnknight.png
+size: 2048,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 8, 685
+  size: 183, 365
+  orig: 186, 365
+  offset: 0, 0
+  index: -1
+body1.5
+  rotate: false
+  xy: 144, 28
+  size: 162, 74
+  orig: 162, 74
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 352, 1696
+  size: 200, 342
+  orig: 200, 342
+  offset: 0, 0
+  index: -1
+body3
+  rotate: false
+  xy: 355, 530
+  size: 125, 279
+  orig: 125, 279
+  offset: 0, 0
+  index: -1
+body4
+  rotate: false
+  xy: 371, 834
+  size: 117, 268
+  orig: 117, 268
+  offset: 0, 0
+  index: -1
+body5
+  rotate: false
+  xy: 122, 110
+  size: 115, 117
+  orig: 120, 122
+  offset: 4, 1
+  index: -1
+dace2
+  rotate: false
+  xy: 307, 1110
+  size: 158, 234
+  orig: 390, 234
+  offset: 0, 0
+  index: -1
+dace3
+  rotate: false
+  xy: 473, 1110
+  size: 120, 234
+  orig: 390, 234
+  offset: 270, 0
+  index: -1
+dun
+  rotate: false
+  xy: 301, 1352
+  size: 216, 323
+  orig: 216, 323
+  offset: 0, 0
+  index: -1
+er
+  rotate: false
+  xy: 265, 700
+  size: 42, 48
+  orig: 42, 48
+  offset: 0, 0
+  index: -1
+face0
+  rotate: false
+  xy: 8, 1058
+  size: 291, 260
+  orig: 291, 260
+  offset: 0, 0
+  index: -1
+face1
+  rotate: false
+  xy: 8, 1326
+  size: 285, 349
+  orig: 285, 349
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 8, 1683
+  size: 336, 355
+  orig: 336, 355
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 158, 433
+  size: 189, 244
+  orig: 195, 248
+  offset: 4, 0
+  index: -1
+hand1
+  rotate: false
+  xy: 199, 738
+  size: 58, 71
+  orig: 58, 75
+  offset: 0, 0
+  index: -1
+hand2
+  rotate: false
+  xy: 265, 756
+  size: 50, 53
+  orig: 62, 53
+  offset: 4, 0
+  index: -1
+hand3
+  rotate: false
+  xy: 8, 8
+  size: 58, 57
+  orig: 58, 75
+  offset: 0, 13
+  index: -1
+l_arm
+  rotate: false
+  xy: 8, 73
+  size: 106, 154
+  orig: 106, 154
+  offset: 0, 0
+  index: -1
+l_feet1
+  rotate: false
+  xy: 248, 259
+  size: 80, 166
+  orig: 80, 188
+  offset: 0, 0
+  index: -1
+l_feet2
+  rotate: false
+  xy: 423, 28
+  size: 63, 125
+  orig: 63, 129
+  offset: 0, 4
+  index: -1
+l_hand
+  rotate: false
+  xy: 74, 15
+  size: 62, 50
+  orig: 62, 53
+  offset: 0, 0
+  index: -1
+liuhai1
+  rotate: false
+  xy: 158, 243
+  size: 82, 182
+  orig: 82, 182
+  offset: 0, 0
+  index: -1
+qiao
+  rotate: false
+  xy: 199, 817
+  size: 164, 233
+  orig: 164, 242
+  offset: 0, 9
+  index: -1
+r_arm
+  rotate: false
+  xy: 336, 297
+  size: 89, 128
+  orig: 115, 165
+  offset: 13, 18
+  index: -1
+r_feet
+  rotate: false
+  xy: 370, 161
+  size: 67, 128
+  orig: 72, 128
+  offset: 0, 0
+  index: -1
+shouder
+  rotate: false
+  xy: 245, 133
+  size: 117, 102
+  orig: 117, 122
+  offset: 0, 18
+  index: -1
+shouder2
+  rotate: false
+  xy: 314, 55
+  size: 101, 70
+  orig: 105, 72
+  offset: 1, 0
+  index: -1
+sword
+  rotate: false
+  xy: 8, 235
+  size: 142, 442
+  orig: 144, 444
+  offset: 1, 1
+  index: -1

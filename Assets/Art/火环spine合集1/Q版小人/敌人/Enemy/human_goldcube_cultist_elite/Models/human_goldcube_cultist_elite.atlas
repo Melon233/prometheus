@@ -1,0 +1,209 @@
+
+human_goldcube_cultist_elite.png
+size: 1482,1482
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Z_face
+  rotate: false
+  xy: 396, 496
+  size: 289, 218
+  orig: 298, 224
+  offset: 4, 6
+  index: -1
+b_hair
+  rotate: false
+  xy: 1133, 50
+  size: 144, 198
+  orig: 144, 198
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 396, 722
+  size: 345, 376
+  orig: 345, 378
+  offset: 0, 0
+  index: -1
+body_l
+  rotate: false
+  xy: 749, 701
+  size: 177, 397
+  orig: 177, 397
+  offset: 0, 0
+  index: -1
+body_r
+  rotate: false
+  xy: 8, 184
+  size: 353, 436
+  orig: 353, 436
+  offset: 0, 0
+  index: -1
+img
+  rotate: false
+  xy: 721, 76
+  size: 104, 90
+  orig: 113, 100
+  offset: 3, 6
+  index: -1
+l_arm_low
+  rotate: false
+  xy: 369, 242
+  size: 254, 246
+  orig: 254, 246
+  offset: 0, 0
+  index: -1
+l_arm_up
+  rotate: false
+  xy: 1132, 907
+  size: 285, 272
+  orig: 285, 272
+  offset: 0, 0
+  index: -1
+l_hair
+  rotate: false
+  xy: 394, 8
+  size: 172, 226
+  orig: 182, 234
+  offset: 6, 4
+  index: -1
+l_hand
+  rotate: false
+  xy: 244, 20
+  size: 142, 156
+  orig: 142, 156
+  offset: 0, 0
+  index: -1
+l_leg_low
+  rotate: false
+  xy: 1285, 67
+  size: 152, 191
+  orig: 152, 195
+  offset: 0, 3
+  index: -1
+l_leg_up
+  rotate: false
+  xy: 574, 13
+  size: 139, 153
+  orig: 139, 153
+  offset: 0, 0
+  index: -1
+l_qun
+  rotate: false
+  xy: 1036, 201
+  size: 89, 275
+  orig: 89, 275
+  offset: 0, 0
+  index: -1
+mao_l
+  rotate: false
+  xy: 852, 150
+  size: 176, 311
+  orig: 176, 311
+  offset: 0, 0
+  index: -1
+mao_q
+  rotate: false
+  xy: 396, 1106
+  size: 436, 368
+  orig: 436, 368
+  offset: 0, 0
+  index: -1
+mao_r
+  rotate: false
+  xy: 8, 60
+  size: 228, 116
+  orig: 232, 120
+  offset: 0, 4
+  index: -1
+pifeng_b
+  rotate: false
+  xy: 1177, 1187
+  size: 288, 287
+  orig: 288, 287
+  offset: 0, 0
+  index: -1
+q_hair
+  rotate: false
+  xy: 1158, 496
+  size: 155, 194
+  orig: 161, 194
+  offset: 0, 0
+  index: -1
+r_arm_low
+  rotate: false
+  xy: 693, 469
+  size: 222, 224
+  orig: 222, 224
+  offset: 0, 0
+  index: -1
+r_arm_up
+  rotate: false
+  xy: 631, 174
+  size: 213, 287
+  orig: 213, 287
+  offset: 0, 0
+  index: -1
+r_hair
+  rotate: false
+  xy: 1133, 256
+  size: 135, 232
+  orig: 138, 232
+  offset: 3, 0
+  index: -1
+r_hand1
+  rotate: false
+  xy: 923, 484
+  size: 174, 158
+  orig: 174, 158
+  offset: 0, 0
+  index: -1
+r_hand2
+  rotate: false
+  xy: 934, 650
+  size: 216, 203
+  orig: 216, 203
+  offset: 0, 0
+  index: -1
+r_leg_low
+  rotate: false
+  xy: 1321, 498
+  size: 152, 192
+  orig: 152, 195
+  offset: 0, 2
+  index: -1
+r_qun
+  rotate: false
+  xy: 840, 1188
+  size: 329, 286
+  orig: 329, 286
+  offset: 0, 0
+  index: -1
+weapon_b
+  rotate: false
+  xy: 1276, 266
+  size: 135, 222
+  orig: 135, 222
+  offset: 0, 0
+  index: -1
+weapon_mofang
+  rotate: false
+  xy: 1158, 698
+  size: 221, 201
+  orig: 230, 212
+  offset: 4, 6
+  index: -1
+weapon_q
+  rotate: false
+  xy: 8, 628
+  size: 380, 846
+  orig: 380, 913
+  offset: 0, 0
+  index: -1
+weapon_q1
+  rotate: false
+  xy: 934, 861
+  size: 190, 319
+  orig: 380, 913
+  offset: 131, 594
+  index: -1

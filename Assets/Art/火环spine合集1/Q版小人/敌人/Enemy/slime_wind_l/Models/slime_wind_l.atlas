@@ -1,0 +1,132 @@
+
+slime_wind_l.png
+size: 3104,3104
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Leye
+  rotate: false
+  xy: 2813, 2329
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Leye2
+  rotate: false
+  xy: 2813, 2068
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Reye
+  rotate: false
+  xy: 2813, 2847
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+Reye2
+  rotate: false
+  xy: 2813, 2590
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+body1
+  rotate: false
+  xy: 8, 1897
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body4
+  rotate: false
+  xy: 1974, 2466
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body5
+  rotate: false
+  xy: 1974, 1828
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body6
+  rotate: false
+  xy: 985, 1793
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body7
+  rotate: false
+  xy: 995, 2431
+  size: 971, 665
+  orig: 1123, 1123
+  offset: 75, 118
+  index: -1
+up1
+  rotate: false
+  xy: 8, 1259
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+up2
+  rotate: false
+  xy: 8, 2535
+  size: 979, 561
+  orig: 1123, 1123
+  offset: 73, 289
+  index: -1
+up2_1
+  rotate: false
+  xy: 2521, 1243
+  size: 519, 554
+  orig: 1123, 1123
+  offset: 73, 289
+  index: -1
+up2_2
+  rotate: false
+  xy: 1824, 1366
+  size: 689, 454
+  orig: 1123, 1123
+  offset: 207, 396
+  index: -1
+up2_3
+  rotate: false
+  xy: 847, 1285
+  size: 500, 500
+  orig: 1123, 1123
+  offset: 552, 350
+  index: -1
+up3
+  rotate: false
+  xy: 847, 2416
+  size: 130, 111
+  orig: 1123, 1123
+  offset: 769, 405
+  index: -1
+up4
+  rotate: false
+  xy: 847, 2274
+  size: 125, 134
+  orig: 1123, 1123
+  offset: 262, 321
+  index: -1
+up5
+  rotate: false
+  xy: 3008, 2428
+  size: 88, 154
+  orig: 1123, 1123
+  offset: 900, 219
+  index: -1
+up6
+  rotate: false
+  xy: 2813, 1805
+  size: 162, 255
+  orig: 1123, 1123
+  offset: 864, 245
+  index: -1

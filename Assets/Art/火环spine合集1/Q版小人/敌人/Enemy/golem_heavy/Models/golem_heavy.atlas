@@ -1,0 +1,237 @@
+
+golem_heavy.png
+size: 2453,2453
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_1
+  rotate: false
+  xy: 1800, 345
+  size: 124, 128
+  orig: 176, 180
+  offset: 26, 26
+  index: -1
+back_2
+  rotate: false
+  xy: 180, 18
+  size: 87, 105
+  orig: 139, 157
+  offset: 26, 26
+  index: -1
+body_down
+  rotate: false
+  xy: 1349, 388
+  size: 443, 235
+  orig: 474, 268
+  offset: 15, 13
+  index: -1
+body_front
+  rotate: false
+  xy: 952, 522
+  size: 389, 375
+  orig: 416, 408
+  offset: 14, 20
+  index: -1
+eye
+  rotate: false
+  xy: 666, 52
+  size: 59, 71
+  orig: 185, 133
+  offset: 30, 30
+  index: -1
+eye1_1
+  rotate: false
+  xy: 595, 50
+  size: 63, 73
+  orig: 185, 133
+  offset: 26, 30
+  index: -1
+eye2
+  rotate: false
+  xy: 733, 59
+  size: 32, 64
+  orig: 32, 64
+  offset: 0, 0
+  index: -1
+eye2_2
+  rotate: false
+  xy: 838, 66
+  size: 33, 57
+  orig: 43, 84
+  offset: 5, 10
+  index: -1
+fire/body
+  rotate: false
+  xy: 8, 1679
+  size: 936, 766
+  orig: 961, 888
+  offset: 9, 122
+  index: -1
+head
+  rotate: false
+  xy: 952, 310
+  size: 203, 204
+  orig: 263, 262
+  offset: 30, 29
+  index: -1
+ice/body
+  rotate: false
+  xy: 8, 131
+  size: 936, 766
+  orig: 961, 888
+  offset: 9, 122
+  index: -1
+leg1
+  rotate: false
+  xy: 1937, 484
+  size: 137, 144
+  orig: 189, 196
+  offset: 26, 26
+  index: -1
+leg2
+  rotate: false
+  xy: 1800, 481
+  size: 129, 147
+  orig: 180, 196
+  offset: 25, 25
+  index: -1
+leg3
+  rotate: false
+  xy: 1347, 254
+  size: 104, 126
+  orig: 155, 177
+  offset: 26, 26
+  index: -1
+leg4
+  rotate: false
+  xy: 1459, 254
+  size: 104, 126
+  orig: 155, 177
+  offset: 26, 26
+  index: -1
+link1
+  rotate: false
+  xy: 773, 66
+  size: 57, 57
+  orig: 103, 100
+  offset: 26, 18
+  index: -1
+link2
+  rotate: false
+  xy: 8, 59
+  size: 66, 64
+  orig: 103, 100
+  offset: 18, 19
+  index: -1
+link3
+  rotate: false
+  xy: 375, 37
+  size: 66, 86
+  orig: 112, 131
+  offset: 25, 24
+  index: -1
+link4
+  rotate: false
+  xy: 449, 40
+  size: 64, 83
+  orig: 112, 131
+  offset: 26, 25
+  index: -1
+mouth
+  rotate: false
+  xy: 8, 23
+  size: 37, 28
+  orig: 101, 92
+  offset: 32, 32
+  index: -1
+mouth2
+  rotate: false
+  xy: 879, 96
+  size: 37, 27
+  orig: 101, 92
+  offset: 33, 32
+  index: -1
+mustache
+  rotate: false
+  xy: 1596, 636
+  size: 456, 261
+  orig: 488, 296
+  offset: 15, 16
+  index: -1
+null/body
+  rotate: false
+  xy: 952, 1679
+  size: 936, 766
+  orig: 961, 888
+  offset: 9, 122
+  index: -1
+thunder/body
+  rotate: false
+  xy: 952, 905
+  size: 936, 766
+  orig: 961, 888
+  offset: 9, 122
+  index: -1
+wind/body
+  rotate: false
+  xy: 8, 905
+  size: 936, 766
+  orig: 961, 888
+  offset: 9, 122
+  index: -1
+yanjing_1
+  rotate: false
+  xy: 82, 8
+  size: 90, 115
+  orig: 130, 155
+  offset: 20, 20
+  index: -1
+you_arm1
+  rotate: false
+  xy: 1349, 631
+  size: 239, 266
+  orig: 291, 318
+  offset: 26, 26
+  index: -1
+you_finger
+  rotate: false
+  xy: 1937, 346
+  size: 121, 130
+  orig: 175, 184
+  offset: 27, 27
+  index: -1
+you_hand
+  rotate: false
+  xy: 1163, 304
+  size: 176, 210
+  orig: 228, 262
+  offset: 26, 26
+  index: -1
+zuo_arm1
+  rotate: false
+  xy: 952, 121
+  size: 180, 181
+  orig: 232, 233
+  offset: 26, 26
+  index: -1
+zuo_arm2
+  rotate: false
+  xy: 275, 21
+  size: 92, 102
+  orig: 144, 154
+  offset: 26, 26
+  index: -1
+zuo_arm3
+  rotate: false
+  xy: 1140, 179
+  size: 111, 117
+  orig: 163, 169
+  offset: 26, 26
+  index: -1
+zuo_finger
+  rotate: false
+  xy: 521, 48
+  size: 66, 75
+  orig: 120, 129
+  offset: 27, 27
+  index: -1

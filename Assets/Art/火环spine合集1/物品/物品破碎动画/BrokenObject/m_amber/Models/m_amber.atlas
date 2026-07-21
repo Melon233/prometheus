@@ -1,0 +1,76 @@
+
+m_amber.png
+size: 372,372
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 154, 46
+  size: 61, 82
+  orig: 65, 86
+  offset: 2, 2
+  index: -1
+10
+  rotate: false
+  xy: 245, 302
+  size: 77, 62
+  orig: 81, 66
+  offset: 2, 2
+  index: -1
+11
+  rotate: false
+  xy: 8, 21
+  size: 138, 107
+  orig: 138, 107
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 223, 58
+  size: 60, 70
+  orig: 65, 74
+  offset: 2, 2
+  index: -1
+5
+  rotate: false
+  xy: 223, 8
+  size: 49, 42
+  orig: 53, 46
+  offset: 2, 2
+  index: -1
+6
+  rotate: false
+  xy: 245, 222
+  size: 74, 72
+  orig: 78, 78
+  offset: 2, 2
+  index: -1
+7
+  rotate: false
+  xy: 154, 15
+  size: 30, 23
+  orig: 34, 27
+  offset: 2, 2
+  index: -1
+8
+  rotate: false
+  xy: 245, 156
+  size: 70, 58
+  orig: 74, 62
+  offset: 2, 2
+  index: -1
+9
+  rotate: false
+  xy: 192, 15
+  size: 22, 23
+  orig: 26, 27
+  offset: 2, 2
+  index: -1
+all
+  rotate: false
+  xy: 8, 136
+  size: 229, 228
+  orig: 233, 232
+  offset: 2, 2
+  index: -1

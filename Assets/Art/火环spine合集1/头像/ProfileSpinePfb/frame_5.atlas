@@ -1,0 +1,13 @@
+
+frame_5.png
+size: 682,682
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tap
+  rotate: false
+  xy: 8, 50
+  size: 666, 624
+  orig: 668, 626
+  offset: 1, 1
+  index: -1

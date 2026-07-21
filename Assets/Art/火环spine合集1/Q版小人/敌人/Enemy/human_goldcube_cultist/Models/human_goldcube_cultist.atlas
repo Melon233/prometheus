@@ -1,0 +1,237 @@
+
+human_goldcube_cultist.png
+size: 1269,1269
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Larm1
+  rotate: false
+  xy: 782, 602
+  size: 162, 176
+  orig: 162, 176
+  offset: 0, 0
+  index: -1
+Larm2
+  rotate: false
+  xy: 955, 922
+  size: 128, 126
+  orig: 128, 126
+  offset: 0, 0
+  index: -1
+Lfoot
+  rotate: false
+  xy: 1042, 8
+  size: 104, 82
+  orig: 104, 82
+  offset: 0, 0
+  index: -1
+Lhand
+  rotate: false
+  xy: 1142, 520
+  size: 91, 93
+  orig: 91, 93
+  offset: 0, 0
+  index: -1
+Lleg1
+  rotate: false
+  xy: 1091, 900
+  size: 153, 145
+  orig: 153, 145
+  offset: 0, 0
+  index: -1
+Lleg2
+  rotate: false
+  xy: 819, 792
+  size: 128, 184
+  orig: 128, 184
+  offset: 0, 0
+  index: -1
+Rarm1
+  rotate: false
+  xy: 832, 1057
+  size: 102, 204
+  orig: 102, 204
+  offset: 0, 0
+  index: -1
+Rarm2
+  rotate: false
+  xy: 764, 218
+  size: 157, 124
+  orig: 157, 124
+  offset: 0, 0
+  index: -1
+Rfoot
+  rotate: false
+  xy: 955, 824
+  size: 105, 90
+  orig: 105, 90
+  offset: 0, 0
+  index: -1
+Rhand
+  rotate: false
+  xy: 1154, 9
+  size: 97, 107
+  orig: 97, 107
+  offset: 0, 0
+  index: -1
+Rleg1
+  rotate: false
+  xy: 952, 608
+  size: 132, 176
+  orig: 132, 176
+  offset: 0, 0
+  index: -1
+Rleg2
+  rotate: false
+  xy: 388, 23
+  size: 147, 160
+  orig: 147, 160
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 8, 19
+  size: 181, 164
+  orig: 185, 176
+  offset: 4, 5
+  index: -1
+butt
+  rotate: false
+  xy: 197, 54
+  size: 183, 129
+  orig: 183, 129
+  offset: 0, 0
+  index: -1
+coat1
+  rotate: false
+  xy: 564, 984
+  size: 260, 277
+  orig: 265, 282
+  offset: 4, 0
+  index: -1
+coat2
+  rotate: false
+  xy: 1092, 621
+  size: 67, 164
+  orig: 82, 182
+  offset: 7, 8
+  index: -1
+coat3
+  rotate: false
+  xy: 967, 360
+  size: 167, 240
+  orig: 179, 244
+  offset: 7, 0
+  index: -1
+coat4
+  rotate: false
+  xy: 925, 10
+  size: 109, 80
+  orig: 109, 80
+  offset: 0, 0
+  index: -1
+cube
+  rotate: false
+  xy: 564, 590
+  size: 210, 188
+  orig: 228, 207
+  offset: 8, 11
+  index: -1
+face
+  rotate: false
+  xy: 564, 786
+  size: 247, 190
+  orig: 263, 208
+  offset: 9, 8
+  index: -1
+hair1
+  rotate: false
+  xy: 1119, 124
+  size: 140, 228
+  orig: 144, 233
+  offset: 4, 5
+  index: -1
+hair2
+  rotate: false
+  xy: 955, 1056
+  size: 104, 205
+  orig: 117, 213
+  offset: 8, 8
+  index: -1
+hair3
+  rotate: false
+  xy: 812, 26
+  size: 105, 184
+  orig: 118, 195
+  offset: 7, 11
+  index: -1
+hair4
+  rotate: false
+  xy: 1092, 1053
+  size: 136, 208
+  orig: 142, 224
+  offset: 0, 8
+  index: -1
+hair5
+  rotate: false
+  xy: 929, 98
+  size: 182, 244
+  orig: 194, 249
+  offset: 7, 4
+  index: -1
+hat1
+  rotate: false
+  xy: 8, 191
+  size: 417, 380
+  orig: 425, 388
+  offset: 1, 5
+  index: -1
+hat2
+  rotate: false
+  xy: 433, 214
+  size: 323, 357
+  orig: 332, 378
+  offset: 4, 16
+  index: -1
+hat3
+  rotate: false
+  xy: 1068, 793
+  size: 136, 99
+  orig: 150, 109
+  offset: 6, 5
+  index: -1
+mouth
+  rotate: false
+  xy: 197, 20
+  size: 27, 26
+  orig: 41, 41
+  offset: 7, 7
+  index: -1
+skirt1
+  rotate: false
+  xy: 764, 350
+  size: 195, 232
+  orig: 203, 239
+  offset: 8, 3
+  index: -1
+skirt2
+  rotate: false
+  xy: 1142, 432
+  size: 98, 80
+  orig: 114, 94
+  offset: 9, 8
+  index: -1
+skirt3
+  rotate: false
+  xy: 543, 12
+  size: 261, 194
+  orig: 355, 400
+  offset: 0, 103
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 579
+  size: 548, 682
+  orig: 548, 689
+  offset: 0, 2
+  index: -1

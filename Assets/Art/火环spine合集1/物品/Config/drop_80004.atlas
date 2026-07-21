@@ -1,0 +1,41 @@
+
+drop_80004.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 8, 200
+  size: 345, 346
+  orig: 346, 347
+  offset: 1, 1
+  index: -1
+2
+  rotate: false
+  xy: 256, 554
+  size: 240, 240
+  orig: 240, 240
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 504, 503
+  size: 290, 291
+  orig: 307, 294
+  offset: 1, 1
+  index: -1
+4
+  rotate: false
+  xy: 361, 136
+  size: 360, 359
+  orig: 360, 360
+  offset: 0, 1
+  index: -1
+water
+  rotate: false
+  xy: 8, 658
+  size: 240, 136
+  orig: 244, 137
+  offset: 4, 0
+  index: -1

@@ -1,0 +1,90 @@
+
+m_pottery_jay.png
+size: 764,764
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hu_A
+  rotate: false
+  xy: 8, 223
+  size: 397, 533
+  orig: 397, 533
+  offset: 0, 0
+  index: -1
+hu_A_boom1
+  rotate: false
+  xy: 590, 57
+  size: 119, 88
+  orig: 119, 88
+  offset: 0, 0
+  index: -1
+hu_A_boom2
+  rotate: false
+  xy: 582, 393
+  size: 174, 125
+  orig: 174, 125
+  offset: 0, 0
+  index: -1
+hu_A_boom3
+  rotate: false
+  xy: 582, 239
+  size: 139, 146
+  orig: 139, 146
+  offset: 0, 0
+  index: -1
+hu_A_boom4
+  rotate: false
+  xy: 590, 153
+  size: 132, 78
+  orig: 132, 78
+  offset: 0, 0
+  index: -1
+hu_A_boom5
+  rotate: false
+  xy: 479, 41
+  size: 103, 159
+  orig: 103, 159
+  offset: 0, 0
+  index: -1
+hu_A_boom6
+  rotate: false
+  xy: 413, 293
+  size: 161, 225
+  orig: 161, 225
+  offset: 0, 0
+  index: -1
+hu_A_boom7
+  rotate: false
+  xy: 254, 37
+  size: 217, 178
+  orig: 217, 178
+  offset: 0, 0
+  index: -1
+hu_A_boom8
+  rotate: false
+  xy: 479, 526
+  size: 216, 122
+  orig: 216, 122
+  offset: 0, 0
+  index: -1
+hu_A_boom9
+  rotate: false
+  xy: 8, 36
+  size: 238, 179
+  orig: 238, 179
+  offset: 0, 0
+  index: -1
+ye_A2
+  rotate: false
+  xy: 479, 656
+  size: 236, 100
+  orig: 236, 100
+  offset: 0, 0
+  index: -1
+ye_A3
+  rotate: false
+  xy: 479, 208
+  size: 94, 77
+  orig: 94, 77
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,160 @@
+
+naye_owl.png
+size: 528,528
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+owl biyan
+  rotate: false
+  xy: 350, 91
+  size: 92, 30
+  orig: 92, 30
+  offset: 0, 0
+  index: -1
+owl bizui
+  rotate: false
+  xy: 491, 220
+  size: 23, 30
+  orig: 23, 30
+  offset: 0, 0
+  index: -1
+owl dizzy
+  rotate: false
+  xy: 209, 40
+  size: 105, 49
+  orig: 105, 49
+  offset: 0, 0
+  index: -1
+owl face
+  rotate: false
+  xy: 101, 386
+  size: 161, 134
+  orig: 161, 134
+  offset: 0, 0
+  index: -1
+owl face_bei
+  rotate: false
+  xy: 270, 386
+  size: 161, 134
+  orig: 161, 134
+  offset: 0, 0
+  index: -1
+owl tears
+  rotate: false
+  xy: 209, 8
+  size: 108, 24
+  orig: 108, 24
+  offset: 0, 0
+  index: -1
+owl zhangzui
+  rotate: false
+  xy: 322, 64
+  size: 20, 25
+  orig: 20, 25
+  offset: 0, 0
+  index: -1
+owl_back
+  rotate: false
+  xy: 439, 351
+  size: 69, 169
+  orig: 69, 176
+  offset: 0, 7
+  index: -1
+owl_body
+  rotate: false
+  xy: 219, 134
+  size: 151, 102
+  orig: 160, 109
+  offset: 5, 0
+  index: -1
+owl_clothes2
+  rotate: false
+  xy: 450, 83
+  size: 45, 38
+  orig: 45, 38
+  offset: 0, 0
+  index: -1
+owl_feather
+  rotate: false
+  xy: 219, 97
+  size: 123, 29
+  orig: 123, 29
+  offset: 0, 0
+  index: -1
+owl_head
+  rotate: false
+  xy: 101, 244
+  size: 160, 134
+  orig: 160, 134
+  offset: 0, 0
+  index: -1
+owl_head_down
+  rotate: false
+  xy: 269, 244
+  size: 160, 134
+  orig: 160, 134
+  offset: 0, 0
+  index: -1
+owl_head_mad
+  rotate: false
+  xy: 51, 102
+  size: 160, 134
+  orig: 160, 134
+  offset: 0, 0
+  index: -1
+owl_leftfoot
+  rotate: false
+  xy: 447, 51
+  size: 31, 24
+  orig: 31, 24
+  offset: 0, 0
+  index: -1
+owl_leftribbon
+  rotate: false
+  xy: 8, 24
+  size: 35, 236
+  orig: 35, 236
+  offset: 0, 0
+  index: -1
+owl_leftwing
+  rotate: false
+  xy: 437, 258
+  size: 76, 85
+  orig: 76, 92
+  offset: 0, 1
+  index: -1
+owl_neak
+  rotate: false
+  xy: 51, 15
+  size: 150, 79
+  orig: 150, 79
+  offset: 0, 0
+  index: -1
+owl_rightfoot
+  rotate: false
+  xy: 402, 58
+  size: 37, 25
+  orig: 37, 25
+  offset: 0, 0
+  index: -1
+owl_rightribbon
+  rotate: false
+  xy: 8, 268
+  size: 85, 252
+  orig: 91, 290
+  offset: 3, 26
+  index: -1
+owl_xiongmao
+  rotate: false
+  xy: 350, 53
+  size: 44, 30
+  orig: 44, 30
+  offset: 0, 0
+  index: -1
+owli_rightwing
+  rotate: false
+  xy: 378, 129
+  size: 105, 107
+  orig: 105, 107
+  offset: 0, 0
+  index: -1

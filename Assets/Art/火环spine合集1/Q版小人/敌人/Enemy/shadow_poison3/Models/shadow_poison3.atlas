@@ -1,0 +1,251 @@
+
+shadow_poison3.png
+size: 1121,1121
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+armL
+  rotate: false
+  xy: 1011, 18
+  size: 96, 88
+  orig: 119, 113
+  offset: 11, 12
+  index: -1
+armR
+  rotate: false
+  xy: 947, 555
+  size: 100, 104
+  orig: 121, 125
+  offset: 11, 13
+  index: -1
+armR_L
+  rotate: false
+  xy: 1055, 609
+  size: 58, 62
+  orig: 121, 125
+  offset: 19, 20
+  index: -1
+armR_U
+  rotate: false
+  xy: 389, 33
+  size: 64, 61
+  orig: 121, 125
+  offset: 39, 44
+  index: -1
+body
+  rotate: false
+  xy: 951, 679
+  size: 151, 194
+  orig: 197, 225
+  offset: 31, 18
+  index: -1
+bodyT
+  rotate: false
+  xy: 759, 565
+  size: 180, 92
+  orig: 190, 225
+  offset: 7, 120
+  index: -1
+eye
+  rotate: false
+  xy: 814, 257
+  size: 144, 82
+  orig: 170, 106
+  offset: 13, 13
+  index: -1
+eyeHitted
+  rotate: false
+  xy: 581, 551
+  size: 170, 106
+  orig: 170, 106
+  offset: 0, 0
+  index: -1
+eyelid
+  rotate: false
+  xy: 276, 51
+  size: 105, 112
+  orig: 105, 112
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 8, 156
+  size: 260, 258
+  orig: 260, 258
+  offset: 0, 0
+  index: -1
+flower
+  rotate: false
+  xy: 976, 250
+  size: 126, 97
+  orig: 126, 97
+  offset: 0, 0
+  index: -1
+hairFA
+  rotate: false
+  xy: 178, 806
+  size: 142, 307
+  orig: 155, 321
+  offset: 6, 0
+  index: -1
+hairFB
+  rotate: false
+  xy: 626, 117
+  size: 180, 222
+  orig: 180, 222
+  offset: 0, 0
+  index: -1
+hairFC
+  rotate: false
+  xy: 810, 879
+  size: 112, 234
+  orig: 140, 256
+  offset: 16, 10
+  index: -1
+hairFD
+  rotate: false
+  xy: 328, 808
+  size: 121, 305
+  orig: 140, 308
+  offset: 11, 2
+  index: -1
+hairT
+  rotate: false
+  xy: 276, 309
+  size: 342, 232
+  orig: 342, 232
+  offset: 0, 0
+  index: -1
+hairX
+  rotate: false
+  xy: 930, 881
+  size: 170, 232
+  orig: 170, 241
+  offset: 0, 0
+  index: -1
+hairY
+  rotate: false
+  xy: 457, 871
+  size: 158, 242
+  orig: 166, 252
+  offset: 0, 7
+  index: -1
+handL1
+  rotate: false
+  xy: 8, 38
+  size: 100, 110
+  orig: 100, 110
+  offset: 0, 0
+  index: -1
+handL2
+  rotate: false
+  xy: 469, 41
+  size: 100, 126
+  orig: 100, 126
+  offset: 0, 0
+  index: -1
+handL3
+  rotate: false
+  xy: 577, 18
+  size: 84, 91
+  orig: 84, 91
+  offset: 0, 0
+  index: -1
+handR1
+  rotate: false
+  xy: 469, 175
+  size: 113, 126
+  orig: 113, 126
+  offset: 0, 0
+  index: -1
+handR2
+  rotate: false
+  xy: 1011, 114
+  size: 102, 128
+  orig: 102, 128
+  offset: 0, 0
+  index: -1
+handR3
+  rotate: false
+  xy: 178, 447
+  size: 86, 94
+  orig: 86, 94
+  offset: 0, 0
+  index: -1
+legL
+  rotate: false
+  xy: 854, 667
+  size: 89, 204
+  orig: 105, 216
+  offset: 5, 10
+  index: -1
+legR
+  rotate: false
+  xy: 976, 355
+  size: 82, 192
+  orig: 108, 210
+  offset: 16, 8
+  index: -1
+mask
+  rotate: false
+  xy: 626, 347
+  size: 342, 196
+  orig: 342, 196
+  offset: 0, 0
+  index: -1
+pupil
+  rotate: false
+  xy: 457, 814
+  size: 120, 49
+  orig: 147, 74
+  offset: 16, 15
+  index: -1
+shellA
+  rotate: false
+  xy: 623, 873
+  size: 179, 240
+  orig: 179, 240
+  offset: 0, 0
+  index: -1
+shellF
+  rotate: false
+  xy: 814, 79
+  size: 189, 163
+  orig: 200, 163
+  offset: 11, 0
+  index: -1
+shellT
+  rotate: false
+  xy: 585, 665
+  size: 261, 198
+  orig: 261, 198
+  offset: 0, 0
+  index: -1
+shellX
+  rotate: false
+  xy: 178, 549
+  size: 395, 249
+  orig: 395, 249
+  offset: 0, 0
+  index: -1
+stamen
+  rotate: false
+  xy: 389, 102
+  size: 65, 61
+  orig: 75, 78
+  offset: 1, 17
+  index: -1
+tail
+  rotate: false
+  xy: 276, 171
+  size: 185, 130
+  orig: 186, 152
+  offset: 1, 7
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 422
+  size: 162, 691
+  orig: 167, 691
+  offset: 5, 0
+  index: -1

@@ -1,0 +1,160 @@
+
+partner_shadow_wizard.png
+size: 852,852
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 721, 676
+  size: 123, 168
+  orig: 133, 176
+  offset: 5, 3
+  index: -1
+body2
+  rotate: false
+  xy: 695, 159
+  size: 76, 91
+  orig: 76, 93
+  offset: 0, 0
+  index: -1
+body3
+  rotate: false
+  xy: 508, 99
+  size: 40, 50
+  orig: 48, 62
+  offset: 4, 6
+  index: -1
+cape1
+  rotate: false
+  xy: 605, 258
+  size: 141, 113
+  orig: 148, 124
+  offset: 3, 6
+  index: -1
+cape2
+  rotate: false
+  xy: 721, 576
+  size: 88, 92
+  orig: 99, 101
+  offset: 5, 2
+  index: -1
+eyes
+  rotate: false
+  xy: 695, 96
+  size: 87, 55
+  orig: 98, 67
+  offset: 5, 6
+  index: -1
+eyes_happy
+  rotate: false
+  xy: 411, 93
+  size: 89, 56
+  orig: 98, 67
+  offset: 5, 5
+  index: -1
+face1
+  rotate: false
+  xy: 428, 401
+  size: 184, 152
+  orig: 184, 152
+  offset: 0, 0
+  index: -1
+face2
+  rotate: false
+  xy: 428, 563
+  size: 24, 24
+  orig: 36, 34
+  offset: 5, 5
+  index: -1
+hair1
+  rotate: false
+  xy: 411, 157
+  size: 153, 149
+  orig: 160, 156
+  offset: 4, 3
+  index: -1
+hair2
+  rotate: false
+  xy: 253, 142
+  size: 150, 205
+  orig: 151, 205
+  offset: 1, 0
+  index: -1
+hair3
+  rotate: false
+  xy: 730, 432
+  size: 88, 136
+  orig: 92, 142
+  offset: 0, 0
+  index: -1
+hair3_1
+  rotate: false
+  xy: 401, 29
+  size: 87, 56
+  orig: 89, 67
+  offset: 0, 5
+  index: -1
+hair4
+  rotate: false
+  xy: 620, 379
+  size: 102, 174
+  orig: 106, 181
+  offset: 2, 2
+  index: -1
+hair5
+  rotate: false
+  xy: 572, 122
+  size: 115, 128
+  orig: 122, 135
+  offset: 0, 1
+  index: -1
+hair6
+  rotate: false
+  xy: 253, 12
+  size: 140, 122
+  orig: 140, 125
+  offset: 0, 3
+  index: -1
+hand_1
+  rotate: false
+  xy: 754, 342
+  size: 80, 82
+  orig: 80, 82
+  offset: 0, 0
+  index: -1
+hat_1
+  rotate: false
+  xy: 8, 595
+  size: 456, 249
+  orig: 456, 249
+  offset: 0, 0
+  index: -1
+hat_2
+  rotate: false
+  xy: 472, 561
+  size: 241, 283
+  orig: 243, 284
+  offset: 2, 0
+  index: -1
+hat_3
+  rotate: false
+  xy: 8, 355
+  size: 412, 232
+  orig: 412, 233
+  offset: 0, 1
+  index: -1
+scarve
+  rotate: false
+  xy: 428, 314
+  size: 169, 79
+  orig: 173, 87
+  offset: 1, 5
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 18
+  size: 237, 329
+  orig: 239, 330
+  offset: 1, 1
+  index: -1

@@ -1,0 +1,153 @@
+
+partner_golem_tentacle.png
+size: 495,495
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 327, 372
+  size: 160, 115
+  orig: 160, 115
+  offset: 0, 0
+  index: -1
+eyes1
+  rotate: false
+  xy: 176, 31
+  size: 47, 34
+  orig: 51, 40
+  offset: 3, 3
+  index: -1
+eyes2
+  rotate: false
+  xy: 430, 194
+  size: 39, 28
+  orig: 47, 36
+  offset: 4, 5
+  index: -1
+face
+  rotate: false
+  xy: 263, 27
+  size: 61, 56
+  orig: 72, 66
+  offset: 5, 5
+  index: -1
+foot1
+  rotate: false
+  xy: 332, 36
+  size: 72, 69
+  orig: 72, 69
+  offset: 0, 0
+  index: -1
+foot2
+  rotate: false
+  xy: 416, 118
+  size: 58, 65
+  orig: 58, 65
+  offset: 0, 0
+  index: -1
+foot3
+  rotate: false
+  xy: 259, 184
+  size: 65, 88
+  orig: 65, 88
+  offset: 0, 0
+  index: -1
+foot4
+  rotate: false
+  xy: 332, 191
+  size: 90, 84
+  orig: 90, 84
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 430, 230
+  size: 49, 45
+  orig: 59, 54
+  offset: 5, 6
+  index: -1
+leg2
+  rotate: false
+  xy: 451, 326
+  size: 35, 38
+  orig: 42, 48
+  offset: 4, 5
+  index: -1
+leg3_1
+  rotate: false
+  xy: 412, 17
+  size: 37, 39
+  orig: 46, 48
+  offset: 6, 4
+  index: -1
+leg3_2
+  rotate: false
+  xy: 412, 64
+  size: 38, 41
+  orig: 45, 48
+  offset: 4, 3
+  index: -1
+leg4
+  rotate: false
+  xy: 117, 25
+  size: 51, 40
+  orig: 59, 50
+  offset: 3, 4
+  index: -1
+mask
+  rotate: false
+  xy: 8, 8
+  size: 101, 79
+  orig: 112, 90
+  offset: 6, 6
+  index: -1
+vine1
+  rotate: false
+  xy: 8, 95
+  size: 142, 177
+  orig: 150, 182
+  offset: 4, 3
+  index: -1
+vine2
+  rotate: false
+  xy: 158, 73
+  size: 97, 87
+  orig: 108, 98
+  offset: 6, 5
+  index: -1
+vine3
+  rotate: false
+  xy: 158, 168
+  size: 93, 104
+  orig: 104, 116
+  offset: 5, 6
+  index: -1
+vine4
+  rotate: false
+  xy: 263, 91
+  size: 61, 85
+  orig: 72, 95
+  offset: 6, 6
+  index: -1
+vine5
+  rotate: false
+  xy: 327, 283
+  size: 116, 81
+  orig: 126, 93
+  offset: 5, 6
+  index: -1
+vine6
+  rotate: false
+  xy: 332, 113
+  size: 76, 70
+  orig: 86, 81
+  offset: 6, 6
+  index: -1
+vine7
+  rotate: false
+  xy: 8, 280
+  size: 311, 207
+  orig: 311, 207
+  offset: 0, 0
+  index: -1

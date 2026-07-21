@@ -1,0 +1,13 @@
+
+photo_black.png
+size: 1402,610
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+photo_black2
+  rotate: false
+  xy: 8, 8
+  size: 1386, 594
+  orig: 1386, 594
+  offset: 0, 0
+  index: -1

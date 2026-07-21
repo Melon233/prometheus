@@ -1,0 +1,90 @@
+
+owl_red.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+chi_you
+  rotate: false
+  xy: 304, 72
+  size: 86, 196
+  orig: 86, 196
+  offset: 0, 0
+  index: -1
+chi_zuo
+  rotate: false
+  xy: 332, 480
+  size: 69, 186
+  orig: 80, 186
+  offset: 5, 0
+  index: -1
+lian_3
+  rotate: false
+  xy: 8, 121
+  size: 198, 147
+  orig: 198, 147
+  offset: 0, 0
+  index: -1
+lian_4
+  rotate: false
+  xy: 8, 8
+  size: 190, 105
+  orig: 190, 105
+  offset: 0, 0
+  index: -1
+mao_you
+  rotate: false
+  xy: 409, 485
+  size: 169, 181
+  orig: 176, 191
+  offset: 1, 5
+  index: -1
+mao_zuo
+  rotate: false
+  xy: 332, 290
+  size: 115, 182
+  orig: 124, 190
+  offset: 5, 4
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 276
+  size: 316, 390
+  orig: 379, 390
+  offset: 46, 0
+  index: -1
+tui_you
+  rotate: false
+  xy: 214, 24
+  size: 82, 244
+  orig: 82, 252
+  offset: 0, 3
+  index: -1
+yanzhu
+  rotate: false
+  xy: 455, 333
+  size: 103, 47
+  orig: 110, 53
+  offset: 4, 3
+  index: -1
+yiba
+  rotate: false
+  xy: 398, 176
+  size: 134, 106
+  orig: 143, 117
+  offset: 4, 5
+  index: -1
+zui_shang
+  rotate: false
+  xy: 398, 129
+  size: 94, 39
+  orig: 110, 55
+  offset: 8, 8
+  index: -1
+zui_xia
+  rotate: false
+  xy: 455, 388
+  size: 103, 89
+  orig: 119, 105
+  offset: 8, 8
+  index: -1

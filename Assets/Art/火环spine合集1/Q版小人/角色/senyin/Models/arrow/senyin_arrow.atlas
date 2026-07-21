@@ -1,0 +1,34 @@
+
+senyin_arrow.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+n/wuqi_jiantong_5
+  rotate: false
+  xy: 8, 8
+  size: 76, 391
+  orig: 198, 480
+  offset: 122, 50
+  index: -1
+r/wuqi_jiantong_5
+  rotate: false
+  xy: 92, 8
+  size: 76, 391
+  orig: 198, 480
+  offset: 122, 50
+  index: -1
+sr/wuqi_jiantong_5
+  rotate: false
+  xy: 260, 8
+  size: 76, 391
+  orig: 198, 480
+  offset: 122, 50
+  index: -1
+ssr/wuqi_jiantong_5
+  rotate: false
+  xy: 176, 8
+  size: 76, 391
+  orig: 198, 480
+  offset: 122, 50
+  index: -1

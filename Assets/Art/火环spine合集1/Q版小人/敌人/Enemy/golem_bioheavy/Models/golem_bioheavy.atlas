@@ -1,0 +1,216 @@
+
+golem_bioheavy.png
+size: 1302,1302
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_1
+  rotate: false
+  xy: 1170, 820
+  size: 124, 128
+  orig: 176, 180
+  offset: 26, 26
+  index: -1
+back_2
+  rotate: false
+  xy: 1199, 956
+  size: 87, 105
+  orig: 139, 157
+  offset: 26, 26
+  index: -1
+body
+  rotate: false
+  xy: 8, 528
+  size: 936, 766
+  orig: 961, 888
+  offset: 9, 122
+  index: -1
+body_down
+  rotate: false
+  xy: 405, 16
+  size: 443, 235
+  orig: 474, 268
+  offset: 15, 13
+  index: -1
+body_front
+  rotate: false
+  xy: 8, 32
+  size: 389, 375
+  orig: 416, 408
+  offset: 14, 20
+  index: -1
+body_front2
+  rotate: false
+  xy: 952, 816
+  size: 210, 204
+  orig: 210, 204
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 299, 449
+  size: 59, 71
+  orig: 185, 133
+  offset: 30, 30
+  index: -1
+eye1_1
+  rotate: false
+  xy: 228, 447
+  size: 63, 73
+  orig: 185, 133
+  offset: 26, 30
+  index: -1
+eye2
+  rotate: false
+  xy: 904, 356
+  size: 32, 64
+  orig: 32, 64
+  offset: 0, 0
+  index: -1
+eye2_2
+  rotate: false
+  xy: 904, 428
+  size: 33, 57
+  orig: 43, 84
+  offset: 5, 10
+  index: -1
+head
+  rotate: false
+  xy: 952, 604
+  size: 203, 204
+  orig: 263, 262
+  offset: 30, 29
+  index: -1
+leg1
+  rotate: false
+  xy: 1140, 374
+  size: 137, 144
+  orig: 189, 196
+  offset: 26, 26
+  index: -1
+leg2
+  rotate: false
+  xy: 1163, 526
+  size: 129, 148
+  orig: 180, 196
+  offset: 25, 25
+  index: -1
+leg3
+  rotate: false
+  xy: 975, 63
+  size: 104, 126
+  orig: 155, 177
+  offset: 26, 26
+  index: -1
+leg4
+  rotate: false
+  xy: 1087, 63
+  size: 104, 126
+  orig: 155, 177
+  offset: 26, 26
+  index: -1
+link1
+  rotate: false
+  xy: 856, 194
+  size: 57, 57
+  orig: 103, 100
+  offset: 26, 18
+  index: -1
+link2
+  rotate: false
+  xy: 366, 456
+  size: 66, 64
+  orig: 103, 100
+  offset: 18, 19
+  index: -1
+link3
+  rotate: false
+  xy: 8, 434
+  size: 66, 86
+  orig: 112, 131
+  offset: 25, 24
+  index: -1
+link4
+  rotate: false
+  xy: 82, 437
+  size: 64, 83
+  orig: 112, 131
+  offset: 26, 25
+  index: -1
+mouth
+  rotate: false
+  xy: 366, 420
+  size: 37, 28
+  orig: 101, 92
+  offset: 32, 32
+  index: -1
+mouth2
+  rotate: false
+  xy: 904, 493
+  size: 37, 27
+  orig: 101, 92
+  offset: 33, 32
+  index: -1
+mustache
+  rotate: false
+  xy: 440, 259
+  size: 456, 261
+  orig: 488, 296
+  offset: 15, 16
+  index: -1
+yanjing_1
+  rotate: false
+  xy: 1199, 1069
+  size: 90, 115
+  orig: 130, 155
+  offset: 20, 20
+  index: -1
+you_arm1
+  rotate: false
+  xy: 952, 1028
+  size: 239, 266
+  orig: 291, 318
+  offset: 26, 26
+  index: -1
+you_finger
+  rotate: false
+  xy: 1170, 682
+  size: 121, 130
+  orig: 175, 184
+  offset: 27, 27
+  index: -1
+you_hand
+  rotate: false
+  xy: 944, 197
+  size: 176, 210
+  orig: 228, 262
+  offset: 26, 26
+  index: -1
+zuo_arm1
+  rotate: false
+  xy: 952, 415
+  size: 180, 181
+  orig: 232, 233
+  offset: 26, 26
+  index: -1
+zuo_arm2
+  rotate: false
+  xy: 1199, 1192
+  size: 92, 102
+  orig: 144, 154
+  offset: 26, 26
+  index: -1
+zuo_arm3
+  rotate: false
+  xy: 856, 45
+  size: 111, 141
+  orig: 163, 169
+  offset: 26, 20
+  index: -1
+zuo_finger
+  rotate: false
+  xy: 154, 445
+  size: 66, 75
+  orig: 120, 129
+  offset: 27, 27
+  index: -1

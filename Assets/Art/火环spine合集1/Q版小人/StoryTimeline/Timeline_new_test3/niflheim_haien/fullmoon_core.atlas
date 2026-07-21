@@ -1,0 +1,13 @@
+
+fullmoon_core.png
+size: 380,380
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fullmoon_core
+  rotate: false
+  xy: 8, 8
+  size: 364, 364
+  orig: 364, 364
+  offset: 0, 0
+  index: -1

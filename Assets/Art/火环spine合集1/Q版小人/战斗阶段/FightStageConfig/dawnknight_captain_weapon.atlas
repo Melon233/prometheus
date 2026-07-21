@@ -1,0 +1,13 @@
+
+dawnknight_captain_weapon.png
+size: 379,379
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+weapon
+  rotate: false
+  xy: 8, 69
+  size: 363, 302
+  orig: 391, 330
+  offset: 14, 14
+  index: -1

@@ -1,0 +1,118 @@
+
+seere.png
+size: 665,665
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body2
+  rotate: false
+  xy: 361, 175
+  size: 293, 207
+  orig: 301, 213
+  offset: 4, 2
+  index: -1
+boody1
+  rotate: false
+  xy: 207, 62
+  size: 128, 124
+  orig: 132, 132
+  offset: 0, 6
+  index: -1
+face
+  rotate: false
+  xy: 422, 524
+  size: 128, 133
+  orig: 132, 137
+  offset: 2, 2
+  index: -1
+fire
+  rotate: false
+  xy: 422, 390
+  size: 137, 126
+  orig: 153, 140
+  offset: 8, 7
+  index: -1
+head1
+  rotate: false
+  xy: 558, 595
+  size: 87, 62
+  orig: 93, 65
+  offset: 3, 1
+  index: -1
+head2
+  rotate: false
+  xy: 8, 194
+  size: 345, 223
+  orig: 364, 230
+  offset: 4, 6
+  index: -1
+head3
+  rotate: false
+  xy: 8, 425
+  size: 406, 232
+  orig: 433, 238
+  offset: 12, 3
+  index: -1
+jio1
+  rotate: false
+  xy: 101, 21
+  size: 98, 165
+  orig: 105, 171
+  offset: 5, 1
+  index: -1
+jio2
+  rotate: false
+  xy: 8, 11
+  size: 85, 175
+  orig: 97, 186
+  offset: 0, 1
+  index: -1
+jio3
+  rotate: false
+  xy: 343, 19
+  size: 77, 148
+  orig: 114, 148
+  offset: 0, 0
+  index: -1
+jio4
+  rotate: false
+  xy: 428, 27
+  size: 71, 140
+  orig: 72, 146
+  offset: 0, 3
+  index: -1
+leg1
+  rotate: false
+  xy: 567, 462
+  size: 86, 65
+  orig: 88, 68
+  offset: 2, 3
+  index: -1
+leg2
+  rotate: false
+  xy: 507, 96
+  size: 79, 71
+  orig: 92, 90
+  offset: 13, 19
+  index: -1
+leg2.2
+  rotate: false
+  xy: 621, 424
+  size: 36, 30
+  orig: 41, 35
+  offset: 2, 3
+  index: -1
+leg3
+  rotate: false
+  xy: 558, 535
+  size: 62, 52
+  orig: 70, 54
+  offset: 4, 2
+  index: -1
+leg3.2
+  rotate: false
+  xy: 567, 405
+  size: 46, 49
+  orig: 51, 54
+  offset: 2, 2
+  index: -1

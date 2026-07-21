@@ -1,0 +1,293 @@
+
+jali_character.png
+size: 1498,4328
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_arm_low
+  rotate: false
+  xy: 783, 541
+  size: 569, 730
+  orig: 569, 730
+  offset: 0, 0
+  index: -1
+L_arm_up
+  rotate: false
+  xy: 871, 3400
+  size: 543, 653
+  orig: 565, 661
+  offset: 0, 0
+  index: -1
+L_eye
+  rotate: false
+  xy: 100, 3798
+  size: 47, 40
+  orig: 66, 61
+  offset: 9, 10
+  index: -1
+L_eye_b
+  rotate: false
+  xy: 421, 3921
+  size: 94, 49
+  orig: 112, 68
+  offset: 9, 9
+  index: -1
+L_eye_low
+  rotate: false
+  xy: 8, 3046
+  size: 127, 71
+  orig: 145, 92
+  offset: 8, 10
+  index: -1
+L_eye_up
+  rotate: false
+  xy: 8, 39
+  size: 139, 50
+  orig: 158, 74
+  offset: 10, 9
+  index: -1
+L_eye_upx
+  rotate: false
+  xy: 1042, 4289
+  size: 98, 31
+  orig: 123, 53
+  offset: 10, 11
+  index: -1
+L_mei
+  rotate: false
+  xy: 900, 3648
+  size: 129, 29
+  orig: 147, 53
+  offset: 10, 9
+  index: -1
+R_arm_low
+  rotate: false
+  xy: 531, 764
+  size: 722, 967
+  orig: 722, 967
+  offset: 0, 0
+  index: -1
+R_arm_up
+  rotate: false
+  xy: 487, 10
+  size: 670, 320
+  orig: 670, 320
+  offset: 0, 0
+  index: -1
+R_eye
+  rotate: false
+  xy: 108, 3845
+  size: 31, 31
+  orig: 50, 50
+  offset: 10, 10
+  index: -1
+R_eye_b
+  rotate: false
+  xy: 8, 3931
+  size: 54, 45
+  orig: 70, 58
+  offset: 8, 9
+  index: -1
+R_eye_low
+  rotate: false
+  xy: 93, 3736
+  size: 63, 54
+  orig: 83, 74
+  offset: 9, 9
+  index: -1
+R_eye_up
+  rotate: false
+  xy: 428, 3976
+  size: 60, 42
+  orig: 82, 64
+  offset: 11, 10
+  index: -1
+R_eye_upx
+  rotate: false
+  xy: 405, 4292
+  size: 66, 29
+  orig: 88, 53
+  offset: 12, 12
+  index: -1
+R_mei
+  rotate: false
+  xy: 435, 3798
+  size: 47, 17
+  orig: 68, 39
+  offset: 11, 11
+  index: -1
+body
+  rotate: false
+  xy: 8, 1032
+  size: 1145, 3289
+  orig: 1145, 3296
+  offset: 0, 0
+  index: -1
+body_img
+  rotate: false
+  xy: 1055, 1636
+  size: 323, 930
+  orig: 323, 930
+  offset: 0, 0
+  index: -1
+bu_1
+  rotate: false
+  xy: 1236, 1025
+  size: 252, 836
+  orig: 252, 843
+  offset: 0, 0
+  index: -1
+bu_2
+  rotate: false
+  xy: 1194, 2468
+  size: 286, 937
+  orig: 286, 937
+  offset: 0, 0
+  index: -1
+ear
+  rotate: false
+  xy: 991, 4006
+  size: 109, 123
+  orig: 122, 141
+  offset: 5, 9
+  index: -1
+haiir_1
+  rotate: false
+  xy: 1069, 3940
+  size: 97, 148
+  orig: 116, 166
+  offset: 11, 9
+  index: -1
+hair_10
+  rotate: false
+  xy: 8, 3643
+  size: 131, 356
+  orig: 139, 364
+  offset: 8, 0
+  index: -1
+hair_2
+  rotate: false
+  xy: 8, 3254
+  size: 128, 193
+  orig: 145, 213
+  offset: 8, 11
+  index: -1
+hair_3
+  rotate: false
+  xy: 8, 92
+  size: 163, 219
+  orig: 182, 234
+  offset: 9, 7
+  index: -1
+hair_4
+  rotate: false
+  xy: 8, 2642
+  size: 199, 241
+  orig: 211, 260
+  offset: 6, 10
+  index: -1
+hair_5
+  rotate: false
+  xy: 8, 307
+  size: 256, 108
+  orig: 287, 124
+  offset: 5, 7
+  index: -1
+hair_6
+  rotate: false
+  xy: 923, 3397
+  size: 237, 245
+  orig: 253, 265
+  offset: 9, 9
+  index: -1
+hair_7
+  rotate: false
+  xy: 423, 3821
+  size: 52, 101
+  orig: 72, 118
+  offset: 10, 7
+  index: -1
+hair_8
+  rotate: false
+  xy: 8, 3982
+  size: 64, 120
+  orig: 77, 133
+  offset: 6, 6
+  index: -1
+hair_9
+  rotate: false
+  xy: 8, 3122
+  size: 107, 127
+  orig: 122, 142
+  offset: 8, 6
+  index: -1
+head
+  rotate: false
+  xy: 1017, 286
+  size: 410, 459
+  orig: 418, 468
+  offset: 0, 9
+  index: -1
+mei_unhappy
+  rotate: false
+  xy: 577, 4275
+  size: 196, 45
+  orig: 196, 45
+  offset: 0, 0
+  index: -1
+nose
+  rotate: false
+  xy: 466, 4188
+  size: 107, 133
+  orig: 118, 146
+  offset: 5, 6
+  index: -1
+pencil
+  rotate: false
+  xy: 995, 3263
+  size: 153, 143
+  orig: 168, 160
+  offset: 7, 9
+  index: -1
+qun_b
+  rotate: false
+  xy: 1162, 3855
+  size: 300, 402
+  orig: 308, 409
+  offset: 0, 7
+  index: -1
+yaodai
+  rotate: false
+  xy: 149, 135
+  size: 887, 1051
+  orig: 887, 1051
+  offset: 0, 0
+  index: -1
+yaodai_img
+  rotate: false
+  xy: 8, 3454
+  size: 109, 239
+  orig: 125, 248
+  offset: 7, 0
+  index: -1
+yaodai_img_b
+  rotate: false
+  xy: 74, 3996
+  size: 32, 79
+  orig: 52, 102
+  offset: 10, 13
+  index: -1
+zui1
+  rotate: false
+  xy: 1121, 4249
+  size: 125, 71
+  orig: 125, 71
+  offset: 0, 0
+  index: -1
+zui_unhappy
+  rotate: false
+  xy: 972, 3560
+  size: 118, 62
+  orig: 118, 62
+  offset: 0, 0
+  index: -1

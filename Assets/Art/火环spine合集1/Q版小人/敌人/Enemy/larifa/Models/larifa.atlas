@@ -1,0 +1,209 @@
+
+larifa.png
+size: 909,909
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Stamen
+  rotate: false
+  xy: 452, 676
+  size: 199, 225
+  orig: 208, 232
+  offset: 7, 0
+  index: -1
+body
+  rotate: false
+  xy: 452, 468
+  size: 258, 200
+  orig: 270, 212
+  offset: 8, 6
+  index: -1
+foot_L
+  rotate: false
+  xy: 657, 196
+  size: 201, 73
+  orig: 208, 83
+  offset: 2, 6
+  index: -1
+foot_R
+  rotate: false
+  xy: 790, 285
+  size: 98, 79
+  orig: 110, 91
+  offset: 6, 6
+  index: -1
+leaf_A1
+  rotate: false
+  xy: 262, 246
+  size: 141, 111
+  orig: 141, 111
+  offset: 0, 0
+  index: -1
+leaf_A2
+  rotate: false
+  xy: 262, 365
+  size: 166, 123
+  orig: 166, 123
+  offset: 0, 0
+  index: -1
+leaf_A3
+  rotate: false
+  xy: 221, 25
+  size: 97, 135
+  orig: 97, 135
+  offset: 0, 0
+  index: -1
+leaf_A4
+  rotate: false
+  xy: 102, 40
+  size: 104, 104
+  orig: 104, 104
+  offset: 0, 0
+  index: -1
+leaf_A5
+  rotate: false
+  xy: 518, 85
+  size: 84, 158
+  orig: 84, 158
+  offset: 0, 0
+  index: -1
+leaf_B1
+  rotate: false
+  xy: 790, 372
+  size: 110, 118
+  orig: 123, 128
+  offset: 7, 6
+  index: -1
+leaf_B2
+  rotate: false
+  xy: 652, 97
+  size: 113, 91
+  orig: 123, 105
+  offset: 5, 7
+  index: -1
+leaf_B3
+  rotate: false
+  xy: 8, 337
+  size: 246, 151
+  orig: 250, 160
+  offset: 1, 5
+  index: -1
+leaf_B4
+  rotate: false
+  xy: 785, 498
+  size: 116, 125
+  orig: 125, 135
+  offset: 4, 5
+  index: -1
+leaf_D1
+  rotate: false
+  xy: 718, 631
+  size: 155, 76
+  orig: 164, 86
+  offset: 5, 6
+  index: -1
+leaf_D2
+  rotate: false
+  xy: 773, 117
+  size: 56, 71
+  orig: 56, 71
+  offset: 0, 0
+  index: -1
+leaf_D3
+  rotate: false
+  xy: 221, 168
+  size: 125, 70
+  orig: 125, 70
+  offset: 0, 0
+  index: -1
+leaf_D4
+  rotate: false
+  xy: 326, 69
+  size: 70, 91
+  orig: 70, 91
+  offset: 0, 0
+  index: -1
+leaf_c
+  rotate: false
+  xy: 8, 496
+  size: 436, 405
+  orig: 439, 405
+  offset: 0, 0
+  index: -1
+petal_A1
+  rotate: false
+  xy: 436, 251
+  size: 213, 209
+  orig: 224, 217
+  offset: 2, 3
+  index: -1
+petal_A2
+  rotate: false
+  xy: 8, 152
+  size: 205, 177
+  orig: 208, 180
+  offset: 0, 0
+  index: -1
+petal_B
+  rotate: false
+  xy: 659, 715
+  size: 237, 186
+  orig: 245, 191
+  offset: 6, 2
+  index: -1
+petal_C1
+  rotate: false
+  xy: 657, 277
+  size: 125, 183
+  orig: 132, 193
+  offset: 2, 3
+  index: -1
+petal_C2
+  rotate: false
+  xy: 411, 78
+  size: 99, 165
+  orig: 108, 170
+  offset: 6, 2
+  index: -1
+thorn_A1
+  rotate: false
+  xy: 8, 35
+  size: 86, 109
+  orig: 97, 118
+  offset: 3, 5
+  index: -1
+thorn_A2
+  rotate: false
+  xy: 354, 182
+  size: 41, 56
+  orig: 47, 67
+  offset: 1, 6
+  index: -1
+thorn_B1
+  rotate: false
+  xy: 835, 49
+  size: 51, 60
+  orig: 58, 66
+  offset: 3, 2
+  index: -1
+thorn_B2
+  rotate: false
+  xy: 718, 487
+  size: 59, 136
+  orig: 68, 141
+  offset: 4, 3
+  index: -1
+thorn_C1
+  rotate: false
+  xy: 773, 18
+  size: 54, 91
+  orig: 63, 94
+  offset: 6, 1
+  index: -1
+thorn_C2
+  rotate: false
+  xy: 610, 189
+  size: 34, 54
+  orig: 41, 59
+  offset: 2, 3
+  index: -1

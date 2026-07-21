@@ -1,0 +1,167 @@
+
+chesspawn.png
+size: 1512,1512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dizuo
+  rotate: false
+  xy: 432, 1166
+  size: 532, 338
+  orig: 532, 338
+  offset: 0, 0
+  index: -1
+dun
+  rotate: false
+  xy: 8, 22
+  size: 128, 151
+  orig: 128, 151
+  offset: 0, 0
+  index: -1
+jian
+  rotate: false
+  xy: 854, 688
+  size: 333, 376
+  orig: 333, 376
+  offset: 0, 0
+  index: -1
+jianjia_L
+  rotate: false
+  xy: 1147, 297
+  size: 244, 225
+  orig: 244, 225
+  offset: 0, 0
+  index: -1
+jianjia_R_B
+  rotate: false
+  xy: 1324, 1110
+  size: 165, 186
+  orig: 165, 186
+  offset: 0, 0
+  index: -1
+jianjia_R_F
+  rotate: false
+  xy: 650, 125
+  size: 117, 203
+  orig: 117, 203
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 181
+  size: 416, 595
+  orig: 416, 720
+  offset: 0, 0
+  index: -1
+shenti_2
+  rotate: false
+  xy: 1195, 530
+  size: 263, 234
+  orig: 263, 234
+  offset: 0, 0
+  index: -1
+shenti_D_1
+  rotate: false
+  xy: 775, 67
+  size: 225, 219
+  orig: 225, 219
+  offset: 0, 0
+  index: -1
+shenti_D_2
+  rotate: false
+  xy: 432, 8
+  size: 210, 320
+  orig: 210, 497
+  offset: 0, 0
+  index: -1
+shenti_D_3
+  rotate: false
+  xy: 8, 784
+  size: 416, 720
+  orig: 416, 720
+  offset: 0, 0
+  index: -1
+shenti_D_4
+  rotate: false
+  xy: 814, 294
+  size: 325, 386
+  orig: 325, 386
+  offset: 0, 0
+  index: -1
+shenti_D_5
+  rotate: false
+  xy: 1195, 772
+  size: 285, 292
+  orig: 285, 292
+  offset: 0, 0
+  index: -1
+shoubi_L
+  rotate: false
+  xy: 1324, 1304
+  size: 165, 200
+  orig: 165, 200
+  offset: 0, 0
+  index: -1
+shoubi_R
+  rotate: false
+  xy: 1373, 106
+  size: 124, 183
+  orig: 124, 183
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 144, 123
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 650, 19
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 854, 1086
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tou
+  rotate: false
+  xy: 432, 759
+  size: 414, 399
+  orig: 414, 432
+  offset: 0, 16
+  index: -1
+tou_D_1
+  rotate: false
+  xy: 432, 336
+  size: 374, 415
+  orig: 374, 415
+  offset: 0, 0
+  index: -1
+tou_D_2
+  rotate: false
+  xy: 972, 1072
+  size: 344, 432
+  orig: 344, 432
+  offset: 0, 0
+  index: -1
+xiaoshoubi_L
+  rotate: false
+  xy: 1203, 104
+  size: 162, 185
+  orig: 162, 185
+  offset: 0, 0
+  index: -1
+xiaoshoubi_R
+  rotate: false
+  xy: 1008, 68
+  size: 187, 218
+  orig: 187, 218
+  offset: 0, 0
+  index: -1

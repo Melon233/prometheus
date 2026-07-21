@@ -1,0 +1,13 @@
+
+soil.png
+size: 246,246
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+soil
+  rotate: false
+  xy: 8, 177
+  size: 230, 61
+  orig: 430, 452
+  offset: 103, 35
+  index: -1

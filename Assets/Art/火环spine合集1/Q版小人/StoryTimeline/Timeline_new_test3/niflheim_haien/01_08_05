@@ -1,0 +1,13 @@
+skip_title=獠牙;
+skip_overview=高利扬以修什帝亚的家族声誉相胁，令他与他的士兵陷入两难之地。事态已无法挽回，你们选择强行突围。;
+spine=修什帝亚|高利扬<lights=1|0>;mid_txt=我并未被蛊惑，我的士兵也不需要听你指示。<name=修什帝亚>;
+spine=修什帝亚|高利扬<lights=1|0,faces=serious|idleface>;mid_txt=“涉及要务，嫌犯当予缉捕而非处决。”——我的决策合乎章法。<name=修什帝亚>;
+spine=修什帝亚|高利扬<lights=0|1,faces=serious|angry>;mid_txt=哼，还真是能说会道！没关系，我本来就没打算靠你手底下的蠢货。<name=高利扬>;
+spine=修什帝亚|高利扬<lights=0|1,faces=serious|smile>;mid_txt=哦，对了~说起来你之前……似乎还以家族为她们作保吧？<name=高利扬>;
+spine=修什帝亚|高利扬<lights=1|0,faces=endure|smile>;mid_txt=……<name=修什帝亚>;
+spine=修什帝亚|高利扬<lights=0|1,faces=endure|smile>;mid_txt=哎呀呀，用家族的名号替一群罪犯作保……想必你的父亲知晓后，一定会怒不可遏。<name=高利扬>;
+spine=修什帝亚|高利扬<lights=0|1,faces=endure|smile>;mid_txt=不过别担心，这件事……暂时只有我们知道，看在你为海恩城操劳多年的份上，我会保留追究你失职的权利……前提是——别跟我耍心机！<name=高利扬>;
+spine=修什帝亚|高利扬<lights=0|1,faces=endure|angry>;mid_txt=还愣着干什么！？都给我上！给我拿下——！<name=高利扬>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=angry>;mid_txt=嘁……准备突围！<name=厄晞斯>;

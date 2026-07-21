@@ -1,0 +1,7 @@
+skip_title=雪中小屋;
+skip_overview=一头霜墓野蹄出现在了木屋之外，而它早已对你们展露敌意。;
+spine=厄晞斯<lights=1,faces=amazed>;mid_txt=……哦？我还以为会是影兽，没想到是这么一个家伙。<name=厄晞斯>;
+hide=spine;
+hide=txt;
+spine=厄晞斯|海芙温<lights=0|1,faces=idleface|amazed>;mid_txt=哇！这是…霜墓野蹄吗？！在尼芙海姆的传说中，它们是具有极高智慧的物种，据说有的还会说话！<name=海芙温>;
+spine=厄晞斯|海芙温<lights=1|0,faces=anger|amazed>;mid_txt=但看起来它没打算跟我们聊天……我们也没时间跟它废话！<name=厄晞斯>;

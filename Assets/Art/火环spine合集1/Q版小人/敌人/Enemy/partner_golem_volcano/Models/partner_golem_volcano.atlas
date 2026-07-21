@@ -1,0 +1,132 @@
+
+partner_golem_volcano.png
+size: 540,540
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 8, 314
+  size: 293, 218
+  orig: 304, 228
+  offset: 6, 5
+  index: -1
+body2
+  rotate: false
+  xy: 8, 184
+  size: 120, 122
+  orig: 120, 122
+  offset: 0, 0
+  index: -1
+d1
+  rotate: false
+  xy: 309, 284
+  size: 139, 114
+  orig: 145, 127
+  offset: 2, 7
+  index: -1
+d2
+  rotate: false
+  xy: 309, 406
+  size: 143, 126
+  orig: 152, 133
+  offset: 4, 3
+  index: -1
+d3
+  rotate: false
+  xy: 136, 204
+  size: 136, 102
+  orig: 143, 114
+  offset: 3, 6
+  index: -1
+d4
+  rotate: false
+  xy: 460, 407
+  size: 66, 125
+  orig: 76, 136
+  offset: 5, 5
+  index: -1
+eyes
+  rotate: false
+  xy: 394, 113
+  size: 43, 26
+  orig: 56, 38
+  offset: 7, 6
+  index: -1
+eyes2
+  rotate: false
+  xy: 394, 147
+  size: 47, 26
+  orig: 56, 38
+  offset: 5, 6
+  index: -1
+face
+  rotate: false
+  xy: 8, 80
+  size: 91, 96
+  orig: 91, 96
+  offset: 0, 0
+  index: -1
+handL1
+  rotate: false
+  xy: 258, 112
+  size: 60, 61
+  orig: 98, 90
+  offset: 38, 0
+  index: -1
+handL2
+  rotate: false
+  xy: 280, 181
+  size: 125, 95
+  orig: 126, 100
+  offset: 0, 0
+  index: -1
+handL3
+  rotate: false
+  xy: 449, 112
+  size: 61, 51
+  orig: 98, 90
+  offset: 29, 22
+  index: -1
+handL4
+  rotate: false
+  xy: 326, 119
+  size: 60, 54
+  orig: 98, 90
+  offset: 7, 30
+  index: -1
+handR1
+  rotate: false
+  xy: 456, 247
+  size: 70, 64
+  orig: 104, 105
+  offset: 34, 41
+  index: -1
+handR2
+  rotate: false
+  xy: 136, 101
+  size: 114, 95
+  orig: 119, 103
+  offset: 5, 3
+  index: -1
+handR3
+  rotate: false
+  xy: 452, 171
+  size: 80, 68
+  orig: 104, 105
+  offset: 12, 25
+  index: -1
+handR4
+  rotate: false
+  xy: 460, 319
+  size: 71, 80
+  orig: 104, 105
+  offset: 1, 0
+  index: -1
+square
+  rotate: false
+  xy: 413, 228
+  size: 31, 48
+  orig: 41, 57
+  offset: 5, 4
+  index: -1

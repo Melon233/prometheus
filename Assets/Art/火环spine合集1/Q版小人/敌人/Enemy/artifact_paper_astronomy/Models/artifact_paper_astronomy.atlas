@@ -1,0 +1,251 @@
+
+artifact_paper_astronomy.png
+size: 1605,1605
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+brim
+  rotate: false
+  xy: 616, 1383
+  size: 358, 214
+  orig: 375, 232
+  offset: 6, 6
+  index: -1
+cloak
+  rotate: false
+  xy: 1079, 1390
+  size: 505, 207
+  orig: 519, 227
+  offset: 6, 10
+  index: -1
+cloakBack
+  rotate: false
+  xy: 569, 44
+  size: 502, 311
+  orig: 519, 333
+  offset: 7, 11
+  index: -1
+collar
+  rotate: false
+  xy: 1249, 788
+  size: 310, 235
+  orig: 321, 257
+  offset: 4, 9
+  index: -1
+death_1
+  rotate: false
+  xy: 102, 1043
+  size: 506, 554
+  orig: 506, 554
+  offset: 0, 0
+  index: -1
+death_2
+  rotate: false
+  xy: 804, 376
+  size: 295, 287
+  orig: 295, 287
+  offset: 0, 0
+  index: -1
+hat
+  rotate: false
+  xy: 1079, 1031
+  size: 461, 351
+  orig: 474, 368
+  offset: 8, 10
+  index: -1
+hatBack
+  rotate: false
+  xy: 616, 1220
+  size: 354, 155
+  orig: 370, 171
+  offset: 5, 9
+  index: -1
+ribbonL
+  rotate: false
+  xy: 8, 974
+  size: 86, 623
+  orig: 105, 639
+  offset: 7, 6
+  index: -1
+ribbonR
+  rotate: false
+  xy: 8, 352
+  size: 118, 614
+  orig: 138, 639
+  offset: 11, 11
+  index: -1
+ropeL
+  rotate: false
+  xy: 1217, 83
+  size: 109, 114
+  orig: 132, 139
+  offset: 10, 13
+  index: -1
+ropeR
+  rotate: false
+  xy: 1070, 910
+  size: 147, 113
+  orig: 168, 139
+  offset: 11, 14
+  index: -1
+scarfL
+  rotate: false
+  xy: 423, 516
+  size: 168, 404
+  orig: 181, 404
+  offset: 13, 0
+  index: -1
+scarfR
+  rotate: false
+  xy: 1314, 205
+  size: 243, 389
+  orig: 255, 408
+  offset: 0, 6
+  index: -1
+skirt
+  rotate: false
+  xy: 616, 928
+  size: 326, 284
+  orig: 340, 312
+  offset: 6, 15
+  index: -1
+sleeveL1
+  rotate: false
+  xy: 804, 671
+  size: 137, 249
+  orig: 148, 256
+  offset: 11, 0
+  index: -1
+sleeveL2
+  rotate: false
+  xy: 950, 850
+  size: 112, 258
+  orig: 132, 282
+  offset: 9, 10
+  index: -1
+sleeveL3
+  rotate: false
+  xy: 190, 8
+  size: 106, 339
+  orig: 129, 347
+  offset: 13, 0
+  index: -1
+sleeveL4
+  rotate: false
+  xy: 427, 23
+  size: 134, 332
+  orig: 153, 347
+  offset: 10, 6
+  index: -1
+sleeveLb1
+  rotate: false
+  xy: 399, 363
+  size: 181, 136
+  orig: 206, 156
+  offset: 11, 7
+  index: -1
+sleeveLb2
+  rotate: false
+  xy: 588, 379
+  size: 208, 129
+  orig: 217, 151
+  offset: 9, 9
+  index: -1
+sleeveLb3
+  rotate: false
+  xy: 1314, 602
+  size: 245, 178
+  orig: 261, 190
+  offset: 7, 0
+  index: -1
+sleeveLb4
+  rotate: false
+  xy: 599, 721
+  size: 190, 199
+  orig: 200, 205
+  offset: 5, 6
+  index: -1
+sleeveR1
+  rotate: false
+  xy: 1107, 467
+  size: 199, 240
+  orig: 218, 253
+  offset: 8, 0
+  index: -1
+sleeveR2
+  rotate: false
+  xy: 1079, 110
+  size: 130, 258
+  orig: 152, 275
+  offset: 11, 10
+  index: -1
+sleeveR3
+  rotate: false
+  xy: 304, 14
+  size: 115, 333
+  orig: 136, 333
+  offset: 7, 0
+  index: -1
+sleeveR4
+  rotate: false
+  xy: 8, 11
+  size: 174, 333
+  orig: 184, 343
+  offset: 3, 10
+  index: -1
+tapeL
+  rotate: false
+  xy: 982, 1376
+  size: 69, 107
+  orig: 69, 107
+  offset: 0, 0
+  index: -1
+tapeR
+  rotate: false
+  xy: 982, 1491
+  size: 71, 106
+  orig: 71, 106
+  offset: 0, 0
+  index: -1
+veilA
+  rotate: false
+  xy: 134, 355
+  size: 257, 144
+  orig: 275, 167
+  offset: 8, 13
+  index: -1
+veilB
+  rotate: false
+  xy: 949, 715
+  size: 292, 127
+  orig: 311, 149
+  offset: 9, 14
+  index: -1
+weapon
+  rotate: false
+  xy: 134, 507
+  size: 281, 528
+  orig: 288, 528
+  offset: 7, 0
+  index: -1
+weaponStar
+  rotate: false
+  xy: 599, 538
+  size: 163, 175
+  orig: 163, 175
+  offset: 0, 0
+  index: -1
+weaponStarA
+  rotate: false
+  xy: 978, 1116
+  size: 68, 175
+  orig: 163, 175
+  offset: 48, 0
+  index: -1
+weaponStarB
+  rotate: false
+  xy: 978, 1299
+  size: 92, 69
+  orig: 163, 175
+  offset: 0, 54
+  index: -1

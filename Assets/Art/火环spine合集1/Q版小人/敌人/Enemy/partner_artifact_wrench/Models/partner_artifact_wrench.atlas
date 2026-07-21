@@ -1,0 +1,13 @@
+
+partner_artifact_wrench.png
+size: 226,226
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bans
+  rotate: false
+  xy: 8, 8
+  size: 157, 210
+  orig: 157, 210
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,12 @@
+skip_title=獠牙;
+skip_overview=危急关头，厄晞斯决意独自断后。而面对海芙温异常的情绪爆发与对失去同伴的恐惧，纳叶咬牙将其打晕带走。你们被迫与厄晞斯分头行动，并约定在安全地点汇合。;
+spine=厄晞斯|海芙温<lights=1|0,faces=enmity|fear>;mid_txt=海芙温，别闹，你不是小孩子了。<name=厄晞斯>;
+spine=厄晞斯|海芙温<lights=0|1,faces=enmity|fear>;mid_txt=我本来就不是小孩子！是你们把我当小孩子！<name=海芙温>;
+spine=厄晞斯|海芙温<lights=1|0,faces=think|fear>;mid_txt=海芙温？<name=厄晞斯>;
+spine=厄晞斯|海芙温<lights=0|1,faces=think|fear>;mid_txt=这很奇怪啊！组长……你为什么要留下来？！<name=海芙温>;
+spine=厄晞斯|海芙温<lights=0|1,faces=think|fear>;mid_txt=都开始死人了！商队的人死了，核心没了，奈菲娅前辈也失踪了！<name=海芙温>;
+spine=厄晞斯|海芙温<lights=0|1,faces=think|fear>;mid_txt=现在你又要留下来，断后什么的……那些人根本就打算下死手，他们人那么多，你……<name=海芙温>;
+spine=厄晞斯|海芙温<lights=0|1,faces=think|fear>;mid_txt=——你会死的！！！<name=海芙温>;
+spine=厄晞斯|海芙温<lights=0|1,faces=think|fear>;mid_txt=我不想你也死掉……我们，跑、逃跑也没关系吧？回白塔，反正任务也——<name=海芙温>;
+spine=厄晞斯|海芙温<lights=1|0,faces=anger|fear>;mid_txt=海芙温！<name=厄晞斯>;
+spine=厄晞斯|海芙温<lights=0|1,faces=anger|fear>;mid_txt=……！<name=海芙温>;

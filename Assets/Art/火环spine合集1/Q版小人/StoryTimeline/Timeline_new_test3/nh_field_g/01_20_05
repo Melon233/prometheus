@@ -1,0 +1,16 @@
+skip_title=斩断那傲慢的獠牙;
+skip_overview=关键时刻，奈菲娅现身打断了高利扬的施法，菲尔佳带着教会士兵随后赶来，带走了被电至昏迷的高利扬。奈菲娅最终将核心交到你们手中，并拜托你们将其送到伊尔夏手中。;
+spine=奈菲娅<lights=1,faces=happy>;mid_txt=……厄晞斯，见到你们平安，真是再好不过。<name=奈菲娅>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=serious>;mid_txt=呵，终于舍得出现了？我就知道你这家伙没事！<name=厄晞斯>;
+hide=spine;
+hide=txt;
+spine=奈菲娅<lights=1,faces=sad>;mid_txt=……我大抵清楚你们在海恩城内的遭遇。我想过与你们会合，但再三权衡后，还是放弃了这个打算。<name=奈菲娅>;
+spine=奈菲娅<lights=1,faces=sad>;mid_txt=正教主教安东尼遭「使徒」谋害，陷入昏迷，教会无人执掌，权柄混乱……我认为唯有稳住大局，才能真正祝你们一臂之力。<name=奈菲娅>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=shock>;mid_txt=主教陷入昏迷？<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=奈菲娅<lights=1,faces=serious>;mid_txt=是的，这甚至发生在白塔到来之前。从体力不支到精神萎靡，然后是最近的昏迷不醒……「使徒」似乎对此早有——<name=奈菲娅>;

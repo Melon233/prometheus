@@ -1,0 +1,14 @@
+skip_title=拉格帮;
+skip_overview=海恩城的封锁更加严重，优赛尔提议你们可以通过拉格帮的路数离开海恩城，但伊尔夏否决了这个提议。她让优赛尔协助你们在此落脚，自己则打算返回家族寻求更稳妥的撤离方案。;
+spine=伊尔夏<lights=1,faces=think>;mid_txt=……厄晞斯阁下的意思是，希望我能够帮忙，让莉芙小姐安顿下来？<name=伊尔夏>;
+hide=spine;
+hide=txt;
+spine=伊尔夏|厄晞斯<lights=0|1,faces=think|calm>;mid_txt=别阁下什么的，听着挺不习惯。<name=厄晞斯>;
+spine=伊尔夏|厄晞斯<lights=0|1,faces=think|calm>;mid_txt=我仔细想过了：莉芙……她的确是商队唯一的幸存者，但说到底，也只是个莫名被卷进来的倒霉蛋。<name=厄晞斯>;
+spine=伊尔夏|厄晞斯<lights=0|1,faces=think|think>;mid_txt=我们把她带出监狱，现在她恐怕也已经登上了教会的通缉布告。而我们…不适合带着她到处跑。<name=厄晞斯>;
+spine=伊尔夏|厄晞斯<lights=1|0,faces=smile|think>;mid_txt=这很合理，即便您不提这件事，我也会伸出援手——尼芙海姆的孩子不应遭受此等无妄之灾。<name=伊尔夏>;
+spine=伊尔夏|厄晞斯<lights=1|0,faces=smile|think>;mid_txt=——莉芙小姐，如果愿意的话，我可以在洛加港为你寻一个去处，保证不会让教会再扰乱你的生活。<name=伊尔夏>;
+spine=伊尔夏|厄晞斯<lights=0|0,faces=smile|think>;mid_txt=……谢谢，我从未经历过这些恐怖的事。说实话，我现在的确有些不知所措。<name=莉芙>;
+hide=spine;
+hide=txt;
+spine=伊尔夏<lights=1,faces=think>;mid_txt=嗯，那么——<name=伊尔夏>;

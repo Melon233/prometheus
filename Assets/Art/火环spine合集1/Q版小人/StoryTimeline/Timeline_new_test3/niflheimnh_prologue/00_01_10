@@ -1,0 +1,4 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=主角|海芙温<lights=0|1,faces=idleface|amazed>;mid_txt=哇，怎么说来就来！？<name=海芙温,cv=VO_MS_Chp0_Task1_10_1>;
+spine=主角|海芙温<lights=0|1,faces=idleface|serious>;mid_txt=你好好歇着，我说到做到！<name=海芙温,cv=VO_MS_Chp0_Task1_10_2>;

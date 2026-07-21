@@ -1,0 +1,41 @@
+
+amdusias_tree_skillstone.png
+size: 436,436
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 158, 261
+  size: 214, 167
+  orig: 252, 203
+  offset: 16, 18
+  index: -1
+b
+  rotate: false
+  xy: 8, 8
+  size: 165, 116
+  orig: 199, 165
+  offset: 16, 19
+  index: -1
+c
+  rotate: false
+  xy: 181, 23
+  size: 162, 149
+  orig: 211, 184
+  offset: 33, 19
+  index: -1
+d
+  rotate: false
+  xy: 158, 180
+  size: 84, 73
+  orig: 122, 113
+  offset: 20, 20
+  index: -1
+trunk
+  rotate: false
+  xy: 8, 132
+  size: 142, 296
+  orig: 190, 329
+  offset: 23, 14
+  index: -1

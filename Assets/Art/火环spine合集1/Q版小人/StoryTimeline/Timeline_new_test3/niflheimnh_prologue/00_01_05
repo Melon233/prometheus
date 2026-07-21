@@ -1,0 +1,5 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=主角|纳叶<lights=1|0,faces=idleface|idleface>;mid_txt=这种生物是？<name=/player/,cv=VO_MS_Chp0_Task1_5_3_/player/>;
+spine=主角|纳叶<lights=0|1,faces=idleface|serious>;mid_txt=新生的影兽，影化区域最常见的生物，几次有效的攻击就能将它驱逐。<name=纳叶,cv=VO_MS_Chp0_Task1_5_1>;
+spine=主角|纳叶<lights=0|1,faces=idleface|serious>;mid_txt=…不妨先试试身手——或许你不记得过去，但你的身体却不会遗忘本能。<name=纳叶,cv=VO_MS_Chp0_Task1_5_2>;

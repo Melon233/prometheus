@@ -1,0 +1,15 @@
+skip_title=斩断那傲慢的獠牙;
+skip_overview=你们在山顶发现了正在操控影兽的高利扬。面对指控，他随意地承认了一切，同时大放厥词，打算让你们成为他迈向成功的垫脚石。;
+spine=高利扬<lights=1,faces=idleface>;mid_txt=？！<name=高利扬>;
+spine=高利扬<lights=1,faces=idleface>;mid_txt=……啊，这不是被撵得团团转的白塔臭虫吗？亏你们能追到这里，我还以为你们早就坐船逃走了呢。<name=高利扬>;
+spine=高利扬<lights=1,faces=idleface>;mid_txt=怎么，事到如今送上门来，难不成又想说些义正言辞的大道理？<name=高利扬>;
+hide=spine;
+hide=txt;
+spine=高利扬|厄晞斯<lights=0|1,faces=idleface|anger>;mid_txt=哼，亏你还是一位神职人员，现在露出你的真面目了！<name=厄晞斯>;
+spine=高利扬|厄晞斯<lights=0|1,faces=idleface|anger>;mid_txt=收起你的虚张声势吧，把核心交出来，然后束手就擒——至少你的下场会好那么一点！<name=厄晞斯>;
+spine=高利扬|厄晞斯<lights=1|0,faces=smile|anger>;mid_txt=虚张声势？我承认，在你们到来时，我的确有一点惊讶。<name=高利扬>;
+spine=高利扬|厄晞斯<lights=1|0,faces=smile|anger>;mid_txt=但我很快就想通了——这不正是个好机会么？<name=高利扬>;
+spine=高利扬|厄晞斯<lights=1|0,faces=no|anger>;mid_txt=这里没有什么城防军，没有什么贱民，我也不用束手束脚——只要你们死在这里，还有谁会知道我做的事？<name=高利扬>;
+spine=高利扬|厄晞斯<lights=1|0,faces=serious|anger>;mid_txt=……我会成为英雄。当影兽祸乱，主教身死…我就会带回核心，亲自解决一切麻烦。<name=高利扬>;
+spine=高利扬|厄晞斯<lights=1|0,faces=smile|anger>;mid_txt=我的功绩会超越所有人，甚至超越那位圣人，所以——！<name=高利扬>;
+spine=高利扬|厄晞斯<lights=1|0,faces=angry|anger>;mid_txt=——你们该死了。<name=高利扬>;

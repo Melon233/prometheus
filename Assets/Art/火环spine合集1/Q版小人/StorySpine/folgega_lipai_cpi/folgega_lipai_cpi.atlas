@@ -1,0 +1,34 @@
+
+folgega_lipai_cpi.png
+size: 3192,3192
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lipai
+  rotate: false
+  xy: 8, 2171
+  size: 878, 1013
+  orig: 878, 1042
+  offset: 0, 29
+  index: -1
+lipai2
+  rotate: false
+  xy: 8, 8
+  size: 247, 360
+  orig: 878, 1042
+  offset: 162, 89
+  index: -1
+lipai_dong1
+  rotate: false
+  xy: 8, 1254
+  size: 878, 909
+  orig: 878, 1042
+  offset: 0, 29
+  index: -1
+lipai_dong2
+  rotate: false
+  xy: 8, 376
+  size: 878, 870
+  orig: 878, 1042
+  offset: 0, 29
+  index: -1

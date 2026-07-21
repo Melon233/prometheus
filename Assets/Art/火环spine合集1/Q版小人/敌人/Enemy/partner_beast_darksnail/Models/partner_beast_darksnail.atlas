@@ -1,0 +1,83 @@
+
+partner_beast_darksnail.png
+size: 433,433
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 8, 10
+  size: 137, 137
+  orig: 144, 149
+  offset: 4, 6
+  index: -1
+body1_black
+  rotate: false
+  xy: 153, 10
+  size: 137, 137
+  orig: 144, 149
+  offset: 4, 6
+  index: -1
+body2
+  rotate: false
+  xy: 8, 309
+  size: 218, 116
+  orig: 224, 124
+  offset: 6, 5
+  index: -1
+body3
+  rotate: false
+  xy: 269, 187
+  size: 77, 66
+  orig: 88, 77
+  offset: 5, 5
+  index: -1
+eye1
+  rotate: false
+  xy: 298, 71
+  size: 46, 108
+  orig: 59, 121
+  offset: 6, 7
+  index: -1
+eye2
+  rotate: false
+  xy: 354, 54
+  size: 59, 128
+  orig: 69, 140
+  offset: 6, 6
+  index: -1
+flower
+  rotate: false
+  xy: 190, 175
+  size: 71, 78
+  orig: 79, 88
+  offset: 7, 4
+  index: -1
+leaf1
+  rotate: false
+  xy: 298, 21
+  size: 46, 42
+  orig: 56, 50
+  offset: 4, 4
+  index: -1
+leaf2
+  rotate: false
+  xy: 354, 190
+  size: 71, 63
+  orig: 74, 70
+  offset: 0, 7
+  index: -1
+leaf3
+  rotate: false
+  xy: 8, 155
+  size: 174, 146
+  orig: 184, 154
+  offset: 6, 3
+  index: -1
+shell
+  rotate: false
+  xy: 234, 261
+  size: 184, 164
+  orig: 184, 164
+  offset: 0, 0
+  index: -1

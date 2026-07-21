@@ -1,0 +1,272 @@
+
+beast_tinysmasher_caged.png
+size: 1266,1266
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Z_body
+  rotate: false
+  xy: 8, 44
+  size: 321, 278
+  orig: 321, 278
+  offset: 0, 0
+  index: -1
+Z_datui1
+  rotate: false
+  xy: 1107, 1020
+  size: 125, 116
+  orig: 125, 116
+  offset: 0, 0
+  index: -1
+Z_datui2
+  rotate: false
+  xy: 1107, 1144
+  size: 128, 114
+  orig: 128, 114
+  offset: 0, 0
+  index: -1
+Z_dizzy1
+  rotate: false
+  xy: 881, 264
+  size: 54, 62
+  orig: 54, 62
+  offset: 0, 0
+  index: -1
+Z_face
+  rotate: false
+  xy: 384, 682
+  size: 339, 264
+  orig: 339, 264
+  offset: 0, 0
+  index: -1
+Z_face_fire
+  rotate: false
+  xy: 760, 994
+  size: 339, 264
+  orig: 339, 264
+  offset: 0, 0
+  index: -1
+Z_jiao
+  rotate: false
+  xy: 999, 500
+  size: 256, 237
+  orig: 256, 237
+  offset: 0, 0
+  index: -1
+Z_jiao_fire
+  rotate: false
+  xy: 999, 255
+  size: 256, 237
+  orig: 256, 237
+  offset: 0, 0
+  index: -1
+Z_shouji1
+  rotate: false
+  xy: 943, 223
+  size: 46, 44
+  orig: 54, 62
+  offset: 4, 11
+  index: -1
+Z_shouji2
+  rotate: false
+  xy: 1240, 1093
+  size: 18, 43
+  orig: 26, 63
+  offset: 4, 11
+  index: -1
+Z_suolian1
+  rotate: false
+  xy: 1106, 857
+  size: 58, 82
+  orig: 58, 82
+  offset: 0, 0
+  index: -1
+Z_suolian2
+  rotate: false
+  xy: 1194, 778
+  size: 40, 85
+  orig: 40, 85
+  offset: 0, 0
+  index: -1
+Z_suolian3
+  rotate: false
+  xy: 1205, 950
+  size: 34, 62
+  orig: 34, 62
+  offset: 0, 0
+  index: -1
+Z_suolian4
+  rotate: false
+  xy: 1127, 760
+  size: 59, 89
+  orig: 59, 89
+  offset: 0, 0
+  index: -1
+Z_suolian5
+  rotate: false
+  xy: 1172, 871
+  size: 54, 68
+  orig: 54, 68
+  offset: 0, 0
+  index: -1
+Z_suolian6
+  rotate: false
+  xy: 873, 190
+  size: 52, 66
+  orig: 52, 66
+  offset: 0, 0
+  index: -1
+Z_tiepian
+  rotate: false
+  xy: 1028, 855
+  size: 70, 131
+  orig: 70, 131
+  offset: 0, 0
+  index: -1
+Z_weiba
+  rotate: false
+  xy: 708, 355
+  size: 187, 133
+  orig: 187, 133
+  offset: 0, 0
+  index: -1
+Z_xiaba
+  rotate: false
+  xy: 384, 274
+  size: 293, 153
+  orig: 293, 153
+  offset: 0, 0
+  index: -1
+Z_xiangquan
+  rotate: false
+  xy: 384, 435
+  size: 316, 239
+  orig: 316, 239
+  offset: 0, 0
+  index: -1
+Z_xiaotui1
+  rotate: false
+  xy: 685, 280
+  size: 90, 67
+  orig: 90, 67
+  offset: 0, 0
+  index: -1
+Z_xiaotui2
+  rotate: false
+  xy: 783, 280
+  size: 90, 67
+  orig: 90, 67
+  offset: 0, 0
+  index: -1
+Z_ya1
+  rotate: false
+  xy: 903, 399
+  size: 80, 89
+  orig: 108, 100
+  offset: 13, 2
+  index: -1
+Z_ya2
+  rotate: false
+  xy: 1107, 947
+  size: 90, 65
+  orig: 111, 67
+  offset: 11, 0
+  index: -1
+Z_ya3
+  rotate: false
+  xy: 903, 334
+  size: 67, 57
+  orig: 71, 57
+  offset: 0, 0
+  index: -1
+Z_ya4
+  rotate: false
+  xy: 943, 275
+  size: 48, 51
+  orig: 64, 58
+  offset: 8, 4
+  index: -1
+Z_yan1
+  rotate: false
+  xy: 873, 120
+  size: 54, 62
+  orig: 54, 62
+  offset: 0, 0
+  index: -1
+Z_yan2
+  rotate: false
+  xy: 916, 49
+  size: 26, 63
+  orig: 26, 63
+  offset: 0, 0
+  index: -1
+Z_yan3
+  rotate: false
+  xy: 1028, 755
+  size: 91, 92
+  orig: 91, 92
+  offset: 0, 0
+  index: -1
+Z_yan4
+  rotate: false
+  xy: 873, 53
+  size: 35, 59
+  orig: 35, 59
+  offset: 0, 0
+  index: -1
+dark/Z_face
+  rotate: false
+  xy: 8, 954
+  size: 368, 304
+  orig: 419, 344
+  offset: 40, 40
+  index: -1
+dark/Z_jiao
+  rotate: false
+  xy: 337, 25
+  size: 260, 241
+  orig: 264, 245
+  offset: 4, 4
+  index: -1
+ice/Z_face
+  rotate: false
+  xy: 384, 954
+  size: 368, 304
+  orig: 419, 344
+  offset: 40, 40
+  index: -1
+ice/Z_jiao
+  rotate: false
+  xy: 760, 745
+  size: 260, 241
+  orig: 264, 245
+  offset: 4, 4
+  index: -1
+thunder/Z_face
+  rotate: false
+  xy: 8, 642
+  size: 368, 304
+  orig: 419, 344
+  offset: 40, 40
+  index: -1
+thunder/Z_jiao
+  rotate: false
+  xy: 605, 25
+  size: 260, 241
+  orig: 264, 245
+  offset: 4, 4
+  index: -1
+wind/Z_face
+  rotate: false
+  xy: 8, 330
+  size: 368, 304
+  orig: 419, 344
+  offset: 40, 40
+  index: -1
+wind/Z_jiao
+  rotate: false
+  xy: 731, 496
+  size: 260, 241
+  orig: 264, 245
+  offset: 4, 4
+  index: -1

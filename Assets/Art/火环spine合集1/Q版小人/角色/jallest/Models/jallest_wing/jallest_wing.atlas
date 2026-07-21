@@ -1,0 +1,20 @@
+
+jallest_wing.png
+size: 2804,750
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+wingl
+  rotate: false
+  xy: 8, 8
+  size: 1390, 734
+  orig: 1390, 734
+  offset: 0, 0
+  index: -1
+wingr
+  rotate: false
+  xy: 1406, 8
+  size: 1390, 734
+  orig: 1390, 734
+  offset: 0, 0
+  index: -1

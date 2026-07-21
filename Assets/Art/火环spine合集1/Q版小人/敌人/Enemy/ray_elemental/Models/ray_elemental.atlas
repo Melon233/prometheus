@@ -1,0 +1,41 @@
+
+ray_elemental.png
+size: 631,631
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 538, 382
+  size: 70, 127
+  orig: 70, 127
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 538, 128
+  size: 66, 114
+  orig: 66, 114
+  offset: 0, 0
+  index: -1
+2.2
+  rotate: false
+  xy: 538, 517
+  size: 85, 106
+  orig: 88, 106
+  offset: 3, 0
+  index: -1
+3
+  rotate: false
+  xy: 538, 250
+  size: 67, 124
+  orig: 72, 134
+  offset: 2, 5
+  index: -1
+body
+  rotate: false
+  xy: 8, 137
+  size: 522, 486
+  orig: 524, 490
+  offset: 2, 4
+  index: -1

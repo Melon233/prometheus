@@ -1,0 +1,181 @@
+
+summon_mid_fire_elemental.png
+size: 4287,696
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+M_huzi
+  rotate: false
+  xy: 3895, 22
+  size: 299, 135
+  orig: 299, 135
+  offset: 0, 0
+  index: -1
+eyes
+  rotate: false
+  xy: 3503, 8
+  size: 132, 50
+  orig: 132, 50
+  offset: 0, 0
+  index: -1
+fire1
+  rotate: false
+  xy: 682, 22
+  size: 654, 666
+  orig: 654, 666
+  offset: 0, 0
+  index: -1
+fire2
+  rotate: false
+  xy: 8, 21
+  size: 666, 667
+  orig: 666, 667
+  offset: 0, 0
+  index: -1
+fire3
+  rotate: false
+  xy: 1344, 26
+  size: 652, 662
+  orig: 652, 662
+  offset: 0, 0
+  index: -1
+fire4
+  rotate: false
+  xy: 2004, 35
+  size: 651, 653
+  orig: 651, 653
+  offset: 0, 0
+  index: -1
+float1
+  rotate: false
+  xy: 4202, 84
+  size: 77, 73
+  orig: 77, 73
+  offset: 0, 0
+  index: -1
+float2
+  rotate: false
+  xy: 2753, 114
+  size: 86, 74
+  orig: 86, 74
+  offset: 0, 0
+  index: -1
+float3
+  rotate: false
+  xy: 4202, 12
+  size: 50, 64
+  orig: 50, 64
+  offset: 0, 0
+  index: -1
+float4
+  rotate: false
+  xy: 2797, 295
+  size: 64, 56
+  orig: 64, 56
+  offset: 0, 0
+  index: -1
+float5
+  rotate: false
+  xy: 2663, 107
+  size: 82, 81
+  orig: 82, 81
+  offset: 0, 0
+  index: -1
+lemon
+  rotate: false
+  xy: 2947, 362
+  size: 294, 326
+  orig: 294, 326
+  offset: 0, 0
+  index: -1
+red1-1
+  rotate: false
+  xy: 3249, 372
+  size: 264, 316
+  orig: 264, 316
+  offset: 0, 0
+  index: -1
+red1-2
+  rotate: false
+  xy: 2663, 359
+  size: 276, 329
+  orig: 276, 329
+  offset: 0, 0
+  index: -1
+red1-3
+  rotate: false
+  xy: 3918, 165
+  size: 354, 222
+  orig: 430, 270
+  offset: 76, 48
+  index: -1
+red2-1
+  rotate: false
+  xy: 2947, 96
+  size: 289, 258
+  orig: 289, 258
+  offset: 0, 0
+  index: -1
+red2-2
+  rotate: false
+  xy: 3249, 60
+  size: 246, 304
+  orig: 246, 304
+  offset: 0, 0
+  index: -1
+red2-3
+  rotate: false
+  xy: 3521, 489
+  size: 405, 199
+  orig: 405, 199
+  offset: 0, 0
+  index: -1
+red_bottom
+  rotate: false
+  xy: 3934, 395
+  size: 293, 293
+  orig: 293, 293
+  offset: 0, 0
+  index: -1
+spark1
+  rotate: false
+  xy: 4235, 575
+  size: 34, 29
+  orig: 34, 29
+  offset: 0, 0
+  index: -1
+spark2
+  rotate: false
+  xy: 4235, 612
+  size: 34, 32
+  orig: 34, 32
+  offset: 0, 0
+  index: -1
+spark3
+  rotate: false
+  xy: 4235, 652
+  size: 42, 36
+  orig: 42, 36
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 3521, 225
+  size: 389, 256
+  orig: 389, 256
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 3503, 66
+  size: 384, 151
+  orig: 384, 151
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 2663, 196
+  size: 126, 155
+  orig: 126, 155
+  offset: 0, 0
+  index: -1

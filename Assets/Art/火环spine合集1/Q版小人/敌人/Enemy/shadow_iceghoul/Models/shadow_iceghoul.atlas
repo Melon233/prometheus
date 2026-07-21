@@ -1,0 +1,293 @@
+
+shadow_iceghoul.png
+size: 1842,1842
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Larm1
+  rotate: false
+  xy: 1477, 612
+  size: 153, 366
+  orig: 153, 366
+  offset: 0, 0
+  index: -1
+Larm2
+  rotate: false
+  xy: 1208, 1506
+  size: 377, 328
+  orig: 379, 328
+  offset: 2, 0
+  index: -1
+Lfoot
+  rotate: false
+  xy: 1165, 837
+  size: 280, 174
+  orig: 280, 174
+  offset: 0, 0
+  index: -1
+Lhand1
+  rotate: false
+  xy: 1601, 214
+  size: 78, 110
+  orig: 78, 110
+  offset: 0, 0
+  index: -1
+Lhand2
+  rotate: false
+  xy: 1722, 320
+  size: 79, 130
+  orig: 79, 130
+  offset: 0, 0
+  index: -1
+Lhand3
+  rotate: false
+  xy: 1419, 172
+  size: 84, 152
+  orig: 84, 152
+  offset: 0, 0
+  index: -1
+Lhand4
+  rotate: false
+  xy: 1727, 461
+  size: 94, 141
+  orig: 94, 141
+  offset: 0, 0
+  index: -1
+Lhand5
+  rotate: false
+  xy: 1622, 332
+  size: 92, 118
+  orig: 92, 118
+  offset: 0, 0
+  index: -1
+Lleg1
+  rotate: false
+  xy: 782, 575
+  size: 409, 227
+  orig: 409, 227
+  offset: 0, 0
+  index: -1
+Lleg2
+  rotate: false
+  xy: 312, 50
+  size: 278, 264
+  orig: 278, 264
+  offset: 0, 0
+  index: -1
+Rarm1
+  rotate: false
+  xy: 1575, 1177
+  size: 198, 298
+  orig: 198, 298
+  offset: 0, 0
+  index: -1
+Rarm2
+  rotate: false
+  xy: 8, 260
+  size: 283, 438
+  orig: 285, 438
+  offset: 2, 0
+  index: -1
+Rfoot
+  rotate: false
+  xy: 598, 55
+  size: 248, 221
+  orig: 248, 221
+  offset: 0, 0
+  index: -1
+Rhand1
+  rotate: false
+  xy: 1511, 93
+  size: 82, 140
+  orig: 82, 140
+  offset: 0, 0
+  index: -1
+Rhand2
+  rotate: false
+  xy: 1419, 14
+  size: 84, 150
+  orig: 84, 150
+  offset: 0, 0
+  index: -1
+Rhand3
+  rotate: false
+  xy: 1511, 241
+  size: 81, 147
+  orig: 81, 147
+  offset: 0, 0
+  index: -1
+Rhand4
+  rotate: false
+  xy: 1622, 458
+  size: 97, 144
+  orig: 97, 144
+  offset: 0, 0
+  index: -1
+Rhand5
+  rotate: false
+  xy: 1601, 116
+  size: 88, 90
+  orig: 88, 90
+  offset: 0, 0
+  index: -1
+Rleg1
+  rotate: false
+  xy: 583, 779
+  size: 182, 361
+  orig: 182, 361
+  offset: 0, 0
+  index: -1
+Rleg2
+  rotate: false
+  xy: 854, 122
+  size: 282, 169
+  orig: 282, 169
+  offset: 0, 0
+  index: -1
+butt
+  rotate: false
+  xy: 1560, 986
+  size: 232, 183
+  orig: 232, 183
+  offset: 0, 0
+  index: -1
+chest1
+  rotate: false
+  xy: 1210, 1195
+  size: 357, 303
+  orig: 360, 306
+  offset: 0, 3
+  index: -1
+chest2
+  rotate: false
+  xy: 8, 47
+  size: 296, 205
+  orig: 296, 212
+  offset: 0, 7
+  index: -1
+eyebrow
+  rotate: false
+  xy: 1638, 610
+  size: 181, 75
+  orig: 193, 75
+  offset: 5, 0
+  index: -1
+eyes
+  rotate: false
+  xy: 1144, 206
+  size: 267, 148
+  orig: 267, 148
+  offset: 0, 0
+  index: -1
+eyes_black
+  rotate: false
+  xy: 1144, 50
+  size: 267, 148
+  orig: 267, 148
+  offset: 0, 0
+  index: -1
+eyes_hitted
+  rotate: false
+  xy: 854, 27
+  size: 217, 87
+  orig: 217, 87
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 782, 299
+  size: 330, 268
+  orig: 330, 268
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 299, 322
+  size: 291, 376
+  orig: 293, 384
+  offset: 2, 4
+  index: -1
+hair2
+  rotate: false
+  xy: 1593, 1483
+  size: 241, 351
+  orig: 281, 352
+  offset: 35, 0
+  index: -1
+hair3
+  rotate: false
+  xy: 1199, 515
+  size: 270, 314
+  orig: 270, 320
+  offset: 0, 5
+  index: -1
+hair4
+  rotate: false
+  xy: 1477, 396
+  size: 137, 208
+  orig: 137, 208
+  offset: 0, 0
+  index: -1
+hair5
+  rotate: false
+  xy: 807, 1404
+  size: 393, 430
+  orig: 400, 435
+  offset: 0, 2
+  index: -1
+hair6
+  rotate: false
+  xy: 8, 1148
+  size: 791, 686
+  orig: 875, 729
+  offset: 44, 0
+  index: -1
+hair7
+  rotate: false
+  xy: 8, 706
+  size: 567, 434
+  orig: 567, 434
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 773, 810
+  size: 384, 291
+  orig: 384, 291
+  offset: 0, 0
+  index: -1
+horn1
+  rotate: false
+  xy: 1638, 693
+  size: 158, 285
+  orig: 158, 285
+  offset: 0, 0
+  index: -1
+horn2
+  rotate: false
+  xy: 598, 284
+  size: 176, 487
+  orig: 176, 487
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 1210, 1019
+  size: 342, 168
+  orig: 342, 168
+  offset: 0, 0
+  index: -1
+mouth_in
+  rotate: false
+  xy: 1120, 362
+  size: 280, 145
+  orig: 280, 145
+  offset: 0, 0
+  index: -1
+mustache
+  rotate: false
+  xy: 807, 1109
+  size: 395, 287
+  orig: 395, 287
+  offset: 0, 0
+  index: -1

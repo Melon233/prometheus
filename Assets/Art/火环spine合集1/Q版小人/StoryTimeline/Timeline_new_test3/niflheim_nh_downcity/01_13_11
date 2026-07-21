@@ -1,0 +1,11 @@
+skip_title=拉格帮;
+skip_overview=海芙温试图与拉格帮帮主杰克森谈判，但对方坚持要先以武力决出高下。一场激战最终不可避免。;
+mid_txt=接下来，是我！<name=杰克森>;
+hide=txt;
+spine=海芙温<lights=1,faces=amazed>;mid_txt=我说！我们非得在说话前先打一架吗？！<name=海芙温>;
+spine=海芙温<lights=1,faces=amazed>;mid_txt=大个子！你也不想被我们揍一顿，在你的小弟面前丢脸吧！？我们就坐下来谈谈不行吗？<name=海芙温>;
+spine=海芙温<lights=0,faces=amazed>;mid_txt=打倒我！再说！<name=杰克森>;
+spine=海芙温<lights=1,faces=awkward>;mid_txt=哎呀！真是不可理喻！<name=海芙温>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=sad>;mid_txt=或许你也得负一半责任，海芙温……<name=纳叶>;

@@ -1,0 +1,237 @@
+
+niflheim_npc_ bishop.png
+size: 924,924
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Z_Lleg2
+  rotate: false
+  xy: 146, 216
+  size: 90, 149
+  orig: 94, 158
+  offset: 4, 5
+  index: -1
+Z_Rleg2
+  rotate: false
+  xy: 671, 20
+  size: 82, 156
+  orig: 89, 163
+  offset: 4, 1
+  index: -1
+Z_chest 4
+  rotate: false
+  xy: 562, 740
+  size: 161, 176
+  orig: 175, 189
+  offset: 7, 7
+  index: -1
+Z_eye
+  rotate: false
+  xy: 454, 138
+  size: 139, 72
+  orig: 139, 72
+  offset: 0, 0
+  index: -1
+Z_eye_close
+  rotate: false
+  xy: 349, 218
+  size: 159, 57
+  orig: 322, 259
+  offset: 106, 71
+  index: -1
+Z_eyebow
+  rotate: false
+  xy: 8, 11
+  size: 157, 41
+  orig: 157, 41
+  offset: 0, 0
+  index: -1
+Z_eyelash
+  rotate: false
+  xy: 288, 101
+  size: 158, 108
+  orig: 171, 115
+  offset: 5, 7
+  index: -1
+Z_eyewhite
+  rotate: false
+  xy: 300, 16
+  size: 157, 77
+  orig: 157, 77
+  offset: 0, 0
+  index: -1
+Z_face
+  rotate: false
+  xy: 8, 373
+  size: 241, 194
+  orig: 252, 207
+  offset: 2, 8
+  index: -1
+Z_mouth
+  rotate: false
+  xy: 454, 104
+  size: 44, 26
+  orig: 44, 26
+  offset: 0, 0
+  index: -1
+Z_mouthbow
+  rotate: false
+  xy: 173, 23
+  size: 68, 40
+  orig: 68, 40
+  offset: 0, 0
+  index: -1
+Z_nose
+  rotate: false
+  xy: 249, 31
+  size: 43, 32
+  orig: 43, 32
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 385, 550
+  size: 169, 366
+  orig: 180, 376
+  offset: 4, 7
+  index: -1
+bodybow1
+  rotate: false
+  xy: 8, 60
+  size: 130, 305
+  orig: 274, 319
+  offset: 2, 7
+  index: -1
+bodybow1_2
+  rotate: false
+  xy: 257, 264
+  size: 54, 303
+  orig: 274, 319
+  offset: 212, 7
+  index: -1
+bodybow2
+  rotate: false
+  xy: 319, 317
+  size: 52, 250
+  orig: 152, 262
+  offset: 6, 7
+  index: -1
+bodybow2_2
+  rotate: false
+  xy: 716, 491
+  size: 35, 241
+  orig: 152, 262
+  offset: 109, 15
+  index: -1
+eyebow1
+  rotate: false
+  xy: 623, 490
+  size: 85, 63
+  orig: 85, 63
+  offset: 0, 0
+  index: -1
+eyebow2
+  rotate: false
+  xy: 629, 298
+  size: 43, 100
+  orig: 61, 118
+  offset: 8, 9
+  index: -1
+facebow
+  rotate: false
+  xy: 539, 272
+  size: 82, 91
+  orig: 95, 104
+  offset: 7, 6
+  index: -1
+hair1
+  rotate: false
+  xy: 623, 406
+  size: 61, 76
+  orig: 74, 88
+  offset: 6, 6
+  index: -1
+hair2
+  rotate: false
+  xy: 680, 322
+  size: 54, 76
+  orig: 70, 94
+  offset: 7, 9
+  index: -1
+hair3
+  rotate: false
+  xy: 438, 283
+  size: 93, 80
+  orig: 110, 97
+  offset: 8, 9
+  index: -1
+hair4
+  rotate: false
+  xy: 562, 561
+  size: 123, 171
+  orig: 137, 183
+  offset: 8, 5
+  index: -1
+hair5
+  rotate: false
+  xy: 379, 371
+  size: 178, 171
+  orig: 187, 181
+  offset: 5, 5
+  index: -1
+hair6
+  rotate: false
+  xy: 8, 575
+  size: 369, 341
+  orig: 380, 351
+  offset: 1, 6
+  index: -1
+hair7
+  rotate: false
+  xy: 565, 438
+  size: 50, 115
+  orig: 65, 132
+  offset: 7, 11
+  index: -1
+hairbow
+  rotate: false
+  xy: 319, 283
+  size: 111, 26
+  orig: 124, 40
+  offset: 6, 6
+  index: -1
+ling2
+  rotate: false
+  xy: 244, 217
+  size: 97, 39
+  orig: 97, 39
+  offset: 0, 0
+  index: -1
+neckbow1
+  rotate: false
+  xy: 465, 21
+  size: 113, 75
+  orig: 129, 92
+  offset: 6, 8
+  index: -1
+neckbow2
+  rotate: false
+  xy: 601, 184
+  size: 83, 80
+  orig: 97, 98
+  offset: 5, 9
+  index: -1
+shoulderbow
+  rotate: false
+  xy: 586, 8
+  size: 77, 122
+  orig: 234, 150
+  offset: 151, 16
+  index: -1
+shoulderbow _2
+  rotate: false
+  xy: 146, 71
+  size: 134, 137
+  orig: 234, 150
+  offset: 3, 8
+  index: -1

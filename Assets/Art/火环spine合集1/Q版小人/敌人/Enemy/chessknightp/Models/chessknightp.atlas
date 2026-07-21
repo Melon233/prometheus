@@ -1,0 +1,181 @@
+
+chessknightp.png
+size: 1352,1352
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 286, 8
+  size: 219, 185
+  orig: 236, 204
+  offset: 8, 8
+  index: -1
+b1
+  rotate: false
+  xy: 1086, 600
+  size: 121, 166
+  orig: 138, 182
+  offset: 9, 8
+  index: -1
+body1
+  rotate: false
+  xy: 8, 8
+  size: 270, 407
+  orig: 270, 407
+  offset: 0, 0
+  index: -1
+body_1
+  rotate: false
+  xy: 447, 432
+  size: 225, 256
+  orig: 364, 376
+  offset: 84, 64
+  index: -1
+body_2
+  rotate: false
+  xy: 8, 696
+  size: 704, 648
+  orig: 704, 648
+  offset: 0, 0
+  index: -1
+body_3
+  rotate: false
+  xy: 883, 247
+  size: 254, 216
+  orig: 580, 518
+  offset: 154, 75
+  index: -1
+dizuo
+  rotate: false
+  xy: 8, 423
+  size: 431, 265
+  orig: 455, 281
+  offset: 16, 8
+  index: -1
+dizuo3
+  rotate: false
+  xy: 513, 18
+  size: 343, 169
+  orig: 343, 169
+  offset: 0, 0
+  index: -1
+dizuo4
+  rotate: false
+  xy: 1094, 774
+  size: 229, 244
+  orig: 229, 249
+  offset: 0, 0
+  index: -1
+jizuo2
+  rotate: false
+  xy: 1094, 1026
+  size: 229, 318
+  orig: 229, 497
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 388, 219
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 932, 732
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 1018, 758
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tiara_3
+  rotate: false
+  xy: 883, 471
+  size: 195, 228
+  orig: 432, 457
+  offset: 130, 80
+  index: -1
+tou
+  rotate: false
+  xy: 513, 195
+  size: 199, 229
+  orig: 216, 245
+  offset: 9, 8
+  index: -1
+weapon_1
+  rotate: false
+  xy: 932, 838
+  size: 154, 506
+  orig: 201, 552
+  offset: 42, 5
+  index: -1
+weapon_2
+  rotate: false
+  xy: 883, 707
+  size: 41, 637
+  orig: 252, 655
+  offset: 104, 11
+  index: -1
+weibo
+  rotate: false
+  xy: 883, 83
+  size: 276, 156
+  orig: 276, 156
+  offset: 0, 0
+  index: -1
+wuqi
+  rotate: false
+  xy: 720, 201
+  size: 155, 1143
+  orig: 171, 1160
+  offset: 8, 8
+  index: -1
+y_shou
+  rotate: false
+  xy: 1176, 522
+  size: 72, 70
+  orig: 88, 86
+  offset: 8, 8
+  index: -1
+y_shoubi_shagn
+  rotate: false
+  xy: 286, 216
+  size: 94, 199
+  orig: 111, 216
+  offset: 8, 8
+  index: -1
+y_shoubi_xia
+  rotate: false
+  xy: 1086, 509
+  size: 82, 83
+  orig: 98, 99
+  offset: 8, 8
+  index: -1
+z_shou
+  rotate: false
+  xy: 1256, 530
+  size: 78, 69
+  orig: 94, 85
+  offset: 8, 8
+  index: -1
+z_shoubi_shang
+  rotate: false
+  xy: 1215, 607
+  size: 105, 159
+  orig: 121, 175
+  offset: 8, 8
+  index: -1
+z_shoubi_xia
+  rotate: false
+  xy: 388, 277
+  size: 88, 138
+  orig: 104, 154
+  offset: 8, 8
+  index: -1

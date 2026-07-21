@@ -1,0 +1,12 @@
+skip_title=救世的赝作;
+skip_overview=瑞茵启动巨炮证明创生仪式的正确性，以及影兽异常入侵的事实，却遭使徒背刺。巨炮失控对准白塔众人，为阻止其暴走，众人不得不与这尊“救世赝作”展开战斗。;
+spine=菲尔佳<lights=1,faces=shockex>;mid_txt=呜哇啊啊！那尊巨炮……它对准我们了！<name=菲尔佳>;
+hide=spine;
+hide=txt;
+spine=主角<lights=1,faces=serious>;mid_txt=情况不妙！瑞茵失去意识，让这尊巨炮失控了！<name=/player/>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=啧！真是麻烦……奈菲娅，别发呆了！先应对眼前！<name=厄晞斯>;
+hide=spine;
+hide=txt;
+spine=奈菲娅<lights=1,faces=serious>;mid_txt=……我明白！<name=奈菲娅>;

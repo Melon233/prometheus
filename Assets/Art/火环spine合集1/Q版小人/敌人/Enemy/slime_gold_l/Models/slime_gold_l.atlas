@@ -1,0 +1,97 @@
+
+slime_gold_l.png
+size: 2335,2335
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Leye
+  rotate: false
+  xy: 1826, 878
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Leye2
+  rotate: false
+  xy: 2021, 878
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Reye
+  rotate: false
+  xy: 1826, 1139
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+Reye2
+  rotate: false
+  xy: 2072, 1139
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+body1
+  rotate: false
+  xy: 987, 1076
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body4
+  rotate: false
+  xy: 8, 1024
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body5
+  rotate: false
+  xy: 847, 438
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body6
+  rotate: false
+  xy: 8, 386
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body7
+  rotate: false
+  xy: 8, 1662
+  size: 971, 665
+  orig: 1123, 1123
+  offset: 75, 118
+  index: -1
+up2
+  rotate: false
+  xy: 987, 1714
+  size: 979, 613
+  orig: 1123, 1123
+  offset: 73, 237
+  index: -1
+up2_1
+  rotate: false
+  xy: 1974, 1396
+  size: 353, 402
+  orig: 1123, 1123
+  offset: 138, 232
+  index: -1
+up2_2
+  rotate: false
+  xy: 1686, 450
+  size: 566, 420
+  orig: 1123, 1123
+  offset: 241, 412
+  index: -1
+up2_3
+  rotate: false
+  xy: 1974, 1806
+  size: 305, 521
+  orig: 1123, 1123
+  offset: 673, 258
+  index: -1

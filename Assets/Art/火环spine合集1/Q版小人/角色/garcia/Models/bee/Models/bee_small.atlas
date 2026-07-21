@@ -1,0 +1,76 @@
+
+bee_small.png
+size: 461,461
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+small_1
+  rotate: false
+  xy: 405, 390
+  size: 48, 63
+  orig: 48, 63
+  offset: 0, 0
+  index: -1
+small_10
+  rotate: false
+  xy: 148, 379
+  size: 85, 74
+  orig: 97, 87
+  offset: 6, 7
+  index: -1
+small_2
+  rotate: false
+  xy: 148, 339
+  size: 58, 32
+  orig: 58, 32
+  offset: 0, 0
+  index: -1
+small_3
+  rotate: false
+  xy: 321, 385
+  size: 76, 68
+  orig: 76, 68
+  offset: 0, 0
+  index: -1
+small_4
+  rotate: false
+  xy: 321, 339
+  size: 53, 38
+  orig: 53, 38
+  offset: 0, 0
+  index: -1
+small_5
+  rotate: false
+  xy: 214, 334
+  size: 36, 37
+  orig: 36, 37
+  offset: 0, 0
+  index: -1
+small_6
+  rotate: false
+  xy: 8, 342
+  size: 132, 111
+  orig: 132, 111
+  offset: 0, 0
+  index: -1
+small_7
+  rotate: false
+  xy: 258, 336
+  size: 34, 35
+  orig: 34, 35
+  offset: 0, 0
+  index: -1
+small_8
+  rotate: false
+  xy: 405, 334
+  size: 45, 48
+  orig: 45, 48
+  offset: 0, 0
+  index: -1
+small_9
+  rotate: false
+  xy: 241, 379
+  size: 72, 74
+  orig: 72, 74
+  offset: 0, 0
+  index: -1

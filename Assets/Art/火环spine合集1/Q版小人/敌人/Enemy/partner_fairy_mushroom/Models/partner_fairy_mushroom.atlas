@@ -1,0 +1,209 @@
+
+partner_fairy_mushroom.png
+size: 508,508
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Bhair1
+  rotate: false
+  xy: 150, 181
+  size: 69, 104
+  orig: 69, 104
+  offset: 0, 0
+  index: -1
+Bhair2
+  rotate: false
+  xy: 8, 293
+  size: 208, 207
+  orig: 209, 207
+  offset: 1, 0
+  index: -1
+Bhair3
+  rotate: false
+  xy: 224, 367
+  size: 104, 133
+  orig: 104, 133
+  offset: 0, 0
+  index: -1
+Larm
+  rotate: false
+  xy: 337, 270
+  size: 64, 70
+  orig: 64, 70
+  offset: 0, 0
+  index: -1
+Lear
+  rotate: false
+  xy: 203, 49
+  size: 73, 89
+  orig: 73, 89
+  offset: 0, 0
+  index: -1
+Lhand
+  rotate: false
+  xy: 394, 89
+  size: 48, 44
+  orig: 48, 44
+  offset: 0, 0
+  index: -1
+Ljiao
+  rotate: false
+  xy: 445, 410
+  size: 55, 90
+  orig: 55, 90
+  offset: 0, 0
+  index: -1
+Lleg
+  rotate: false
+  xy: 411, 141
+  size: 49, 66
+  orig: 49, 66
+  offset: 0, 0
+  index: -1
+Rarm
+  rotate: false
+  xy: 227, 146
+  size: 90, 69
+  orig: 90, 69
+  offset: 0, 0
+  index: -1
+Rear
+  rotate: false
+  xy: 336, 400
+  size: 101, 100
+  orig: 101, 100
+  offset: 0, 0
+  index: -1
+Rjiao
+  rotate: false
+  xy: 125, 39
+  size: 70, 94
+  orig: 70, 94
+  offset: 0, 0
+  index: -1
+Rleg
+  rotate: false
+  xy: 340, 77
+  size: 46, 76
+  orig: 46, 76
+  offset: 0, 0
+  index: -1
+bell
+  rotate: false
+  xy: 263, 10
+  size: 31, 31
+  orig: 31, 31
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 430, 315
+  size: 70, 77
+  orig: 70, 77
+  offset: 0, 0
+  index: -1
+dai
+  rotate: false
+  xy: 210, 15
+  size: 45, 26
+  orig: 45, 26
+  offset: 0, 0
+  index: -1
+dai2
+  rotate: false
+  xy: 409, 268
+  size: 61, 39
+  orig: 61, 39
+  offset: 0, 0
+  index: -1
+daimao
+  rotate: false
+  xy: 407, 215
+  size: 58, 45
+  orig: 58, 45
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: false
+  xy: 150, 157
+  size: 57, 16
+  orig: 57, 16
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: false
+  xy: 224, 315
+  size: 86, 44
+  orig: 86, 44
+  offset: 0, 0
+  index: -1
+eye2_2
+  rotate: false
+  xy: 336, 348
+  size: 86, 44
+  orig: 86, 44
+  offset: 0, 0
+  index: -1
+eye3
+  rotate: false
+  xy: 325, 161
+  size: 78, 32
+  orig: 78, 32
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 227, 223
+  size: 102, 84
+  orig: 102, 84
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 8, 8
+  size: 109, 125
+  orig: 109, 125
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 284, 57
+  size: 48, 81
+  orig: 48, 81
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: false
+  xy: 8, 141
+  size: 134, 144
+  orig: 134, 144
+  offset: 0, 0
+  index: -1
+hua1
+  rotate: false
+  xy: 340, 19
+  size: 42, 50
+  orig: 42, 50
+  offset: 0, 0
+  index: -1
+hua2
+  rotate: false
+  xy: 450, 91
+  size: 36, 42
+  orig: 36, 42
+  offset: 0, 0
+  index: -1
+meimao
+  rotate: false
+  xy: 125, 8
+  size: 77, 23
+  orig: 77, 23
+  offset: 0, 0
+  index: -1
+mushroom
+  rotate: false
+  xy: 337, 201
+  size: 62, 61
+  orig: 62, 61
+  offset: 0, 0
+  index: -1

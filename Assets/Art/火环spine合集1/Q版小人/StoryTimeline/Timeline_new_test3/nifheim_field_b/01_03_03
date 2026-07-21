@@ -1,0 +1,16 @@
+skip_title=混乱渐起;
+skip_overview=从获救的士兵口中得知哨所遇袭的经过以及吊桥的操作方法后，白塔小组打算放下吊桥，前往哨所进行支援。;
+spine=尼芙海姆士兵|厄晞斯<lights=1|0,faces=idleface|idleface>;mid_txt=呼，哈……谢天谢地，你们可算来了！再晚一点的话，恐怕我就要被那些怪物生吃了！<name=守桥士兵>;
+spine=尼芙海姆士兵|厄晞斯<lights=1|0,faces=idleface|idleface>;mid_txt=等一下，你们看着……好像不是城防军的人？<name=守桥士兵>;
+spine=尼芙海姆士兵|厄晞斯<lights=0|1,faces=idleface|idleface>;mid_txt=我们是白塔，听说哨所遭到了影兽袭击，特地赶过来帮忙。<name=厄晞斯>;
+spine=尼芙海姆士兵|厄晞斯<lights=1|0,faces=idleface|idleface>;mid_txt=白塔！原来是你们，我听马特说过，他说你们白塔是一群很好的家伙——<name=守桥士兵>;
+spine=尼芙海姆士兵|厄晞斯<lights=0|1,faces=idleface|enmity>;mid_txt=停。小子，先说一下这里的情况，吊桥为什么升起来了？<name=厄晞斯>;
+spine=尼芙海姆士兵|厄晞斯<lights=1|0,faces=idleface|enmity>;mid_txt=好、好的！我们是隶属海恩驻防军第十七分队的第三小队，哨所遇袭后，我们奉雷蒙德队长的命令带着所内的平民撤往海恩城……<name=守桥士兵>;
+spine=尼芙海姆士兵|厄晞斯<lights=1|0,faces=idleface|enmity>;mid_txt=我们一路上遭遇了不少影兽，也死了不少弟兄……但总算完成了任务！<name=守桥士兵>;
+spine=尼芙海姆士兵|厄晞斯<lights=1|0,faces=idleface|enmity>;mid_txt=然后，我……马特说我还是个新兵，把我甩在这接应支援的人……他自己带着剩下的人回哨所帮忙了。<name=守桥士兵>;
+hide=spine;
+hide=txt;
+spine=主角<lights=1,faces=serious>;mid_txt=我们现在想要过桥，该怎么做？<name=/player/>;
+hide=spine;
+hide=txt;
+spine=尼芙海姆士兵<lights=1>;mid_txt=啊，拉、拉下那边的操作杆，吊桥就会放下来了！<name=守桥士兵>;

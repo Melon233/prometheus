@@ -1,0 +1,167 @@
+
+bronze_close.png
+size: 2098,614
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Larm
+  rotate: false
+  xy: 1891, 452
+  size: 135, 151
+  orig: 800, 800
+  offset: 234, 259
+  index: -1
+Lleg
+  rotate: false
+  xy: 1883, 119
+  size: 128, 197
+  orig: 800, 800
+  offset: 275, 115
+  index: -1
+Rarm
+  rotate: false
+  xy: 1957, 29
+  size: 129, 134
+  orig: 800, 800
+  offset: 344, 269
+  index: -1
+Rleg
+  rotate: false
+  xy: 1584, 27
+  size: 91, 200
+  orig: 800, 800
+  offset: 349, 113
+  index: -1
+backhair
+  rotate: false
+  xy: 981, 58
+  size: 327, 265
+  orig: 800, 800
+  offset: 144, 335
+  index: -1
+backhead
+  rotate: false
+  xy: 982, 330
+  size: 299, 278
+  orig: 800, 800
+  offset: 154, 454
+  index: -1
+body
+  rotate: false
+  xy: 1783, 358
+  size: 146, 196
+  orig: 800, 800
+  offset: 280, 217
+  index: -1
+claw
+  rotate: false
+  xy: 1926, 323
+  size: 99, 113
+  orig: 800, 800
+  offset: 200, 223
+  index: -1
+eye
+  rotate: false
+  xy: 88, 535
+  size: 62, 72
+  orig: 800, 800
+  offset: 295, 428
+  index: -1
+eyeHitted
+  rotate: false
+  xy: 156, 560
+  size: 75, 48
+  orig: 170, 106
+  offset: 5, 32
+  index: -1
+eyelid
+  rotate: false
+  xy: 8, 524
+  size: 73, 84
+  orig: 105, 112
+  offset: 16, 15
+  index: -1
+face
+  rotate: false
+  xy: 1315, 59
+  size: 268, 222
+  orig: 800, 800
+  offset: 207, 372
+  index: -1
+face_1
+  rotate: false
+  xy: 535, 166
+  size: 439, 299
+  orig: 800, 800
+  offset: 59, 353
+  index: -1
+face_2
+  rotate: false
+  xy: 8, 29
+  size: 163, 234
+  orig: 800, 800
+  offset: 397, 390
+  index: -1
+hair_1
+  rotate: false
+  xy: 268, 9
+  size: 144, 184
+  orig: 720, 720
+  offset: 259, 424
+  index: -1
+hair_2
+  rotate: false
+  xy: 1686, 54
+  size: 207, 264
+  orig: 800, 800
+  offset: 298, 465
+  index: -1
+hair_3
+  rotate: false
+  xy: 1288, 287
+  size: 179, 319
+  orig: 800, 800
+  offset: 353, 332
+  index: -1
+hair_4
+  rotate: false
+  xy: 1526, 233
+  size: 152, 372
+  orig: 800, 800
+  offset: 179, 310
+  index: -1
+hair_5
+  rotate: false
+  xy: 1630, 210
+  size: 181, 290
+  orig: 800, 800
+  offset: 93, 342
+  index: -1
+handR2
+  rotate: false
+  xy: 1379, 13
+  size: 122, 137
+  orig: 122, 137
+  offset: 0, 0
+  index: -1
+rose
+  rotate: false
+  xy: 409, 58
+  size: 288, 227
+  orig: 800, 800
+  offset: 135, 524
+  index: -1
+tail
+  rotate: false
+  xy: 736, 28
+  size: 223, 183
+  orig: 800, 800
+  offset: 189, 137
+  index: -1
+weapon_wind
+  rotate: false
+  xy: 8, 123
+  size: 636, 482
+  orig: 800, 800
+  offset: 164, 71
+  index: -1

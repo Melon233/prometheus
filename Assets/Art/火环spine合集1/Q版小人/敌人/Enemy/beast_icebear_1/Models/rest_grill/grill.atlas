@@ -1,0 +1,41 @@
+
+grill.png
+size: 371,371
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+niku_1
+  rotate: false
+  xy: 8, 130
+  size: 163, 103
+  orig: 255, 122
+  offset: 75, 0
+  index: -1
+niku_2
+  rotate: false
+  xy: 179, 157
+  size: 124, 76
+  orig: 255, 122
+  offset: 79, 44
+  index: -1
+niku_2_1
+  rotate: false
+  xy: 271, 274
+  size: 92, 39
+  orig: 255, 122
+  offset: 25, 61
+  index: -1
+niku_2_2
+  rotate: false
+  xy: 271, 321
+  size: 77, 42
+  orig: 255, 122
+  offset: 178, 57
+  index: -1
+niku_3
+  rotate: false
+  xy: 8, 241
+  size: 255, 122
+  orig: 255, 122
+  offset: 0, 0
+  index: -1

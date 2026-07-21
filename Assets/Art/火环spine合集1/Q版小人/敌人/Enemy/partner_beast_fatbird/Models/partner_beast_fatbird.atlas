@@ -1,0 +1,83 @@
+
+partner_beast_fatbird.png
+size: 467,467
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bing
+  rotate: false
+  xy: 385, 342
+  size: 38, 53
+  orig: 205, 217
+  offset: 45, 70
+  index: -1
+chibang_1
+  rotate: false
+  xy: 256, 200
+  size: 184, 114
+  orig: 216, 146
+  offset: 16, 16
+  index: -1
+chibang_2
+  rotate: false
+  xy: 256, 8
+  size: 145, 73
+  orig: 168, 104
+  offset: 10, 14
+  index: -1
+hui
+  rotate: false
+  xy: 256, 89
+  size: 154, 103
+  orig: 182, 136
+  offset: 11, 18
+  index: -1
+shenti
+  rotate: false
+  xy: 191, 322
+  size: 186, 137
+  orig: 204, 179
+  offset: 18, 25
+  index: -1
+tou
+  rotate: false
+  xy: 8, 278
+  size: 175, 181
+  orig: 205, 217
+  offset: 13, 18
+  index: -1
+tui_1
+  rotate: false
+  xy: 8, 49
+  size: 125, 221
+  orig: 156, 255
+  offset: 19, 18
+  index: -1
+tui_2
+  rotate: false
+  xy: 141, 49
+  size: 107, 221
+  orig: 137, 254
+  offset: 15, 19
+  index: -1
+yanjing
+  rotate: false
+  xy: 228, 296
+  size: 20, 18
+  orig: 54, 51
+  offset: 17, 16
+  index: -1
+zui1
+  rotate: false
+  xy: 385, 403
+  size: 52, 56
+  orig: 205, 217
+  offset: 101, 48
+  index: -1
+zui2
+  rotate: false
+  xy: 191, 281
+  size: 29, 33
+  orig: 205, 217
+  offset: 106, 61
+  index: -1

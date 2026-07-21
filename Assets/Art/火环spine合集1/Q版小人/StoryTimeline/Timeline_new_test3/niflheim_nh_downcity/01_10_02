@@ -1,0 +1,16 @@
+skip_title=霜百合;
+skip_overview=你们与伊尔夏——这位立志让尼芙海姆摆脱当前的困境的少女达成合作。她承诺为你们提供潜入教会监狱的密道与支援…然而你们也心知肚明，这只是一场利益交换，彼此仍有保留。;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=angry|idleface>;mid_txt=——你还不明白吗？洛瑟娅，“为了尼芙海姆的稳定”——我们已经被这句话禁锢了太久太久！<name=白发少女>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=angry|idleface>;mid_txt=十五年前，我们为了“稳定”封闭了尼芙海姆的大门；如今，我们又因“稳定”二字将海恩城门封锁……<name=白发少女>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=angry|idleface>;mid_txt=我们听信教义，试图将城邦打造成一个铁桶，以为如此就能抵御风雪中的阴影。<name=白发少女>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=angry|idleface>;mid_txt=——但我们是风雪的孩子！我们在霜雪中建起的海恩城屹立不倒，我们在冻海中开拓的洛加港曾千帆竞发！<name=白发少女>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=angry|idleface>;mid_txt=可是为何，如今我们困顿于此——<name=白发少女>;
+spine=伊尔夏|洛瑟娅<lights=0|1,faces=angry|sigh>;mid_txt=伊尔夏，别说了…毫无意义。<name=洛瑟娅>;
+spine=伊尔夏|洛瑟娅<lights=0|1,faces=angry|sigh>;mid_txt=我知道你为“野心”付出许多，但那并没有改变尼芙海姆——下城区的土豆已经涨到了17冬钱一个。<name=洛瑟娅>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=serious|sigh>;mid_txt=——18个冬钱。拳头大小的18个冬钱，鸡蛋大小的11个冬钱，努力砍价的话能省下1个冬钱，对比三天前涨了2个冬钱。<name=伊尔夏>;
+spine=伊尔夏|洛瑟娅<lights=0|1,faces=serious|no>;mid_txt=啊啊，我差点忘了，你从小就对这些感兴趣来着……<name=洛瑟娅>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=resolute|no>;mid_txt=我们都知道现况正在恶化，因此，我们才更需要行动。<name=伊尔夏>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=resolute|no>;mid_txt=教会长久的桎梏理应被打破，让洛加港的航船承载更多的尼芙海姆货物驶向远方！<name=伊尔夏>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=resolute|no>;mid_txt=待它归来，每个人都能通过廉价的隆迦术具供暖，每个人都能享用大衍麦种所烘烤的松软面包……<name=伊尔夏>;
+spine=伊尔夏|洛瑟娅<lights=1|0,faces=resolute|no>;mid_txt=物价将会恢复，即便不富裕的……洛瑟娅，你还在听吗？<name=伊尔夏>;
+spine=伊尔夏|洛瑟娅<lights=0|1,faces=resolute|idleface>;mid_txt=没…哦，我是说，你差不多该注意一下周围——你的“共犯”到了，让@(ta@)们也参与这个话题，如何？<name=洛瑟娅>;

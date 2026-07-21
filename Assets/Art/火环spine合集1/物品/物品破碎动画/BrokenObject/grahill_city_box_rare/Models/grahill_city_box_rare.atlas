@@ -1,0 +1,55 @@
+
+grahill_city_box_rare.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 47, 766
+  size: 111, 66
+  orig: 111, 66
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 8, 243
+  size: 386, 430
+  orig: 386, 430
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 454, 526
+  size: 351, 306
+  orig: 351, 306
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 220, 681
+  size: 226, 151
+  orig: 226, 151
+  offset: 0, 0
+  index: -1
+5
+  rotate: false
+  xy: 166, 756
+  size: 46, 76
+  orig: 46, 76
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 8, 786
+  size: 31, 46
+  orig: 31, 46
+  offset: 0, 0
+  index: -1
+all
+  rotate: false
+  xy: 402, 88
+  size: 430, 430
+  orig: 430, 430
+  offset: 0, 0
+  index: -1

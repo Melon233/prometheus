@@ -1,0 +1,111 @@
+
+saxifrage.png
+size: 869,869
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hua_1
+  rotate: false
+  xy: 249, 152
+  size: 228, 214
+  orig: 228, 214
+  offset: 0, 0
+  index: -1
+hua_2
+  rotate: false
+  xy: 700, 358
+  size: 160, 174
+  orig: 160, 174
+  offset: 0, 0
+  index: -1
+hua_3
+  rotate: false
+  xy: 213, 374
+  size: 240, 297
+  orig: 240, 297
+  offset: 0, 0
+  index: -1
+hua_4
+  rotate: false
+  xy: 424, 686
+  size: 231, 175
+  orig: 237, 179
+  offset: 6, 4
+  index: -1
+hua_4_2
+  rotate: false
+  xy: 700, 252
+  size: 64, 98
+  orig: 237, 179
+  offset: 120, 57
+  index: -1
+hua_5
+  rotate: false
+  xy: 663, 688
+  size: 192, 173
+  orig: 192, 173
+  offset: 0, 0
+  index: -1
+hua_6
+  rotate: false
+  xy: 8, 49
+  size: 233, 236
+  orig: 241, 248
+  offset: 8, 4
+  index: -1
+hua_7
+  rotate: false
+  xy: 461, 398
+  size: 182, 280
+  orig: 189, 286
+  offset: 7, 0
+  index: -1
+hua_8
+  rotate: false
+  xy: 8, 293
+  size: 197, 378
+  orig: 197, 378
+  offset: 0, 0
+  index: -1
+hua_8_2
+  rotate: false
+  xy: 249, 63
+  size: 88, 81
+  orig: 197, 378
+  offset: 45, 240
+  index: -1
+yezi_1
+  rotate: false
+  xy: 485, 46
+  size: 220, 160
+  orig: 220, 160
+  offset: 0, 0
+  index: -1
+yezi_2
+  rotate: false
+  xy: 485, 214
+  size: 207, 176
+  orig: 208, 176
+  offset: 1, 0
+  index: -1
+yezi_3
+  rotate: false
+  xy: 713, 99
+  size: 148, 145
+  orig: 161, 146
+  offset: 7, 0
+  index: -1
+yezi_4
+  rotate: false
+  xy: 8, 679
+  size: 408, 182
+  orig: 415, 183
+  offset: 7, 1
+  index: -1
+yezi_5
+  rotate: false
+  xy: 663, 540
+  size: 185, 140
+  orig: 188, 140
+  offset: 3, 0
+  index: -1

@@ -1,0 +1,132 @@
+
+speed_snail.png
+size: 462,462
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+001
+  rotate: false
+  xy: 394, 284
+  size: 50, 60
+  orig: 50, 60
+  offset: 0, 0
+  index: -1
+002
+  rotate: false
+  xy: 416, 156
+  size: 16, 28
+  orig: 16, 28
+  offset: 0, 0
+  index: -1
+003
+  rotate: false
+  xy: 416, 192
+  size: 34, 36
+  orig: 34, 36
+  offset: 0, 0
+  index: -1
+004
+  rotate: false
+  xy: 394, 262
+  size: 12, 14
+  orig: 12, 14
+  offset: 0, 0
+  index: -1
+005
+  rotate: false
+  xy: 225, 17
+  size: 20, 23
+  orig: 20, 23
+  offset: 0, 0
+  index: -1
+006
+  rotate: false
+  xy: 254, 62
+  size: 49, 54
+  orig: 49, 54
+  offset: 0, 0
+  index: -1
+007
+  rotate: false
+  xy: 311, 82
+  size: 17, 19
+  orig: 17, 19
+  offset: 0, 0
+  index: -1
+008
+  rotate: false
+  xy: 311, 109
+  size: 28, 16
+  orig: 28, 16
+  offset: 0, 0
+  index: -1
+009
+  rotate: false
+  xy: 173, 15
+  size: 44, 25
+  orig: 44, 25
+  offset: 0, 0
+  index: -1
+010
+  rotate: false
+  xy: 98, 14
+  size: 67, 102
+  orig: 67, 102
+  offset: 0, 0
+  index: -1
+011
+  rotate: false
+  xy: 238, 261
+  size: 148, 193
+  orig: 148, 193
+  offset: 0, 0
+  index: -1
+012
+  rotate: false
+  xy: 173, 48
+  size: 73, 68
+  orig: 73, 68
+  offset: 0, 0
+  index: -1
+013
+  rotate: false
+  xy: 296, 133
+  size: 112, 120
+  orig: 112, 120
+  offset: 0, 0
+  index: -1
+014
+  rotate: false
+  xy: 394, 352
+  size: 60, 102
+  orig: 60, 102
+  offset: 0, 0
+  index: -1
+015
+  rotate: false
+  xy: 8, 253
+  size: 222, 201
+  orig: 222, 201
+  offset: 0, 0
+  index: -1
+016
+  rotate: false
+  xy: 416, 236
+  size: 38, 40
+  orig: 38, 40
+  offset: 0, 0
+  index: -1
+017
+  rotate: false
+  xy: 8, 14
+  size: 82, 102
+  orig: 82, 102
+  offset: 0, 0
+  index: -1
+018
+  rotate: false
+  xy: 8, 124
+  size: 280, 121
+  orig: 280, 121
+  offset: 0, 0
+  index: -1

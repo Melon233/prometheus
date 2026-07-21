@@ -1,0 +1,20 @@
+
+folgega_bingdiao_ex.png
+size: 2687,2687
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bingdiao_big
+  rotate: false
+  xy: 8, 1098
+  size: 1301, 1581
+  orig: 1326, 1606
+  offset: 13, 12
+  index: -1
+bingdiao_big2
+  rotate: false
+  xy: 8, 8
+  size: 1190, 1082
+  orig: 1326, 1606
+  offset: 13, 12
+  index: -1

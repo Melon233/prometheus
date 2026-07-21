@@ -1,0 +1,13 @@
+
+sword.png
+size: 313,313
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dao2
+  rotate: false
+  xy: 8, 8
+  size: 149, 297
+  orig: 153, 303
+  offset: 2, 3
+  index: -1

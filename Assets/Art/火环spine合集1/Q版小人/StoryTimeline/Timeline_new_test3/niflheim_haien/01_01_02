@@ -1,0 +1,14 @@
+skip_title=新的开始;
+skip_overview=在城门口，高利扬教士突然出现，以手续不全和身份可疑为由强行阻拦你入城。他无视厄晞斯的担保，厉声指责白塔的立场，并最终无视警告，命令卫兵动用实弹试图将你们全部拿下。;
+spine=尼芙海姆士兵<lights=1>;mid_txt=嗯……货没问题，证件没问题，快过去吧…后面的，上来！<name=守城卫兵>;
+hide=spine;
+hide=txt;
+spine=主角|尼芙海姆士兵<lights=0|1>;mid_txt=……是白塔的几位，调查辛苦了，请出示你们的证件…没问题，欢迎回到海恩城。<name=守城卫兵>;
+spine=主角|尼芙海姆士兵<lights=0|1>;mid_txt=抱歉，这位@(adult@)，请出示你的证件。如若没有办理手续，还请前往另一条队列等待。<name=守城卫兵>;
+spine=主角|尼芙海姆士兵<lights=1|0,faces=sad|idleface>;mid_txt=唔，那我先去另一边排队。<name=/player/>;
+hide=txt;
+spine=厄晞斯|尼芙海姆士兵<lights=1|0,faces=idleface|idleface>;mid_txt=抱歉啊小哥，@(ta@)跟我们是一块的。之前我忘给@(ta@)办手续了，先让我们进城，手续待会再补，没问题吧？<name=厄晞斯>;
+spine=厄晞斯|尼芙海姆士兵<lights=0|1,faces=idleface|idleface>;mid_txt=当然可以，既然是你们白塔的——<name=守城卫兵>;
+hide=spine;
+hide=txt;
+mid_txt=慢着——！<name=？？？>;

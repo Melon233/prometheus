@@ -1,0 +1,11 @@
+skip_title=救世的赝作;
+skip_overview=瑞茵启动巨炮证明创生仪式的正确性，以及影兽异常入侵的事实，却遭使徒背刺。巨炮失控对准白塔众人，为阻止其暴走，众人不得不与这尊“救世赝作”展开战斗。;
+spine=莉芙<lights=1,faces=happy>;mid_txt=现在……你们亲眼看见了——这就是所谓神明的“惩戒”！<name=瑞茵>;
+spine=莉芙<lights=1,faces=serious>;mid_txt=影兽以如此荒谬的方式降临，将我们的仪式彻底摧毁……如果灾祸竟能如儿戏般随意发生，我们为何还要信仰神明？！<name=瑞茵>;
+hide=spine;
+hide=txt;
+mid_txt=说得真好。不愧是我中意的角色。本以为只是虫豸的闹剧，没想到还能听到如此悦耳的渎神之语。<name=？？？>;
+mid_txt=真想把你也变成我们的一员——怨恨神明的巫妖……多么合适。<name=？？？>;
+hide=spine;
+hide=txt;
+spine=莉芙<lights=1,faces=hurt>;mid_txt=这个声音……难道是你——呃？！<name=瑞茵>;

@@ -1,0 +1,237 @@
+
+shadow_remote.png
+size: 1311,1311
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+armL
+  rotate: false
+  xy: 534, 13
+  size: 96, 88
+  orig: 119, 113
+  offset: 11, 12
+  index: -1
+armR
+  rotate: false
+  xy: 792, 8
+  size: 100, 104
+  orig: 121, 125
+  offset: 11, 13
+  index: -1
+armR_L
+  rotate: false
+  xy: 1220, 972
+  size: 58, 62
+  orig: 121, 125
+  offset: 19, 20
+  index: -1
+armR_U
+  rotate: false
+  xy: 1220, 1042
+  size: 64, 61
+  orig: 121, 125
+  offset: 39, 44
+  index: -1
+body
+  rotate: false
+  xy: 1128, 66
+  size: 166, 192
+  orig: 190, 225
+  offset: 11, 20
+  index: -1
+bodyT
+  rotate: false
+  xy: 792, 120
+  size: 156, 88
+  orig: 190, 225
+  offset: 10, 120
+  index: -1
+braidL
+  rotate: false
+  xy: 8, 156
+  size: 278, 321
+  orig: 282, 342
+  offset: 1, 11
+  index: -1
+braidR
+  rotate: false
+  xy: 684, 216
+  size: 268, 328
+  orig: 278, 333
+  offset: 6, 5
+  index: -1
+eye
+  rotate: false
+  xy: 1156, 674
+  size: 144, 82
+  orig: 170, 106
+  offset: 13, 13
+  index: -1
+eyeHitted
+  rotate: false
+  xy: 978, 587
+  size: 170, 106
+  orig: 170, 106
+  offset: 0, 0
+  index: -1
+eyelid
+  rotate: false
+  xy: 956, 13
+  size: 105, 112
+  orig: 105, 112
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 684, 552
+  size: 286, 338
+  orig: 286, 338
+  offset: 0, 0
+  index: -1
+fire/weapon
+  rotate: false
+  xy: 8, 898
+  size: 396, 405
+  orig: 396, 405
+  offset: 0, 0
+  index: -1
+hairFL
+  rotate: false
+  xy: 978, 701
+  size: 111, 189
+  orig: 128, 214
+  offset: 9, 10
+  index: -1
+hairFR
+  rotate: false
+  xy: 671, 8
+  size: 113, 200
+  orig: 137, 228
+  offset: 11, 15
+  index: -1
+hairSL1
+  rotate: false
+  xy: 294, 244
+  size: 90, 233
+  orig: 112, 248
+  offset: 14, 12
+  index: -1
+hairSR
+  rotate: false
+  xy: 392, 72
+  size: 134, 295
+  orig: 152, 318
+  offset: 8, 9
+  index: -1
+handL1
+  rotate: false
+  xy: 1172, 541
+  size: 112, 125
+  orig: 112, 125
+  offset: 0, 0
+  index: -1
+handL2
+  rotate: false
+  xy: 1172, 407
+  size: 100, 126
+  orig: 100, 126
+  offset: 0, 0
+  index: -1
+handR1
+  rotate: false
+  xy: 8, 11
+  size: 122, 137
+  orig: 122, 137
+  offset: 0, 0
+  index: -1
+handR2
+  rotate: false
+  xy: 138, 11
+  size: 122, 137
+  orig: 122, 137
+  offset: 0, 0
+  index: -1
+horn
+  rotate: false
+  xy: 1097, 764
+  size: 107, 126
+  orig: 107, 126
+  offset: 0, 0
+  index: -1
+ice/weapon
+  rotate: false
+  xy: 816, 898
+  size: 396, 405
+  orig: 396, 405
+  offset: 0, 0
+  index: -1
+legL
+  rotate: false
+  xy: 294, 32
+  size: 87, 204
+  orig: 105, 216
+  offset: 5, 10
+  index: -1
+legR
+  rotate: false
+  xy: 1220, 1111
+  size: 78, 192
+  orig: 107, 210
+  offset: 15, 8
+  index: -1
+mask
+  rotate: false
+  xy: 960, 266
+  size: 204, 278
+  orig: 204, 278
+  offset: 0, 0
+  index: -1
+pupil
+  rotate: false
+  xy: 389, 15
+  size: 120, 49
+  orig: 147, 74
+  offset: 16, 15
+  index: -1
+shellR
+  rotate: false
+  xy: 412, 523
+  size: 264, 367
+  orig: 264, 367
+  offset: 0, 0
+  index: -1
+shellSL
+  rotate: false
+  xy: 534, 109
+  size: 129, 258
+  orig: 129, 258
+  offset: 0, 0
+  index: -1
+shellT
+  rotate: false
+  xy: 412, 375
+  size: 264, 140
+  orig: 264, 140
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 960, 133
+  size: 160, 125
+  orig: 174, 152
+  offset: 9, 9
+  index: -1
+thunder/weapon
+  rotate: false
+  xy: 412, 898
+  size: 396, 405
+  orig: 396, 405
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 485
+  size: 396, 405
+  orig: 396, 405
+  offset: 0, 0
+  index: -1

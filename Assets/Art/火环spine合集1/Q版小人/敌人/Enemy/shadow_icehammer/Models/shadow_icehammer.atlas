@@ -1,0 +1,153 @@
+
+shadow_icehammer.png
+size: 1776,1776
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+eyehitted
+  rotate: false
+  xy: 1088, 55
+  size: 170, 106
+  orig: 170, 106
+  offset: 0, 0
+  index: -1
+jiao_L
+  rotate: false
+  xy: 1415, 22
+  size: 160, 211
+  orig: 168, 222
+  offset: 2, 11
+  index: -1
+jiao_R
+  rotate: false
+  xy: 1603, 685
+  size: 158, 208
+  orig: 158, 219
+  offset: 0, 11
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 528
+  size: 627, 662
+  orig: 627, 670
+  offset: 0, 5
+  index: -1
+shou_L
+  rotate: false
+  xy: 1603, 479
+  size: 150, 198
+  orig: 150, 198
+  offset: 0, 0
+  index: -1
+shou_L_1
+  rotate: false
+  xy: 947, 566
+  size: 315, 243
+  orig: 315, 243
+  offset: 0, 0
+  index: -1
+shou_L_2
+  rotate: false
+  xy: 1385, 590
+  size: 210, 303
+  orig: 210, 303
+  offset: 0, 0
+  index: -1
+shou_L_3
+  rotate: false
+  xy: 1385, 901
+  size: 319, 289
+  orig: 326, 324
+  offset: 7, 15
+  index: -1
+shou_R
+  rotate: false
+  xy: 8, 8
+  size: 426, 512
+  orig: 426, 512
+  offset: 0, 0
+  index: -1
+shoubi_L
+  rotate: false
+  xy: 643, 544
+  size: 296, 265
+  orig: 296, 266
+  offset: 0, 1
+  index: -1
+shoubi_R
+  rotate: false
+  xy: 442, 18
+  size: 406, 502
+  orig: 406, 502
+  offset: 0, 0
+  index: -1
+shoubi_r2
+  rotate: false
+  xy: 1121, 868
+  size: 256, 322
+  orig: 256, 322
+  offset: 0, 0
+  index: -1
+tou_0
+  rotate: false
+  xy: 856, 169
+  size: 364, 367
+  orig: 364, 367
+  offset: 0, 0
+  index: -1
+tou_1
+  rotate: false
+  xy: 1228, 241
+  size: 258, 317
+  orig: 259, 323
+  offset: 1, 6
+  index: -1
+tou_2
+  rotate: false
+  xy: 1266, 16
+  size: 141, 217
+  orig: 141, 217
+  offset: 0, 0
+  index: -1
+tou_3
+  rotate: false
+  xy: 1494, 268
+  size: 127, 202
+  orig: 127, 202
+  offset: 0, 0
+  index: -1
+toufa_1
+  rotate: false
+  xy: 643, 817
+  size: 470, 373
+  orig: 473, 375
+  offset: 0, 0
+  index: -1
+toufa_2
+  rotate: false
+  xy: 856, 42
+  size: 224, 119
+  orig: 233, 128
+  offset: 0, 5
+  index: -1
+wuqi
+  rotate: false
+  xy: 8, 1198
+  size: 876, 570
+  orig: 888, 580
+  offset: 7, 10
+  index: -1
+wuqi1
+  rotate: false
+  xy: 892, 1198
+  size: 876, 570
+  orig: 888, 580
+  offset: 7, 10
+  index: -1
+yanjing
+  rotate: false
+  xy: 1494, 478
+  size: 90, 104
+  orig: 90, 104
+  offset: 0, 0
+  index: -1

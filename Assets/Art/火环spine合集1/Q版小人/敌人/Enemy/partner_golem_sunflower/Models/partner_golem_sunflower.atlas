@@ -1,0 +1,125 @@
+
+partner_golem_sunflower.png
+size: 499,499
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 242, 363
+  size: 225, 128
+  orig: 225, 128
+  offset: 0, 0
+  index: -1
+bow1
+  rotate: false
+  xy: 151, 9
+  size: 114, 43
+  orig: 114, 43
+  offset: 0, 0
+  index: -1
+bow2
+  rotate: false
+  xy: 240, 219
+  size: 162, 65
+  orig: 162, 65
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 151, 60
+  size: 75, 71
+  orig: 75, 71
+  offset: 0, 0
+  index: -1
+head1
+  rotate: false
+  xy: 8, 15
+  size: 135, 116
+  orig: 135, 116
+  offset: 0, 0
+  index: -1
+head2
+  rotate: false
+  xy: 8, 302
+  size: 226, 189
+  orig: 232, 192
+  offset: 0, 0
+  index: -1
+head3
+  rotate: false
+  xy: 8, 139
+  size: 171, 155
+  orig: 171, 155
+  offset: 0, 0
+  index: -1
+head4
+  rotate: false
+  xy: 237, 73
+  size: 158, 138
+  orig: 158, 138
+  offset: 0, 0
+  index: -1
+legL
+  rotate: false
+  xy: 403, 76
+  size: 62, 76
+  orig: 62, 77
+  offset: 0, 0
+  index: -1
+legR
+  rotate: false
+  xy: 423, 278
+  size: 68, 77
+  orig: 68, 77
+  offset: 0, 0
+  index: -1
+neck
+  rotate: false
+  xy: 187, 179
+  size: 42, 74
+  orig: 54, 88
+  offset: 8, 8
+  index: -1
+ye1
+  rotate: false
+  xy: 242, 292
+  size: 173, 63
+  orig: 260, 84
+  offset: 80, 6
+  index: -1
+ye2
+  rotate: false
+  xy: 403, 160
+  size: 80, 47
+  orig: 186, 66
+  offset: 100, 7
+  index: -1
+ye3
+  rotate: false
+  xy: 187, 261
+  size: 45, 33
+  orig: 89, 58
+  offset: 39, 7
+  index: -1
+ye4
+  rotate: false
+  xy: 187, 145
+  size: 41, 26
+  orig: 89, 58
+  offset: 4, 24
+  index: -1
+ye5
+  rotate: false
+  xy: 273, 13
+  size: 67, 52
+  orig: 186, 66
+  offset: 5, 8
+  index: -1
+ye6
+  rotate: false
+  xy: 410, 215
+  size: 81, 55
+  orig: 260, 84
+  offset: 7, 23
+  index: -1

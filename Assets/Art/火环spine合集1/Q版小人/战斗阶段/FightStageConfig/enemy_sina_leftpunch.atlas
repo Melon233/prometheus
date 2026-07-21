@@ -1,0 +1,195 @@
+
+enemy_sina_leftpunch.png
+size: 3591,3591
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+leftpunch/death/3_R5
+  rotate: false
+  xy: 274, 39
+  size: 258, 372
+  orig: 258, 372
+  offset: 0, 0
+  index: -1
+leftpunch/death/3_R6
+  rotate: false
+  xy: 2139, 1335
+  size: 396, 662
+  orig: 396, 662
+  offset: 0, 0
+  index: -1
+leftpunch/death/3_Rhand1
+  rotate: false
+  xy: 8, 419
+  size: 1266, 1578
+  orig: 1266, 1578
+  offset: 0, 0
+  index: -1
+leftpunch/death/3_Rhand2
+  rotate: false
+  xy: 1282, 1127
+  size: 849, 870
+  orig: 849, 870
+  offset: 0, 0
+  index: -1
+leftpunch/death/3_Rhand3
+  rotate: false
+  xy: 1282, 45
+  size: 376, 495
+  orig: 376, 495
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R1
+  rotate: false
+  xy: 2399, 137
+  size: 1109, 571
+  orig: 1109, 571
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R10
+  rotate: false
+  xy: 2998, 870
+  size: 305, 568
+  orig: 305, 568
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R2
+  rotate: false
+  xy: 2050, 112
+  size: 272, 428
+  orig: 272, 428
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R3
+  rotate: false
+  xy: 2399, 716
+  size: 262, 611
+  orig: 262, 611
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R6
+  rotate: false
+  xy: 2960, 2043
+  size: 396, 662
+  orig: 396, 662
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R7
+  rotate: false
+  xy: 3413, 3302
+  size: 46, 281
+  orig: 46, 281
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R8
+  rotate: false
+  xy: 2669, 789
+  size: 321, 589
+  orig: 359, 589
+  offset: 38, 0
+  index: -1
+leftpunch/normal/R9
+  rotate: false
+  xy: 2813, 1463
+  size: 436, 572
+  orig: 436, 572
+  offset: 0, 0
+  index: -1
+leftpunch/normal/Rhand1
+  rotate: false
+  xy: 1282, 2005
+  size: 1266, 1578
+  orig: 1266, 1578
+  offset: 0, 0
+  index: -1
+leftpunch/normal/Rhand2
+  rotate: false
+  xy: 2556, 2713
+  size: 849, 870
+  orig: 849, 870
+  offset: 0, 0
+  index: -1
+leftpunch/normal/Rhand3
+  rotate: false
+  xy: 1666, 45
+  size: 376, 495
+  orig: 376, 495
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R1
+  rotate: false
+  xy: 1282, 548
+  size: 1109, 571
+  orig: 1109, 571
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R2
+  rotate: false
+  xy: 3311, 1010
+  size: 272, 428
+  orig: 272, 428
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R3
+  rotate: false
+  xy: 2543, 1386
+  size: 262, 611
+  orig: 262, 611
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R4
+  rotate: false
+  xy: 540, 41
+  size: 199, 370
+  orig: 199, 370
+  offset: 0, 0
+  index: -1
+leftpunch/death/3_R4
+  rotate: false
+  xy: 540, 41
+  size: 199, 370
+  orig: 199, 370
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R4
+  rotate: false
+  xy: 540, 41
+  size: 199, 370
+  orig: 199, 370
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R5
+  rotate: false
+  xy: 8, 39
+  size: 258, 372
+  orig: 258, 372
+  offset: 0, 0
+  index: -1
+leftpunch/normal/R5
+  rotate: false
+  xy: 8, 39
+  size: 258, 372
+  orig: 258, 372
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R6
+  rotate: false
+  xy: 2556, 2043
+  size: 396, 662
+  orig: 396, 662
+  offset: 0, 0
+  index: -1
+leftpunch/weak/2_R8
+  rotate: false
+  xy: 3257, 1446
+  size: 321, 589
+  orig: 359, 589
+  offset: 38, 0
+  index: -1
+leftpunch/weak/2_Rhand1
+  rotate: false
+  xy: 8, 2005
+  size: 1266, 1578
+  orig: 1266, 1578
+  offset: 0, 0
+  index: -1

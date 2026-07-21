@@ -1,0 +1,13 @@
+
+feather.png
+size: 349,349
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+feather
+  rotate: false
+  xy: 8, 207
+  size: 333, 134
+  orig: 341, 142
+  offset: 4, 4
+  index: -1

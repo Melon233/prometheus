@@ -1,0 +1,6 @@
+skip_title=密道;
+skip_overview=打开机关门后，却意外触发了密道中的机关。躲过一阵箭雨后，更大的箭矢如暴雨般落下，你们不得不全力朝出口奔去。;
+spine=海芙温<lights=1,faces=amazed>;mid_txt=哇，没想到还有机关！不过这点小把戏，小事——<name=海芙温>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=——小心！<name=厄晞斯>;

@@ -1,0 +1,69 @@
+
+partner_artifact_broomstick.png
+size: 388,388
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bin
+  rotate: false
+  xy: 263, 145
+  size: 117, 235
+  orig: 117, 235
+  offset: 0, 0
+  index: -1
+daizi
+  rotate: false
+  xy: 8, 28
+  size: 120, 101
+  orig: 120, 101
+  offset: 0, 0
+  index: -1
+huan1
+  rotate: false
+  xy: 136, 39
+  size: 67, 45
+  orig: 67, 45
+  offset: 0, 0
+  index: -1
+huan2
+  rotate: false
+  xy: 274, 93
+  size: 66, 44
+  orig: 66, 44
+  offset: 0, 0
+  index: -1
+jie
+  rotate: false
+  xy: 274, 40
+  size: 49, 45
+  orig: 49, 45
+  offset: 0, 0
+  index: -1
+link
+  rotate: false
+  xy: 8, 137
+  size: 85, 243
+  orig: 85, 243
+  offset: 0, 0
+  index: -1
+pian
+  rotate: false
+  xy: 136, 92
+  size: 70, 80
+  orig: 70, 80
+  offset: 0, 0
+  index: -1
+saoba
+  rotate: false
+  xy: 101, 180
+  size: 154, 200
+  orig: 154, 200
+  offset: 0, 0
+  index: -1
+zhui
+  rotate: false
+  xy: 214, 77
+  size: 52, 60
+  orig: 52, 60
+  offset: 0, 0
+  index: -1

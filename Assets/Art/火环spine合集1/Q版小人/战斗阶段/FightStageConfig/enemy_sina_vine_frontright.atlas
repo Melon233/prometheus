@@ -1,0 +1,13 @@
+
+enemy_sina_vine_frontright.png
+size: 2990,2990
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+vines
+  rotate: false
+  xy: 8, 8
+  size: 511, 2974
+  orig: 600, 3200
+  offset: 45, 106
+  index: -1

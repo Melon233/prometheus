@@ -1,0 +1,11 @@
+skip_title=被废弃的村庄;
+skip_overview=你们在冰窟深处发现了一个残留的法阵。正当你们准备上前时，艾洛尔突然发出急促预警……;
+spine=纳叶|厄晞斯<lights=0|1,faces=idleface|smile>;mid_txt=哈！果然找到了！<name=厄晞斯>;
+spine=纳叶|厄晞斯<lights=1|0,faces=happy|smile>;mid_txt=一个法阵！只要检查阵法咒纹与所使用的媒介，我们就能知道这个阵法的作用。<name=纳叶>;
+spine=纳叶|厄晞斯<lights=1|0,faces=happy|smile>;mid_txt=……总算有了点实质性的进展。<name=纳叶>;
+hide=txt;
+spine=纳叶|海芙温<lights=0|1,faces=happy|kira>;mid_txt=纳~叶~？你怎么忽然松了一口气？难道你其实不觉得我们能在这里找到线索吗？<name=海芙温>;
+spine=纳叶|海芙温<lights=1|0,faces=shy|kira>;mid_txt=……咳，艾洛尔说，凡事都需以辩证的态度思考。这桩事件距离现在过于久远，我们的确有可能无功而返。<name=纳叶>;
+spine=纳叶|海芙温<lights=0|0,faces=shy|kira>;mid_txt=呜，呜呜！呜——！<name=艾洛尔>;
+spine=纳叶|海芙温<lights=0|1,faces=shy|mute>;mid_txt=你看你看~不能把什么事都推到艾洛尔头上哦，它都生气了。<name=海芙温>;
+spine=纳叶|海芙温<lights=1|0,faces=angry|mute>;mid_txt=不对，这不是生气……它是在预警——小心！<name=纳叶>;

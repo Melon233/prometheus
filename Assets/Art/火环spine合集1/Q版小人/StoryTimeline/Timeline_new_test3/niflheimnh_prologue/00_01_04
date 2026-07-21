@@ -1,0 +1,4 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=纳叶<lights=1,faces=idleface>;mid_txt=看来时间比我预计的还要紧张——洞窟的支撑结构已经遭到侵蚀，这是十分危险的征兆。<name=纳叶,cv=VO_MS_Chp0_Task1_4_1>;
+spine=纳叶<lights=1,faces=serious>;mid_txt=/player/，还能行动吗？我们需要尽快离开这里。<name=纳叶,cv=VO_MS_Chp0_Task1_4_2>;

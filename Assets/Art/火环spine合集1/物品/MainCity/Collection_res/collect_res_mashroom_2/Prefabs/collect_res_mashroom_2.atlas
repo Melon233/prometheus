@@ -1,0 +1,55 @@
+
+collect_res_mashroom_2.png
+size: 311,311
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gen1
+  rotate: false
+  xy: 8, 64
+  size: 94, 106
+  orig: 94, 106
+  offset: 0, 0
+  index: -1
+gu1
+  rotate: false
+  xy: 163, 8
+  size: 68, 65
+  orig: 68, 65
+  offset: 0, 0
+  index: -1
+gu2
+  rotate: false
+  xy: 221, 81
+  size: 64, 94
+  orig: 64, 94
+  offset: 0, 0
+  index: -1
+gu3
+  rotate: false
+  xy: 219, 183
+  size: 74, 120
+  orig: 74, 120
+  offset: 0, 0
+  index: -1
+gu4
+  rotate: false
+  xy: 110, 90
+  size: 103, 80
+  orig: 103, 80
+  offset: 0, 0
+  index: -1
+gu5
+  rotate: false
+  xy: 8, 178
+  size: 203, 125
+  orig: 203, 125
+  offset: 0, 0
+  index: -1
+keng1
+  rotate: false
+  xy: 8, 44
+  size: 147, 12
+  orig: 147, 12
+  offset: 0, 0
+  index: -1

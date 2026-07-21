@@ -1,0 +1,111 @@
+
+golem_biograb.png
+size: 492,492
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L1
+  rotate: false
+  xy: 383, 164
+  size: 100, 170
+  orig: 100, 170
+  offset: 0, 0
+  index: -1
+L1.2
+  rotate: false
+  xy: 95, 118
+  size: 101, 121
+  orig: 102, 125
+  offset: 0, 1
+  index: -1
+L1.3
+  rotate: false
+  xy: 165, 37
+  size: 63, 70
+  orig: 66, 75
+  offset: 1, 1
+  index: -1
+L2
+  rotate: false
+  xy: 440, 75
+  size: 44, 81
+  orig: 45, 83
+  offset: 0, 2
+  index: -1
+L3
+  rotate: false
+  xy: 324, 98
+  size: 47, 87
+  orig: 48, 88
+  offset: 0, 1
+  index: -1
+L4
+  rotate: false
+  xy: 204, 168
+  size: 41, 71
+  orig: 42, 76
+  offset: 0, 5
+  index: -1
+body
+  rotate: false
+  xy: 8, 247
+  size: 237, 237
+  orig: 238, 240
+  offset: 0, 3
+  index: -1
+face
+  rotate: false
+  xy: 253, 193
+  size: 122, 141
+  orig: 122, 141
+  offset: 0, 0
+  index: -1
+hair
+  rotate: false
+  xy: 253, 342
+  size: 205, 142
+  orig: 205, 142
+  offset: 0, 0
+  index: -1
+r1
+  rotate: false
+  xy: 8, 63
+  size: 79, 176
+  orig: 96, 192
+  offset: 2, 3
+  index: -1
+r1.2
+  rotate: false
+  xy: 253, 51
+  size: 63, 134
+  orig: 64, 136
+  offset: 0, 0
+  index: -1
+r1.3
+  rotate: false
+  xy: 204, 115
+  size: 39, 45
+  orig: 39, 69
+  offset: 0, 2
+  index: -1
+r2
+  rotate: false
+  xy: 324, 11
+  size: 52, 79
+  orig: 57, 99
+  offset: 1, 2
+  index: -1
+r3
+  rotate: false
+  xy: 95, 17
+  size: 62, 93
+  orig: 62, 96
+  offset: 0, 1
+  index: -1
+r4
+  rotate: false
+  xy: 384, 75
+  size: 48, 81
+  orig: 54, 101
+  offset: 1, 2
+  index: -1

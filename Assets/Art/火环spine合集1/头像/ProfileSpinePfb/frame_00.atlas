@@ -1,0 +1,13 @@
+
+frame_00.png
+size: 225,225
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Img_Avatarframe_00
+  rotate: false
+  xy: 8, 8
+  size: 209, 209
+  orig: 256, 256
+  offset: 24, 23
+  index: -1

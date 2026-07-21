@@ -1,0 +1,160 @@
+
+mid_wind_elemental.png
+size: 908,908
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+M_huzi
+  rotate: false
+  xy: 531, 765
+  size: 299, 135
+  orig: 299, 135
+  offset: 0, 0
+  index: -1
+b1
+  rotate: false
+  xy: 511, 96
+  size: 110, 138
+  orig: 110, 138
+  offset: 0, 0
+  index: -1
+b2
+  rotate: false
+  xy: 708, 614
+  size: 150, 143
+  orig: 150, 143
+  offset: 0, 0
+  index: -1
+b3
+  rotate: false
+  xy: 629, 143
+  size: 126, 133
+  orig: 126, 133
+  offset: 0, 0
+  index: -1
+b4
+  rotate: false
+  xy: 626, 284
+  size: 101, 154
+  orig: 101, 154
+  offset: 0, 0
+  index: -1
+b5
+  rotate: false
+  xy: 763, 120
+  size: 82, 76
+  orig: 82, 76
+  offset: 0, 0
+  index: -1
+b6
+  rotate: false
+  xy: 511, 242
+  size: 107, 158
+  orig: 107, 158
+  offset: 0, 0
+  index: -1
+b7
+  rotate: false
+  xy: 339, 142
+  size: 164, 258
+  orig: 164, 258
+  offset: 0, 0
+  index: -1
+b8
+  rotate: false
+  xy: 8, 19
+  size: 323, 381
+  orig: 323, 381
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 8, 408
+  size: 515, 492
+  orig: 515, 492
+  offset: 0, 0
+  index: -1
+eyes
+  rotate: false
+  xy: 763, 204
+  size: 85, 79
+  orig: 85, 79
+  offset: 0, 0
+  index: -1
+f1
+  rotate: false
+  xy: 531, 605
+  size: 169, 152
+  orig: 169, 152
+  offset: 0, 0
+  index: -1
+f2
+  rotate: false
+  xy: 735, 381
+  size: 115, 95
+  orig: 115, 95
+  offset: 0, 0
+  index: -1
+f3
+  rotate: false
+  xy: 629, 36
+  size: 120, 99
+  orig: 120, 99
+  offset: 0, 0
+  index: -1
+f4
+  rotate: false
+  xy: 735, 291
+  size: 87, 82
+  orig: 87, 82
+  offset: 0, 0
+  index: -1
+f5
+  rotate: false
+  xy: 757, 39
+  size: 81, 73
+  orig: 81, 73
+  offset: 0, 0
+  index: -1
+f6
+  rotate: false
+  xy: 339, 32
+  size: 138, 102
+  orig: 138, 102
+  offset: 0, 0
+  index: -1
+f7
+  rotate: false
+  xy: 485, 8
+  size: 82, 80
+  orig: 82, 80
+  offset: 0, 0
+  index: -1
+tail1
+  rotate: false
+  xy: 531, 446
+  size: 154, 151
+  orig: 154, 154
+  offset: 0, 3
+  index: -1
+tail2
+  rotate: false
+  xy: 693, 484
+  size: 108, 113
+  orig: 112, 115
+  offset: 4, 2
+  index: -1
+tail3
+  rotate: false
+  xy: 838, 837
+  size: 50, 63
+  orig: 50, 63
+  offset: 0, 0
+  index: -1
+tail4
+  rotate: false
+  xy: 575, 36
+  size: 45, 52
+  orig: 45, 52
+  offset: 0, 0
+  index: -1

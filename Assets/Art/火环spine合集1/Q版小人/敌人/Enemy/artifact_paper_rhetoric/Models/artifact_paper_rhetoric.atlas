@@ -1,0 +1,244 @@
+
+artifact_paper_rhetoric.png
+size: 1343,1343
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cloak0
+  rotate: false
+  xy: 907, 655
+  size: 172, 218
+  orig: 176, 223
+  offset: 0, 3
+  index: -1
+cloak_L1
+  rotate: false
+  xy: 1234, 968
+  size: 98, 162
+  orig: 106, 189
+  offset: 3, 14
+  index: -1
+cloak_L2
+  rotate: false
+  xy: 1091, 862
+  size: 135, 238
+  orig: 137, 240
+  offset: 0, 2
+  index: -1
+cloak_L3
+  rotate: false
+  xy: 1031, 315
+  size: 140, 168
+  orig: 140, 168
+  offset: 0, 0
+  index: -1
+cloak_R1
+  rotate: false
+  xy: 1087, 666
+  size: 174, 188
+  orig: 214, 231
+  offset: 20, 28
+  index: -1
+cloak_R2
+  rotate: false
+  xy: 8, 92
+  size: 322, 280
+  orig: 348, 311
+  offset: 12, 18
+  index: -1
+cloak_R3
+  rotate: false
+  xy: 412, 224
+  size: 231, 203
+  orig: 253, 221
+  offset: 9, 7
+  index: -1
+collar1
+  rotate: false
+  xy: 907, 524
+  size: 172, 123
+  orig: 172, 127
+  offset: 0, 4
+  index: -1
+collar2
+  rotate: false
+  xy: 890, 99
+  size: 96, 129
+  orig: 96, 130
+  offset: 0, 1
+  index: -1
+collar3
+  rotate: false
+  xy: 651, 236
+  size: 259, 196
+  orig: 263, 202
+  offset: 4, 3
+  index: -1
+collar4
+  rotate: false
+  xy: 1223, 180
+  size: 111, 134
+  orig: 111, 134
+  offset: 0, 0
+  index: -1
+collar5
+  rotate: false
+  xy: 1031, 184
+  size: 184, 123
+  orig: 188, 132
+  offset: 0, 2
+  index: -1
+cord1
+  rotate: false
+  xy: 1126, 40
+  size: 87, 136
+  orig: 91, 143
+  offset: 4, 1
+  index: -1
+cord2
+  rotate: false
+  xy: 1269, 805
+  size: 59, 155
+  orig: 73, 171
+  offset: 7, 8
+  index: -1
+cord3
+  rotate: false
+  xy: 8, 41
+  size: 114, 43
+  orig: 119, 55
+  offset: 3, 6
+  index: -1
+death_1
+  rotate: false
+  xy: 8, 740
+  size: 550, 595
+  orig: 550, 595
+  offset: 0, 0
+  index: -1
+death_2
+  rotate: false
+  xy: 604, 586
+  size: 295, 287
+  orig: 295, 287
+  offset: 0, 0
+  index: -1
+feather1
+  rotate: false
+  xy: 1221, 68
+  size: 109, 104
+  orig: 112, 104
+  offset: 3, 0
+  index: -1
+feather2
+  rotate: false
+  xy: 412, 108
+  size: 248, 108
+  orig: 260, 116
+  offset: 3, 5
+  index: -1
+hand
+  rotate: false
+  xy: 338, 8
+  size: 118, 78
+  orig: 128, 90
+  offset: 4, 6
+  index: -1
+hat0
+  rotate: false
+  xy: 566, 881
+  size: 517, 219
+  orig: 519, 221
+  offset: 0, 2
+  index: -1
+hat1
+  rotate: false
+  xy: 566, 1108
+  size: 557, 227
+  orig: 558, 234
+  offset: 1, 0
+  index: -1
+hat2
+  rotate: false
+  xy: 1131, 1138
+  size: 202, 197
+  orig: 213, 204
+  offset: 6, 5
+  index: -1
+hat3
+  rotate: false
+  xy: 8, 380
+  size: 387, 352
+  orig: 480, 391
+  offset: 0, 39
+  index: -1
+hat4
+  rotate: false
+  xy: 1179, 322
+  size: 143, 161
+  orig: 152, 162
+  offset: 6, 1
+  index: -1
+hat5
+  rotate: false
+  xy: 1087, 491
+  size: 201, 167
+  orig: 208, 172
+  offset: 7, 0
+  index: -1
+hat6
+  rotate: false
+  xy: 464, 14
+  size: 121, 86
+  orig: 121, 89
+  offset: 0, 2
+  index: -1
+paper1
+  rotate: false
+  xy: 668, 108
+  size: 214, 120
+  orig: 214, 124
+  offset: 0, 2
+  index: -1
+paper2
+  rotate: false
+  xy: 403, 435
+  size: 193, 297
+  orig: 206, 309
+  offset: 8, 3
+  index: -1
+paper3
+  rotate: false
+  xy: 994, 72
+  size: 124, 104
+  orig: 124, 106
+  offset: 0, 0
+  index: -1
+paper4
+  rotate: false
+  xy: 593, 15
+  size: 103, 85
+  orig: 112, 92
+  offset: 4, 4
+  index: -1
+pen
+  rotate: false
+  xy: 604, 440
+  size: 292, 138
+  orig: 292, 140
+  offset: 0, 2
+  index: -1
+tie1
+  rotate: false
+  xy: 338, 94
+  size: 66, 278
+  orig: 76, 284
+  offset: 5, 6
+  index: -1
+tie2
+  rotate: false
+  xy: 918, 244
+  size: 105, 272
+  orig: 114, 272
+  offset: 7, 0
+  index: -1

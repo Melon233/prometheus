@@ -1,0 +1,97 @@
+
+slime_dark_s.png
+size: 1385,1385
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 8, 952
+  size: 561, 425
+  orig: 733, 733
+  offset: 86, 70
+  index: -1
+eye
+  rotate: false
+  xy: 874, 359
+  size: 306, 165
+  orig: 733, 733
+  offset: 281, 206
+  index: -1
+eye_hit
+  rotate: false
+  xy: 796, 186
+  size: 306, 165
+  orig: 733, 733
+  offset: 281, 206
+  index: -1
+light
+  rotate: false
+  xy: 8, 139
+  size: 503, 372
+  orig: 733, 733
+  offset: 126, 94
+  index: -1
+pieces1
+  rotate: false
+  xy: 519, 153
+  size: 269, 257
+  orig: 688, 688
+  offset: 335, 394
+  index: -1
+pieces2
+  rotate: false
+  xy: 577, 418
+  size: 289, 346
+  orig: 688, 688
+  offset: 103, 280
+  index: -1
+pieces3
+  rotate: false
+  xy: 874, 532
+  size: 202, 232
+  orig: 688, 688
+  offset: 39, 159
+  index: -1
+pieces4
+  rotate: false
+  xy: 577, 772
+  size: 443, 259
+  orig: 688, 688
+  offset: 178, 66
+  index: -1
+pieces5
+  rotate: false
+  xy: 1170, 1103
+  size: 207, 274
+  orig: 688, 688
+  offset: 460, 206
+  index: -1
+pieces6
+  rotate: false
+  xy: 1028, 801
+  size: 226, 230
+  orig: 688, 688
+  offset: 302, 305
+  index: -1
+pieces7
+  rotate: false
+  xy: 1084, 591
+  size: 245, 202
+  orig: 688, 688
+  offset: 202, 234
+  index: -1
+top
+  rotate: false
+  xy: 577, 1039
+  size: 585, 338
+  orig: 733, 733
+  offset: 80, 205
+  index: -1
+xiangao
+  rotate: false
+  xy: 8, 519
+  size: 561, 425
+  orig: 733, 733
+  offset: 86, 70
+  index: -1

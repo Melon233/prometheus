@@ -1,0 +1,7 @@
+skip_title=混乱渐起;
+skip_overview=哨所内弥漫着诡异的寂静与血腥气息，不见人影也听不见战斗声……你有种不好的预感。;
+spine=主角<lights=1,faces=serious>;mid_txt=……这只怪物身上的血迹……难道说——！？<name=/player/>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=serious>;mid_txt=影兽的本能……现在你或许能够明白，白塔为何会将驱逐影兽视为使命了。<name=纳叶>;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=不能让它继续下去了，我们上！<name=厄晞斯>;

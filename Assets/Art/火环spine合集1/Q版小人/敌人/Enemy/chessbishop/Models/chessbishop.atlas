@@ -1,0 +1,244 @@
+
+chessbishop.png
+size: 1957,1957
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 806, 19
+  size: 253, 96
+  orig: 253, 96
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 1727, 1522
+  size: 204, 137
+  orig: 204, 140
+  offset: 0, 0
+  index: -1
+armL1
+  rotate: false
+  xy: 1761, 507
+  size: 133, 163
+  orig: 149, 179
+  offset: 8, 8
+  index: -1
+armL2
+  rotate: false
+  xy: 596, 422
+  size: 152, 103
+  orig: 190, 121
+  offset: 30, 8
+  index: -1
+armLhand
+  rotate: false
+  xy: 1835, 682
+  size: 89, 86
+  orig: 105, 102
+  offset: 8, 8
+  index: -1
+armLhand2
+  rotate: false
+  xy: 1711, 139
+  size: 105, 102
+  orig: 105, 102
+  offset: 0, 0
+  index: -1
+armLhand2.1
+  rotate: false
+  xy: 1711, 29
+  size: 105, 102
+  orig: 105, 102
+  offset: 0, 0
+  index: -1
+armR1
+  rotate: false
+  xy: 1761, 356
+  size: 110, 143
+  orig: 126, 159
+  offset: 8, 8
+  index: -1
+armR2
+  rotate: false
+  xy: 1701, 678
+  size: 126, 90
+  orig: 143, 106
+  offset: 9, 8
+  index: -1
+armR4
+  rotate: false
+  xy: 1284, 54
+  size: 87, 84
+  orig: 104, 100
+  offset: 8, 8
+  index: -1
+b1
+  rotate: false
+  xy: 1153, 87
+  size: 123, 51
+  orig: 140, 67
+  offset: 9, 8
+  index: -1
+b2
+  rotate: false
+  xy: 1711, 249
+  size: 142, 99
+  orig: 158, 115
+  offset: 8, 8
+  index: -1
+body1
+  rotate: false
+  xy: 1727, 1667
+  size: 222, 282
+  orig: 298, 593
+  offset: 48, 311
+  index: -1
+body2
+  rotate: false
+  xy: 806, 123
+  size: 324, 402
+  orig: 324, 402
+  offset: 0, 0
+  index: -1
+body_1
+  rotate: false
+  xy: 445, 26
+  size: 353, 376
+  orig: 364, 376
+  offset: 5, 0
+  index: -1
+body_2
+  rotate: false
+  xy: 649, 1301
+  size: 704, 648
+  orig: 704, 648
+  offset: 0, 0
+  index: -1
+body_3
+  rotate: false
+  xy: 8, 410
+  size: 580, 518
+  orig: 580, 518
+  offset: 0, 0
+  index: -1
+cape1B
+  rotate: false
+  xy: 8, 12
+  size: 429, 390
+  orig: 436, 390
+  offset: 0, 0
+  index: -1
+cape1F1
+  rotate: false
+  xy: 1510, 35
+  size: 193, 331
+  orig: 193, 331
+  offset: 0, 0
+  index: -1
+dizuo
+  rotate: false
+  xy: 596, 533
+  size: 481, 295
+  orig: 506, 311
+  offset: 17, 8
+  index: -1
+features
+  rotate: false
+  xy: 1727, 1358
+  size: 174, 156
+  orig: 190, 173
+  offset: 8, 9
+  index: -1
+h_pifenghou
+  rotate: false
+  xy: 1089, 719
+  size: 344, 574
+  orig: 344, 574
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 1153, 29
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 1067, 17
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 596, 856
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tiara_2
+  rotate: false
+  xy: 1432, 374
+  size: 321, 291
+  orig: 321, 291
+  offset: 0, 0
+  index: -1
+tiara_3
+  rotate: false
+  xy: 649, 836
+  size: 432, 457
+  orig: 432, 457
+  offset: 0, 0
+  index: -1
+tou
+  rotate: false
+  xy: 1138, 349
+  size: 286, 362
+  orig: 308, 393
+  offset: 8, 19
+  index: -1
+waipifeng
+  rotate: false
+  xy: 1361, 1336
+  size: 358, 613
+  orig: 358, 616
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 936
+  size: 633, 1013
+  orig: 633, 1013
+  offset: 0, 0
+  index: -1
+weapon_1
+  rotate: false
+  xy: 1701, 776
+  size: 201, 552
+  orig: 201, 552
+  offset: 0, 0
+  index: -1
+weapon_2
+  rotate: false
+  xy: 1441, 673
+  size: 252, 655
+  orig: 252, 655
+  offset: 0, 0
+  index: -1
+weibo
+  rotate: false
+  xy: 1138, 146
+  size: 364, 195
+  orig: 389, 200
+  offset: 0, 0
+  index: -1
+xiongzhen
+  rotate: false
+  xy: 1379, 47
+  size: 82, 91
+  orig: 98, 107
+  offset: 8, 8
+  index: -1

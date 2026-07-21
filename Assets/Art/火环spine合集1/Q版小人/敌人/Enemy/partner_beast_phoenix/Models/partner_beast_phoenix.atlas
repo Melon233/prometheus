@@ -1,0 +1,174 @@
+
+partner_beast_phoenix.png
+size: 572,572
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 8, 436
+  size: 196, 128
+  orig: 201, 138
+  offset: 3, 7
+  index: -1
+eye_1
+  rotate: false
+  xy: 386, 388
+  size: 17, 10
+  orig: 30, 24
+  offset: 7, 7
+  index: -1
+eye_2
+  rotate: false
+  xy: 386, 364
+  size: 16, 16
+  orig: 28, 27
+  offset: 8, 7
+  index: -1
+eye_b
+  rotate: false
+  xy: 494, 43
+  size: 38, 28
+  orig: 50, 42
+  offset: 7, 6
+  index: -1
+fire_01
+  rotate: false
+  xy: 212, 406
+  size: 191, 158
+  orig: 203, 169
+  offset: 7, 4
+  index: -1
+fire_02
+  rotate: false
+  xy: 386, 128
+  size: 170, 148
+  orig: 183, 162
+  offset: 6, 7
+  index: -1
+fire_03
+  rotate: false
+  xy: 411, 403
+  size: 153, 161
+  orig: 167, 172
+  offset: 7, 3
+  index: -1
+fire_04
+  rotate: false
+  xy: 8, 106
+  size: 167, 165
+  orig: 177, 177
+  offset: 3, 5
+  index: -1
+fire_05
+  rotate: false
+  xy: 8, 279
+  size: 181, 149
+  orig: 192, 157
+  offset: 8, 6
+  index: -1
+fire_06
+  rotate: false
+  xy: 197, 258
+  size: 181, 140
+  orig: 193, 152
+  offset: 5, 8
+  index: -1
+fx_1
+  rotate: false
+  xy: 319, 212
+  size: 58, 38
+  orig: 70, 48
+  offset: 6, 6
+  index: -1
+fx_2
+  rotate: false
+  xy: 443, 76
+  size: 43, 44
+  orig: 58, 58
+  offset: 8, 7
+  index: -1
+head
+  rotate: false
+  xy: 411, 284
+  size: 150, 111
+  orig: 164, 122
+  offset: 6, 7
+  index: -1
+img_1
+  rotate: false
+  xy: 428, 14
+  size: 50, 45
+  orig: 61, 56
+  offset: 5, 5
+  index: -1
+img_2
+  rotate: false
+  xy: 342, 67
+  size: 93, 53
+  orig: 104, 66
+  offset: 6, 6
+  index: -1
+l_chi
+  rotate: false
+  xy: 272, 13
+  size: 62, 114
+  orig: 74, 125
+  offset: 6, 8
+  index: -1
+l_foot
+  rotate: false
+  xy: 130, 25
+  size: 51, 73
+  orig: 67, 85
+  offset: 8, 5
+  index: -1
+l_head_img1
+  rotate: false
+  xy: 189, 12
+  size: 75, 115
+  orig: 88, 125
+  offset: 7, 4
+  index: -1
+l_head_img2
+  rotate: false
+  xy: 342, 12
+  size: 78, 47
+  orig: 89, 60
+  offset: 5, 6
+  index: -1
+mouth
+  rotate: false
+  xy: 342, 131
+  size: 36, 29
+  orig: 48, 39
+  offset: 6, 7
+  index: -1
+r_chi
+  rotate: false
+  xy: 183, 135
+  size: 128, 115
+  orig: 138, 124
+  offset: 4, 4
+  index: -1
+r_foot
+  rotate: false
+  xy: 319, 168
+  size: 54, 36
+  orig: 63, 50
+  offset: 8, 7
+  index: -1
+r_head_img1
+  rotate: false
+  xy: 494, 79
+  size: 66, 41
+  orig: 77, 54
+  offset: 6, 7
+  index: -1
+r_head_img2
+  rotate: false
+  xy: 8, 25
+  size: 114, 73
+  orig: 124, 86
+  offset: 5, 7
+  index: -1

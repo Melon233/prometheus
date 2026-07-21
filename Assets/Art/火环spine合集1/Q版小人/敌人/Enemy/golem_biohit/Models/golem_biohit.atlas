@@ -1,0 +1,153 @@
+
+golem_biohit.png
+size: 873,873
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+LJo1
+  rotate: false
+  xy: 8, 495
+  size: 199, 370
+  orig: 204, 386
+  offset: 4, 2
+  index: -1
+LJo2
+  rotate: false
+  xy: 710, 624
+  size: 106, 241
+  orig: 110, 244
+  offset: 2, 2
+  index: -1
+LJo3
+  rotate: false
+  xy: 736, 228
+  size: 89, 83
+  orig: 101, 95
+  offset: 6, 6
+  index: -1
+LJo4
+  rotate: false
+  xy: 8, 8
+  size: 75, 75
+  orig: 87, 87
+  offset: 6, 6
+  index: -1
+LJo5
+  rotate: false
+  xy: 732, 471
+  size: 117, 145
+  orig: 121, 148
+  offset: 2, 1
+  index: -1
+LPineApple
+  rotate: false
+  xy: 627, 39
+  size: 111, 157
+  orig: 118, 157
+  offset: 7, 0
+  index: -1
+RJo1
+  rotate: false
+  xy: 8, 91
+  size: 172, 396
+  orig: 172, 402
+  offset: 0, 5
+  index: -1
+RJo2
+  rotate: false
+  xy: 641, 204
+  size: 87, 225
+  orig: 98, 233
+  offset: 6, 4
+  index: -1
+RJo3
+  rotate: false
+  xy: 91, 30
+  size: 65, 53
+  orig: 77, 65
+  offset: 6, 6
+  index: -1
+RJo4
+  rotate: false
+  xy: 746, 136
+  size: 75, 84
+  orig: 87, 96
+  offset: 6, 6
+  index: -1
+RJo5
+  rotate: false
+  xy: 736, 319
+  size: 116, 144
+  orig: 121, 149
+  offset: 2, 1
+  index: -1
+RPineApple
+  rotate: false
+  xy: 474, 41
+  size: 145, 200
+  orig: 153, 206
+  offset: 6, 2
+  index: -1
+eye1
+  rotate: false
+  xy: 746, 75
+  size: 62, 53
+  orig: 62, 53
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: false
+  xy: 746, 15
+  size: 47, 52
+  orig: 47, 52
+  offset: 0, 0
+  index: -1
+head-bottom1
+  rotate: false
+  xy: 215, 463
+  size: 282, 143
+  orig: 286, 147
+  offset: 2, 1
+  index: -1
+head-bottom2
+  rotate: false
+  xy: 188, 114
+  size: 278, 156
+  orig: 283, 166
+  offset: 2, 8
+  index: -1
+head-top
+  rotate: false
+  xy: 188, 278
+  size: 287, 177
+  orig: 312, 228
+  offset: 23, 41
+  index: -1
+head1
+  rotate: false
+  xy: 215, 614
+  size: 250, 251
+  orig: 258, 257
+  offset: 4, 3
+  index: -1
+head3-face
+  rotate: false
+  xy: 483, 249
+  size: 150, 180
+  orig: 150, 180
+  offset: 0, 0
+  index: -1
+head4
+  rotate: false
+  xy: 505, 437
+  size: 219, 172
+  orig: 235, 188
+  offset: 8, 8
+  index: -1
+head_t
+  rotate: false
+  xy: 473, 617
+  size: 229, 248
+  orig: 230, 248
+  offset: 1, 0
+  index: -1

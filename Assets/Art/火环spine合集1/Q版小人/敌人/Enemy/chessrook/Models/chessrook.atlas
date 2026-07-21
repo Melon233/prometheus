@@ -1,0 +1,195 @@
+
+chessrook.png
+size: 2132,2132
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dizuo
+  rotate: false
+  xy: 1440, 1060
+  size: 532, 338
+  orig: 532, 338
+  offset: 0, 0
+  index: -1
+dun_B
+  rotate: false
+  xy: 8, 230
+  size: 498, 811
+  orig: 498, 811
+  offset: 0, 0
+  index: -1
+dun_F
+  rotate: false
+  xy: 514, 231
+  size: 498, 810
+  orig: 498, 810
+  offset: 0, 0
+  index: -1
+dun_xian
+  rotate: false
+  xy: 934, 1314
+  size: 498, 810
+  orig: 498, 810
+  offset: 0, 0
+  index: -1
+fu_1
+  rotate: false
+  xy: 8, 1049
+  size: 738, 613
+  orig: 738, 613
+  offset: 0, 0
+  index: -1
+fu_2
+  rotate: false
+  xy: 8, 1670
+  size: 918, 454
+  orig: 918, 454
+  offset: 0, 0
+  index: -1
+jianjia_L
+  rotate: false
+  xy: 1753, 704
+  size: 337, 348
+  orig: 337, 348
+  offset: 0, 0
+  index: -1
+jianjia_R_B
+  rotate: false
+  xy: 1584, 58
+  size: 244, 286
+  orig: 244, 286
+  offset: 0, 0
+  index: -1
+jianjia_R_F
+  rotate: false
+  xy: 1875, 1444
+  size: 213, 328
+  orig: 213, 328
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 1440, 1406
+  size: 427, 718
+  orig: 427, 729
+  offset: 0, 0
+  index: -1
+shenti_2
+  rotate: false
+  xy: 1701, 384
+  size: 336, 312
+  orig: 336, 312
+  offset: 0, 0
+  index: -1
+shenti_D_1
+  rotate: false
+  xy: 1020, 788
+  size: 290, 518
+  orig: 290, 518
+  offset: 0, 0
+  index: -1
+shenti_D_2
+  rotate: false
+  xy: 1020, 376
+  size: 281, 404
+  orig: 281, 404
+  offset: 0, 0
+  index: -1
+shenti_D_3
+  rotate: false
+  xy: 1318, 722
+  size: 427, 330
+  orig: 427, 330
+  offset: 0, 0
+  index: -1
+shenti_D_4
+  rotate: false
+  xy: 1020, 74
+  size: 274, 294
+  orig: 274, 294
+  offset: 0, 0
+  index: -1
+shenti_D_5
+  rotate: false
+  xy: 1836, 45
+  size: 259, 331
+  orig: 259, 331
+  offset: 0, 0
+  index: -1
+shoubi_L
+  rotate: false
+  xy: 8, 8
+  size: 164, 214
+  orig: 164, 214
+  offset: 0, 0
+  index: -1
+shoubi_R
+  rotate: false
+  xy: 754, 1269
+  size: 143, 194
+  orig: 143, 194
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 1318, 1150
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 1318, 1208
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 406, 150
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tou
+  rotate: false
+  xy: 1309, 352
+  size: 384, 362
+  orig: 384, 362
+  offset: 0, 0
+  index: -1
+tou_D_1
+  rotate: false
+  xy: 1302, 82
+  size: 274, 262
+  orig: 274, 262
+  offset: 0, 0
+  index: -1
+tou_D_2
+  rotate: false
+  xy: 1875, 1780
+  size: 245, 344
+  orig: 245, 344
+  offset: 0, 0
+  index: -1
+tou_D_3
+  rotate: false
+  xy: 754, 1099
+  size: 148, 162
+  orig: 148, 162
+  offset: 0, 0
+  index: -1
+xiaoshoubi_L
+  rotate: false
+  xy: 754, 1471
+  size: 149, 191
+  orig: 149, 191
+  offset: 0, 0
+  index: -1
+xiaoshoubi_R
+  rotate: false
+  xy: 180, 19
+  size: 218, 203
+  orig: 218, 203
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,188 @@
+
+niflheim_npc_shop_owl.png
+size: 1042,1042
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+123
+  rotate: false
+  xy: 142, 581
+  size: 90, 84
+  orig: 90, 84
+  offset: 0, 0
+  index: -1
+Lchi
+  rotate: false
+  xy: 860, 652
+  size: 153, 167
+  orig: 153, 167
+  offset: 0, 0
+  index: -1
+Lchi_o
+  rotate: false
+  xy: 540, 531
+  size: 185, 180
+  orig: 185, 180
+  offset: 0, 0
+  index: -1
+Lfoot
+  rotate: false
+  xy: 740, 681
+  size: 102, 77
+  orig: 102, 77
+  offset: 0, 0
+  index: -1
+Rchi
+  rotate: false
+  xy: 301, 873
+  size: 276, 161
+  orig: 276, 161
+  offset: 0, 0
+  index: -1
+Rdou
+  rotate: false
+  xy: 540, 719
+  size: 192, 89
+  orig: 192, 89
+  offset: 0, 0
+  index: -1
+Rfoot
+  rotate: false
+  xy: 395, 625
+  size: 135, 84
+  orig: 140, 84
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 585, 816
+  size: 267, 218
+  orig: 267, 218
+  offset: 0, 0
+  index: -1
+dou_hou
+  rotate: false
+  xy: 8, 847
+  size: 285, 187
+  orig: 285, 187
+  offset: 0, 0
+  index: -1
+ear
+  rotate: false
+  xy: 301, 717
+  size: 231, 148
+  orig: 231, 148
+  offset: 0, 0
+  index: -1
+eye_jie
+  rotate: false
+  xy: 395, 502
+  size: 128, 51
+  orig: 148, 55
+  offset: 12, 3
+  index: -1
+eye_jie1
+  rotate: false
+  xy: 840, 494
+  size: 148, 55
+  orig: 148, 55
+  offset: 0, 0
+  index: -1
+eye_light
+  rotate: false
+  xy: 8, 556
+  size: 86, 36
+  orig: 86, 36
+  offset: 0, 0
+  index: -1
+eye_pi
+  rotate: false
+  xy: 395, 561
+  size: 135, 56
+  orig: 135, 57
+  offset: 0, 0
+  index: -1
+eye_tong
+  rotate: false
+  xy: 740, 766
+  size: 108, 42
+  orig: 108, 42
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 8, 673
+  size: 228, 166
+  orig: 228, 166
+  offset: 0, 0
+  index: -1
+hat
+  rotate: false
+  xy: 860, 909
+  size: 174, 125
+  orig: 174, 125
+  offset: 0, 0
+  index: -1
+hui
+  rotate: false
+  xy: 540, 819
+  size: 23, 26
+  orig: 23, 26
+  offset: 0, 0
+  index: -1
+lin1
+  rotate: false
+  xy: 8, 600
+  size: 126, 65
+  orig: 126, 65
+  offset: 0, 0
+  index: -1
+lin2
+  rotate: false
+  xy: 102, 494
+  size: 52, 79
+  orig: 52, 79
+  offset: 0, 0
+  index: -1
+mao1
+  rotate: false
+  xy: 840, 557
+  size: 176, 87
+  orig: 176, 87
+  offset: 0, 0
+  index: -1
+mao2
+  rotate: false
+  xy: 244, 545
+  size: 143, 164
+  orig: 143, 164
+  offset: 0, 0
+  index: -1
+mao3
+  rotate: false
+  xy: 733, 531
+  size: 99, 142
+  orig: 99, 142
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 540, 853
+  size: 30, 12
+  orig: 31, 14
+  offset: 1, 1
+  index: -1
+mouth_smile
+  rotate: false
+  xy: 244, 809
+  size: 39, 30
+  orig: 39, 30
+  offset: 0, 0
+  index: -1
+yu
+  rotate: false
+  xy: 860, 827
+  size: 174, 74
+  orig: 174, 74
+  offset: 0, 0
+  index: -1

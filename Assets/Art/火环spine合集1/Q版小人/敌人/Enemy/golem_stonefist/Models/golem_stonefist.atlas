@@ -1,0 +1,83 @@
+
+golem_stonefist.png
+size: 1001,1001
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+st_01
+  rotate: false
+  xy: 534, 96
+  size: 134, 228
+  orig: 134, 228
+  offset: 0, 0
+  index: -1
+st_010
+  rotate: false
+  xy: 849, 534
+  size: 102, 96
+  orig: 102, 96
+  offset: 0, 0
+  index: -1
+st_011
+  rotate: false
+  xy: 534, 10
+  size: 120, 78
+  orig: 120, 78
+  offset: 0, 0
+  index: -1
+st_02
+  rotate: false
+  xy: 797, 266
+  size: 132, 117
+  orig: 132, 117
+  offset: 0, 0
+  index: -1
+st_03
+  rotate: false
+  xy: 662, 15
+  size: 127, 73
+  orig: 127, 73
+  offset: 0, 0
+  index: -1
+st_04
+  rotate: false
+  xy: 8, 8
+  size: 518, 316
+  orig: 518, 316
+  offset: 0, 0
+  index: -1
+st_05
+  rotate: false
+  xy: 8, 332
+  size: 647, 661
+  orig: 647, 661
+  offset: 0, 0
+  index: -1
+st_06
+  rotate: false
+  xy: 663, 638
+  size: 270, 355
+  orig: 270, 355
+  offset: 0, 0
+  index: -1
+st_07
+  rotate: false
+  xy: 663, 391
+  size: 143, 109
+  orig: 143, 109
+  offset: 0, 0
+  index: -1
+st_08
+  rotate: false
+  xy: 814, 392
+  size: 112, 108
+  orig: 112, 108
+  offset: 0, 0
+  index: -1
+st_09
+  rotate: false
+  xy: 663, 508
+  size: 178, 122
+  orig: 178, 122
+  offset: 0, 0
+  index: -1

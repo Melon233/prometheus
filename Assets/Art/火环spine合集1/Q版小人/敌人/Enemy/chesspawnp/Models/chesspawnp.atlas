@@ -1,0 +1,139 @@
+
+chesspawnp.png
+size: 1186,1186
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dizuo
+  rotate: false
+  xy: 8, 806
+  size: 550, 372
+  orig: 550, 372
+  offset: 0, 0
+  index: -1
+jianjia_L
+  rotate: false
+  xy: 970, 780
+  size: 208, 172
+  orig: 208, 172
+  offset: 0, 0
+  index: -1
+jianjia_R_B
+  rotate: false
+  xy: 138, 51
+  size: 124, 133
+  orig: 124, 133
+  offset: 0, 0
+  index: -1
+jianjia_R_F
+  rotate: false
+  xy: 1009, 80
+  size: 129, 173
+  orig: 129, 173
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 566, 754
+  size: 396, 424
+  orig: 475, 666
+  offset: 52, 234
+  index: -1
+shenti_2
+  rotate: false
+  xy: 552, 210
+  size: 231, 172
+  orig: 231, 172
+  offset: 0, 0
+  index: -1
+shenti_D_1
+  rotate: false
+  xy: 970, 960
+  size: 203, 218
+  orig: 203, 218
+  offset: 0, 0
+  index: -1
+shenti_D_2
+  rotate: false
+  xy: 564, 390
+  size: 289, 356
+  orig: 289, 356
+  offset: 0, 0
+  index: -1
+shenti_D_3
+  rotate: false
+  xy: 526, 12
+  size: 475, 190
+  orig: 475, 422
+  offset: 0, 232
+  index: -1
+shoubi_L
+  rotate: false
+  xy: 394, 67
+  size: 124, 202
+  orig: 124, 202
+  offset: 0, 0
+  index: -1
+shoubi_R
+  rotate: false
+  xy: 970, 555
+  size: 137, 217
+  orig: 137, 217
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 1115, 722
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 478, 700
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 1115, 642
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tou
+  rotate: false
+  xy: 8, 465
+  size: 462, 333
+  orig: 462, 333
+  offset: 0, 0
+  index: -1
+tou_D_1
+  rotate: false
+  xy: 861, 261
+  size: 314, 286
+  orig: 314, 286
+  offset: 0, 0
+  index: -1
+tou_D_2
+  rotate: false
+  xy: 8, 192
+  size: 378, 265
+  orig: 378, 265
+  offset: 0, 0
+  index: -1
+xiaoshoubi_L
+  rotate: false
+  xy: 394, 277
+  size: 150, 180
+  orig: 150, 180
+  offset: 0, 0
+  index: -1
+xiaoshoubi_R
+  rotate: false
+  xy: 8, 10
+  size: 122, 174
+  orig: 122, 174
+  offset: 0, 0
+  index: -1

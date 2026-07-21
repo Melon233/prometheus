@@ -1,0 +1,48 @@
+
+partner_elemental_flamecoal.png
+size: 524,524
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+eye
+  rotate: false
+  xy: 150, 52
+  size: 37, 37
+  orig: 37, 37
+  offset: 0, 0
+  index: -1
+fire
+  rotate: false
+  xy: 8, 327
+  size: 175, 189
+  orig: 175, 189
+  offset: 0, 0
+  index: -1
+fire2
+  rotate: false
+  xy: 8, 10
+  size: 134, 156
+  orig: 175, 189
+  offset: 23, 0
+  index: -1
+meizha
+  rotate: false
+  xy: 8, 174
+  size: 168, 145
+  orig: 168, 146
+  offset: 0, 0
+  index: -1
+shizi1
+  rotate: false
+  xy: 150, 8
+  size: 32, 36
+  orig: 32, 36
+  offset: 0, 0
+  index: -1
+stone
+  rotate: false
+  xy: 150, 97
+  size: 62, 69
+  orig: 62, 69
+  offset: 0, 0
+  index: -1

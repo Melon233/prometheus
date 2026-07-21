@@ -1,0 +1,13 @@
+
+paper.png
+size: 317,317
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+paper
+  rotate: false
+  xy: 8, 242
+  size: 301, 67
+  orig: 309, 75
+  offset: 4, 4
+  index: -1

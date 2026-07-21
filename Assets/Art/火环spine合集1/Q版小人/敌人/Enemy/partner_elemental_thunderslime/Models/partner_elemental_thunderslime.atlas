@@ -1,0 +1,111 @@
+
+partner_elemental_thunderslime.png
+size: 1413,1413
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 605, 796
+  size: 561, 425
+  orig: 733, 733
+  offset: 86, 70
+  index: -1
+eye
+  rotate: false
+  xy: 736, 252
+  size: 306, 165
+  orig: 733, 733
+  offset: 281, 206
+  index: -1
+eye_hit
+  rotate: false
+  xy: 1050, 126
+  size: 306, 165
+  orig: 733, 733
+  offset: 281, 206
+  index: -1
+light
+  rotate: false
+  xy: 8, 388
+  size: 503, 372
+  orig: 733, 733
+  offset: 126, 94
+  index: -1
+paper_bottom
+  rotate: false
+  xy: 605, 1229
+  size: 585, 176
+  orig: 626, 208
+  offset: 20, 32
+  index: -1
+paper_top
+  rotate: false
+  xy: 8, 1201
+  size: 589, 204
+  orig: 596, 242
+  offset: 0, 22
+  index: -1
+pieces1
+  rotate: false
+  xy: 459, 34
+  size: 269, 257
+  orig: 688, 688
+  offset: 335, 394
+  index: -1
+pieces2
+  rotate: false
+  xy: 1106, 299
+  size: 289, 346
+  orig: 688, 688
+  offset: 103, 280
+  index: -1
+pieces3
+  rotate: false
+  xy: 1174, 653
+  size: 202, 232
+  orig: 688, 688
+  offset: 39, 159
+  index: -1
+pieces4
+  rotate: false
+  xy: 8, 32
+  size: 443, 259
+  orig: 688, 688
+  offset: 178, 66
+  index: -1
+pieces5
+  rotate: false
+  xy: 1198, 1131
+  size: 207, 274
+  orig: 688, 688
+  offset: 460, 206
+  index: -1
+pieces6
+  rotate: false
+  xy: 1174, 893
+  size: 226, 230
+  orig: 688, 688
+  offset: 302, 305
+  index: -1
+pieces7
+  rotate: false
+  xy: 736, 42
+  size: 245, 202
+  orig: 688, 688
+  offset: 202, 234
+  index: -1
+top
+  rotate: false
+  xy: 577, 425
+  size: 521, 363
+  orig: 733, 733
+  offset: 114, 179
+  index: -1
+xiangao
+  rotate: false
+  xy: 8, 768
+  size: 561, 425
+  orig: 733, 733
+  offset: 86, 70
+  index: -1

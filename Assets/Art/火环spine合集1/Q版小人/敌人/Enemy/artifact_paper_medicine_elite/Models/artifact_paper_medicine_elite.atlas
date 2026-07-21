@@ -1,0 +1,314 @@
+
+artifact_paper_medicine_elite.png
+size: 1994,1994
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L1
+  rotate: false
+  xy: 1853, 1748
+  size: 118, 238
+  orig: 123, 238
+  offset: 0, 0
+  index: -1
+L2
+  rotate: false
+  xy: 1881, 1592
+  size: 95, 148
+  orig: 95, 148
+  offset: 0, 0
+  index: -1
+L3
+  rotate: false
+  xy: 585, 1323
+  size: 80, 158
+  orig: 80, 158
+  offset: 0, 0
+  index: -1
+L4
+  rotate: false
+  xy: 1536, 127
+  size: 164, 145
+  orig: 164, 149
+  offset: 0, 0
+  index: -1
+R1
+  rotate: false
+  xy: 1255, 988
+  size: 214, 260
+  orig: 214, 260
+  offset: 0, 0
+  index: -1
+R2
+  rotate: false
+  xy: 925, 52
+  size: 212, 192
+  orig: 212, 192
+  offset: 0, 0
+  index: -1
+R3
+  rotate: false
+  xy: 1439, 1307
+  size: 131, 164
+  orig: 131, 164
+  offset: 0, 0
+  index: -1
+R4
+  rotate: false
+  xy: 1761, 539
+  size: 201, 221
+  orig: 201, 221
+  offset: 0, 0
+  index: -1
+armL1
+  rotate: false
+  xy: 302, 44
+  size: 218, 426
+  orig: 218, 426
+  offset: 0, 0
+  index: -1
+armL2
+  rotate: false
+  xy: 986, 601
+  size: 185, 432
+  orig: 190, 434
+  offset: 0, 0
+  index: -1
+armR1
+  rotate: false
+  xy: 751, 56
+  size: 166, 448
+  orig: 174, 452
+  offset: 4, 0
+  index: -1
+armR2
+  rotate: false
+  xy: 528, 68
+  size: 215, 436
+  orig: 220, 442
+  offset: 1, 4
+  index: -1
+body
+  rotate: false
+  xy: 8, 50
+  size: 286, 420
+  orig: 286, 420
+  offset: 0, 0
+  index: -1
+cloth1
+  rotate: false
+  xy: 854, 524
+  size: 124, 477
+  orig: 138, 486
+  offset: 8, 3
+  index: -1
+cloth2
+  rotate: false
+  xy: 1588, 1223
+  size: 285, 501
+  orig: 287, 508
+  offset: 0, 4
+  index: -1
+death1
+  rotate: false
+  xy: 8, 478
+  size: 466, 348
+  orig: 466, 348
+  offset: 0, 0
+  index: -1
+death2
+  rotate: false
+  xy: 8, 1096
+  size: 569, 385
+  orig: 569, 385
+  offset: 0, 0
+  index: -1
+death3
+  rotate: false
+  xy: 1196, 1479
+  size: 384, 245
+  orig: 384, 245
+  offset: 0, 0
+  index: -1
+death4
+  rotate: false
+  xy: 676, 1569
+  size: 512, 417
+  orig: 512, 417
+  offset: 0, 0
+  index: -1
+death5
+  rotate: false
+  xy: 1179, 571
+  size: 288, 189
+  orig: 288, 189
+  offset: 0, 0
+  index: -1
+death6
+  rotate: false
+  xy: 1475, 669
+  size: 278, 178
+  orig: 278, 178
+  offset: 0, 0
+  index: -1
+death8
+  rotate: false
+  xy: 482, 512
+  size: 364, 314
+  orig: 390, 378
+  offset: 21, 33
+  index: -1
+face
+  rotate: false
+  xy: 1058, 1256
+  size: 373, 215
+  orig: 376, 220
+  offset: 0, 5
+  index: -1
+feather1
+  rotate: false
+  xy: 1101, 377
+  size: 277, 186
+  orig: 277, 186
+  offset: 0, 0
+  index: -1
+feather2
+  rotate: false
+  xy: 925, 252
+  size: 168, 264
+  orig: 168, 264
+  offset: 0, 0
+  index: -1
+feather3
+  rotate: false
+  xy: 1475, 498
+  size: 248, 163
+  orig: 248, 163
+  offset: 0, 0
+  index: -1
+feather4
+  rotate: false
+  xy: 1625, 280
+  size: 171, 210
+  orig: 171, 210
+  offset: 0, 0
+  index: -1
+feather5
+  rotate: false
+  xy: 1477, 855
+  size: 285, 140
+  orig: 285, 142
+  offset: 0, 2
+  index: -1
+handL
+  rotate: false
+  xy: 1804, 337
+  size: 142, 194
+  orig: 142, 194
+  offset: 0, 0
+  index: -1
+handR
+  rotate: false
+  xy: 1355, 130
+  size: 173, 182
+  orig: 173, 182
+  offset: 0, 0
+  index: -1
+hat1
+  rotate: false
+  xy: 8, 834
+  size: 648, 254
+  orig: 648, 256
+  offset: 0, 0
+  index: -1
+hat2
+  rotate: false
+  xy: 1196, 1732
+  size: 649, 254
+  orig: 649, 254
+  offset: 0, 0
+  index: -1
+hat3
+  rotate: false
+  xy: 1386, 320
+  size: 231, 170
+  orig: 231, 170
+  offset: 0, 0
+  index: -1
+hat4
+  rotate: false
+  xy: 1770, 768
+  size: 204, 212
+  orig: 204, 212
+  offset: 0, 0
+  index: -1
+hat5
+  rotate: false
+  xy: 676, 1258
+  size: 374, 303
+  orig: 374, 303
+  offset: 0, 0
+  index: -1
+hat6
+  rotate: false
+  xy: 664, 1009
+  size: 276, 241
+  orig: 276, 241
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 1179, 768
+  size: 288, 212
+  orig: 291, 214
+  offset: 0, 0
+  index: -1
+mouth2
+  rotate: false
+  xy: 1477, 1003
+  size: 288, 212
+  orig: 291, 214
+  offset: 0, 0
+  index: -1
+neck
+  rotate: false
+  xy: 1773, 988
+  size: 213, 227
+  orig: 214, 227
+  offset: 1, 0
+  index: -1
+rope
+  rotate: false
+  xy: 948, 1041
+  size: 299, 207
+  orig: 301, 208
+  offset: 1, 0
+  index: -1
+tape1
+  rotate: false
+  xy: 1145, 141
+  size: 202, 228
+  orig: 202, 228
+  offset: 0, 0
+  index: -1
+tape2
+  rotate: false
+  xy: 664, 834
+  size: 148, 167
+  orig: 148, 167
+  offset: 0, 0
+  index: -1
+tape3
+  rotate: false
+  xy: 1708, 112
+  size: 155, 160
+  orig: 159, 162
+  offset: 4, 2
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 1489
+  size: 660, 497
+  orig: 660, 497
+  offset: 0, 0
+  index: -1

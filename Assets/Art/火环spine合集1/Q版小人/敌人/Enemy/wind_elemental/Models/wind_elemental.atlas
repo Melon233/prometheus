@@ -1,0 +1,62 @@
+
+wind_elemental.png
+size: 543,543
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+huan_1
+  rotate: false
+  xy: 433, 327
+  size: 91, 67
+  orig: 102, 75
+  offset: 7, 4
+  index: -1
+huan_2
+  rotate: false
+  xy: 8, 62
+  size: 355, 66
+  orig: 385, 74
+  offset: 3, 4
+  index: -1
+huan_3
+  rotate: false
+  xy: 433, 210
+  size: 49, 40
+  orig: 56, 48
+  offset: 4, 4
+  index: -1
+huan_4
+  rotate: false
+  xy: 433, 402
+  size: 102, 47
+  orig: 113, 55
+  offset: 3, 4
+  index: -1
+huan_5
+  rotate: false
+  xy: 371, 90
+  size: 132, 38
+  orig: 138, 48
+  offset: 3, 5
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 136
+  size: 417, 399
+  orig: 426, 408
+  offset: 5, 5
+  index: -1
+yanjing
+  rotate: false
+  xy: 433, 258
+  size: 62, 61
+  orig: 73, 73
+  offset: 5, 6
+  index: -1
+yanjing_back
+  rotate: false
+  xy: 433, 457
+  size: 76, 78
+  orig: 87, 90
+  offset: 5, 6
+  index: -1

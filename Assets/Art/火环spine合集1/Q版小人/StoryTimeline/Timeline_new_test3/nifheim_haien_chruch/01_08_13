@@ -1,0 +1,15 @@
+skip_title=獠牙;
+skip_overview=阴影中，高利扬正与一名神秘人会面。两人确信计划已经进入最终阶段，离实现目标仅差最后一步。;
+spine=高利扬<lights=1,faces=serious>;mid_txt=白塔那边…我处理完了。但何必这么急？你之前不是说，还能再拖一天么？我们本可以准备得更加周全。<name=高利扬>;
+spine=高利扬<lights=1,faces=serious>;mid_txt=还有那个女的，我为什么不能动她？难道在你看来，她不只是一个隐患？<name=高利扬>;
+hide=spine;
+hide=txt;
+mid_txt=别问那么多，这些你迟早会知道的<name=？？？>;
+mid_txt=早一天还是晚一天，这对我们的计划并没有什么影响。何况你等今天，不也等很久了？<name=？？？>;
+hide=txt;
+spine=高利扬<lights=1,faces=serious>;mid_txt=哼，也是，那群家伙整天东奔西跑，真是碍眼的很。<name=高利扬>;
+spine=高利扬<lights=1,faces=smile>;mid_txt=但现在嘛……那就是一群阴沟里的老鼠，而我只需坐在这里动动嘴皮，就能让她们——抱头鼠窜！<name=高利扬>;
+spine=高利扬<lights=1,faces=angry>;mid_txt=不过……那个红头发的女人真是够狠的，我折了好多人手才把她按下去。<name=高利扬>;
+hide=spine;
+hide=txt;
+mid_txt=别小看任何一个白塔精英，不然——<name=？？？>;

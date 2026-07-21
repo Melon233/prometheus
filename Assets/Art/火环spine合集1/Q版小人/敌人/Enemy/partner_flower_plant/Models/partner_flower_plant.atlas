@@ -1,0 +1,104 @@
+
+partner_flower_plant.png
+size: 506,506
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 8, 274
+  size: 218, 224
+  orig: 226, 233
+  offset: 5, 6
+  index: -1
+eyes
+  rotate: false
+  xy: 145, 27
+  size: 101, 52
+  orig: 104, 56
+  offset: 2, 1
+  index: -1
+eyes2
+  rotate: false
+  xy: 234, 446
+  size: 101, 52
+  orig: 104, 56
+  offset: 2, 1
+  index: -1
+flower1
+  rotate: false
+  xy: 155, 101
+  size: 146, 165
+  orig: 146, 165
+  offset: 0, 0
+  index: -1
+flower2
+  rotate: false
+  xy: 8, 17
+  size: 61, 62
+  orig: 61, 62
+  offset: 0, 0
+  index: -1
+flower3
+  rotate: false
+  xy: 309, 126
+  size: 56, 52
+  orig: 56, 52
+  offset: 0, 0
+  index: -1
+flower4
+  rotate: false
+  xy: 77, 19
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+flower5
+  rotate: false
+  xy: 234, 295
+  size: 96, 143
+  orig: 100, 145
+  offset: 3, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 373, 45
+  size: 124, 133
+  orig: 130, 141
+  offset: 1, 4
+  index: -1
+hair2
+  rotate: false
+  xy: 8, 87
+  size: 139, 179
+  orig: 148, 187
+  offset: 5, 5
+  index: -1
+hair3
+  rotate: false
+  xy: 254, 15
+  size: 81, 78
+  orig: 88, 82
+  offset: 2, 3
+  index: -1
+handL
+  rotate: false
+  xy: 343, 186
+  size: 144, 146
+  orig: 153, 152
+  offset: 4, 4
+  index: -1
+handR
+  rotate: false
+  xy: 343, 340
+  size: 155, 158
+  orig: 164, 160
+  offset: 5, 2
+  index: -1
+mouth
+  rotate: false
+  xy: 343, 8
+  size: 50, 29
+  orig: 50, 29
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,27 @@
+
+dark_elemental.png
+size: 797,797
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ke
+  rotate: false
+  xy: 8, 8
+  size: 536, 498
+  orig: 556, 506
+  offset: 9, 4
+  index: -1
+shenti
+  rotate: false
+  xy: 75, 514
+  size: 289, 275
+  orig: 289, 275
+  offset: 0, 0
+  index: -1
+yanjing
+  rotate: false
+  xy: 8, 739
+  size: 59, 50
+  orig: 60, 50
+  offset: 0, 0
+  index: -1

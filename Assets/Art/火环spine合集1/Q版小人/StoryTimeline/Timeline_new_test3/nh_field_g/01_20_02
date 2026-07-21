@@ -1,0 +1,7 @@
+skip_title=斩断那傲慢的獠牙;
+skip_overview=你们在山顶发现了正在操控影兽的高利扬。面对指控，他随意地承认了一切，同时大放厥词，打算让你们成为他迈向成功的垫脚石。;
+spine=高利扬<lights=1,faces=idleface>;mid_txt=嘁……只要带点脑子，就会失控么？处理起来还真是费劲，科林异端的玩意儿还真是低级！<name=高利扬>;
+spine=高利扬<lights=1,faces=idleface>;mid_txt=果然还是只能靠裂隙……被那家伙说中了啊，真让人不爽……<name=高利扬>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=高利扬！！<name=厄晞斯>;

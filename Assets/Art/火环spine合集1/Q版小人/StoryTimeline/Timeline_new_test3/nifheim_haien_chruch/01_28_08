@@ -1,0 +1,14 @@
+skip_title=“请君入瓮”;
+skip_overview=在你们不断抛出的证据下，莉芙，或者说瑞茵坦然承认自己是创生仪式的幸存者，并表明将重启仪式为科林教派正名。她揭示自己的巫妖身份，随后化为幻象消失。此时，教会外传来骚乱声。;
+spine=奈菲娅<lights=1,faces=idleface>;mid_txt=……据文献记载，巫妖属于「末裔」之一，是因执念而滞留世间的存在。世人对其所知甚少，我也未曾想过会在尼芙海姆亲眼见到。<name=奈菲娅>;
+spine=奈菲娅<lights=1,faces=serious>;mid_txt=刚才的幻象……应是巫妖的「化形」能力。能以假乱真，意味着她体内凝聚着我们难以想象的“执念”。<name=奈菲娅>;
+spine=奈菲娅<lights=1,faces=no>;mid_txt=……也难怪居民对她的记忆如此模糊，按理来说，普通人根本无法保存巫妖的记忆——世界之大，真是无奇不有。<name=奈菲娅>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=enmity>;mid_txt=现在不是分析的时候。看瑞茵的反应，她显然早已预料到我们的行动。<name=厄晞斯>;
+spine=厄晞斯<lights=1,faces=think>;mid_txt=可既然如此，她又为何愿意来海恩城，甚至对我们吐露这么多？<name=厄晞斯>;
+hide=spine;
+hide=txt;
+mid_txt=——这是怎么回事？！快、快来人啊！<name=远处的声音>;
+hide=txt;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=……我们过去看看！<name=厄晞斯>;

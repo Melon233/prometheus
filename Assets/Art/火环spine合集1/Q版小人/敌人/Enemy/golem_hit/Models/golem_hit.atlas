@@ -1,0 +1,230 @@
+
+golem_hit.png
+size: 1226,1226
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+LJo1
+  rotate: false
+  xy: 370, 51
+  size: 188, 370
+  orig: 204, 386
+  offset: 11, 2
+  index: -1
+LJo2
+  rotate: false
+  xy: 1109, 977
+  size: 106, 241
+  orig: 110, 244
+  offset: 2, 2
+  index: -1
+LJo3
+  rotate: false
+  xy: 1109, 886
+  size: 89, 83
+  orig: 101, 95
+  offset: 6, 6
+  index: -1
+LJo4
+  rotate: false
+  xy: 1068, 265
+  size: 75, 75
+  orig: 87, 87
+  offset: 6, 6
+  index: -1
+LJo5
+  rotate: false
+  xy: 1079, 348
+  size: 117, 145
+  orig: 121, 148
+  offset: 2, 1
+  index: -1
+LPineApple
+  rotate: false
+  xy: 866, 189
+  size: 111, 157
+  orig: 118, 157
+  offset: 7, 0
+  index: -1
+RJo1
+  rotate: false
+  xy: 190, 13
+  size: 172, 396
+  orig: 172, 402
+  offset: 0, 5
+  index: -1
+RJo2
+  rotate: false
+  xy: 1109, 653
+  size: 87, 225
+  orig: 98, 233
+  offset: 6, 4
+  index: -1
+RJo3
+  rotate: false
+  xy: 793, 293
+  size: 65, 53
+  orig: 77, 65
+  offset: 6, 6
+  index: -1
+RJo4
+  rotate: false
+  xy: 985, 262
+  size: 75, 84
+  orig: 87, 96
+  offset: 6, 6
+  index: -1
+RJo5
+  rotate: false
+  xy: 1102, 501
+  size: 116, 144
+  orig: 121, 149
+  offset: 2, 1
+  index: -1
+RPineApple
+  rotate: false
+  xy: 654, 471
+  size: 131, 181
+  orig: 136, 202
+  offset: 3, 19
+  index: -1
+eye1
+  rotate: false
+  xy: 1151, 287
+  size: 62, 53
+  orig: 62, 53
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: false
+  xy: 1151, 227
+  size: 47, 52
+  orig: 47, 52
+  offset: 0, 0
+  index: -1
+fire/LJo1
+  rotate: false
+  xy: 459, 470
+  size: 187, 370
+  orig: 244, 426
+  offset: 31, 24
+  index: -1
+fire/RJo1
+  rotate: false
+  xy: 8, 821
+  size: 173, 397
+  orig: 212, 442
+  offset: 20, 24
+  index: -1
+fire/head-top
+  rotate: false
+  xy: 814, 854
+  size: 287, 177
+  orig: 312, 228
+  offset: 23, 41
+  index: -1
+head-top
+  rotate: false
+  xy: 814, 854
+  size: 287, 177
+  orig: 312, 228
+  offset: 23, 41
+  index: -1
+thunder/head-top
+  rotate: false
+  xy: 814, 854
+  size: 287, 177
+  orig: 312, 228
+  offset: 23, 41
+  index: -1
+head-bottom1
+  rotate: false
+  xy: 812, 518
+  size: 282, 143
+  orig: 286, 147
+  offset: 2, 1
+  index: -1
+head-bottom2
+  rotate: false
+  xy: 793, 354
+  size: 278, 156
+  orig: 283, 166
+  offset: 2, 8
+  index: -1
+head1
+  rotate: false
+  xy: 566, 31
+  size: 250, 251
+  orig: 258, 257
+  offset: 4, 3
+  index: -1
+head3-face
+  rotate: false
+  xy: 654, 660
+  size: 150, 180
+  orig: 150, 180
+  offset: 0, 0
+  index: -1
+head4
+  rotate: false
+  xy: 566, 290
+  size: 219, 172
+  orig: 235, 188
+  offset: 8, 8
+  index: -1
+ice/LJo1
+  rotate: false
+  xy: 234, 429
+  size: 217, 385
+  orig: 244, 426
+  offset: 18, 18
+  index: -1
+ice/RJo1
+  rotate: false
+  xy: 189, 822
+  size: 203, 396
+  orig: 212, 442
+  offset: 1, 25
+  index: -1
+ice/head-top
+  rotate: false
+  xy: 814, 1039
+  size: 287, 179
+  orig: 312, 228
+  offset: 23, 41
+  index: -1
+thunder/LJo1
+  rotate: false
+  xy: 619, 848
+  size: 187, 370
+  orig: 244, 426
+  offset: 31, 23
+  index: -1
+thunder/RJo1
+  rotate: false
+  xy: 8, 13
+  size: 174, 396
+  orig: 212, 442
+  offset: 19, 25
+  index: -1
+wind/LJo1
+  rotate: false
+  xy: 400, 848
+  size: 211, 370
+  orig: 244, 426
+  offset: 31, 23
+  index: -1
+wind/RJo1
+  rotate: false
+  xy: 8, 417
+  size: 218, 396
+  orig: 263, 548
+  offset: 29, 78
+  index: -1
+wind/head-top
+  rotate: false
+  xy: 814, 669
+  size: 287, 177
+  orig: 312, 228
+  offset: 23, 41
+  index: -1

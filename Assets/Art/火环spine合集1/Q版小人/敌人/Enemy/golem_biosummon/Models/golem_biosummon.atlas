@@ -1,0 +1,202 @@
+
+golem_biosummon.png
+size: 1135,1135
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ball1
+  rotate: false
+  xy: 626, 130
+  size: 166, 166
+  orig: 166, 166
+  offset: 0, 0
+  index: -1
+ball1.1
+  rotate: false
+  xy: 938, 90
+  size: 114, 111
+  orig: 114, 111
+  offset: 0, 0
+  index: -1
+ball1.2
+  rotate: false
+  xy: 893, 344
+  size: 132, 132
+  orig: 132, 132
+  offset: 0, 0
+  index: -1
+ball1.3
+  rotate: false
+  xy: 727, 644
+  size: 158, 158
+  orig: 158, 158
+  offset: 0, 0
+  index: -1
+ball2
+  rotate: false
+  xy: 893, 662
+  size: 140, 140
+  orig: 140, 140
+  offset: 0, 0
+  index: -1
+ball2.1
+  rotate: false
+  xy: 166, 33
+  size: 78, 48
+  orig: 84, 57
+  offset: 4, 6
+  index: -1
+ball2.2
+  rotate: false
+  xy: 352, 8
+  size: 107, 107
+  orig: 107, 107
+  offset: 0, 0
+  index: -1
+ball2.3
+  rotate: false
+  xy: 938, 209
+  size: 127, 127
+  orig: 127, 127
+  offset: 0, 0
+  index: -1
+ball3
+  rotate: false
+  xy: 800, 173
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+ball3.1
+  rotate: false
+  xy: 325, 701
+  size: 56, 43
+  orig: 68, 52
+  offset: 6, 5
+  index: -1
+ball3.2
+  rotate: false
+  xy: 467, 15
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+ball3.3
+  rotate: false
+  xy: 800, 47
+  size: 118, 118
+  orig: 118, 118
+  offset: 0, 0
+  index: -1
+fly1
+  rotate: false
+  xy: 607, 304
+  size: 132, 170
+  orig: 132, 170
+  offset: 0, 0
+  index: -1
+fly2
+  rotate: false
+  xy: 893, 484
+  size: 106, 170
+  orig: 106, 170
+  offset: 0, 0
+  index: -1
+head1
+  rotate: false
+  xy: 8, 423
+  size: 309, 321
+  orig: 309, 321
+  offset: 0, 0
+  index: -1
+head2
+  rotate: false
+  xy: 8, 752
+  size: 431, 375
+  orig: 431, 375
+  offset: 0, 0
+  index: -1
+head2.1
+  rotate: false
+  xy: 352, 255
+  size: 247, 219
+  orig: 247, 219
+  offset: 0, 0
+  index: -1
+head2.2
+  rotate: false
+  xy: 325, 482
+  size: 363, 209
+  orig: 363, 209
+  offset: 0, 0
+  index: -1
+head2.3
+  rotate: false
+  xy: 778, 966
+  size: 322, 161
+  orig: 322, 161
+  offset: 0, 0
+  index: -1
+head2.4
+  rotate: false
+  xy: 352, 123
+  size: 266, 124
+  orig: 266, 124
+  offset: 0, 0
+  index: -1
+head3
+  rotate: false
+  xy: 447, 829
+  size: 323, 298
+  orig: 323, 298
+  offset: 0, 0
+  index: -1
+head3.1
+  rotate: false
+  xy: 447, 699
+  size: 272, 122
+  orig: 272, 122
+  offset: 0, 0
+  index: -1
+head3.2
+  rotate: false
+  xy: 778, 810
+  size: 303, 148
+  orig: 303, 148
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 8, 13
+  size: 150, 402
+  orig: 150, 402
+  offset: 0, 0
+  index: -1
+leg2-2
+  rotate: false
+  xy: 166, 89
+  size: 178, 326
+  orig: 178, 326
+  offset: 0, 0
+  index: -1
+leg3
+  rotate: false
+  xy: 747, 311
+  size: 138, 325
+  orig: 138, 325
+  offset: 0, 0
+  index: -1
+leg4
+  rotate: false
+  xy: 1007, 537
+  size: 95, 117
+  orig: 95, 117
+  offset: 0, 0
+  index: -1
+leg5
+  rotate: false
+  xy: 626, 12
+  size: 108, 110
+  orig: 108, 110
+  offset: 0, 0
+  index: -1

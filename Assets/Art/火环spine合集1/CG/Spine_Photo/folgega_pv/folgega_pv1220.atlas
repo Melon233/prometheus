@@ -1,0 +1,636 @@
+
+folgega_pv1220.png
+size: 1505,1261
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+前层光
+  rotate: false
+  xy: 420, 210
+  size: 484, 274
+  orig: 484, 274
+  offset: 0, 0
+  index: -1
+右上小_前发
+  rotate: false
+  xy: 856, 40
+  size: 288, 191
+  orig: 294, 196
+  offset: 4, 1
+  index: -1
+右上小_右腿
+  rotate: false
+  xy: 701, 1177
+  size: 95, 74
+  orig: 104, 92
+  offset: 5, 4
+  index: -1
+右上小_后发
+  rotate: false
+  xy: 510, 491
+  size: 250, 158
+  orig: 256, 163
+  offset: 2, 1
+  index: -1
+右上小_图层 31
+  rotate: false
+  xy: 302, 55
+  size: 162, 171
+  orig: 170, 187
+  offset: 4, 12
+  index: -1
+右上小_左腿
+  rotate: false
+  xy: 8, 44
+  size: 137, 68
+  orig: 144, 74
+  offset: 2, 3
+  index: -1
+右上小_左腿img
+  rotate: false
+  xy: 361, 324
+  size: 45, 59
+  orig: 52, 66
+  offset: 4, 4
+  index: -1
+右上小_左腿img_b
+  rotate: false
+  xy: 137, 893
+  size: 19, 36
+  orig: 26, 43
+  offset: 3, 4
+  index: -1
+右上小_披肩
+  rotate: false
+  xy: 912, 1139
+  size: 86, 46
+  orig: 94, 52
+  offset: 3, 3
+  index: -1
+右上小_翅膀
+  rotate: false
+  xy: 8, 707
+  size: 128, 139
+  orig: 153, 159
+  offset: 5, 16
+  index: -1
+右上小_耳朵
+  rotate: false
+  xy: 232, 1191
+  size: 141, 63
+  orig: 152, 70
+  offset: 4, 3
+  index: -1
+右上小_裙子
+  rotate: false
+  xy: 708, 772
+  size: 95, 50
+  orig: 102, 57
+  offset: 3, 4
+  index: -1
+右上小_裙子B
+  rotate: false
+  xy: 474, 759
+  size: 53, 47
+  orig: 62, 52
+  offset: 6, 2
+  index: -1
+右上小_身体
+  rotate: false
+  xy: 1112, 176
+  size: 228, 255
+  orig: 232, 274
+  offset: 0, 16
+  index: -1
+右下小_右发
+  rotate: false
+  xy: 45, 825
+  size: 122, 278
+  orig: 128, 283
+  offset: 2, 4
+  index: -1
+右下小_右手
+  rotate: false
+  xy: 255, 1061
+  size: 106, 126
+  orig: 114, 134
+  offset: 4, 4
+  index: -1
+右下小_右裙子
+  rotate: false
+  xy: 918, 14
+  size: 63, 63
+  orig: 72, 69
+  offset: 5, 4
+  index: -1
+右下小_右边披肩
+  rotate: false
+  xy: 740, 26
+  size: 82, 68
+  orig: 92, 76
+  offset: 5, 4
+  index: -1
+右下小_右边披肩b
+  rotate: false
+  xy: 402, 820
+  size: 62, 62
+  orig: 70, 73
+  offset: 3, 8
+  index: -1
+右下小_头
+  rotate: false
+  xy: 1228, 366
+  size: 201, 217
+  orig: 207, 220
+  offset: 3, 0
+  index: -1
+右下小_左手
+  rotate: false
+  xy: 469, 982
+  size: 49, 46
+  orig: 58, 53
+  offset: 5, 3
+  index: -1
+右下小_左腿
+  rotate: false
+  xy: 874, 1153
+  size: 116, 99
+  orig: 124, 105
+  offset: 4, 3
+  index: -1
+右下小_左裙子
+  rotate: false
+  xy: 8, 1215
+  size: 49, 40
+  orig: 56, 49
+  offset: 3, 4
+  index: -1
+右下小_左边头发
+  rotate: false
+  xy: 265, 14
+  size: 124, 106
+  orig: 130, 114
+  offset: 3, 4
+  index: -1
+右下小_帽子
+  rotate: false
+  xy: 1183, 559
+  size: 215, 217
+  orig: 238, 221
+  offset: 21, 4
+  index: -1
+右下小_帽子img_b
+  rotate: false
+  xy: 8, 810
+  size: 44, 30
+  orig: 50, 38
+  offset: 2, 4
+  index: -1
+右下小_徽章
+  rotate: false
+  xy: 483, 941
+  size: 34, 33
+  orig: 43, 39
+  offset: 4, 3
+  index: -1
+右下小_翅膀
+  rotate: false
+  xy: 450, 10
+  size: 86, 186
+  orig: 99, 190
+  offset: 4, 1
+  index: -1
+右下小_耳朵
+  rotate: false
+  xy: 535, 1150
+  size: 92, 103
+  orig: 98, 115
+  offset: 3, 3
+  index: -1
+右下小_身体
+  rotate: false
+  xy: 1121, 58
+  size: 198, 116
+  orig: 213, 123
+  offset: 8, 3
+  index: -1
+左上小_印章
+  rotate: false
+  xy: 150, 1186
+  size: 33, 29
+  orig: 33, 29
+  offset: 0, 0
+  index: -1
+左上小_右头发1
+  rotate: false
+  xy: 777, 492
+  size: 54, 174
+  orig: 62, 180
+  offset: 8, 3
+  index: -1
+左上小_后发
+  rotate: false
+  xy: 707, 657
+  size: 130, 112
+  orig: 137, 117
+  offset: 5, 1
+  index: -1
+左上小_后腿
+  rotate: false
+  xy: 1387, 327
+  size: 107, 132
+  orig: 111, 136
+  offset: 4, 2
+  index: -1
+左上小_头
+  rotate: false
+  xy: 8, 611
+  size: 105, 89
+  orig: 105, 89
+  offset: 0, 0
+  index: -1
+左上小_头翅膀
+  rotate: false
+  xy: 609, 13
+  size: 137, 79
+  orig: 145, 93
+  offset: 2, 5
+  index: -1
+左上小_帽子
+  rotate: false
+  xy: 818, 947
+  size: 297, 268
+  orig: 307, 280
+  offset: 10, 8
+  index: -1
+左上小_帽子img_b
+  rotate: false
+  xy: 8, 529
+  size: 60, 74
+  orig: 60, 74
+  offset: 0, 0
+  index: -1
+左上小_披肩
+  rotate: false
+  xy: 200, 117
+  size: 62, 51
+  orig: 70, 58
+  offset: 4, 3
+  index: -1
+左上小_翅膀前
+  rotate: false
+  xy: 1305, 10
+  size: 189, 107
+  orig: 194, 115
+  offset: 1, 3
+  index: -1
+左上小_翅膀后
+  rotate: false
+  xy: 1012, 891
+  size: 110, 82
+  orig: 117, 87
+  offset: 3, 1
+  index: -1
+左上小_裙子
+  rotate: false
+  xy: 111, 706
+  size: 34, 29
+  orig: 42, 41
+  offset: 4, 4
+  index: -1
+左上小_躯干
+  rotate: false
+  xy: 1313, 103
+  size: 178, 226
+  orig: 228, 235
+  offset: 5, 4
+  index: -1
+左上小_领子
+  rotate: false
+  xy: 8, 397
+  size: 51, 37
+  orig: 51, 37
+  offset: 0, 0
+  index: -1
+流星
+  rotate: false
+  xy: 774, 1088
+  size: 126, 104
+  orig: 133, 111
+  offset: 4, 4
+  index: -1
+菲儿佳_右发
+  rotate: false
+  xy: 8, 1006
+  size: 165, 246
+  orig: 201, 254
+  offset: 26, 4
+  index: -1
+菲儿佳_右发2
+  rotate: false
+  xy: 532, 524
+  size: 94, 125
+  orig: 99, 134
+  offset: 1, 5
+  index: -1
+菲儿佳_右头发1
+  rotate: false
+  xy: 617, 99
+  size: 342, 105
+  orig: 348, 112
+  offset: 1, 4
+  index: -1
+菲儿佳_右手
+  rotate: false
+  xy: 988, 11
+  size: 110, 90
+  orig: 125, 99
+  offset: 2, 5
+  index: -1
+菲儿佳_右手袖子
+  rotate: false
+  xy: 313, 389
+  size: 80, 81
+  orig: 88, 90
+  offset: 3, 4
+  index: -1
+菲儿佳_右手袖子B
+  rotate: false
+  xy: 136, 936
+  size: 34, 68
+  orig: 41, 76
+  offset: 4, 4
+  index: -1
+菲儿佳_右眉
+  rotate: false
+  xy: 85, 1135
+  size: 15, 18
+  orig: 22, 25
+  offset: 4, 3
+  index: -1
+菲儿佳_右眼
+  rotate: false
+  xy: 154, 1001
+  size: 22, 25
+  orig: 30, 31
+  offset: 4, 3
+  index: -1
+菲儿佳_右眼img
+  rotate: false
+  xy: 8, 1185
+  size: 5, 4
+  orig: 14, 14
+  offset: 4, 5
+  index: -1
+菲儿佳_右眼上
+  rotate: false
+  xy: 455, 690
+  size: 50, 35
+  orig: 58, 49
+  offset: 4, 4
+  index: -1
+菲儿佳_右眼上X
+  rotate: false
+  xy: 8, 912
+  size: 35, 33
+  orig: 48, 43
+  offset: 8, 6
+  index: -1
+菲儿佳_右眼下
+  rotate: false
+  xy: 255, 1095
+  size: 31, 38
+  orig: 40, 48
+  offset: 4, 4
+  index: -1
+菲儿佳_右腿
+  rotate: false
+  xy: 910, 175
+  size: 281, 374
+  orig: 292, 380
+  offset: 2, 4
+  index: -1
+菲儿佳_右腿img
+  rotate: false
+  xy: 1175, 11
+  size: 117, 88
+  orig: 126, 97
+  offset: 4, 4
+  index: -1
+菲儿佳_右臂
+  rotate: false
+  xy: 540, 28
+  size: 244, 111
+  orig: 293, 119
+  offset: 45, 4
+  index: -1
+菲儿佳_右边披肩
+  rotate: false
+  xy: 1234, 956
+  size: 236, 172
+  orig: 244, 182
+  offset: 4, 4
+  index: -1
+菲儿佳_后发
+  rotate: false
+  xy: 1198, 776
+  size: 245, 174
+  orig: 266, 208
+  offset: 5, 4
+  index: -1
+菲儿佳_头
+  rotate: false
+  xy: 197, 176
+  size: 193, 182
+  orig: 201, 209
+  offset: 4, 24
+  index: -1
+菲儿佳_左头发1
+  rotate: false
+  xy: 1156, 1181
+  size: 94, 71
+  orig: 114, 86
+  offset: 14, 12
+  index: -1
+菲儿佳_左手
+  rotate: false
+  xy: 82, 1096
+  size: 95, 69
+  orig: 104, 81
+  offset: 7, 4
+  index: -1
+菲儿佳_左手袖子
+  rotate: false
+  xy: 1106, 16
+  size: 68, 76
+  orig: 76, 83
+  offset: 4, 5
+  index: -1
+菲儿佳_左手袖子B
+  rotate: false
+  xy: 8, 855
+  size: 45, 46
+  orig: 49, 56
+  offset: 1, 5
+  index: -1
+菲儿佳_左眉
+  rotate: false
+  xy: 162, 1236
+  size: 18, 15
+  orig: 26, 21
+  offset: 5, 4
+  index: -1
+菲儿佳_左眼
+  rotate: false
+  xy: 8, 1196
+  size: 22, 15
+  orig: 29, 23
+  offset: 3, 4
+  index: -1
+菲儿佳_左眼img
+  rotate: false
+  xy: 64, 1245
+  size: 5, 5
+  orig: 14, 13
+  offset: 4, 4
+  index: -1
+菲儿佳_左眼上
+  rotate: false
+  xy: 331, 1032
+  size: 42, 30
+  orig: 51, 37
+  offset: 4, 4
+  index: -1
+菲儿佳_左眼上X
+  rotate: false
+  xy: 539, 1127
+  size: 37, 19
+  orig: 45, 28
+  offset: 4, 4
+  index: -1
+菲儿佳_左眼下
+  rotate: false
+  xy: 76, 576
+  size: 35, 25
+  orig: 45, 32
+  offset: 5, 3
+  index: -1
+菲儿佳_左腿
+  rotate: false
+  xy: 1142, 827
+  size: 292, 427
+  orig: 382, 434
+  offset: 40, 4
+  index: -1
+菲儿佳_左腿img
+  rotate: false
+  xy: 1359, 1089
+  size: 137, 83
+  orig: 144, 89
+  offset: 4, 4
+  index: -1
+菲儿佳_左臂
+  rotate: false
+  xy: 8, 992
+  size: 56, 99
+  orig: 65, 107
+  offset: 2, 4
+  index: -1
+菲儿佳_左边披肩
+  rotate: false
+  xy: 486, 619
+  size: 77, 136
+  orig: 116, 146
+  offset: 24, 6
+  index: -1
+菲儿佳_左边披肩b
+  rotate: false
+  xy: 8, 953
+  size: 65, 39
+  orig: 116, 146
+  offset: 5, 45
+  index: -1
+菲儿佳_带子
+  rotate: false
+  xy: 1421, 515
+  size: 69, 111
+  orig: 78, 119
+  offset: 4, 4
+  index: -1
+菲儿佳_带子img
+  rotate: false
+  xy: 1407, 198
+  size: 84, 123
+  orig: 92, 131
+  offset: 4, 4
+  index: -1
+菲儿佳_帽子
+  rotate: false
+  xy: 332, 1029
+  size: 203, 226
+  orig: 218, 231
+  offset: 4, 1
+  index: -1
+菲儿佳_帽子img1
+  rotate: false
+  xy: 1087, 1052
+  size: 62, 75
+  orig: 68, 83
+  offset: 3, 4
+  index: -1
+菲儿佳_帽子img2
+  rotate: false
+  xy: 8, 128
+  size: 69, 72
+  orig: 78, 83
+  offset: 3, 7
+  index: -1
+菲儿佳_徽章
+  rotate: false
+  xy: 491, 1213
+  size: 54, 41
+  orig: 61, 49
+  offset: 4, 4
+  index: -1
+菲儿佳_翅膀右前
+  rotate: false
+  xy: 8, 440
+  size: 531, 812
+  orig: 549, 824
+  offset: 13, 11
+  index: -1
+菲儿佳_翅膀右后
+  rotate: false
+  xy: 705, 532
+  size: 450, 404
+  orig: 455, 465
+  offset: 1, 57
+  index: -1
+菲儿佳_翅膀左
+  rotate: false
+  xy: 391, 550
+  size: 527, 703
+  orig: 538, 734
+  offset: 3, 31
+  index: -1
+菲儿佳_耳朵羽毛
+  rotate: false
+  xy: 90, 43
+  size: 177, 164
+  orig: 202, 167
+  offset: 4, 1
+  index: -1
+菲儿佳_裙子
+  rotate: false
+  xy: 996, 1132
+  size: 175, 121
+  orig: 189, 130
+  offset: 4, 4
+  index: -1
+菲儿佳_身体
+  rotate: false
+  xy: 8, 196
+  size: 323, 261
+  orig: 330, 268
+  offset: 3, 6
+  index: -1

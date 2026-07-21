@@ -1,0 +1,160 @@
+
+chessrookp.png
+size: 1189,1189
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dizuo
+  rotate: false
+  xy: 8, 587
+  size: 433, 267
+  orig: 481, 307
+  offset: 28, 20
+  index: -1
+dun_B
+  rotate: false
+  xy: 337, 276
+  size: 243, 303
+  orig: 283, 344
+  offset: 20, 21
+  index: -1
+dun_F
+  rotate: false
+  xy: 789, 132
+  size: 243, 303
+  orig: 283, 344
+  offset: 20, 21
+  index: -1
+jian
+  rotate: false
+  xy: 8, 862
+  size: 489, 319
+  orig: 529, 359
+  offset: 20, 20
+  index: -1
+jianjia_L
+  rotate: false
+  xy: 588, 184
+  size: 192, 166
+  orig: 232, 207
+  offset: 20, 21
+  index: -1
+jianjia_R_B
+  rotate: false
+  xy: 219, 167
+  size: 94, 92
+  orig: 134, 132
+  offset: 20, 20
+  index: -1
+jianjia_R_F
+  rotate: false
+  xy: 700, 41
+  size: 81, 135
+  orig: 121, 175
+  offset: 20, 20
+  index: -1
+shenti
+  rotate: false
+  xy: 505, 763
+  size: 379, 418
+  orig: 379, 429
+  offset: 0, 0
+  index: -1
+shenti_2
+  rotate: false
+  xy: 337, 90
+  size: 243, 178
+  orig: 283, 218
+  offset: 20, 20
+  index: -1
+shenti_D_1
+  rotate: false
+  xy: 588, 358
+  size: 193, 221
+  orig: 234, 261
+  offset: 21, 20
+  index: -1
+shenti_D_2
+  rotate: false
+  xy: 892, 850
+  size: 268, 331
+  orig: 308, 371
+  offset: 20, 20
+  index: -1
+shenti_D_3
+  rotate: false
+  xy: 449, 587
+  size: 339, 168
+  orig: 379, 208
+  offset: 20, 20
+  index: -1
+shoubi_L
+  rotate: false
+  xy: 588, 34
+  size: 104, 142
+  orig: 144, 182
+  offset: 20, 20
+  index: -1
+shoubi_R
+  rotate: false
+  xy: 1040, 99
+  size: 77, 96
+  orig: 117, 142
+  offset: 20, 20
+  index: -1
+stone1
+  rotate: false
+  xy: 892, 792
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 1040, 203
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 449, 782
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tou
+  rotate: false
+  xy: 796, 443
+  size: 321, 312
+  orig: 361, 352
+  offset: 20, 20
+  index: -1
+tou_D_1
+  rotate: false
+  xy: 8, 89
+  size: 203, 170
+  orig: 243, 210
+  offset: 20, 20
+  index: -1
+tou_D_2
+  rotate: false
+  xy: 8, 267
+  size: 321, 312
+  orig: 361, 352
+  offset: 20, 20
+  index: -1
+xiaoshoubi_L
+  rotate: false
+  xy: 219, 46
+  size: 91, 113
+  orig: 131, 153
+  offset: 20, 20
+  index: -1
+xiaoshoubi_R
+  rotate: false
+  xy: 1040, 309
+  size: 141, 126
+  orig: 181, 166
+  offset: 20, 20
+  index: -1

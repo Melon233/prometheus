@@ -1,0 +1,146 @@
+
+amon.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+LJo1
+  rotate: false
+  xy: 303, 385
+  size: 188, 370
+  orig: 204, 386
+  offset: 11, 2
+  index: -1
+LJo2
+  rotate: false
+  xy: 446, 773
+  size: 106, 241
+  orig: 110, 244
+  offset: 2, 2
+  index: -1
+LJo3
+  rotate: false
+  xy: 188, 672
+  size: 89, 83
+  orig: 101, 95
+  offset: 6, 6
+  index: -1
+LJo4
+  rotate: false
+  xy: 91, 35
+  size: 75, 75
+  orig: 87, 87
+  offset: 6, 6
+  index: -1
+LJo5
+  rotate: false
+  xy: 679, 869
+  size: 117, 145
+  orig: 121, 148
+  offset: 2, 1
+  index: -1
+LPineApple
+  rotate: false
+  xy: 560, 857
+  size: 111, 157
+  orig: 118, 157
+  offset: 7, 0
+  index: -1
+RJo1
+  rotate: false
+  xy: 8, 618
+  size: 172, 396
+  orig: 172, 402
+  offset: 0, 5
+  index: -1
+RJo2
+  rotate: false
+  xy: 456, 152
+  size: 87, 225
+  orig: 98, 233
+  offset: 6, 4
+  index: -1
+RJo3
+  rotate: false
+  xy: 174, 57
+  size: 65, 53
+  orig: 77, 65
+  offset: 6, 6
+  index: -1
+RJo4
+  rotate: false
+  xy: 8, 26
+  size: 75, 84
+  orig: 87, 96
+  offset: 6, 6
+  index: -1
+RJo5
+  rotate: false
+  xy: 499, 441
+  size: 116, 144
+  orig: 121, 149
+  offset: 2, 1
+  index: -1
+RPineApple
+  rotate: false
+  xy: 294, 8
+  size: 131, 181
+  orig: 136, 202
+  offset: 3, 19
+  index: -1
+eye1
+  rotate: false
+  xy: 679, 808
+  size: 62, 53
+  orig: 62, 53
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: false
+  xy: 560, 797
+  size: 47, 52
+  orig: 47, 52
+  offset: 0, 0
+  index: -1
+head-bottom1
+  rotate: false
+  xy: 8, 282
+  size: 282, 143
+  orig: 286, 147
+  offset: 2, 1
+  index: -1
+head-bottom2
+  rotate: false
+  xy: 8, 118
+  size: 278, 156
+  orig: 283, 166
+  offset: 2, 8
+  index: -1
+head-top
+  rotate: false
+  xy: 8, 433
+  size: 287, 177
+  orig: 312, 228
+  offset: 23, 41
+  index: -1
+head1
+  rotate: false
+  xy: 188, 763
+  size: 250, 251
+  orig: 258, 257
+  offset: 4, 3
+  index: -1
+head3-face
+  rotate: false
+  xy: 298, 197
+  size: 150, 180
+  orig: 150, 180
+  offset: 0, 0
+  index: -1
+head4
+  rotate: false
+  xy: 499, 593
+  size: 219, 172
+  orig: 235, 188
+  offset: 8, 8
+  index: -1

@@ -1,0 +1,188 @@
+
+snowman.png
+size: 914,914
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 605, 542
+  size: 126, 103
+  orig: 130, 107
+  offset: 2, 2
+  index: -1
+10
+  rotate: false
+  xy: 393, 8
+  size: 54, 57
+  orig: 58, 61
+  offset: 2, 2
+  index: -1
+11
+  rotate: false
+  xy: 718, 347
+  size: 112, 94
+  orig: 116, 98
+  offset: 2, 2
+  index: -1
+2
+  rotate: false
+  xy: 411, 439
+  size: 186, 206
+  orig: 186, 206
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 798, 454
+  size: 76, 84
+  orig: 80, 88
+  offset: 2, 2
+  index: -1
+4
+  rotate: false
+  xy: 771, 816
+  size: 79, 90
+  orig: 83, 94
+  offset: 2, 2
+  index: -1
+5
+  rotate: false
+  xy: 672, 151
+  size: 128, 104
+  orig: 132, 108
+  offset: 2, 2
+  index: -1
+6
+  rotate: false
+  xy: 771, 750
+  size: 61, 58
+  orig: 65, 62
+  offset: 2, 2
+  index: -1
+7
+  rotate: false
+  xy: 521, 187
+  size: 107, 68
+  orig: 111, 72
+  offset: 2, 2
+  index: -1
+8
+  rotate: false
+  xy: 813, 632
+  size: 40, 40
+  orig: 44, 44
+  offset: 2, 2
+  index: -1
+9
+  rotate: false
+  xy: 771, 680
+  size: 50, 62
+  orig: 54, 66
+  offset: 2, 2
+  index: -1
+all
+  rotate: false
+  xy: 8, 338
+  size: 395, 568
+  orig: 400, 573
+  offset: 3, 3
+  index: -1
+body
+  rotate: false
+  xy: 411, 653
+  size: 352, 253
+  orig: 356, 286
+  offset: 0, 33
+  index: -1
+body1
+  rotate: false
+  xy: 8, 16
+  size: 377, 314
+  orig: 397, 344
+  offset: 10, 22
+  index: -1
+body3
+  rotate: false
+  xy: 521, 263
+  size: 189, 168
+  orig: 193, 172
+  offset: 2, 2
+  index: -1
+chu1
+  rotate: false
+  xy: 393, 73
+  size: 53, 257
+  orig: 67, 271
+  offset: 7, 7
+  index: -1
+chu2
+  rotate: false
+  xy: 455, 187
+  size: 58, 244
+  orig: 71, 258
+  offset: 7, 7
+  index: -1
+eye
+  rotate: false
+  xy: 605, 449
+  size: 185, 85
+  orig: 193, 93
+  offset: 4, 4
+  index: -1
+face
+  rotate: false
+  xy: 455, 9
+  size: 209, 170
+  orig: 262, 204
+  offset: 47, 25
+  index: -1
+feet1
+  rotate: false
+  xy: 808, 247
+  size: 91, 92
+  orig: 104, 98
+  offset: 7, 6
+  index: -1
+feet2
+  rotate: false
+  xy: 739, 546
+  size: 66, 99
+  orig: 69, 101
+  offset: 1, 2
+  index: -1
+feet3
+  rotate: false
+  xy: 718, 263
+  size: 70, 76
+  orig: 70, 77
+  offset: 0, 1
+  index: -1
+jiao1
+  rotate: false
+  xy: 672, 8
+  size: 103, 135
+  orig: 103, 135
+  offset: 0, 0
+  index: -1
+jiao2
+  rotate: false
+  xy: 783, 13
+  size: 106, 130
+  orig: 106, 130
+  offset: 0, 0
+  index: -1
+mao1
+  rotate: false
+  xy: 838, 353
+  size: 52, 93
+  orig: 58, 98
+  offset: 0, 0
+  index: -1
+mao2
+  rotate: false
+  xy: 808, 176
+  size: 52, 63
+  orig: 52, 63
+  offset: 0, 0
+  index: -1

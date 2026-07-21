@@ -1,0 +1,13 @@
+
+enemy_sina_heart.png
+size: 867,867
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+heart1
+  rotate: false
+  xy: 8, 8
+  size: 659, 851
+  orig: 763, 969
+  offset: 63, 80
+  index: -1

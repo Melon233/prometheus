@@ -1,0 +1,6 @@
+skip_title=海恩城风光;
+skip_overview=海芙温向你介绍了「黄金鸮商会」，纳叶补充说明这里能提供各类商品，但交易成功的关键在于能否开出让对方满意的价码。;
+spine=纳叶|海芙温<lights=0|1,faces=idleface|active>;mid_txt=这里是「黄金鸮商会」，卖各种…稀奇古怪的东西，纳叶应该知道吧？<name=海芙温>;
+spine=纳叶|海芙温<lights=1|0,faces=happy|active>;mid_txt=嗯…黄金鸮商的店铺遍布世界各地，能在这里见到，并不意外。<name=纳叶>;
+spine=纳叶|海芙温<lights=1|0,faces=happy|active>;mid_txt=/player/，这里出售各种商品，如果你有什么物质上的需求，大多可以在这里找到。<name=纳叶>;
+spine=纳叶|海芙温<lights=1|0,faces=happy|active>;mid_txt=……只要你能开出合适的价码。<name=纳叶>;

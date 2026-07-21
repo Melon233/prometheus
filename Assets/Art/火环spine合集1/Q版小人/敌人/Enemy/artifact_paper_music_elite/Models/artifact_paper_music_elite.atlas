@@ -1,0 +1,251 @@
+
+artifact_paper_music_elite.png
+size: 1600,1600
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Larm
+  rotate: false
+  xy: 1097, 745
+  size: 218, 177
+  orig: 218, 177
+  offset: 0, 0
+  index: -1
+Ldrumstick
+  rotate: false
+  xy: 1311, 976
+  size: 170, 136
+  orig: 174, 144
+  offset: 2, 2
+  index: -1
+Lhand
+  rotate: false
+  xy: 1106, 933
+  size: 197, 179
+  orig: 197, 182
+  offset: 0, 0
+  index: -1
+Lrope
+  rotate: false
+  xy: 1334, 592
+  size: 121, 180
+  orig: 122, 180
+  offset: 1, 0
+  index: -1
+Rarm
+  rotate: false
+  xy: 1351, 85
+  size: 199, 251
+  orig: 199, 251
+  offset: 0, 0
+  index: -1
+Rdrumstick
+  rotate: false
+  xy: 852, 22
+  size: 205, 142
+  orig: 216, 152
+  offset: 5, 4
+  index: -1
+Rhand
+  rotate: false
+  xy: 1128, 344
+  size: 222, 210
+  orig: 222, 210
+  offset: 0, 0
+  index: -1
+Rrope
+  rotate: false
+  xy: 1323, 780
+  size: 128, 188
+  orig: 128, 188
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 623, 1190
+  size: 354, 402
+  orig: 359, 402
+  offset: 3, 0
+  index: -1
+cloth2
+  rotate: false
+  xy: 1193, 1338
+  size: 145, 254
+  orig: 145, 254
+  offset: 0, 0
+  index: -1
+collar1
+  rotate: false
+  xy: 1131, 570
+  size: 195, 167
+  orig: 298, 190
+  offset: 103, 20
+  index: -1
+collar1.1
+  rotate: false
+  xy: 995, 199
+  size: 190, 128
+  orig: 298, 190
+  offset: 3, 4
+  index: -1
+collar2
+  rotate: false
+  xy: 448, 242
+  size: 304, 298
+  orig: 307, 300
+  offset: 3, 0
+  index: -1
+collar3
+  rotate: false
+  xy: 298, 43
+  size: 273, 99
+  orig: 278, 107
+  offset: 5, 4
+  index: -1
+collar4
+  rotate: false
+  xy: 579, 8
+  size: 265, 140
+  orig: 266, 148
+  offset: 0, 4
+  index: -1
+collar5
+  rotate: false
+  xy: 801, 583
+  size: 179, 89
+  orig: 188, 98
+  offset: 4, 5
+  index: -1
+collar6
+  rotate: false
+  xy: 1327, 1132
+  size: 172, 127
+  orig: 176, 132
+  offset: 4, 2
+  index: -1
+collar7
+  rotate: false
+  xy: 988, 562
+  size: 135, 110
+  orig: 144, 114
+  offset: 5, 4
+  index: -1
+death5
+  rotate: false
+  xy: 801, 680
+  size: 288, 189
+  orig: 288, 189
+  offset: 0, 0
+  index: -1
+death6
+  rotate: false
+  xy: 1065, 13
+  size: 278, 178
+  orig: 278, 178
+  offset: 0, 0
+  index: -1
+death8
+  rotate: false
+  xy: 429, 548
+  size: 364, 314
+  orig: 390, 378
+  offset: 21, 33
+  index: -1
+death9
+  rotate: false
+  xy: 8, 870
+  size: 607, 722
+  orig: 635, 742
+  offset: 15, 9
+  index: -1
+drum
+  rotate: false
+  xy: 8, 493
+  size: 413, 369
+  orig: 422, 381
+  offset: 4, 7
+  index: -1
+drum1
+  rotate: false
+  xy: 1459, 802
+  size: 80, 166
+  orig: 174, 260
+  offset: 50, 60
+  index: -1
+feather1
+  rotate: false
+  xy: 760, 172
+  size: 227, 155
+  orig: 227, 155
+  offset: 0, 0
+  index: -1
+feather2
+  rotate: false
+  xy: 870, 930
+  size: 228, 252
+  orig: 271, 303
+  offset: 19, 28
+  index: -1
+hat
+  rotate: false
+  xy: 448, 156
+  size: 294, 78
+  orig: 304, 91
+  offset: 7, 8
+  index: -1
+head1
+  rotate: false
+  xy: 8, 150
+  size: 432, 335
+  orig: 495, 336
+  offset: 1, 1
+  index: -1
+head1.1
+  rotate: false
+  xy: 1193, 1120
+  size: 126, 210
+  orig: 495, 336
+  offset: 369, 2
+  index: -1
+head1.2
+  rotate: false
+  xy: 8, 27
+  size: 282, 115
+  orig: 446, 170
+  offset: 80, 29
+  index: -1
+head2
+  rotate: false
+  xy: 760, 335
+  size: 360, 205
+  orig: 364, 212
+  offset: 0, 4
+  index: -1
+tape1
+  rotate: false
+  xy: 1351, 1267
+  size: 197, 325
+  orig: 200, 326
+  offset: 3, 0
+  index: -1
+tape2
+  rotate: false
+  xy: 623, 877
+  size: 239, 235
+  orig: 239, 238
+  offset: 0, 0
+  index: -1
+tape3
+  rotate: false
+  xy: 985, 1259
+  size: 157, 333
+  orig: 157, 333
+  offset: 0, 0
+  index: -1
+tape4
+  rotate: false
+  xy: 1358, 349
+  size: 158, 235
+  orig: 163, 238
+  offset: 5, 1
+  index: -1

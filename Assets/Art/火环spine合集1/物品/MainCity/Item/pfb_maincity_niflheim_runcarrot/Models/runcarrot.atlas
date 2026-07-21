@@ -1,0 +1,83 @@
+
+runcarrot.png
+size: 414,414
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lian1
+  rotate: false
+  xy: 302, 281
+  size: 94, 51
+  orig: 94, 51
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 179
+  size: 185, 227
+  orig: 185, 227
+  offset: 0, 0
+  index: -1
+shou1
+  rotate: false
+  xy: 170, 87
+  size: 62, 84
+  orig: 62, 84
+  offset: 0, 0
+  index: -1
+shou2
+  rotate: false
+  xy: 295, 194
+  size: 70, 79
+  orig: 70, 79
+  offset: 0, 0
+  index: -1
+tui1
+  rotate: false
+  xy: 301, 107
+  size: 60, 79
+  orig: 60, 79
+  offset: 0, 0
+  index: -1
+tui2
+  rotate: false
+  xy: 240, 90
+  size: 53, 84
+  orig: 53, 84
+  offset: 0, 0
+  index: -1
+yezi1
+  rotate: false
+  xy: 8, 53
+  size: 154, 118
+  orig: 154, 118
+  offset: 0, 0
+  index: -1
+yezi2
+  rotate: false
+  xy: 170, 17
+  size: 148, 62
+  orig: 148, 62
+  offset: 0, 0
+  index: -1
+yezi3
+  rotate: false
+  xy: 201, 281
+  size: 93, 125
+  orig: 93, 125
+  offset: 0, 0
+  index: -1
+yezi4
+  rotate: false
+  xy: 201, 182
+  size: 86, 91
+  orig: 86, 91
+  offset: 0, 0
+  index: -1
+yezi5
+  rotate: false
+  xy: 302, 340
+  size: 104, 66
+  orig: 104, 66
+  offset: 0, 0
+  index: -1

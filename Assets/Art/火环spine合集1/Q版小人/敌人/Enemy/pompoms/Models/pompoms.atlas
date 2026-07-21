@@ -1,0 +1,104 @@
+
+pompoms.png
+size: 692,692
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 8, 109
+  size: 352, 253
+  orig: 356, 286
+  offset: 0, 33
+  index: -1
+body1
+  rotate: false
+  xy: 8, 370
+  size: 377, 314
+  orig: 397, 344
+  offset: 10, 22
+  index: -1
+body3
+  rotate: false
+  xy: 459, 516
+  size: 189, 168
+  orig: 193, 172
+  offset: 2, 2
+  index: -1
+chu1
+  rotate: false
+  xy: 368, 105
+  size: 53, 257
+  orig: 67, 271
+  offset: 7, 7
+  index: -1
+chu2
+  rotate: false
+  xy: 393, 440
+  size: 58, 244
+  orig: 71, 258
+  offset: 7, 7
+  index: -1
+eye
+  rotate: false
+  xy: 8, 16
+  size: 185, 85
+  orig: 193, 93
+  offset: 4, 4
+  index: -1
+face
+  rotate: false
+  xy: 429, 262
+  size: 209, 170
+  orig: 262, 204
+  offset: 47, 25
+  index: -1
+feet1
+  rotate: false
+  xy: 261, 9
+  size: 91, 92
+  orig: 104, 98
+  offset: 7, 6
+  index: -1
+feet2
+  rotate: false
+  xy: 549, 17
+  size: 66, 99
+  orig: 69, 101
+  offset: 1, 2
+  index: -1
+feet3
+  rotate: false
+  xy: 360, 21
+  size: 70, 76
+  orig: 70, 77
+  offset: 0, 1
+  index: -1
+jiao1
+  rotate: false
+  xy: 438, 119
+  size: 103, 135
+  orig: 103, 135
+  offset: 0, 0
+  index: -1
+jiao2
+  rotate: false
+  xy: 549, 124
+  size: 106, 130
+  orig: 106, 130
+  offset: 0, 0
+  index: -1
+mao1
+  rotate: false
+  xy: 201, 8
+  size: 52, 93
+  orig: 58, 98
+  offset: 0, 0
+  index: -1
+mao2
+  rotate: false
+  xy: 459, 445
+  size: 52, 63
+  orig: 52, 63
+  offset: 0, 0
+  index: -1

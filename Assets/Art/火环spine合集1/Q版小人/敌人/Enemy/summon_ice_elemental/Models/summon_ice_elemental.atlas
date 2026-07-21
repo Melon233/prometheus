@@ -1,0 +1,41 @@
+
+summon_ice_elemental.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+S_huzi
+  rotate: false
+  xy: 561, 320
+  size: 263, 119
+  orig: 263, 119
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 561, 447
+  size: 370, 484
+  orig: 370, 484
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 832, 368
+  size: 79, 71
+  orig: 109, 105
+  offset: 15, 17
+  index: -1
+eye2
+  rotate: false
+  xy: 832, 333
+  size: 27, 27
+  orig: 27, 27
+  offset: 0, 0
+  index: -1
+other
+  rotate: false
+  xy: 8, 375
+  size: 545, 556
+  orig: 545, 556
+  offset: 0, 0
+  index: -1

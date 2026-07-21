@@ -1,0 +1,69 @@
+
+collect_res_vine_1_ctnr.png
+size: 4096,4096
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tw1_00
+  rotate: false
+  xy: 249, 1076
+  size: 134, 94
+  orig: 134, 94
+  offset: 0, 0
+  index: -1
+tw3_00
+  rotate: false
+  xy: 249, 1076
+  size: 134, 94
+  orig: 134, 94
+  offset: 0, 0
+  index: -1
+tw1_01
+  rotate: false
+  xy: 249, 1178
+  size: 180, 638
+  orig: 180, 638
+  offset: 0, 0
+  index: -1
+tw2_00
+  rotate: false
+  xy: 282, 1900
+  size: 134, 94
+  orig: 134, 94
+  offset: 0, 0
+  index: -1
+tw2_01
+  rotate: false
+  xy: 8, 1824
+  size: 266, 826
+  orig: 266, 826
+  offset: 0, 0
+  index: -1
+tw2_02
+  rotate: false
+  xy: 282, 2002
+  size: 163, 648
+  orig: 163, 648
+  offset: 0, 0
+  index: -1
+tw2_03
+  rotate: false
+  xy: 8, 1014
+  size: 233, 802
+  orig: 233, 802
+  offset: 0, 0
+  index: -1
+tw2_04
+  rotate: false
+  xy: 8, 514
+  size: 285, 492
+  orig: 285, 492
+  offset: 0, 0
+  index: -1
+tw3_01
+  rotate: false
+  xy: 8, 8
+  size: 166, 498
+  orig: 166, 498
+  offset: 0, 0
+  index: -1

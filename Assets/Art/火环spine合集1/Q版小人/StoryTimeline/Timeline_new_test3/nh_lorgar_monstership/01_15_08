@@ -1,0 +1,16 @@
+skip_title=失控的魔物船;
+skip_overview=你们在船舱内击败了失控的魔物，并发现它们身上的镣铐痕迹，推断它们正是船上走私的“货物”。;
+spine=纳叶<lights=1,faces=serious>;mid_txt=……与之前打倒的魔物相同，它们同样带有镣铐的痕迹。<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=主角<lights=1>;mid_txt=镣铐…这些魔物曾被关押在这里，是不是意味着它们就是那本笔记上的“货物”？<name=/player/>;
+hide=spine;
+hide=txt;
+spine=海芙温<lights=1,faces=amazed>;mid_txt=你是说，他们在用魔物做生意？这也太危险了吧！<name=海芙温>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=serious>;mid_txt=所以才会落得这般下场。值得庆幸的是，这艘船足够坚固——魔物并没能从船上逃脱。<name=纳叶>;
+spine=纳叶<lights=1,faces=serious>;mid_txt=……所以只剩下一个问题，魔物究竟是如何失控的？<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=enmity>;mid_txt=现在谈论这个还太早。继续往下走吧，我们总会知道的。<name=厄晞斯>;

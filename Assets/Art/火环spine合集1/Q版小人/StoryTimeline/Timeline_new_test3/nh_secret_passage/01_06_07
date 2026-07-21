@@ -1,0 +1,9 @@
+skip_title=密道;
+skip_overview=成功启动机关后，一头巨大的怪物突然出现，阻断了你们的去路。;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=……喂喂，不是吧？它动起来了！<name=厄晞斯>;
+hide=spine;
+hide=txt;
+spine=纳叶<lights=1,faces=angry>;mid_txt=海芙温，菲尔佳有说这时候该怎么做吗？<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=海芙温<lights=1,faces=afraid>;mid_txt=我我，我也想知道啊！<name=海芙温>;

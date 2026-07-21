@@ -1,0 +1,62 @@
+
+nafia.png
+size: 1406,1406
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lance_5
+  rotate: false
+  xy: 8, 802
+  size: 322, 596
+  orig: 322, 596
+  offset: 0, 0
+  index: -1
+lance_6
+  rotate: false
+  xy: 8, 8
+  size: 115, 182
+  orig: 123, 188
+  offset: 8, 6
+  index: -1
+n/lance_5
+  rotate: false
+  xy: 338, 802
+  size: 322, 596
+  orig: 322, 596
+  offset: 0, 0
+  index: -1
+n/lance_6
+  rotate: false
+  xy: 254, 8
+  size: 115, 182
+  orig: 123, 188
+  offset: 8, 6
+  index: -1
+r/lance_5
+  rotate: false
+  xy: 8, 198
+  size: 322, 596
+  orig: 322, 596
+  offset: 0, 0
+  index: -1
+r/lance_6
+  rotate: false
+  xy: 131, 8
+  size: 115, 182
+  orig: 123, 188
+  offset: 8, 6
+  index: -1
+sr/lance_5
+  rotate: false
+  xy: 338, 198
+  size: 322, 596
+  orig: 322, 596
+  offset: 0, 0
+  index: -1
+sr/lance_6
+  rotate: false
+  xy: 377, 8
+  size: 115, 182
+  orig: 123, 188
+  offset: 8, 6
+  index: -1

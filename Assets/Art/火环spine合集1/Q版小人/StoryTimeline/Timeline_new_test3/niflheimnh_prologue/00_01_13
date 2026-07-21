@@ -1,0 +1,10 @@
+skip_title=苏醒;
+skip_overview=是否跳过当前剧情;
+spine=厄晞斯<lights=1,faces=active>;mid_txt=……对于实习来说，这种程度还是有些超标了。呵…我来得还不算晚吧？<name=？？？,cv=VO_MS_Chp0_Task1_13_1>;
+hide=spine;
+hide=txt;
+spine=海芙温<lights=1,faces=idleface>;mid_txt=厄晞斯组长！<name=海芙温,cv=VO_MS_Chp0_Task1_13_2>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=think>;mid_txt=嗯…挺狼狈，看来是打了一场恶战……哦？这倒有点意思，怎么比进去时还多了一个人？<name=厄晞斯,cv=VO_MS_Chp0_Task1_13_3>;
+spine=厄晞斯<lights=1,faces=smile>;mid_txt=看来这次调查比我想象中的有意思啊，有谁和我说说这里发生了什么吗？<name=厄晞斯,cv=VO_MS_Chp0_Task1_13_4>;

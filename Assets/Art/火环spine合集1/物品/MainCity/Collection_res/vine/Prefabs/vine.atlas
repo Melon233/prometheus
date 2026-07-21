@@ -1,0 +1,13 @@
+
+vine.png
+size: 333,333
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+vine
+  rotate: false
+  xy: 8, 8
+  size: 160, 317
+  orig: 326, 348
+  offset: 91, 10
+  index: -1

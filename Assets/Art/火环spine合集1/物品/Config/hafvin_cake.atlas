@@ -1,0 +1,13 @@
+
+hafvin_cake.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hafvin_cake
+  rotate: false
+  xy: 8, 53
+  size: 249, 204
+  orig: 280, 261
+  offset: 10, 18
+  index: -1

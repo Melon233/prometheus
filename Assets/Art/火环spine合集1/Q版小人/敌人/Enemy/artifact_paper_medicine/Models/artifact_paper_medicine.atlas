@@ -1,0 +1,209 @@
+
+artifact_paper_medicine.png
+size: 1371,1371
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_L
+  rotate: false
+  xy: 1022, 170
+  size: 117, 93
+  orig: 117, 93
+  offset: 0, 0
+  index: -1
+arm_L0
+  rotate: false
+  xy: 1081, 551
+  size: 131, 124
+  orig: 131, 124
+  offset: 0, 0
+  index: -1
+arm_L1
+  rotate: false
+  xy: 1232, 698
+  size: 104, 168
+  orig: 104, 168
+  offset: 0, 0
+  index: -1
+arm_R0
+  rotate: false
+  xy: 1064, 271
+  size: 193, 126
+  orig: 193, 126
+  offset: 0, 0
+  index: -1
+arm_R1
+  rotate: false
+  xy: 1043, 847
+  size: 181, 194
+  orig: 181, 194
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 468, 954
+  size: 297, 409
+  orig: 304, 420
+  offset: 1, 5
+  index: -1
+body_L1
+  rotate: false
+  xy: 675, 171
+  size: 137, 276
+  orig: 137, 276
+  offset: 0, 0
+  index: -1
+body_L2
+  rotate: false
+  xy: 1232, 874
+  size: 128, 159
+  orig: 128, 159
+  offset: 0, 0
+  index: -1
+body_R1
+  rotate: false
+  xy: 1070, 1056
+  size: 196, 307
+  orig: 196, 307
+  offset: 0, 0
+  index: -1
+body_R2
+  rotate: false
+  xy: 1081, 683
+  size: 128, 156
+  orig: 128, 156
+  offset: 0, 0
+  index: -1
+cord
+  rotate: false
+  xy: 837, 21
+  size: 193, 134
+  orig: 206, 148
+  offset: 8, 6
+  index: -1
+death_1
+  rotate: false
+  xy: 8, 768
+  size: 452, 595
+  orig: 452, 595
+  offset: 0, 0
+  index: -1
+death_2
+  rotate: false
+  xy: 372, 160
+  size: 295, 287
+  orig: 295, 287
+  offset: 0, 0
+  index: -1
+hand_L
+  rotate: false
+  xy: 1038, 54
+  size: 83, 108
+  orig: 83, 108
+  offset: 0, 0
+  index: -1
+hand_R
+  rotate: false
+  xy: 1064, 405
+  size: 157, 138
+  orig: 165, 148
+  offset: 4, 4
+  index: -1
+hat_A
+  rotate: false
+  xy: 8, 475
+  size: 451, 285
+  orig: 458, 289
+  offset: 1, 4
+  index: -1
+hat_B1
+  rotate: false
+  xy: 1147, 156
+  size: 129, 107
+  orig: 133, 113
+  offset: 2, 6
+  index: -1
+hat_B2
+  rotate: false
+  xy: 773, 1049
+  size: 289, 314
+  orig: 298, 325
+  offset: 3, 4
+  index: -1
+hat_B3
+  rotate: false
+  xy: 820, 163
+  size: 194, 164
+  orig: 198, 172
+  offset: 0, 5
+  index: -1
+head
+  rotate: false
+  xy: 372, 25
+  size: 457, 127
+  orig: 457, 127
+  offset: 0, 0
+  index: -1
+jewelry
+  rotate: false
+  xy: 1274, 1041
+  size: 85, 157
+  orig: 97, 159
+  offset: 8, 0
+  index: -1
+put_L
+  rotate: false
+  xy: 225, 72
+  size: 139, 395
+  orig: 147, 400
+  offset: 1, 0
+  index: -1
+put_R
+  rotate: false
+  xy: 8, 45
+  size: 209, 422
+  orig: 211, 426
+  offset: 0, 0
+  index: -1
+weapon_1
+  rotate: false
+  xy: 783, 588
+  size: 290, 206
+  orig: 524, 270
+  offset: 0, 15
+  index: -1
+weapon_2
+  rotate: false
+  xy: 1274, 1206
+  size: 89, 157
+  orig: 524, 270
+  offset: 428, 107
+  index: -1
+weapon_3
+  rotate: false
+  xy: 468, 695
+  size: 307, 251
+  orig: 524, 270
+  offset: 209, 16
+  index: -1
+weapon_4
+  rotate: false
+  xy: 783, 802
+  size: 252, 239
+  orig: 524, 270
+  offset: 32, 12
+  index: -1
+weapon_5
+  rotate: false
+  xy: 467, 455
+  size: 296, 232
+  orig: 524, 270
+  offset: 0, 0
+  index: -1
+weapon_6
+  rotate: false
+  xy: 820, 335
+  size: 236, 245
+  orig: 524, 270
+  offset: 36, 6
+  index: -1

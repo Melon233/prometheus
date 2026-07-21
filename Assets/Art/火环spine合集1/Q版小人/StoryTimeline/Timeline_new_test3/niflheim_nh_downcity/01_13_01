@@ -1,0 +1,12 @@
+skip_title=拉格帮;
+skip_overview=海恩城的封锁更加严重，优赛尔提议你们可以通过拉格帮的路数离开海恩城，但伊尔夏否决了这个提议。她让优赛尔协助你们在此落脚，自己则打算返回家族寻求更稳妥的撤离方案。;
+cutout=0<time=0>;
+hide=spine;
+hide=txt;
+background=黑屏遮罩;
+cutin=0<time=0>;
+alpha_txt=接下来，伊尔夏为你们奉上热茶，关切地询问起监狱内的惊险历程。<delay=0,type=1|1,sync=false,start_pos=0|0,value_vec4=1|2|1|0>;
+alpha_txt=以此为引，你们稍显放松，相互介绍着身份，交换起各自的见闻与思虑。<delay=4,type=2|1,sync=true,start_pos=0|0,value_vec4=1|2|1|0>;
+cutout=0<time=0.5>;
+background=透明遮罩;
+cutin=0<time=0.5>;

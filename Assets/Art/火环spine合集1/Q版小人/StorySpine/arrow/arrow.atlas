@@ -1,0 +1,20 @@
+
+arrow.png
+size: 1458,1458
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arrow_l
+  rotate: false
+  xy: 380, 1337
+  size: 1070, 113
+  orig: 1070, 113
+  offset: 0, 0
+  index: -1
+arrow_s
+  rotate: false
+  xy: 8, 1395
+  size: 364, 55
+  orig: 364, 55
+  offset: 0, 0
+  index: -1

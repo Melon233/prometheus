@@ -1,0 +1,286 @@
+
+enemy_fullmoon_cannon.png
+size: 6380,6380
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+baffle
+  rotate: false
+  xy: 4412, 1298
+  size: 1060, 1112
+  orig: 1060, 1112
+  offset: 0, 0
+  index: -1
+baffle2
+  rotate: false
+  xy: 3522, 2947
+  size: 919, 905
+  orig: 944, 927
+  offset: 14, 11
+  index: -1
+body1
+  rotate: false
+  xy: 2352, 4500
+  size: 2131, 1872
+  orig: 2131, 1881
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 8, 2474
+  size: 1982, 1554
+  orig: 2243, 1556
+  offset: 261, 2
+  index: -1
+chassis1
+  rotate: false
+  xy: 2352, 3860
+  size: 2036, 632
+  orig: 2036, 632
+  offset: 0, 0
+  index: -1
+chassis2
+  rotate: false
+  xy: 4491, 4505
+  size: 1624, 619
+  orig: 1624, 728
+  offset: 0, 8
+  index: -1
+chassis3
+  rotate: false
+  xy: 4245, 150
+  size: 380, 458
+  orig: 380, 458
+  offset: 0, 0
+  index: -1
+cover
+  rotate: false
+  xy: 5480, 999
+  size: 892, 511
+  orig: 896, 520
+  offset: 4, 9
+  index: -1
+fire/crystal1
+  rotate: false
+  xy: 2305, 3161
+  size: 1209, 691
+  orig: 1209, 706
+  offset: 0, 9
+  index: -1
+fire/crystal2
+  rotate: false
+  xy: 2442, 608
+  size: 905, 520
+  orig: 905, 520
+  offset: 0, 0
+  index: -1
+fire/crystal3
+  rotate: false
+  xy: 5520, 1518
+  size: 792, 1095
+  orig: 792, 1095
+  offset: 0, 0
+  index: -1
+fire/crystal4
+  rotate: false
+  xy: 4274, 616
+  size: 1056, 674
+  orig: 1056, 674
+  offset: 0, 0
+  index: -1
+gun
+  rotate: false
+  xy: 4491, 5132
+  size: 1637, 1240
+  orig: 1710, 1250
+  offset: 0, 10
+  index: -1
+gun1
+  rotate: false
+  xy: 2442, 1136
+  size: 911, 674
+  orig: 926, 687
+  offset: 8, 9
+  index: -1
+gun2
+  rotate: false
+  xy: 2630, 1839
+  size: 733, 544
+  orig: 742, 554
+  offset: 4, 4
+  index: -1
+gun_2
+  rotate: false
+  xy: 1045, 236
+  size: 472, 755
+  orig: 1710, 1250
+  offset: 1231, 59
+  index: -1
+ice/crystal1
+  rotate: false
+  xy: 4491, 3806
+  size: 1209, 691
+  orig: 1209, 706
+  offset: 0, 9
+  index: -1
+ice/crystal2
+  rotate: false
+  xy: 3361, 830
+  size: 905, 520
+  orig: 905, 520
+  offset: 0, 0
+  index: -1
+ice/crystal3
+  rotate: false
+  xy: 5545, 2621
+  size: 792, 1095
+  orig: 792, 1095
+  offset: 0, 0
+  index: -1
+ice/crystal4
+  rotate: false
+  xy: 1059, 1792
+  size: 1056, 674
+  orig: 1056, 674
+  offset: 0, 0
+  index: -1
+jiao1_1
+  rotate: false
+  xy: 4633, 164
+  size: 567, 444
+  orig: 580, 454
+  offset: 5, 7
+  index: -1
+jiao1_2
+  rotate: false
+  xy: 3428, 1358
+  size: 976, 1077
+  orig: 976, 1077
+  offset: 0, 0
+  index: -1
+jiao1_3
+  rotate: false
+  xy: 2217, 68
+  size: 397, 532
+  orig: 405, 534
+  offset: 5, 0
+  index: -1
+jiao1_4
+  rotate: false
+  xy: 3428, 2443
+  size: 997, 496
+  orig: 1006, 496
+  offset: 2, 0
+  index: -1
+jiao1_5
+  rotate: false
+  xy: 3355, 208
+  size: 882, 614
+  orig: 882, 614
+  offset: 0, 0
+  index: -1
+jiao2_1
+  rotate: false
+  xy: 2123, 1818
+  size: 499, 565
+  orig: 499, 565
+  offset: 0, 0
+  index: -1
+jiao2_2
+  rotate: false
+  xy: 1525, 79
+  size: 684, 1022
+  orig: 684, 1022
+  offset: 0, 0
+  index: -1
+jiao2_3
+  rotate: false
+  xy: 1998, 3547
+  size: 299, 481
+  orig: 299, 481
+  offset: 0, 0
+  index: -1
+jiao2_4
+  rotate: false
+  xy: 4449, 3148
+  size: 1088, 650
+  orig: 1088, 650
+  offset: 0, 0
+  index: -1
+jiao2_5
+  rotate: false
+  xy: 1059, 1055
+  size: 451, 729
+  orig: 451, 729
+  offset: 0, 0
+  index: -1
+jiao3_1
+  rotate: false
+  xy: 2622, 96
+  size: 369, 504
+  orig: 369, 504
+  offset: 0, 0
+  index: -1
+jiao3_2
+  rotate: false
+  xy: 5708, 3724
+  size: 646, 773
+  orig: 646, 773
+  offset: 0, 0
+  index: -1
+jiao3_3
+  rotate: false
+  xy: 1998, 3108
+  size: 259, 431
+  orig: 259, 431
+  offset: 0, 0
+  index: -1
+jiao3_4
+  rotate: false
+  xy: 1518, 1109
+  size: 916, 675
+  orig: 916, 675
+  offset: 0, 0
+  index: -1
+jiao3_5
+  rotate: false
+  xy: 5338, 353
+  size: 420, 638
+  orig: 420, 638
+  offset: 0, 0
+  index: -1
+neidan
+  rotate: false
+  xy: 8, 4036
+  size: 2336, 2336
+  orig: 2336, 2336
+  offset: 0, 0
+  index: -1
+piece1_1
+  rotate: false
+  xy: 8, 18
+  size: 1029, 1272
+  orig: 1029, 1272
+  offset: 0, 0
+  index: -1
+piece1_2
+  rotate: false
+  xy: 8, 1342
+  size: 1043, 1124
+  orig: 1043, 1124
+  offset: 0, 0
+  index: -1
+piece2_1
+  rotate: false
+  xy: 2265, 2391
+  size: 1155, 762
+  orig: 1155, 762
+  offset: 0, 0
+  index: -1
+piece2_2
+  rotate: false
+  xy: 4449, 2418
+  size: 1063, 722
+  orig: 1063, 722
+  offset: 0, 0
+  index: -1

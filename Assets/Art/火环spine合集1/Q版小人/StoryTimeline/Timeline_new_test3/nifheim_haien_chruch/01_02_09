@@ -1,0 +1,9 @@
+skip_title=海恩城风光;
+skip_overview=老修士亚伦为众人详细讲述了满月大炮的辉煌历史及“月之芯”的重要性。在谈话因城内的突发事件而临时中断时，众人决定前去查看情况。;
+mid_txt=亚伦修士……城内如今涌入了一大群难民，我们需要一些人手前去主持局势。<name=年轻的修士>;
+mid_txt=……<name=老修士>;
+mid_txt=啊，看来我们的历史课要先告一段落了。我现在需要出去一趟，孩子们，你们也快些离开吧。<name=老修士>;
+mid_txt=……如果你们仍然对这段历史的后续感兴趣，就之后再来找我……我期待与你们再见。<name=老修士>;
+hide=txt;
+spine=纳叶|海芙温<lights=0|1,faces=idleface|worry>;mid_txt=难民……会不会出什么事了？<name=海芙温>;
+spine=纳叶|海芙温<lights=1|0,faces=think|worry>;mid_txt=时间还早，可以调查一番。<name=纳叶>;

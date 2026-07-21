@@ -1,0 +1,384 @@
+
+artifact_paper_astronomy_elite.png
+size: 2222,2222
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L1
+  rotate: false
+  xy: 469, 8
+  size: 169, 327
+  orig: 169, 327
+  offset: 0, 0
+  index: -1
+L2
+  rotate: false
+  xy: 1264, 1116
+  size: 152, 394
+  orig: 159, 394
+  offset: 3, 0
+  index: -1
+L3
+  rotate: false
+  xy: 1456, 393
+  size: 189, 389
+  orig: 196, 391
+  offset: 2, 2
+  index: -1
+L4
+  rotate: false
+  xy: 1264, 388
+  size: 184, 394
+  orig: 194, 398
+  offset: 4, 0
+  index: -1
+L5
+  rotate: false
+  xy: 1666, 13
+  size: 198, 376
+  orig: 202, 388
+  offset: 0, 5
+  index: -1
+L6
+  rotate: false
+  xy: 321, 343
+  size: 183, 439
+  orig: 199, 479
+  offset: 12, 0
+  index: -1
+L7
+  rotate: false
+  xy: 8, 793
+  size: 186, 241
+  orig: 189, 244
+  offset: 3, 0
+  index: -1
+Larm
+  rotate: false
+  xy: 775, 1302
+  size: 223, 208
+  orig: 223, 208
+  offset: 0, 0
+  index: -1
+Lhand1
+  rotate: false
+  xy: 1201, 812
+  size: 294, 285
+  orig: 295, 290
+  offset: 1, 5
+  index: -1
+Lhand2
+  rotate: false
+  xy: 8, 14
+  size: 252, 310
+  orig: 303, 370
+  offset: 26, 36
+  index: -1
+Ltassel1
+  rotate: false
+  xy: 202, 800
+  size: 54, 119
+  orig: 54, 119
+  offset: 0, 0
+  index: -1
+Ltassel2
+  rotate: false
+  xy: 2134, 1709
+  size: 80, 205
+  orig: 80, 205
+  offset: 0, 0
+  index: -1
+R1
+  rotate: false
+  xy: 1131, 40
+  size: 218, 331
+  orig: 218, 331
+  offset: 0, 0
+  index: -1
+R2
+  rotate: false
+  xy: 512, 369
+  size: 196, 413
+  orig: 198, 413
+  offset: 2, 0
+  index: -1
+R3
+  rotate: false
+  xy: 975, 379
+  size: 281, 403
+  orig: 286, 406
+  offset: 3, 3
+  index: -1
+R4
+  rotate: false
+  xy: 716, 374
+  size: 251, 408
+  orig: 262, 414
+  offset: 5, 1
+  index: -1
+R5
+  rotate: false
+  xy: 1357, 9
+  size: 301, 371
+  orig: 311, 384
+  offset: 3, 7
+  index: -1
+R6
+  rotate: false
+  xy: 8, 332
+  size: 305, 450
+  orig: 311, 456
+  offset: 5, 0
+  index: -1
+R7
+  rotate: false
+  xy: 8, 1042
+  size: 387, 555
+  orig: 1376, 912
+  offset: 523, 341
+  index: -1
+Rarm
+  rotate: false
+  xy: 264, 804
+  size: 266, 230
+  orig: 266, 230
+  offset: 0, 0
+  index: -1
+Rhand1
+  rotate: false
+  xy: 1432, 1236
+  size: 326, 311
+  orig: 326, 312
+  offset: 0, 1
+  index: -1
+Rhand2
+  rotate: false
+  xy: 826, 29
+  size: 297, 337
+  orig: 354, 390
+  offset: 25, 26
+  index: -1
+Rtassel1
+  rotate: false
+  xy: 2129, 1369
+  size: 71, 117
+  orig: 71, 117
+  offset: 0, 0
+  index: -1
+Rtassel2
+  rotate: false
+  xy: 2134, 1494
+  size: 74, 207
+  orig: 74, 207
+  offset: 0, 0
+  index: -1
+back
+  rotate: false
+  xy: 8, 1605
+  size: 775, 609
+  orig: 776, 609
+  offset: 1, 0
+  index: -1
+body1
+  rotate: false
+  xy: 1766, 927
+  size: 315, 440
+  orig: 319, 440
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 1791, 1375
+  size: 330, 210
+  orig: 330, 211
+  offset: 0, 0
+  index: -1
+card1
+  rotate: false
+  xy: 538, 792
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card10
+  rotate: false
+  xy: 1503, 978
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card2
+  rotate: false
+  xy: 692, 803
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card3
+  rotate: false
+  xy: 846, 803
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card4
+  rotate: false
+  xy: 1872, 669
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card5
+  rotate: false
+  xy: 1846, 411
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card6
+  rotate: false
+  xy: 2026, 532
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card7
+  rotate: false
+  xy: 2000, 274
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card8
+  rotate: false
+  xy: 1872, 16
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+card9
+  rotate: false
+  xy: 2026, 16
+  size: 146, 250
+  orig: 146, 250
+  offset: 0, 0
+  index: -1
+death5
+  rotate: false
+  xy: 962, 1105
+  size: 288, 189
+  orig: 288, 189
+  offset: 0, 0
+  index: -1
+death6
+  rotate: false
+  xy: 403, 1050
+  size: 278, 178
+  orig: 278, 178
+  offset: 0, 0
+  index: -1
+death8
+  rotate: false
+  xy: 403, 1283
+  size: 364, 314
+  orig: 390, 378
+  offset: 21, 33
+  index: -1
+death9
+  rotate: false
+  xy: 791, 1518
+  size: 633, 696
+  orig: 635, 742
+  offset: 0, 0
+  index: -1
+hat1
+  rotate: false
+  xy: 1432, 1924
+  size: 364, 290
+  orig: 364, 290
+  offset: 0, 0
+  index: -1
+hat2
+  rotate: false
+  xy: 1000, 810
+  size: 193, 109
+  orig: 193, 109
+  offset: 0, 0
+  index: -1
+middle
+  rotate: false
+  xy: 1653, 397
+  size: 185, 385
+  orig: 229, 450
+  offset: 22, 34
+  index: -1
+pendant1
+  rotate: false
+  xy: 2089, 1222
+  size: 120, 139
+  orig: 120, 139
+  offset: 0, 0
+  index: -1
+pendant2
+  rotate: false
+  xy: 2089, 790
+  size: 113, 145
+  orig: 113, 145
+  offset: 0, 0
+  index: -1
+pendant3
+  rotate: false
+  xy: 2089, 943
+  size: 118, 135
+  orig: 118, 135
+  offset: 0, 0
+  index: -1
+pendant4
+  rotate: false
+  xy: 2089, 1086
+  size: 120, 128
+  orig: 120, 128
+  offset: 0, 0
+  index: -1
+ring
+  rotate: false
+  xy: 1804, 1922
+  size: 352, 292
+  orig: 389, 292
+  offset: 16, 0
+  index: -1
+skirt1
+  rotate: false
+  xy: 1791, 1593
+  size: 335, 321
+  orig: 335, 321
+  offset: 0, 0
+  index: -1
+skirt2
+  rotate: false
+  xy: 1432, 1555
+  size: 351, 361
+  orig: 351, 361
+  offset: 0, 0
+  index: -1
+skirt3
+  rotate: false
+  xy: 646, 16
+  size: 172, 345
+  orig: 172, 345
+  offset: 0, 0
+  index: -1
+skirt4
+  rotate: false
+  xy: 268, 19
+  size: 193, 305
+  orig: 193, 305
+  offset: 0, 0
+  index: -1
+star
+  rotate: false
+  xy: 689, 1061
+  size: 265, 214
+  orig: 308, 253
+  offset: 22, 19
+  index: -1

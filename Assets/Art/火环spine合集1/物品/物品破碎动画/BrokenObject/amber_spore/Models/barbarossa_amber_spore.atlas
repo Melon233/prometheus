@@ -1,0 +1,76 @@
+
+barbarossa_amber_spore.png
+size: 623,623
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+boom01
+  rotate: false
+  xy: 445, 219
+  size: 94, 122
+  orig: 96, 126
+  offset: 0, 2
+  index: -1
+boom02
+  rotate: false
+  xy: 547, 190
+  size: 53, 59
+  orig: 54, 61
+  offset: 0, 1
+  index: -1
+boom03
+  rotate: false
+  xy: 547, 257
+  size: 68, 84
+  orig: 70, 86
+  offset: 1, 1
+  index: -1
+boom04
+  rotate: false
+  xy: 567, 437
+  size: 33, 40
+  orig: 34, 42
+  offset: 0, 1
+  index: -1
+boom05
+  rotate: false
+  xy: 445, 349
+  size: 114, 128
+  orig: 115, 130
+  offset: 0, 1
+  index: -1
+boom06
+  rotate: false
+  xy: 445, 485
+  size: 140, 130
+  orig: 141, 132
+  offset: 0, 1
+  index: -1
+boom07
+  rotate: false
+  xy: 445, 74
+  size: 110, 77
+  orig: 111, 78
+  offset: 0, 1
+  index: -1
+boom08
+  rotate: false
+  xy: 445, 159
+  size: 88, 52
+  orig: 90, 54
+  offset: 0, 1
+  index: -1
+foot
+  rotate: false
+  xy: 8, 28
+  size: 429, 226
+  orig: 433, 246
+  offset: 2, 20
+  index: -1
+rock
+  rotate: false
+  xy: 8, 262
+  size: 429, 353
+  orig: 433, 373
+  offset: 2, 20
+  index: -1

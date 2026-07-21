@@ -1,0 +1,356 @@
+
+niflheim_npc_mathilde.png
+size: 1044,1044
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+00/Z_chest
+  rotate: false
+  xy: 698, 604
+  size: 181, 208
+  orig: 238, 314
+  offset: 25, 81
+  index: -1
+L_ear
+  rotate: false
+  xy: 76, 64
+  size: 118, 147
+  orig: 118, 147
+  offset: 0, 0
+  index: -1
+R_ear
+  rotate: false
+  xy: 549, 219
+  size: 133, 158
+  orig: 133, 158
+  offset: 0, 0
+  index: -1
+Z_Larm1 4
+  rotate: false
+  xy: 8, 323
+  size: 85, 108
+  orig: 85, 108
+  offset: 0, 0
+  index: -1
+Z_Larm2 4
+  rotate: false
+  xy: 834, 35
+  size: 84, 99
+  orig: 84, 99
+  offset: 0, 0
+  index: -1
+Z_Lhand 4
+  rotate: false
+  xy: 690, 222
+  size: 70, 60
+  orig: 70, 60
+  offset: 0, 0
+  index: -1
+Z_Lhand2
+  rotate: false
+  xy: 93, 448
+  size: 83, 80
+  orig: 184, 238
+  offset: 85, 11
+  index: -1
+Z_Lhand_woquan
+  rotate: false
+  xy: 8, 445
+  size: 77, 83
+  orig: 184, 238
+  offset: 84, 20
+  index: -1
+Z_Lleg1
+  rotate: false
+  xy: 921, 741
+  size: 106, 165
+  orig: 106, 165
+  offset: 0, 0
+  index: -1
+Z_Lleg2
+  rotate: false
+  xy: 275, 489
+  size: 88, 151
+  orig: 88, 151
+  offset: 0, 0
+  index: -1
+Z_Rarm1
+  rotate: false
+  xy: 269, 363
+  size: 93, 118
+  orig: 93, 118
+  offset: 0, 0
+  index: -1
+Z_Rarm2 4
+  rotate: false
+  xy: 275, 648
+  size: 89, 106
+  orig: 89, 117
+  offset: 0, 11
+  index: -1
+Z_Rhand 4
+  rotate: false
+  xy: 184, 470
+  size: 77, 66
+  orig: 77, 66
+  offset: 0, 0
+  index: -1
+Z_Rhand2
+  rotate: false
+  xy: 851, 142
+  size: 97, 91
+  orig: 173, 228
+  offset: 0, 0
+  index: -1
+Z_Rhand_woquan
+  rotate: false
+  xy: 729, 109
+  size: 97, 91
+  orig: 173, 228
+  offset: 0, 0
+  index: -1
+Z_Rleg1
+  rotate: false
+  xy: 617, 81
+  size: 104, 130
+  orig: 104, 130
+  offset: 0, 0
+  index: -1
+Z_Rleg2
+  rotate: false
+  xy: 269, 200
+  size: 85, 155
+  orig: 85, 155
+  offset: 0, 0
+  index: -1
+Z_body 4
+  rotate: false
+  xy: 76, 223
+  size: 159, 92
+  orig: 159, 92
+  offset: 0, 0
+  index: -1
+Z_eye
+  rotate: false
+  xy: 549, 459
+  size: 139, 69
+  orig: 322, 259
+  offset: 118, 69
+  index: -1
+Z_eye_close
+  rotate: false
+  xy: 696, 363
+  size: 169, 68
+  orig: 322, 259
+  offset: 100, 68
+  index: -1
+Z_eye_shock
+  rotate: false
+  xy: 116, 544
+  size: 151, 79
+  orig: 322, 259
+  offset: 110, 60
+  index: -1
+Z_eyebow
+  rotate: false
+  xy: 8, 22
+  size: 153, 30
+  orig: 322, 259
+  offset: 116, 144
+  index: -1
+Z_eyelash1
+  rotate: false
+  xy: 371, 504
+  size: 170, 119
+  orig: 322, 259
+  offset: 100, 75
+  index: -1
+Z_eyelash2
+  rotate: false
+  xy: 371, 377
+  size: 170, 119
+  orig: 322, 259
+  offset: 100, 75
+  index: -1
+Z_eyewhite
+  rotate: false
+  xy: 690, 290
+  size: 154, 65
+  orig: 322, 259
+  offset: 109, 73
+  index: -1
+Z_face
+  rotate: false
+  xy: 702, 820
+  size: 211, 216
+  orig: 322, 259
+  offset: 82, 23
+  index: -1
+Z_mouth
+  rotate: false
+  xy: 101, 324
+  size: 40, 16
+  orig: 322, 259
+  offset: 185, 48
+  index: -1
+bair_b2
+  rotate: false
+  xy: 202, 66
+  size: 144, 126
+  orig: 144, 126
+  offset: 0, 0
+  index: -1
+doupeng_b
+  rotate: false
+  xy: 8, 762
+  size: 356, 274
+  orig: 356, 274
+  offset: 0, 0
+  index: -1
+emoDeath
+  rotate: false
+  xy: 879, 323
+  size: 156, 111
+  orig: 322, 259
+  offset: 112, 34
+  index: -1
+hair_1
+  rotate: false
+  xy: 887, 442
+  size: 149, 291
+  orig: 149, 291
+  offset: 0, 0
+  index: -1
+hair_b1
+  rotate: false
+  xy: 565, 654
+  size: 125, 181
+  orig: 125, 181
+  offset: 0, 0
+  index: -1
+hair_q1
+  rotate: false
+  xy: 768, 208
+  size: 75, 74
+  orig: 75, 74
+  offset: 0, 0
+  index: -1
+hair_q2
+  rotate: false
+  xy: 362, 24
+  size: 141, 187
+  orig: 141, 187
+  offset: 0, 0
+  index: -1
+hair_q3
+  rotate: false
+  xy: 511, 45
+  size: 98, 166
+  orig: 98, 166
+  offset: 0, 0
+  index: -1
+hair_q4
+  rotate: false
+  xy: 852, 241
+  size: 106, 74
+  orig: 106, 74
+  offset: 0, 0
+  index: -1
+hair_q5
+  rotate: false
+  xy: 372, 631
+  size: 185, 204
+  orig: 185, 204
+  offset: 0, 0
+  index: -1
+hair_q6
+  rotate: false
+  xy: 169, 348
+  size: 92, 92
+  orig: 92, 92
+  offset: 0, 0
+  index: -1
+hair_up
+  rotate: false
+  xy: 372, 843
+  size: 322, 193
+  orig: 322, 193
+  offset: 0, 0
+  index: -1
+hari_2
+  rotate: false
+  xy: 8, 537
+  size: 100, 217
+  orig: 100, 217
+  offset: 0, 0
+  index: -1
+m_happy
+  rotate: false
+  xy: 362, 223
+  size: 38, 23
+  orig: 322, 259
+  offset: 181, 43
+  index: -1
+m_open
+  rotate: false
+  xy: 887, 790
+  size: 24, 22
+  orig: 322, 259
+  offset: 188, 45
+  index: -1
+maozi
+  rotate: false
+  xy: 565, 536
+  size: 124, 110
+  orig: 124, 110
+  offset: 0, 0
+  index: -1
+mood_ground
+  rotate: false
+  xy: 370, 254
+  size: 166, 115
+  orig: 322, 259
+  offset: 106, 31
+  index: -1
+pifeng_q1
+  rotate: false
+  xy: 697, 439
+  size: 174, 157
+  orig: 174, 157
+  offset: 0, 0
+  index: -1
+pifeng_q2
+  rotate: false
+  xy: 921, 914
+  size: 110, 122
+  orig: 110, 122
+  offset: 0, 0
+  index: -1
+pifeng_q3
+  rotate: false
+  xy: 966, 187
+  size: 63, 128
+  orig: 63, 128
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 60
+  size: 60, 255
+  orig: 60, 255
+  offset: 0, 0
+  index: -1
+weijin_q
+  rotate: false
+  xy: 549, 385
+  size: 139, 66
+  orig: 139, 66
+  offset: 0, 0
+  index: -1
+yao_img
+  rotate: false
+  xy: 116, 633
+  size: 149, 121
+  orig: 149, 121
+  offset: 0, 0
+  index: -1

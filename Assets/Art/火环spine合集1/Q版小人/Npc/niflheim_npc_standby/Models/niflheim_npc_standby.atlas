@@ -1,0 +1,300 @@
+
+niflheim_npc_standby.png
+size: 510,510
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Lfoot
+  rotate: false
+  xy: 373, 80
+  size: 36, 66
+  orig: 36, 66
+  offset: 0, 0
+  index: -1
+Rarm1
+  rotate: false
+  xy: 373, 154
+  size: 42, 78
+  orig: 42, 78
+  offset: 0, 0
+  index: -1
+Rarm2
+  rotate: false
+  xy: 329, 34
+  size: 36, 46
+  orig: 36, 46
+  offset: 0, 0
+  index: -1
+Rfoot
+  rotate: false
+  xy: 423, 164
+  size: 38, 68
+  orig: 38, 68
+  offset: 0, 0
+  index: -1
+Rhand
+  rotate: false
+  xy: 293, 45
+  size: 28, 35
+  orig: 28, 35
+  offset: 0, 0
+  index: -1
+bizi
+  rotate: false
+  xy: 476, 486
+  size: 18, 16
+  orig: 18, 16
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 393, 240
+  size: 75, 55
+  orig: 75, 55
+  offset: 0, 0
+  index: -1
+bozi
+  rotate: false
+  xy: 160, 84
+  size: 65, 36
+  orig: 65, 36
+  offset: 0, 0
+  index: -1
+dao
+  rotate: false
+  xy: 178, 343
+  size: 195, 35
+  orig: 195, 35
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: false
+  xy: 8, 22
+  size: 75, 36
+  orig: 75, 36
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: false
+  xy: 309, 114
+  size: 56, 27
+  orig: 56, 27
+  offset: 0, 0
+  index: -1
+eye3
+  rotate: false
+  xy: 91, 8
+  size: 63, 31
+  orig: 63, 31
+  offset: 0, 0
+  index: -1
+eye_close
+  rotate: false
+  xy: 292, 88
+  size: 55, 18
+  orig: 59, 20
+  offset: 2, 1
+  index: -1
+face
+  rotate: false
+  xy: 348, 397
+  size: 120, 105
+  orig: 120, 105
+  offset: 0, 0
+  index: -1
+face_2
+  rotate: false
+  xy: 175, 230
+  size: 120, 105
+  orig: 120, 105
+  offset: 0, 0
+  index: -1
+foot0
+  rotate: false
+  xy: 183, 9
+  size: 38, 67
+  orig: 38, 67
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 8, 66
+  size: 90, 152
+  orig: 90, 152
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 303, 240
+  size: 82, 95
+  orig: 82, 95
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: false
+  xy: 106, 84
+  size: 46, 134
+  orig: 46, 134
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 309, 149
+  size: 56, 83
+  orig: 56, 83
+  offset: 0, 0
+  index: -1
+hand2
+  rotate: false
+  xy: 469, 197
+  size: 28, 35
+  orig: 28, 35
+  offset: 0, 0
+  index: -1
+hand3
+  rotate: false
+  xy: 469, 154
+  size: 28, 35
+  orig: 28, 35
+  offset: 0, 0
+  index: -1
+hand4
+  rotate: false
+  xy: 417, 111
+  size: 28, 35
+  orig: 28, 35
+  offset: 0, 0
+  index: -1
+hand5
+  rotate: false
+  xy: 417, 68
+  size: 28, 35
+  orig: 28, 35
+  offset: 0, 0
+  index: -1
+hand6
+  rotate: false
+  xy: 416, 25
+  size: 28, 35
+  orig: 28, 35
+  offset: 0, 0
+  index: -1
+jia2
+  rotate: false
+  xy: 393, 303
+  size: 72, 86
+  orig: 144, 172
+  offset: 36, 43
+  index: -1
+jia3
+  rotate: false
+  xy: 233, 79
+  size: 51, 54
+  orig: 108, 146
+  offset: 18, 69
+  index: -1
+mao1
+  rotate: false
+  xy: 8, 226
+  size: 159, 122
+  orig: 159, 122
+  offset: 0, 0
+  index: -1
+mao2
+  rotate: false
+  xy: 178, 386
+  size: 162, 116
+  orig: 162, 116
+  offset: 0, 0
+  index: -1
+mao4
+  rotate: false
+  xy: 8, 356
+  size: 162, 146
+  orig: 162, 154
+  offset: 0, 0
+  index: -1
+meimao
+  rotate: false
+  xy: 229, 13
+  size: 59, 18
+  orig: 59, 18
+  offset: 0, 0
+  index: -1
+mood_ground
+  rotate: false
+  xy: 229, 39
+  size: 56, 32
+  orig: 66, 40
+  offset: 4, 5
+  index: -1
+mouth
+  rotate: false
+  xy: 439, 154
+  size: 7, 2
+  orig: 16, 10
+  offset: 5, 4
+  index: -1
+mouth0
+  rotate: false
+  xy: 91, 56
+  size: 5, 2
+  orig: 8, 4
+  offset: 2, 1
+  index: -1
+mouth1
+  rotate: false
+  xy: 423, 154
+  size: 8, 2
+  orig: 14, 7
+  offset: 3, 2
+  index: -1
+mouth2
+  rotate: false
+  xy: 348, 386
+  size: 12, 3
+  orig: 22, 10
+  offset: 5, 3
+  index: -1
+mouth3
+  rotate: false
+  xy: 8, 10
+  size: 5, 4
+  orig: 10, 9
+  offset: 3, 2
+  index: -1
+mouth_hurt
+  rotate: false
+  xy: 476, 466
+  size: 22, 12
+  orig: 25, 14
+  offset: 2, 1
+  index: -1
+pifeng3
+  rotate: false
+  xy: 373, 30
+  size: 35, 42
+  orig: 35, 42
+  offset: 0, 0
+  index: -1
+qun1
+  rotate: false
+  xy: 221, 141
+  size: 80, 81
+  orig: 125, 115
+  offset: 26, 17
+  index: -1
+qun2
+  rotate: false
+  xy: 160, 128
+  size: 53, 90
+  orig: 80, 114
+  offset: 2, 24
+  index: -1
+yaodai
+  rotate: false
+  xy: 106, 47
+  size: 69, 29
+  orig: 74, 36
+  offset: 3, 3
+  index: -1

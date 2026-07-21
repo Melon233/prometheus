@@ -1,0 +1,251 @@
+
+artifact_paper_mechanics.png
+size: 1438,1438
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Larm
+  rotate: false
+  xy: 902, 140
+  size: 140, 134
+  orig: 170, 162
+  offset: 16, 13
+  index: -1
+Lhand
+  rotate: false
+  xy: 832, 20
+  size: 120, 112
+  orig: 149, 140
+  offset: 13, 14
+  index: -1
+Llap1
+  rotate: false
+  xy: 1298, 240
+  size: 124, 244
+  orig: 155, 266
+  offset: 15, 14
+  index: -1
+Llap2
+  rotate: false
+  xy: 430, 232
+  size: 139, 250
+  orig: 164, 260
+  offset: 13, 8
+  index: -1
+Llap3
+  rotate: false
+  xy: 1238, 756
+  size: 149, 236
+  orig: 164, 248
+  offset: 9, 0
+  index: -1
+Rarm
+  rotate: false
+  xy: 1260, 492
+  size: 140, 143
+  orig: 169, 176
+  offset: 15, 16
+  index: -1
+Rhand
+  rotate: false
+  xy: 1108, 92
+  size: 125, 113
+  orig: 144, 142
+  offset: 5, 14
+  index: -1
+Rlap1
+  rotate: false
+  xy: 544, 16
+  size: 160, 208
+  orig: 190, 237
+  offset: 15, 15
+  index: -1
+Rlap2
+  rotate: false
+  xy: 335, 12
+  size: 201, 212
+  orig: 222, 234
+  offset: 10, 11
+  index: -1
+Rlap3
+  rotate: false
+  xy: 1186, 1204
+  size: 244, 226
+  orig: 260, 249
+  offset: 11, 10
+  index: -1
+coatback
+  rotate: false
+  xy: 950, 638
+  size: 280, 235
+  orig: 308, 264
+  offset: 14, 15
+  index: -1
+collar
+  rotate: false
+  xy: 902, 282
+  size: 205, 57
+  orig: 236, 88
+  offset: 15, 15
+  index: -1
+collar2
+  rotate: false
+  xy: 950, 484
+  size: 302, 146
+  orig: 328, 175
+  offset: 12, 15
+  index: -1
+common_death
+  rotate: false
+  xy: 685, 612
+  size: 257, 259
+  orig: 318, 312
+  offset: 29, 28
+  index: -1
+hatback
+  rotate: false
+  xy: 524, 1133
+  size: 376, 297
+  orig: 403, 320
+  offset: 13, 12
+  index: -1
+hatbadge
+  rotate: false
+  xy: 1115, 213
+  size: 147, 126
+  orig: 168, 151
+  offset: 9, 13
+  index: -1
+hatbrim1
+  rotate: false
+  xy: 946, 347
+  size: 344, 129
+  orig: 351, 153
+  offset: 4, 16
+  index: -1
+hatbrim2
+  rotate: false
+  xy: 1346, 134
+  size: 75, 98
+  orig: 109, 132
+  offset: 16, 17
+  index: -1
+hatribbonL
+  rotate: false
+  xy: 482, 564
+  size: 195, 306
+  orig: 219, 330
+  offset: 12, 13
+  index: -1
+hatribbonR
+  rotate: false
+  xy: 908, 1081
+  size: 270, 349
+  orig: 519, 454
+  offset: 12, 3
+  index: -1
+hatrope
+  rotate: false
+  xy: 712, 77
+  size: 112, 148
+  orig: 140, 172
+  offset: 14, 15
+  index: -1
+hatsideL
+  rotate: false
+  xy: 1050, 132
+  size: 50, 142
+  orig: 80, 165
+  offset: 17, 12
+  index: -1
+hatsideR
+  rotate: false
+  xy: 750, 234
+  size: 144, 162
+  orig: 162, 184
+  offset: 7, 11
+  index: -1
+hattop
+  rotate: false
+  xy: 8, 235
+  size: 414, 247
+  orig: 426, 264
+  offset: 2, 12
+  index: -1
+hatyellow
+  rotate: false
+  xy: 8, 48
+  size: 319, 179
+  orig: 345, 201
+  offset: 12, 9
+  index: -1
+mechanics_death
+  rotate: false
+  xy: 8, 878
+  size: 508, 552
+  orig: 588, 663
+  offset: 38, 54
+  index: -1
+mopheadL
+  rotate: false
+  xy: 685, 404
+  size: 253, 200
+  orig: 277, 223
+  offset: 12, 9
+  index: -1
+mopheadM
+  rotate: false
+  xy: 524, 879
+  size: 326, 246
+  orig: 343, 268
+  offset: 9, 13
+  index: -1
+mopheadR
+  rotate: false
+  xy: 858, 881
+  size: 290, 192
+  orig: 308, 215
+  offset: 6, 10
+  index: -1
+mopheadUL
+  rotate: false
+  xy: 1238, 643
+  size: 151, 105
+  orig: 167, 130
+  offset: 5, 14
+  index: -1
+mopheadUM
+  rotate: false
+  xy: 577, 233
+  size: 165, 163
+  orig: 184, 181
+  offset: 9, 8
+  index: -1
+mopheadUR
+  rotate: false
+  xy: 1241, 83
+  size: 97, 122
+  orig: 163, 137
+  offset: 14, 0
+  index: -1
+moprope
+  rotate: false
+  xy: 577, 412
+  size: 99, 144
+  orig: 121, 168
+  offset: 12, 10
+  index: -1
+mopstick
+  rotate: false
+  xy: 8, 490
+  size: 466, 380
+  orig: 493, 403
+  offset: 13, 14
+  index: -1
+under
+  rotate: false
+  xy: 1186, 1000
+  size: 211, 196
+  orig: 243, 229
+  offset: 17, 16
+  index: -1

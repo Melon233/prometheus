@@ -1,0 +1,146 @@
+
+hellnar_dici.png
+size: 590,590
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+2_guo1
+  rotate: false
+  xy: 368, 17
+  size: 116, 120
+  orig: 116, 120
+  offset: 0, 0
+  index: -1
+2_guo2
+  rotate: false
+  xy: 288, 291
+  size: 129, 133
+  orig: 129, 133
+  offset: 0, 0
+  index: -1
+2_ye1
+  rotate: false
+  xy: 497, 294
+  size: 67, 64
+  orig: 67, 64
+  offset: 0, 0
+  index: -1
+2_ye2
+  rotate: false
+  xy: 425, 366
+  size: 72, 78
+  orig: 72, 78
+  offset: 0, 0
+  index: -1
+2_ye3
+  rotate: false
+  xy: 425, 291
+  size: 64, 67
+  orig: 64, 67
+  offset: 0, 0
+  index: -1
+2_zhi
+  rotate: false
+  xy: 8, 12
+  size: 110, 265
+  orig: 128, 282
+  offset: 8, 9
+  index: -1
+4_guo1
+  rotate: false
+  xy: 378, 163
+  size: 115, 120
+  orig: 115, 120
+  offset: 0, 0
+  index: -1
+4_guo2
+  rotate: false
+  xy: 143, 287
+  size: 137, 137
+  orig: 137, 137
+  offset: 0, 0
+  index: -1
+4_guo3
+  rotate: false
+  xy: 236, 145
+  size: 134, 134
+  orig: 134, 134
+  offset: 0, 0
+  index: -1
+4_ye1
+  rotate: false
+  xy: 501, 208
+  size: 65, 78
+  orig: 65, 78
+  offset: 0, 0
+  index: -1
+4_ye2
+  rotate: false
+  xy: 492, 8
+  size: 72, 60
+  orig: 72, 60
+  offset: 0, 0
+  index: -1
+4_ye3
+  rotate: false
+  xy: 492, 76
+  size: 76, 79
+  orig: 76, 79
+  offset: 0, 0
+  index: -1
+4_zhi
+  rotate: false
+  xy: 126, 15
+  size: 102, 262
+  orig: 118, 284
+  offset: 7, 11
+  index: -1
+6_guo1
+  rotate: false
+  xy: 236, 8
+  size: 124, 129
+  orig: 124, 129
+  offset: 0, 0
+  index: -1
+6_guo2
+  rotate: false
+  xy: 296, 452
+  size: 128, 130
+  orig: 128, 130
+  offset: 0, 0
+  index: -1
+6_guo3
+  rotate: false
+  xy: 143, 432
+  size: 145, 150
+  orig: 145, 150
+  offset: 0, 0
+  index: -1
+6_ye1
+  rotate: false
+  xy: 432, 520
+  size: 62, 62
+  orig: 62, 62
+  offset: 0, 0
+  index: -1
+6_ye2
+  rotate: false
+  xy: 505, 514
+  size: 62, 68
+  orig: 62, 68
+  offset: 0, 0
+  index: -1
+6_ye3
+  rotate: false
+  xy: 505, 444
+  size: 62, 62
+  orig: 62, 62
+  offset: 0, 0
+  index: -1
+6_zhi
+  rotate: false
+  xy: 8, 285
+  size: 127, 297
+  orig: 137, 316
+  offset: 0, 9
+  index: -1

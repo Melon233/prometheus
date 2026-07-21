@@ -1,0 +1,202 @@
+
+shadow_claw.png
+size: 1406,1406
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dark/claw1
+  rotate: false
+  xy: 1004, 632
+  size: 100, 258
+  orig: 112, 268
+  offset: 8, 3
+  index: -1
+dark/claw2
+  rotate: false
+  xy: 451, 229
+  size: 195, 304
+  orig: 197, 316
+  offset: 2, 7
+  index: -1
+dark/claw3
+  rotate: false
+  xy: 889, 898
+  size: 223, 177
+  orig: 230, 183
+  offset: 5, 0
+  index: -1
+dark/palm
+  rotate: false
+  xy: 8, 1083
+  size: 435, 315
+  orig: 444, 324
+  offset: 2, 0
+  index: -1
+fire/claw1
+  rotate: false
+  xy: 1112, 632
+  size: 100, 258
+  orig: 112, 268
+  offset: 8, 3
+  index: -1
+fire/claw2
+  rotate: false
+  xy: 654, 229
+  size: 195, 304
+  orig: 197, 316
+  offset: 2, 7
+  index: -1
+fire/claw3
+  rotate: false
+  xy: 1120, 898
+  size: 223, 177
+  orig: 230, 183
+  offset: 5, 0
+  index: -1
+fire/palm
+  rotate: false
+  xy: 451, 1083
+  size: 435, 315
+  orig: 444, 324
+  offset: 2, 0
+  index: -1
+ice/claw1
+  rotate: false
+  xy: 1220, 632
+  size: 100, 258
+  orig: 112, 268
+  offset: 8, 3
+  index: -1
+ice/claw2
+  rotate: false
+  xy: 857, 285
+  size: 195, 304
+  orig: 197, 316
+  offset: 2, 7
+  index: -1
+ice/claw3
+  rotate: false
+  xy: 451, 726
+  size: 223, 177
+  orig: 230, 183
+  offset: 5, 0
+  index: -1
+ice/palm
+  rotate: false
+  xy: 894, 1083
+  size: 435, 315
+  orig: 444, 324
+  offset: 2, 0
+  index: -1
+null/claw1
+  rotate: false
+  xy: 1276, 366
+  size: 100, 258
+  orig: 112, 268
+  offset: 8, 3
+  index: -1
+null/claw2
+  rotate: false
+  xy: 1060, 320
+  size: 188, 304
+  orig: 197, 316
+  offset: 2, 7
+  index: -1
+null/claw3
+  rotate: false
+  xy: 624, 48
+  size: 220, 173
+  orig: 230, 183
+  offset: 5, 4
+  index: -1
+null/palm
+  rotate: false
+  xy: 8, 437
+  size: 435, 315
+  orig: 444, 324
+  offset: 2, 0
+  index: -1
+palm2
+  rotate: false
+  xy: 8, 18
+  size: 167, 88
+  orig: 175, 95
+  offset: 3, 6
+  index: -1
+tail1
+  rotate: false
+  xy: 451, 42
+  size: 165, 179
+  orig: 187, 194
+  offset: 11, 9
+  index: -1
+tail2
+  rotate: false
+  xy: 183, 22
+  size: 106, 84
+  orig: 130, 108
+  offset: 12, 13
+  index: -1
+thunder/claw1
+  rotate: false
+  xy: 1276, 100
+  size: 100, 258
+  orig: 112, 268
+  offset: 8, 3
+  index: -1
+thunder/claw2
+  rotate: false
+  xy: 1080, 8
+  size: 188, 304
+  orig: 197, 316
+  offset: 2, 7
+  index: -1
+thunder/claw3
+  rotate: false
+  xy: 852, 48
+  size: 220, 173
+  orig: 230, 183
+  offset: 5, 4
+  index: -1
+thunder/palm
+  rotate: false
+  xy: 8, 114
+  size: 435, 315
+  orig: 444, 324
+  offset: 2, 0
+  index: -1
+wind/claw1
+  rotate: false
+  xy: 885, 632
+  size: 111, 258
+  orig: 112, 268
+  offset: 0, 3
+  index: -1
+wind/claw2
+  rotate: false
+  xy: 682, 597
+  size: 195, 306
+  orig: 197, 316
+  offset: 2, 5
+  index: -1
+wind/claw3
+  rotate: false
+  xy: 451, 541
+  size: 223, 177
+  orig: 230, 183
+  offset: 5, 0
+  index: -1
+wind/palm
+  rotate: false
+  xy: 8, 760
+  size: 435, 315
+  orig: 444, 324
+  offset: 2, 0
+  index: -1
+我是奈菲亚
+  rotate: false
+  xy: 451, 911
+  size: 430, 164
+  orig: 476, 184
+  offset: 21, 11
+  index: -1

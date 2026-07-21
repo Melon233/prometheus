@@ -1,0 +1,90 @@
+
+paralysis_flower.png
+size: 372,372
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hua
+  rotate: false
+  xy: 116, 47
+  size: 54, 147
+  orig: 70, 284
+  offset: 16, 0
+  index: -1
+hua2_1
+  rotate: false
+  xy: 8, 202
+  size: 148, 77
+  orig: 148, 77
+  offset: 0, 0
+  index: -1
+hua2_2
+  rotate: false
+  xy: 8, 287
+  size: 182, 77
+  orig: 182, 81
+  offset: 0, 4
+  index: -1
+hua_1
+  rotate: false
+  xy: 8, 75
+  size: 81, 48
+  orig: 83, 50
+  offset: 1, 1
+  index: -1
+hua_1_1
+  rotate: false
+  xy: 198, 194
+  size: 70, 170
+  orig: 70, 170
+  offset: 0, 0
+  index: -1
+hua_2
+  rotate: false
+  xy: 164, 227
+  size: 24, 52
+  orig: 26, 54
+  offset: 1, 1
+  index: -1
+huarui_1
+  rotate: false
+  xy: 209, 122
+  size: 28, 64
+  orig: 30, 65
+  offset: 1, 1
+  index: -1
+huarui_2
+  rotate: false
+  xy: 61, 12
+  size: 41, 55
+  orig: 43, 56
+  offset: 1, 0
+  index: -1
+huarui_3
+  rotate: false
+  xy: 178, 120
+  size: 23, 66
+  orig: 25, 68
+  offset: 1, 1
+  index: -1
+huarui_4
+  rotate: false
+  xy: 209, 57
+  size: 38, 57
+  orig: 40, 59
+  offset: 1, 1
+  index: -1
+ye_1
+  rotate: false
+  xy: 8, 8
+  size: 45, 59
+  orig: 45, 59
+  offset: 0, 0
+  index: -1
+ye_2
+  rotate: false
+  xy: 8, 131
+  size: 100, 63
+  orig: 100, 63
+  offset: 0, 0
+  index: -1

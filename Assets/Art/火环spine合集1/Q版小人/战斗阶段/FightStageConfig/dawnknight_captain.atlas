@@ -1,0 +1,251 @@
+
+dawnknight_captain.png
+size: 1121,1121
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+armLl
+  rotate: false
+  xy: 962, 625
+  size: 110, 130
+  orig: 121, 171
+  offset: 0, 13
+  index: -1
+armLu
+  rotate: false
+  xy: 281, 19
+  size: 80, 99
+  orig: 103, 145
+  offset: 9, 32
+  index: -1
+armRl
+  rotate: false
+  xy: 252, 299
+  size: 111, 138
+  orig: 120, 176
+  offset: 9, 30
+  index: -1
+armRu
+  rotate: false
+  xy: 192, 8
+  size: 81, 110
+  orig: 103, 138
+  offset: 11, 12
+  index: -1
+body
+  rotate: false
+  xy: 8, 18
+  size: 176, 181
+  orig: 188, 228
+  offset: 4, 35
+  index: -1
+face/brow
+  rotate: false
+  xy: 252, 515
+  size: 133, 31
+  orig: 168, 64
+  offset: 17, 17
+  index: -1
+face/eLid
+  rotate: false
+  xy: 685, 738
+  size: 159, 129
+  orig: 194, 159
+  offset: 15, 15
+  index: -1
+face/eyeC
+  rotate: false
+  xy: 896, 327
+  size: 167, 61
+  orig: 167, 83
+  offset: 0, 22
+  index: -1
+face/eyewhite
+  rotate: false
+  xy: 757, 396
+  size: 178, 97
+  orig: 178, 97
+  offset: 0, 0
+  index: -1
+face/face
+  rotate: false
+  xy: 8, 554
+  size: 242, 221
+  orig: 330, 300
+  offset: 48, 37
+  index: -1
+face/hurt
+  rotate: false
+  xy: 731, 8
+  size: 149, 55
+  orig: 164, 100
+  offset: 6, 45
+  index: -1
+face/mouth
+  rotate: false
+  xy: 258, 575
+  size: 30, 17
+  orig: 60, 45
+  offset: 15, 14
+  index: -1
+face/mouthH
+  rotate: false
+  xy: 296, 581
+  size: 22, 11
+  orig: 22, 11
+  offset: 0, 0
+  index: -1
+face/nose
+  rotate: false
+  xy: 459, 159
+  size: 65, 60
+  orig: 65, 60
+  offset: 0, 0
+  index: -1
+face/pupil
+  rotate: false
+  xy: 252, 445
+  size: 129, 62
+  orig: 160, 92
+  offset: 15, 12
+  index: -1
+hairA
+  rotate: false
+  xy: 535, 61
+  size: 188, 300
+  orig: 205, 320
+  offset: 9, 12
+  index: -1
+hairB
+  rotate: false
+  xy: 757, 501
+  size: 197, 229
+  orig: 230, 254
+  offset: 17, 11
+  index: -1
+hairBa
+  rotate: false
+  xy: 395, 369
+  size: 193, 361
+  orig: 217, 386
+  offset: 7, 8
+  index: -1
+hairBb
+  rotate: false
+  xy: 407, 738
+  size: 270, 375
+  orig: 289, 392
+  offset: 10, 5
+  index: -1
+hairBc
+  rotate: false
+  xy: 596, 378
+  size: 153, 352
+  orig: 185, 358
+  offset: 24, 6
+  index: -1
+hairC
+  rotate: false
+  xy: 370, 13
+  size: 81, 206
+  orig: 104, 231
+  offset: 13, 12
+  index: -1
+hairS
+  rotate: false
+  xy: 731, 71
+  size: 157, 299
+  orig: 178, 320
+  offset: 15, 8
+  index: -1
+hairT
+  rotate: false
+  xy: 852, 744
+  size: 92, 123
+  orig: 113, 148
+  offset: 12, 12
+  index: -1
+handL1a
+  rotate: false
+  xy: 962, 549
+  size: 92, 68
+  orig: 92, 68
+  offset: 0, 0
+  index: -1
+handL1b
+  rotate: false
+  xy: 459, 67
+  size: 61, 84
+  orig: 93, 114
+  offset: 16, 15
+  index: -1
+handR
+  rotate: false
+  xy: 943, 403
+  size: 90, 90
+  orig: 98, 99
+  offset: 8, 0
+  index: -1
+hem
+  rotate: false
+  xy: 853, 914
+  size: 173, 199
+  orig: 222, 199
+  offset: 38, 0
+  index: -1
+legLl
+  rotate: false
+  xy: 952, 763
+  size: 97, 143
+  orig: 106, 176
+  offset: 9, 7
+  index: -1
+legLu
+  rotate: false
+  xy: 258, 600
+  size: 129, 175
+  orig: 147, 233
+  offset: 0, 34
+  index: -1
+legRl
+  rotate: false
+  xy: 252, 126
+  size: 110, 165
+  orig: 112, 194
+  offset: 1, 3
+  index: -1
+legRu
+  rotate: false
+  xy: 896, 127
+  size: 158, 192
+  orig: 189, 232
+  offset: 1, 31
+  index: -1
+shellA
+  rotate: false
+  xy: 8, 207
+  size: 236, 339
+  orig: 243, 358
+  offset: 7, 9
+  index: -1
+shellB
+  rotate: false
+  xy: 685, 875
+  size: 160, 238
+  orig: 160, 238
+  offset: 0, 0
+  index: -1
+shoulder
+  rotate: false
+  xy: 371, 227
+  size: 156, 134
+  orig: 165, 143
+  offset: 0, 5
+  index: -1
+weapon
+  rotate: false
+  xy: 8, 783
+  size: 391, 330
+  orig: 391, 330
+  offset: 0, 0
+  index: -1

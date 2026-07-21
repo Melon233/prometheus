@@ -1,0 +1,125 @@
+
+partner_beast_snowfox.png
+size: 582,582
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 8, 361
+  size: 196, 213
+  orig: 196, 213
+  offset: 0, 0
+  index: -1
+chest
+  rotate: false
+  xy: 223, 181
+  size: 164, 189
+  orig: 164, 189
+  offset: 0, 0
+  index: -1
+ear1
+  rotate: false
+  xy: 121, 27
+  size: 98, 125
+  orig: 109, 134
+  offset: 6, 4
+  index: -1
+ear2
+  rotate: false
+  xy: 411, 105
+  size: 76, 119
+  orig: 84, 128
+  offset: 3, 3
+  index: -1
+eye
+  rotate: false
+  xy: 495, 110
+  size: 64, 38
+  orig: 64, 38
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 496, 8
+  size: 51, 37
+  orig: 51, 37
+  offset: 0, 0
+  index: -1
+foot1
+  rotate: false
+  xy: 495, 210
+  size: 78, 52
+  orig: 78, 52
+  offset: 0, 0
+  index: -1
+foot2
+  rotate: false
+  xy: 411, 43
+  size: 77, 54
+  orig: 77, 54
+  offset: 0, 0
+  index: -1
+foot3
+  rotate: false
+  xy: 495, 156
+  size: 68, 46
+  orig: 68, 46
+  offset: 0, 0
+  index: -1
+foot4
+  rotate: false
+  xy: 496, 53
+  size: 65, 49
+  orig: 65, 49
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 8, 160
+  size: 207, 193
+  orig: 211, 199
+  offset: 0, 5
+  index: -1
+head_2
+  rotate: false
+  xy: 212, 378
+  size: 207, 196
+  orig: 211, 199
+  offset: 0, 2
+  index: -1
+leg1
+  rotate: false
+  xy: 395, 232
+  size: 80, 138
+  orig: 88, 151
+  offset: 5, 7
+  index: -1
+leg2
+  rotate: false
+  xy: 483, 270
+  size: 77, 134
+  orig: 87, 146
+  offset: 5, 7
+  index: -1
+leg3
+  rotate: false
+  xy: 8, 12
+  size: 105, 140
+  orig: 111, 150
+  offset: 6, 7
+  index: -1
+leg4
+  rotate: false
+  xy: 427, 412
+  size: 107, 162
+  orig: 116, 173
+  offset: 4, 7
+  index: -1
+tail
+  rotate: false
+  xy: 227, 10
+  size: 176, 163
+  orig: 182, 173
+  offset: 2, 5
+  index: -1

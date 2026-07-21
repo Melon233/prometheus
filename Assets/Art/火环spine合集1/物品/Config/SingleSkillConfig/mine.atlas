@@ -1,0 +1,104 @@
+
+mine.png
+size: 389,389
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dibu
+  rotate: false
+  xy: 8, 272
+  size: 311, 109
+  orig: 311, 118
+  offset: 0, 9
+  index: -1
+zhadan1
+  rotate: false
+  xy: 303, 119
+  size: 64, 61
+  orig: 64, 61
+  offset: 0, 0
+  index: -1
+zhadan10
+  rotate: false
+  xy: 303, 70
+  size: 60, 41
+  orig: 60, 41
+  offset: 0, 0
+  index: -1
+zhadan11
+  rotate: false
+  xy: 223, 188
+  size: 102, 65
+  orig: 102, 65
+  offset: 0, 0
+  index: -1
+zhadan12
+  rotate: false
+  xy: 8, 189
+  size: 207, 64
+  orig: 207, 64
+  offset: 0, 0
+  index: -1
+zhadan13
+  rotate: false
+  xy: 211, 99
+  size: 84, 81
+  orig: 84, 81
+  offset: 0, 0
+  index: -1
+zhadan2
+  rotate: false
+  xy: 327, 311
+  size: 54, 70
+  orig: 54, 70
+  offset: 0, 0
+  index: -1
+zhadan3
+  rotate: false
+  xy: 111, 57
+  size: 68, 58
+  orig: 68, 58
+  offset: 0, 0
+  index: -1
+zhadan4
+  rotate: false
+  xy: 333, 205
+  size: 39, 48
+  orig: 39, 48
+  offset: 0, 0
+  index: -1
+zhadan5
+  rotate: false
+  xy: 327, 261
+  size: 52, 42
+  orig: 52, 42
+  offset: 0, 0
+  index: -1
+zhadan6
+  rotate: false
+  xy: 111, 123
+  size: 92, 58
+  orig: 92, 58
+  offset: 0, 0
+  index: -1
+zhadan7
+  rotate: false
+  xy: 8, 95
+  size: 95, 86
+  orig: 95, 86
+  offset: 0, 0
+  index: -1
+zhadan8
+  rotate: false
+  xy: 8, 19
+  size: 59, 68
+  orig: 59, 68
+  offset: 0, 0
+  index: -1
+zhadan9
+  rotate: false
+  xy: 187, 24
+  size: 39, 67
+  orig: 39, 67
+  offset: 0, 0
+  index: -1

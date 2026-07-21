@@ -1,0 +1,13 @@
+skip_title=密道;
+skip_overview=经过一番“激进”的尝试，菲尔佳最终成功开启了密道的大门，你们得以继续前进。;
+spine=菲尔佳<lights=1,faces=beg>;mid_txt=唔唔……虽然平常也会溜出去，但这次带着这么多人……如果被发现的话，是不是要抄好多好多遍经书……<name=菲尔佳>;
+spine=菲尔佳<lights=1,faces=help>;mid_txt=至高的圣神希尔兰狄啊，请降下赐福，愿您忠实的仆人的善举不会败露！<name=菲尔佳>;
+spine=菲尔佳<lights=1,faces=realize>;mid_txt=咦？你、你来了！是准备好了吗？<name=菲尔佳>;
+hide=spine;
+hide=txt;
+spine=主角<lights=1>;
+select=准备出发吧！<next_id=aa>;
+spine=主角<lights=1,id=aa>;mid_txt=我准备好了。<name=/player/>;
+hide=spine;
+hide=txt;
+spine=菲尔佳<lights=1,faces=serious>;mid_txt=……啊？哦哦！那我要准备开门了！<name=菲尔佳>;

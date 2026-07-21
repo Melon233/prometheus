@@ -1,0 +1,76 @@
+
+Alpha_character.png
+size: 448,1983
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aerfa_feixingjiang2
+  rotate: false
+  xy: 8, 1966
+  size: 12, 10
+  orig: 12, 10
+  offset: 0, 0
+  index: -1
+aerfa_huzi
+  rotate: false
+  xy: 173, 49
+  size: 183, 103
+  orig: 183, 103
+  offset: 0, 0
+  index: -1
+aerfa_huziyinying
+  rotate: false
+  xy: 8, 9
+  size: 176, 96
+  orig: 176, 96
+  offset: 0, 0
+  index: -1
+aerfa_shenti
+  rotate: false
+  xy: 8, 375
+  size: 384, 517
+  orig: 384, 517
+  offset: 0, 0
+  index: -1
+aerfa_shenti2
+  rotate: true
+  xy: 8, 135
+  size: 133, 157
+  orig: 133, 157
+  offset: 0, 0
+  index: -1
+aerfa_tui1
+  rotate: false
+  xy: 349, 1290
+  size: 90, 271
+  orig: 90, 271
+  offset: 0, 0
+  index: -1
+aerfa_tui2
+  rotate: true
+  xy: 8, 275
+  size: 91, 259
+  orig: 91, 259
+  offset: 0, 0
+  index: -1
+aerfa_tui3
+  rotate: false
+  xy: 342, 245
+  size: 86, 262
+  orig: 86, 262
+  offset: 0, 0
+  index: -1
+aerfa_tui4
+  rotate: true
+  xy: 173, 159
+  size: 79, 188
+  orig: 79, 188
+  offset: 0, 0
+  index: -1
+feixingjiang1
+  rotate: false
+  xy: 8, 893
+  size: 425, 1083
+  orig: 622, 1151
+  offset: 74, 0
+  index: -1

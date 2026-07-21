@@ -1,0 +1,55 @@
+
+bird_5.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+niao_chibang
+  rotate: false
+  xy: 174, 122
+  size: 114, 93
+  orig: 114, 93
+  offset: 0, 0
+  index: -1
+niao_jiao_R
+  rotate: false
+  xy: 94, 33
+  size: 29, 45
+  orig: 56, 115
+  offset: 16, 35
+  index: -1
+niao_shenti
+  rotate: false
+  xy: 8, 223
+  size: 173, 128
+  orig: 173, 128
+  offset: 0, 0
+  index: -1
+niao_tou
+  rotate: false
+  xy: 8, 86
+  size: 158, 129
+  orig: 158, 129
+  offset: 0, 0
+  index: -1
+niao_weiba_1
+  rotate: false
+  xy: 189, 268
+  size: 106, 83
+  orig: 106, 83
+  offset: 0, 0
+  index: -1
+niao_weiba_2
+  rotate: false
+  xy: 174, 39
+  size: 96, 75
+  orig: 96, 75
+  offset: 0, 0
+  index: -1
+niao_weiba_3
+  rotate: false
+  xy: 8, 8
+  size: 78, 70
+  orig: 78, 70
+  offset: 0, 0
+  index: -1

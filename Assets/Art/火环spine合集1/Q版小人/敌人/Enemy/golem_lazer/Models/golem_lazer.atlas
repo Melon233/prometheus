@@ -1,0 +1,426 @@
+
+golem_lazer.png
+size: 1650,1650
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 8, 66
+  size: 598, 300
+  orig: 598, 305
+  offset: 0, 3
+  index: -1
+body2
+  rotate: false
+  xy: 700, 1381
+  size: 640, 261
+  orig: 640, 261
+  offset: 0, 0
+  index: -1
+ice/body2
+  rotate: false
+  xy: 700, 1381
+  size: 640, 261
+  orig: 640, 261
+  offset: 0, 0
+  index: -1
+body3
+  rotate: false
+  xy: 822, 98
+  size: 169, 140
+  orig: 370, 140
+  offset: 201, 0
+  index: -1
+fire/body3
+  rotate: false
+  xy: 822, 98
+  size: 169, 140
+  orig: 370, 140
+  offset: 201, 0
+  index: -1
+ice/body3
+  rotate: false
+  xy: 822, 98
+  size: 169, 140
+  orig: 370, 140
+  offset: 201, 0
+  index: -1
+thunder/body3
+  rotate: false
+  xy: 822, 98
+  size: 169, 140
+  orig: 370, 140
+  offset: 201, 0
+  index: -1
+body4
+  rotate: false
+  xy: 656, 448
+  size: 416, 309
+  orig: 416, 309
+  offset: 0, 0
+  index: -1
+fire/body4
+  rotate: false
+  xy: 656, 448
+  size: 416, 309
+  orig: 416, 309
+  offset: 0, 0
+  index: -1
+ice/body4
+  rotate: false
+  xy: 656, 448
+  size: 416, 309
+  orig: 416, 309
+  offset: 0, 0
+  index: -1
+thunder/body4
+  rotate: false
+  xy: 656, 448
+  size: 416, 309
+  orig: 416, 309
+  offset: 0, 0
+  index: -1
+wind/body4
+  rotate: false
+  xy: 656, 448
+  size: 416, 309
+  orig: 416, 309
+  offset: 0, 0
+  index: -1
+eyeL
+  rotate: false
+  xy: 1490, 1135
+  size: 35, 67
+  orig: 194, 194
+  offset: 139, 63
+  index: -1
+fire/eyeL
+  rotate: false
+  xy: 1490, 1135
+  size: 35, 67
+  orig: 194, 194
+  offset: 139, 63
+  index: -1
+ice/eyeL
+  rotate: false
+  xy: 1490, 1135
+  size: 35, 67
+  orig: 194, 194
+  offset: 139, 63
+  index: -1
+thunder/eyeL
+  rotate: false
+  xy: 1490, 1135
+  size: 35, 67
+  orig: 194, 194
+  offset: 139, 63
+  index: -1
+wind/eyeL
+  rotate: false
+  xy: 1490, 1135
+  size: 35, 67
+  orig: 194, 194
+  offset: 139, 63
+  index: -1
+eyeR
+  rotate: false
+  xy: 999, 167
+  size: 49, 71
+  orig: 194, 194
+  offset: 72, 58
+  index: -1
+fire/eyeR
+  rotate: false
+  xy: 999, 167
+  size: 49, 71
+  orig: 194, 194
+  offset: 72, 58
+  index: -1
+ice/eyeR
+  rotate: false
+  xy: 999, 167
+  size: 49, 71
+  orig: 194, 194
+  offset: 72, 58
+  index: -1
+thunder/eyeR
+  rotate: false
+  xy: 999, 167
+  size: 49, 71
+  orig: 194, 194
+  offset: 72, 58
+  index: -1
+wind/eyeR
+  rotate: false
+  xy: 999, 167
+  size: 49, 71
+  orig: 194, 194
+  offset: 72, 58
+  index: -1
+face
+  rotate: false
+  xy: 1490, 1210
+  size: 147, 135
+  orig: 194, 194
+  offset: 30, 32
+  index: -1
+fire/face
+  rotate: false
+  xy: 1490, 1210
+  size: 147, 135
+  orig: 194, 194
+  offset: 30, 32
+  index: -1
+ice/face
+  rotate: false
+  xy: 1490, 1210
+  size: 147, 135
+  orig: 194, 194
+  offset: 30, 32
+  index: -1
+thunder/face
+  rotate: false
+  xy: 1490, 1210
+  size: 147, 135
+  orig: 194, 194
+  offset: 30, 32
+  index: -1
+wind/face
+  rotate: false
+  xy: 1490, 1210
+  size: 147, 135
+  orig: 194, 194
+  offset: 30, 32
+  index: -1
+fire/body1
+  rotate: false
+  xy: 700, 1073
+  size: 598, 300
+  orig: 598, 305
+  offset: 0, 3
+  index: -1
+fire/head
+  rotate: false
+  xy: 898, 246
+  size: 194, 194
+  orig: 194, 194
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 898, 246
+  size: 194, 194
+  orig: 194, 194
+  offset: 0, 0
+  index: -1
+ice/head
+  rotate: false
+  xy: 898, 246
+  size: 194, 194
+  orig: 194, 194
+  offset: 0, 0
+  index: -1
+thunder/head
+  rotate: false
+  xy: 898, 246
+  size: 194, 194
+  orig: 194, 194
+  offset: 0, 0
+  index: -1
+wind/head
+  rotate: false
+  xy: 898, 246
+  size: 194, 194
+  orig: 194, 194
+  offset: 0, 0
+  index: -1
+fire/leg1
+  rotate: false
+  xy: 1348, 1353
+  size: 176, 289
+  orig: 180, 289
+  offset: 0, 0
+  index: -1
+fire/leg2
+  rotate: false
+  xy: 1100, 13
+  size: 173, 446
+  orig: 173, 446
+  offset: 0, 0
+  index: -1
+ice/leg2
+  rotate: false
+  xy: 1100, 13
+  size: 173, 446
+  orig: 173, 446
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: false
+  xy: 1100, 13
+  size: 173, 446
+  orig: 173, 446
+  offset: 0, 0
+  index: -1
+thunder/leg2
+  rotate: false
+  xy: 1100, 13
+  size: 173, 446
+  orig: 173, 446
+  offset: 0, 0
+  index: -1
+fire/leg3
+  rotate: false
+  xy: 1532, 1461
+  size: 105, 181
+  orig: 105, 181
+  offset: 0, 0
+  index: -1
+ice/leg3
+  rotate: false
+  xy: 1532, 1461
+  size: 105, 181
+  orig: 105, 181
+  offset: 0, 0
+  index: -1
+leg3
+  rotate: false
+  xy: 1532, 1461
+  size: 105, 181
+  orig: 105, 181
+  offset: 0, 0
+  index: -1
+thunder/leg3
+  rotate: false
+  xy: 1532, 1461
+  size: 105, 181
+  orig: 105, 181
+  offset: 0, 0
+  index: -1
+wind/leg3
+  rotate: false
+  xy: 1532, 1461
+  size: 105, 181
+  orig: 105, 181
+  offset: 0, 0
+  index: -1
+fire/xin
+  rotate: false
+  xy: 614, 77
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+ice/xin
+  rotate: false
+  xy: 614, 77
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+thunder/xin
+  rotate: false
+  xy: 614, 77
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+wind/xin
+  rotate: false
+  xy: 614, 77
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+xin
+  rotate: false
+  xy: 614, 77
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1
+ice/body1
+  rotate: false
+  xy: 8, 912
+  size: 667, 332
+  orig: 739, 377
+  offset: 29, 39
+  index: -1
+ice/leg1
+  rotate: false
+  xy: 1306, 1056
+  size: 176, 289
+  orig: 180, 289
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 1289, 759
+  size: 176, 289
+  orig: 180, 289
+  offset: 0, 0
+  index: -1
+thunder/body1
+  rotate: false
+  xy: 683, 765
+  size: 598, 300
+  orig: 598, 305
+  offset: 0, 3
+  index: -1
+thunder/body2
+  rotate: false
+  xy: 8, 374
+  size: 640, 261
+  orig: 640, 261
+  offset: 0, 0
+  index: -1
+thunder/leg1
+  rotate: false
+  xy: 1284, 462
+  size: 176, 289
+  orig: 180, 289
+  offset: 0, 0
+  index: -1
+wind/body1
+  rotate: false
+  xy: 8, 1252
+  size: 684, 390
+  orig: 840, 428
+  offset: 79, 24
+  index: -1
+wind/body2
+  rotate: false
+  xy: 8, 643
+  size: 640, 261
+  orig: 640, 261
+  offset: 0, 0
+  index: -1
+fire/body2
+  rotate: false
+  xy: 8, 643
+  size: 640, 261
+  orig: 640, 261
+  offset: 0, 0
+  index: -1
+wind/body3
+  rotate: false
+  xy: 656, 285
+  size: 234, 155
+  orig: 516, 196
+  offset: 0, 0
+  index: -1
+wind/leg1
+  rotate: false
+  xy: 1080, 467
+  size: 196, 290
+  orig: 223, 359
+  offset: 22, 34
+  index: -1
+wind/leg2
+  rotate: false
+  xy: 1281, 8
+  size: 173, 446
+  orig: 173, 446
+  offset: 0, 0
+  index: -1

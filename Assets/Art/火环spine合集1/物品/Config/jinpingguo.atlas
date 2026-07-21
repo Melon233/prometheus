@@ -1,0 +1,27 @@
+
+jinpingguo.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+pingguo
+  rotate: false
+  xy: 8, 501
+  size: 258, 300
+  orig: 400, 434
+  offset: 65, 53
+  index: -1
+pingguo2
+  rotate: false
+  xy: 274, 505
+  size: 260, 296
+  orig: 400, 434
+  offset: 70, 57
+  index: -1
+pingguo3
+  rotate: false
+  xy: 542, 519
+  size: 259, 282
+  orig: 400, 434
+  offset: 69, 68
+  index: -1

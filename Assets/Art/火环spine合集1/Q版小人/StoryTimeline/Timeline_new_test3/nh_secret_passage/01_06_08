@@ -1,0 +1,11 @@
+skip_title=密道;
+skip_overview=打开机关门后，却意外触发了密道中的机关。躲过一阵箭雨后，更大的箭矢如暴雨般落下，你们不得不全力朝出口奔去。;
+spine=纳叶|海芙温<lights=0|1,faces=idleface|amazed>;mid_txt=呼~呼~真是吓死我了！那么大一只怪物，忽然就醒过来了！<name=海芙温>;
+spine=纳叶|海芙温<lights=1|0,faces=think|amazed>;mid_txt=这或许就是笔记上记载的“那个东西”，它被一场实验事故吸引至此，在摧毁一切后，便顺势沉睡在了这里。<name=纳叶>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=smile>;mid_txt=哈，那这起床气还真够凶的，但不管怎么说，它现在是醒不来了。<name=厄晞斯>;
+spine=厄晞斯<lights=1,faces=smile>;mid_txt=把门打开吧，现在应该可以了。<name=厄晞斯>;
+hide=spine;
+hide=txt;
+spine=海芙温<lights=1,faces=kira>;mid_txt=我我我！我来！我记得菲尔佳开门的步骤，这件事就交给我吧！<name=海芙温>;

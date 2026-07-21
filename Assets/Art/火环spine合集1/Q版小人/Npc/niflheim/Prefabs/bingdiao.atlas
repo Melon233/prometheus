@@ -1,0 +1,83 @@
+
+bingdiao.png
+size: 1076,1076
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bd_benti
+  rotate: false
+  xy: 173, 458
+  size: 491, 610
+  orig: 491, 610
+  offset: 0, 0
+  index: -1
+bd_benti2
+  rotate: false
+  xy: 8, 8
+  size: 67, 161
+  orig: 491, 610
+  offset: 368, 437
+  index: -1
+bd_ditai
+  rotate: false
+  xy: 414, 33
+  size: 446, 172
+  orig: 446, 172
+  offset: 0, 0
+  index: -1
+bd_dun
+  rotate: false
+  xy: 414, 213
+  size: 197, 237
+  orig: 197, 237
+  offset: 0, 0
+  index: -1
+bd_mao
+  rotate: false
+  xy: 672, 663
+  size: 121, 198
+  orig: 121, 198
+  offset: 0, 0
+  index: -1
+bd_mao b
+  rotate: false
+  xy: 672, 869
+  size: 126, 199
+  orig: 126, 199
+  offset: 0, 0
+  index: -1
+bd_maoa
+  rotate: false
+  xy: 8, 413
+  size: 157, 655
+  orig: 157, 655
+  offset: 0, 0
+  index: -1
+bd_posun
+  rotate: false
+  xy: 245, 89
+  size: 161, 361
+  orig: 161, 362
+  offset: 0, 1
+  index: -1
+bd_posun2
+  rotate: false
+  xy: 83, 124
+  size: 74, 45
+  orig: 74, 45
+  offset: 0, 0
+  index: -1
+bd_tou
+  rotate: false
+  xy: 619, 228
+  size: 229, 222
+  orig: 229, 222
+  offset: 0, 0
+  index: -1
+bd_tou b
+  rotate: false
+  xy: 8, 177
+  size: 229, 228
+  orig: 229, 228
+  offset: 0, 0
+  index: -1

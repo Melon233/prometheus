@@ -1,0 +1,153 @@
+
+frame_1.png
+size: 937,937
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dato_0
+  rotate: false
+  xy: 139, 127
+  size: 156, 152
+  orig: 157, 152
+  offset: 0, 0
+  index: -1
+dato_1
+  rotate: false
+  xy: 850, 857
+  size: 79, 72
+  orig: 82, 75
+  offset: 1, 2
+  index: -1
+dato_10
+  rotate: false
+  xy: 656, 433
+  size: 214, 40
+  orig: 217, 44
+  offset: 1, 2
+  index: -1
+dato_11
+  rotate: false
+  xy: 837, 374
+  size: 53, 51
+  orig: 54, 52
+  offset: 0, 1
+  index: -1
+dato_12
+  rotate: false
+  xy: 656, 374
+  size: 173, 51
+  orig: 173, 52
+  offset: 0, 0
+  index: -1
+dato_13
+  rotate: false
+  xy: 850, 711
+  size: 64, 138
+  orig: 65, 138
+  offset: 0, 0
+  index: -1
+dato_14
+  rotate: false
+  xy: 656, 630
+  size: 246, 69
+  orig: 246, 69
+  offset: 0, 0
+  index: -1
+dato_15
+  rotate: false
+  xy: 303, 152
+  size: 291, 127
+  orig: 291, 127
+  offset: 0, 0
+  index: -1
+dato_16
+  rotate: false
+  xy: 656, 707
+  size: 186, 222
+  orig: 186, 222
+  offset: 0, 0
+  index: -1
+dato_17
+  rotate: false
+  xy: 656, 481
+  size: 214, 71
+  orig: 215, 71
+  offset: 1, 0
+  index: -1
+dato_18
+  rotate: false
+  xy: 139, 84
+  size: 107, 35
+  orig: 108, 36
+  offset: 0, 0
+  index: -1
+dato_19
+  rotate: false
+  xy: 832, 271
+  size: 96, 95
+  orig: 97, 95
+  offset: 0, 0
+  index: -1
+dato_2
+  rotate: false
+  xy: 741, 158
+  size: 129, 105
+  orig: 129, 105
+  offset: 0, 0
+  index: -1
+dato_20
+  rotate: false
+  xy: 8, 287
+  size: 640, 642
+  orig: 652, 652
+  offset: 6, 6
+  index: -1
+dato_3
+  rotate: false
+  xy: 656, 560
+  size: 225, 62
+  orig: 229, 66
+  offset: 2, 2
+  index: -1
+dato_4
+  rotate: false
+  xy: 303, 78
+  size: 107, 66
+  orig: 111, 70
+  offset: 2, 2
+  index: -1
+dato_5
+  rotate: false
+  xy: 602, 110
+  size: 127, 61
+  orig: 131, 65
+  offset: 2, 2
+  index: -1
+dato_6
+  rotate: false
+  xy: 602, 179
+  size: 131, 88
+  orig: 135, 93
+  offset: 2, 2
+  index: -1
+dato_7
+  rotate: false
+  xy: 737, 75
+  size: 151, 75
+  orig: 155, 79
+  offset: 2, 2
+  index: -1
+dato_8
+  rotate: false
+  xy: 656, 275
+  size: 168, 91
+  orig: 172, 97
+  offset: 2, 1
+  index: -1
+dato_9
+  rotate: false
+  xy: 8, 109
+  size: 123, 170
+  orig: 126, 175
+  offset: 2, 3
+  index: -1

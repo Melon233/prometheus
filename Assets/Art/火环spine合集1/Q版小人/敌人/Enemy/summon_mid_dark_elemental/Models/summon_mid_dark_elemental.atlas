@@ -1,0 +1,90 @@
+
+summon_mid_dark_elemental.png
+size: 849,312
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+M_huzi
+  rotate: false
+  xy: 240, 24
+  size: 299, 135
+  orig: 299, 135
+  offset: 0, 0
+  index: -1
+armor_back
+  rotate: false
+  xy: 621, 172
+  size: 57, 29
+  orig: 57, 29
+  offset: 0, 0
+  index: -1
+armor_front
+  rotate: false
+  xy: 742, 98
+  size: 90, 103
+  orig: 90, 103
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 8, 8
+  size: 224, 296
+  orig: 224, 296
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 686, 173
+  size: 27, 28
+  orig: 27, 28
+  offset: 0, 0
+  index: -1
+halo
+  rotate: false
+  xy: 492, 172
+  size: 121, 132
+  orig: 121, 132
+  offset: 0, 0
+  index: -1
+hand
+  rotate: false
+  xy: 660, 41
+  size: 74, 123
+  orig: 74, 123
+  offset: 0, 0
+  index: -1
+hand2
+  rotate: false
+  xy: 547, 36
+  size: 105, 128
+  orig: 144, 144
+  offset: 5, 7
+  index: -1
+hand2.1
+  rotate: false
+  xy: 742, 48
+  size: 40, 42
+  orig: 144, 144
+  offset: 93, 20
+  index: -1
+horn
+  rotate: false
+  xy: 240, 167
+  size: 244, 137
+  orig: 244, 137
+  offset: 0, 0
+  index: -1
+knife
+  rotate: false
+  xy: 621, 209
+  size: 220, 95
+  orig: 220, 95
+  offset: 0, 0
+  index: -1
+stone
+  rotate: false
+  xy: 790, 49
+  size: 30, 41
+  orig: 30, 41
+  offset: 0, 0
+  index: -1

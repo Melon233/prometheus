@@ -1,0 +1,202 @@
+
+yousaer_doll.png
+size: 623,623
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+wawa_body
+  rotate: false
+  xy: 426, 349
+  size: 113, 105
+  orig: 113, 105
+  offset: 0, 0
+  index: -1
+wawa_face
+  rotate: false
+  xy: 322, 435
+  size: 96, 60
+  orig: 96, 60
+  offset: 0, 0
+  index: -1
+wawa_hudiejie_L
+  rotate: false
+  xy: 392, 49
+  size: 59, 66
+  orig: 59, 66
+  offset: 0, 0
+  index: -1
+wawa_hudiejie_R
+  rotate: false
+  xy: 414, 123
+  size: 92, 86
+  orig: 92, 86
+  offset: 0, 0
+  index: -1
+wawa_jiandian_L
+  rotate: false
+  xy: 64, 23
+  size: 38, 32
+  orig: 38, 32
+  offset: 0, 0
+  index: -1
+wawa_jiandian_R
+  rotate: false
+  xy: 110, 28
+  size: 42, 27
+  orig: 42, 27
+  offset: 0, 0
+  index: -1
+wawa_maoer_L
+  rotate: false
+  xy: 304, 80
+  size: 62, 85
+  orig: 62, 85
+  offset: 0, 0
+  index: -1
+wawa_maoer_R
+  rotate: false
+  xy: 519, 124
+  size: 96, 89
+  orig: 96, 89
+  offset: 0, 0
+  index: -1
+wawa_maozi_1
+  rotate: false
+  xy: 8, 421
+  size: 187, 194
+  orig: 187, 194
+  offset: 0, 0
+  index: -1
+wawa_maozi_2
+  rotate: false
+  xy: 472, 462
+  size: 90, 153
+  orig: 90, 153
+  offset: 0, 0
+  index: -1
+wawa_pifeng_1
+  rotate: false
+  xy: 323, 173
+  size: 83, 115
+  orig: 83, 115
+  offset: 0, 0
+  index: -1
+wawa_pifeng_2
+  rotate: false
+  xy: 235, 176
+  size: 80, 129
+  orig: 80, 129
+  offset: 0, 0
+  index: -1
+wawa_pifeng_3
+  rotate: false
+  xy: 420, 217
+  size: 91, 124
+  orig: 91, 124
+  offset: 0, 0
+  index: -1
+wawa_shoubi_L
+  rotate: false
+  xy: 304, 12
+  size: 80, 60
+  orig: 80, 60
+  offset: 0, 0
+  index: -1
+wawa_shoubi_R
+  rotate: false
+  xy: 146, 230
+  size: 81, 75
+  orig: 81, 75
+  offset: 0, 0
+  index: -1
+wawa_shoudai
+  rotate: false
+  xy: 514, 55
+  size: 93, 61
+  orig: 93, 61
+  offset: 0, 0
+  index: -1
+wawa_tou
+  rotate: false
+  xy: 8, 63
+  size: 150, 155
+  orig: 150, 155
+  offset: 0, 0
+  index: -1
+wawa_toufa_1
+  rotate: false
+  xy: 322, 503
+  size: 142, 112
+  orig: 142, 112
+  offset: 0, 0
+  index: -1
+wawa_toufa_2
+  rotate: false
+  xy: 227, 61
+  size: 69, 107
+  orig: 69, 107
+  offset: 0, 0
+  index: -1
+wawa_toufa_3
+  rotate: false
+  xy: 328, 296
+  size: 84, 131
+  orig: 84, 131
+  offset: 0, 0
+  index: -1
+wawa_toufa_4
+  rotate: false
+  xy: 146, 313
+  size: 174, 100
+  orig: 174, 100
+  offset: 0, 0
+  index: -1
+wawa_toufa_5
+  rotate: false
+  xy: 519, 221
+  size: 90, 112
+  orig: 90, 112
+  offset: 0, 0
+  index: -1
+wawa_toufa_6
+  rotate: false
+  xy: 203, 421
+  size: 111, 194
+  orig: 111, 194
+  offset: 0, 0
+  index: -1
+wawa_toufa_7
+  rotate: false
+  xy: 8, 226
+  size: 130, 187
+  orig: 130, 187
+  offset: 0, 0
+  index: -1
+wawa_tui_L
+  rotate: false
+  xy: 547, 341
+  size: 66, 113
+  orig: 66, 113
+  offset: 0, 0
+  index: -1
+wawa_tui_R
+  rotate: false
+  xy: 166, 95
+  size: 53, 127
+  orig: 53, 127
+  offset: 0, 0
+  index: -1
+wawa_xiongzhen
+  rotate: false
+  xy: 570, 554
+  size: 40, 61
+  orig: 40, 61
+  offset: 0, 0
+  index: -1
+wawa_xisheng
+  rotate: false
+  xy: 8, 23
+  size: 48, 32
+  orig: 48, 32
+  offset: 0, 0
+  index: -1

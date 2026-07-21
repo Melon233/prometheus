@@ -1,0 +1,13 @@
+
+common_npc_blood.png
+size: 203,203
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+blood_B
+  rotate: false
+  xy: 8, 126
+  size: 187, 69
+  orig: 187, 69
+  offset: 0, 0
+  index: -1

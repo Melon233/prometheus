@@ -1,0 +1,230 @@
+
+ai_hellnar_elf.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+elf/armL
+  rotate: false
+  xy: 210, 97
+  size: 66, 70
+  orig: 90, 92
+  offset: 14, 10
+  index: -1
+elf/armL_cross
+  rotate: false
+  xy: 284, 98
+  size: 76, 43
+  orig: 104, 76
+  offset: 13, 16
+  index: -1
+elf/armR
+  rotate: false
+  xy: 8, 107
+  size: 98, 73
+  orig: 118, 95
+  offset: 8, 11
+  index: -1
+elf/armR_cross
+  rotate: false
+  xy: 94, 50
+  size: 77, 42
+  orig: 110, 72
+  offset: 15, 15
+  index: -1
+elf/body
+  rotate: false
+  xy: 8, 8
+  size: 78, 91
+  orig: 102, 113
+  offset: 6, 13
+  index: -1
+elf/brow
+  rotate: false
+  xy: 122, 234
+  size: 70, 25
+  orig: 106, 58
+  offset: 18, 17
+  index: -1
+elf/earL1
+  rotate: false
+  xy: 122, 167
+  size: 69, 59
+  orig: 104, 94
+  offset: 18, 22
+  index: -1
+elf/earL2
+  rotate: false
+  xy: 469, 521
+  size: 48, 49
+  orig: 92, 79
+  offset: 26, 15
+  index: -1
+elf/earL3
+  rotate: false
+  xy: 127, 317
+  size: 69, 73
+  orig: 104, 103
+  offset: 20, 15
+  index: -1
+elf/earR1
+  rotate: false
+  xy: 286, 149
+  size: 91, 72
+  orig: 110, 103
+  offset: 16, 15
+  index: -1
+elf/earR2
+  rotate: false
+  xy: 469, 578
+  size: 57, 53
+  orig: 94, 84
+  offset: 17, 17
+  index: -1
+elf/earR3
+  rotate: false
+  xy: 355, 385
+  size: 92, 102
+  orig: 110, 130
+  offset: 15, 14
+  index: -1
+elf/eyeClose
+  rotate: false
+  xy: 122, 267
+  size: 71, 11
+  orig: 113, 52
+  offset: 21, 21
+  index: -1
+elf/eyelid
+  rotate: false
+  xy: 8, 398
+  size: 120, 69
+  orig: 120, 69
+  offset: 0, 0
+  index: -1
+elf/eyewhite
+  rotate: false
+  xy: 355, 342
+  size: 82, 35
+  orig: 108, 65
+  offset: 13, 13
+  index: -1
+elf/face
+  rotate: false
+  xy: 8, 188
+  size: 106, 90
+  orig: 135, 120
+  offset: 13, 16
+  index: -1
+elf/hairB
+  rotate: false
+  xy: 8, 475
+  size: 188, 156
+  orig: 196, 168
+  offset: 0, 12
+  index: -1
+elf/hairF
+  rotate: false
+  xy: 340, 495
+  size: 121, 136
+  orig: 141, 161
+  offset: 7, 10
+  index: -1
+elf/hairF1
+  rotate: false
+  xy: 204, 214
+  size: 74, 120
+  orig: 100, 151
+  offset: 16, 17
+  index: -1
+elf/hairF2
+  rotate: false
+  xy: 374, 233
+  size: 60, 101
+  orig: 100, 133
+  offset: 17, 16
+  index: -1
+elf/hairF3
+  rotate: false
+  xy: 286, 229
+  size: 80, 105
+  orig: 110, 138
+  offset: 15, 17
+  index: -1
+elf/hairT
+  rotate: false
+  xy: 136, 404
+  size: 58, 63
+  orig: 86, 92
+  offset: 18, 17
+  index: -1
+elf/horn
+  rotate: false
+  xy: 8, 286
+  size: 111, 104
+  orig: 127, 118
+  offset: 9, 8
+  index: -1
+elf/legL
+  rotate: false
+  xy: 114, 100
+  size: 88, 59
+  orig: 112, 85
+  offset: 15, 11
+  index: -1
+elf/legR
+  rotate: false
+  xy: 385, 141
+  size: 75, 84
+  orig: 98, 109
+  offset: 12, 10
+  index: -1
+elf/mouth
+  rotate: false
+  xy: 127, 287
+  size: 24, 22
+  orig: 49, 45
+  offset: 14, 12
+  index: -1
+elf/mouth2
+  rotate: false
+  xy: 179, 78
+  size: 16, 14
+  orig: 16, 14
+  offset: 0, 0
+  index: -1
+elf/mouth3
+  rotate: false
+  xy: 159, 295
+  size: 16, 14
+  orig: 16, 14
+  offset: 0, 0
+  index: -1
+elf/pupil
+  rotate: false
+  xy: 199, 175
+  size: 69, 31
+  orig: 102, 63
+  offset: 17, 16
+  index: -1
+elf/ribbon
+  rotate: false
+  xy: 204, 342
+  size: 143, 128
+  orig: 166, 152
+  offset: 12, 10
+  index: -1
+elf/tail
+  rotate: false
+  xy: 204, 478
+  size: 128, 153
+  orig: 153, 177
+  offset: 12, 12
+  index: -1
+elf/tie
+  rotate: false
+  xy: 455, 428
+  size: 38, 59
+  orig: 66, 84
+  offset: 16, 7
+  index: -1

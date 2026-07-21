@@ -1,0 +1,104 @@
+
+slime_ice_l.png
+size: 2402,2402
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Leye
+  rotate: false
+  xy: 1686, 685
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Leye2
+  rotate: false
+  xy: 1881, 685
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Reye
+  rotate: false
+  xy: 2156, 1186
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+Reye2
+  rotate: false
+  xy: 2156, 929
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+body1
+  rotate: false
+  xy: 987, 1110
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body4
+  rotate: false
+  xy: 8, 1091
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body5
+  rotate: false
+  xy: 847, 472
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body6
+  rotate: false
+  xy: 8, 453
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body7
+  rotate: false
+  xy: 8, 1729
+  size: 971, 665
+  orig: 1123, 1123
+  offset: 75, 118
+  index: -1
+up2
+  rotate: false
+  xy: 987, 1748
+  size: 979, 646
+  orig: 1123, 1123
+  offset: 73, 204
+  index: -1
+up2_1
+  rotate: false
+  xy: 1974, 1443
+  size: 350, 490
+  orig: 1123, 1123
+  offset: 118, 220
+  index: -1
+up2_2
+  rotate: false
+  xy: 1974, 1941
+  size: 414, 453
+  orig: 1123, 1123
+  offset: 378, 370
+  index: -1
+up2_3
+  rotate: false
+  xy: 1826, 946
+  size: 322, 489
+  orig: 1123, 1123
+  offset: 698, 261
+  index: -1
+up2_4
+  rotate: false
+  xy: 1686, 433
+  size: 689, 244
+  orig: 1123, 1123
+  offset: 363, 369
+  index: -1

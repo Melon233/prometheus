@@ -1,0 +1,174 @@
+
+partner_beast_bonedragon.png
+size: 510,510
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ZLarm1
+  rotate: false
+  xy: 420, 139
+  size: 35, 52
+  orig: 35, 52
+  offset: 0, 0
+  index: -1
+ZLarm2
+  rotate: false
+  xy: 217, 37
+  size: 49, 48
+  orig: 49, 48
+  offset: 0, 0
+  index: -1
+ZRarm1
+  rotate: false
+  xy: 375, 64
+  size: 36, 59
+  orig: 36, 59
+  offset: 0, 0
+  index: -1
+ZRarm2
+  rotate: false
+  xy: 375, 8
+  size: 52, 48
+  orig: 52, 48
+  offset: 0, 0
+  index: -1
+Z_Lhand1
+  rotate: false
+  xy: 281, 63
+  size: 86, 60
+  orig: 86, 60
+  offset: 0, 0
+  index: -1
+Z_Lleg1
+  rotate: false
+  xy: 429, 415
+  size: 61, 87
+  orig: 61, 87
+  offset: 0, 0
+  index: -1
+Z_Lleg2
+  rotate: false
+  xy: 274, 17
+  size: 59, 38
+  orig: 59, 38
+  offset: 0, 0
+  index: -1
+Z_Lleg3
+  rotate: false
+  xy: 419, 75
+  size: 41, 48
+  orig: 41, 48
+  offset: 0, 0
+  index: -1
+Z_Lwing
+  rotate: false
+  xy: 305, 379
+  size: 116, 123
+  orig: 116, 123
+  offset: 0, 0
+  index: -1
+Z_Reg1
+  rotate: false
+  xy: 215, 162
+  size: 76, 92
+  orig: 76, 92
+  offset: 0, 0
+  index: -1
+Z_Rhand
+  rotate: false
+  xy: 217, 93
+  size: 56, 61
+  orig: 56, 61
+  offset: 0, 0
+  index: -1
+Z_Rleg2
+  rotate: false
+  xy: 429, 365
+  size: 64, 42
+  orig: 64, 42
+  offset: 0, 0
+  index: -1
+Z_Rleg3
+  rotate: false
+  xy: 428, 303
+  size: 45, 54
+  orig: 45, 54
+  offset: 0, 0
+  index: -1
+Z_Rwing
+  rotate: false
+  xy: 8, 134
+  size: 199, 120
+  orig: 199, 120
+  offset: 0, 0
+  index: -1
+Z_Tail
+  rotate: false
+  xy: 305, 199
+  size: 114, 72
+  orig: 114, 72
+  offset: 0, 0
+  index: -1
+Z_body
+  rotate: false
+  xy: 8, 36
+  size: 117, 90
+  orig: 117, 90
+  offset: 0, 0
+  index: -1
+Z_body2
+  rotate: false
+  xy: 305, 279
+  size: 115, 92
+  orig: 115, 92
+  offset: 0, 0
+  index: -1
+Z_eye_1
+  rotate: false
+  xy: 427, 200
+  size: 43, 44
+  orig: 43, 44
+  offset: 0, 0
+  index: -1
+Z_eye_2
+  rotate: false
+  xy: 133, 9
+  size: 42, 35
+  orig: 42, 35
+  offset: 0, 0
+  index: -1
+Z_head
+  rotate: false
+  xy: 8, 262
+  size: 289, 240
+  orig: 289, 240
+  offset: 0, 0
+  index: -1
+Z_head2
+  rotate: false
+  xy: 299, 131
+  size: 113, 60
+  orig: 133, 80
+  offset: 10, 7
+  index: -1
+Z_head_2
+  rotate: false
+  xy: 133, 52
+  size: 76, 74
+  orig: 76, 74
+  offset: 0, 0
+  index: -1
+bell1
+  rotate: false
+  xy: 341, 41
+  size: 11, 14
+  orig: 11, 14
+  offset: 0, 0
+  index: -1
+bell2
+  rotate: false
+  xy: 428, 252
+  size: 49, 43
+  orig: 49, 43
+  offset: 0, 0
+  index: -1

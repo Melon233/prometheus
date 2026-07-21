@@ -1,0 +1,258 @@
+
+chessqueenp.png
+size: 1289,1289
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Body2
+  rotate: false
+  xy: 8, 65
+  size: 290, 350
+  orig: 290, 350
+  offset: 0, 0
+  index: -1
+armL2
+  rotate: false
+  xy: 956, 140
+  size: 122, 121
+  orig: 122, 121
+  offset: 0, 0
+  index: -1
+armL3
+  rotate: false
+  xy: 1086, 152
+  size: 109, 113
+  orig: 109, 113
+  offset: 0, 0
+  index: -1
+armL4
+  rotate: false
+  xy: 1029, 50
+  size: 80, 82
+  orig: 80, 82
+  offset: 0, 0
+  index: -1
+armR1
+  rotate: false
+  xy: 956, 269
+  size: 109, 189
+  orig: 109, 189
+  offset: 0, 0
+  index: -1
+armR2
+  rotate: false
+  xy: 536, 36
+  size: 108, 144
+  orig: 108, 144
+  offset: 0, 0
+  index: -1
+armR4
+  rotate: false
+  xy: 1189, 296
+  size: 87, 98
+  orig: 87, 98
+  offset: 0, 0
+  index: -1
+body1
+  rotate: false
+  xy: 996, 622
+  size: 174, 174
+  orig: 174, 174
+  offset: 0, 0
+  index: -1
+body_1
+  rotate: false
+  xy: 352, 518
+  size: 303, 239
+  orig: 303, 241
+  offset: 0, 2
+  index: -1
+body_2
+  rotate: false
+  xy: 8, 783
+  size: 432, 498
+  orig: 440, 498
+  offset: 8, 0
+  index: -1
+body_3
+  rotate: false
+  xy: 777, 725
+  size: 193, 259
+  orig: 193, 259
+  offset: 0, 0
+  index: -1
+bottom
+  rotate: false
+  xy: 448, 992
+  size: 502, 289
+  orig: 502, 289
+  offset: 0, 0
+  index: -1
+cape1
+  rotate: false
+  xy: 851, 190
+  size: 97, 219
+  orig: 97, 219
+  offset: 0, 0
+  index: -1
+cape1_1
+  rotate: false
+  xy: 767, 184
+  size: 76, 224
+  orig: 76, 224
+  offset: 0, 0
+  index: -1
+cape2
+  rotate: false
+  xy: 652, 12
+  size: 167, 158
+  orig: 167, 158
+  offset: 0, 0
+  index: -1
+cape2_2
+  rotate: false
+  xy: 1073, 273
+  size: 108, 189
+  orig: 108, 189
+  offset: 0, 0
+  index: -1
+cape3
+  rotate: false
+  xy: 352, 366
+  size: 283, 144
+  orig: 299, 160
+  offset: 8, 8
+  index: -1
+face
+  rotate: false
+  xy: 978, 804
+  size: 246, 199
+  orig: 246, 199
+  offset: 0, 0
+  index: -1
+features
+  rotate: false
+  xy: 996, 470
+  size: 174, 144
+  orig: 174, 144
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 506, 188
+  size: 131, 170
+  orig: 131, 170
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 306, 167
+  size: 192, 191
+  orig: 192, 191
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: false
+  xy: 1203, 188
+  size: 62, 100
+  orig: 62, 100
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 1178, 508
+  size: 82, 151
+  orig: 82, 151
+  offset: 0, 0
+  index: -1
+hoodB
+  rotate: false
+  xy: 827, 55
+  size: 194, 77
+  orig: 210, 94
+  offset: 8, 8
+  index: -1
+hoodF
+  rotate: false
+  xy: 306, 63
+  size: 222, 96
+  orig: 222, 96
+  offset: 0, 0
+  index: -1
+rope1
+  rotate: false
+  xy: 767, 416
+  size: 63, 301
+  orig: 63, 301
+  offset: 0, 0
+  index: -1
+rope2
+  rotate: false
+  xy: 838, 417
+  size: 63, 300
+  orig: 63, 300
+  offset: 0, 0
+  index: -1
+stone1
+  rotate: false
+  xy: 1117, 94
+  size: 54, 50
+  orig: 54, 50
+  offset: 0, 0
+  index: -1
+stone2
+  rotate: false
+  xy: 1203, 402
+  size: 78, 98
+  orig: 78, 98
+  offset: 0, 0
+  index: -1
+stone3
+  rotate: false
+  xy: 1178, 724
+  size: 35, 72
+  orig: 35, 72
+  offset: 0, 0
+  index: -1
+tiara
+  rotate: false
+  xy: 8, 423
+  size: 336, 352
+  orig: 336, 352
+  offset: 0, 0
+  index: -1
+tiara_2
+  rotate: false
+  xy: 448, 765
+  size: 321, 219
+  orig: 321, 291
+  offset: 0, 0
+  index: -1
+tiara_3
+  rotate: false
+  xy: 958, 1011
+  size: 308, 270
+  orig: 308, 270
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: false
+  xy: 663, 178
+  size: 96, 579
+  orig: 96, 579
+  offset: 0, 0
+  index: -1
+weapon_1
+  rotate: false
+  xy: 909, 466
+  size: 79, 251
+  orig: 79, 251
+  offset: 0, 0
+  index: -1
+weapon_2
+  rotate: false
+  xy: 1232, 667
+  size: 49, 336
+  orig: 49, 336
+  offset: 0, 0
+  index: -1

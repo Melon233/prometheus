@@ -1,0 +1,97 @@
+
+slime_thunder_l.png
+size: 2220,2220
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Leye
+  rotate: false
+  xy: 1974, 1445
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Leye2
+  rotate: false
+  xy: 2003, 298
+  size: 187, 253
+  orig: 1123, 1123
+  offset: 741, 224
+  index: -1
+Reye
+  rotate: false
+  xy: 1974, 1963
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+Reye2
+  rotate: false
+  xy: 1974, 1706
+  size: 238, 249
+  orig: 1123, 1123
+  offset: 423, 231
+  index: -1
+body1
+  rotate: false
+  xy: 987, 961
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body4
+  rotate: false
+  xy: 8, 909
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body5
+  rotate: false
+  xy: 847, 323
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body6
+  rotate: false
+  xy: 8, 271
+  size: 831, 630
+  orig: 1123, 1123
+  offset: 150, 43
+  index: -1
+body7
+  rotate: false
+  xy: 8, 1547
+  size: 971, 665
+  orig: 1123, 1123
+  offset: 75, 118
+  index: -1
+up2
+  rotate: false
+  xy: 987, 1599
+  size: 979, 613
+  orig: 1123, 1123
+  offset: 73, 237
+  index: -1
+up2_1
+  rotate: false
+  xy: 1686, 155
+  size: 309, 396
+  orig: 1123, 1123
+  offset: 138, 232
+  index: -1
+up2_2
+  rotate: false
+  xy: 1686, 559
+  size: 483, 373
+  orig: 1123, 1123
+  offset: 302, 421
+  index: -1
+up2_3
+  rotate: false
+  xy: 1826, 940
+  size: 302, 497
+  orig: 1123, 1123
+  offset: 676, 258
+  index: -1

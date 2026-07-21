@@ -1,0 +1,29 @@
+shake_zuo:shake=left_image<type=202,time=1, sync = true>;
+shake_you:shake=right_image<type=202,time=1, sync = true>;
+shake_zhong:shake=mid_image<type=202,time=1, sync = false>;
+shake_background:shake=background_image<type=205,time=1, sync = true>;
+clear_image:clear_image_cmd=0
+shake_background_async:shake=background_image<type=205,time=1, sync = false>;
+clear_image_immediately:alpha=left_image<time=0.5,value_range=-1|0,sync = false>;alpha=right_image<time=0.5,value_range=-1|0,sync = false>;alpha=mid_image<time=0.5,value_range=-1|0,sync = false>;face=mid_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;face=left_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;face=right_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;
+overlay_xu:overlay=0<value_vec4=0.4509803921568627|0.5568627450980392|0.7882352941176471|0.1>;
+overlay_an:overlay=0<value_vec4=0.5843137254901961|0.4509803921568627|0.7882352941176471|0.1>;
+overlay_huo:overlay=0<value_vec4=0.7882352941176471|0.607843137254902|0.4509803921568627|0.1>;
+
+heng_qiang:shake=background_image<time=1.5,delay=0.1,type=208,sync=true,start_pos=100|10,value_range=30|0.5>;
+heng_zhong:shake=background_image<time=1,delay=0.1,type=208,sync=true,start_pos=60|0,value_range=25|0.3>;
+heng_ruo:shake=background_image<time=0.5,delay=0.1,type=208,sync=true,start_pos=40|10,value_range=20|0.1>;
+shu_qiang:shake=background_image<time=1.5,delay=0.1,type=208,sync=true,start_pos=10|100,value_range=30|0.5>;
+shu_zhong:shake=background_image<time=1,delay=0.1,type=208,sync=true,start_pos=0|60,value_range=25|0.3>;
+shu_ruo:shake=background_image<time=0.5,delay=0.1,type=208,sync=true,start_pos=10|40,value_range=20|0.1>;
+pindaozhen:shake=background_image<time=0.35,delay=0.1,type=208,sync=true,start_pos=40|40,value_range=50|0.3>;
+xie_qiang:shake=background_image<time=1,delay=0.1,type=208,sync=true,start_pos=100|100,value_range=50|0.5>;
+
+
+back_up_clear_image:hide=manga<time=0.5,sync = false>;alpha_spine=spine<time=0.5,value_range=-1|0,sync = false>;alpha_spine=head_spine<time=0.5,value_range=-1|0,sync = false>;alpha=manga_image<time=0.5,value_range=-1|0,sync = false>;alpha=item<time=0.5,value_range=-1|0,sync = false>;alpha=item_shadow<time=0.5,value_range=-1|0,sync = false>;alpha=item_bg_image<time=0.5,value_range=-1|0,sync = false>;alpha=left_head_image<time=0.5,value_range=-1|0,sync = false>;alpha=left_image<time=0.5,value_range=-1|0,sync = false>;alpha=right_image<time=0.5,value_range=-1|0,sync = false>;alpha=mid_image<time=0.5,value_range=-1|0,sync = true>;face=mid_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;face=left_head_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;face=left_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;face=right_image<time=0,value_range=0|1,tex=透明遮罩,sync=false>;
+
+
+
+
+
+
+

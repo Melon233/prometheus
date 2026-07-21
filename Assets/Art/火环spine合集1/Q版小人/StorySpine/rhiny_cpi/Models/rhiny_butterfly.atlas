@@ -1,0 +1,13 @@
+
+rhiny_butterfly.png
+size: 96,96
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+butterfly
+  rotate: false
+  xy: 8, 8
+  size: 54, 80
+  orig: 60, 80
+  offset: 6, 0
+  index: -1

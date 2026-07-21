@@ -1,0 +1,76 @@
+
+irsha_cpi_up.png
+size: 282,282
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a_zarm
+  rotate: false
+  xy: 8, 8
+  size: 74, 67
+  orig: 132, 165
+  offset: 0, 0
+  index: -1
+a_zarm_up
+  rotate: false
+  xy: 8, 167
+  size: 95, 107
+  orig: 132, 165
+  offset: 37, 58
+  index: -1
+clap2
+  rotate: false
+  xy: 90, 14
+  size: 81, 61
+  orig: 81, 61
+  offset: 0, 0
+  index: -1
+hand1
+  rotate: false
+  xy: 111, 213
+  size: 81, 61
+  orig: 81, 61
+  offset: 0, 0
+  index: -1
+hand2
+  rotate: false
+  xy: 8, 83
+  size: 75, 76
+  orig: 75, 76
+  offset: 0, 0
+  index: -1
+hand3
+  rotate: false
+  xy: 91, 83
+  size: 75, 76
+  orig: 75, 76
+  offset: 0, 0
+  index: -1
+hand4
+  rotate: false
+  xy: 174, 144
+  size: 81, 61
+  orig: 81, 61
+  offset: 0, 0
+  index: -1
+hand_cadao
+  rotate: false
+  xy: 200, 230
+  size: 49, 44
+  orig: 49, 44
+  offset: 0, 0
+  index: -1
+hand_run
+  rotate: false
+  xy: 174, 92
+  size: 49, 44
+  orig: 49, 44
+  offset: 0, 0
+  index: -1
+hand_xu
+  rotate: false
+  xy: 179, 23
+  size: 81, 61
+  orig: 81, 61
+  offset: 0, 0
+  index: -1

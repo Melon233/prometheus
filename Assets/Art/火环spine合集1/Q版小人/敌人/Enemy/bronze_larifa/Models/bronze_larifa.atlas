@@ -1,0 +1,146 @@
+
+bronze_larifa.png
+size: 481,1084
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 125, 180
+  size: 82, 132
+  orig: 82, 132
+  offset: 0, 0
+  index: -1
+Stamen
+  rotate: false
+  xy: 274, 517
+  size: 199, 225
+  orig: 208, 232
+  offset: 7, 0
+  index: -1
+body
+  rotate: false
+  xy: 8, 601
+  size: 258, 200
+  orig: 270, 212
+  offset: 8, 6
+  index: -1
+foot_L
+  rotate: false
+  xy: 8, 320
+  size: 201, 73
+  orig: 208, 83
+  offset: 2, 6
+  index: -1
+foot_R
+  rotate: false
+  xy: 141, 10
+  size: 99, 78
+  orig: 108, 90
+  offset: 5, 6
+  index: -1
+gl_02
+  rotate: false
+  xy: 8, 198
+  size: 109, 114
+  orig: 109, 114
+  offset: 0, 0
+  index: -1
+gl_05
+  rotate: false
+  xy: 248, 9
+  size: 87, 79
+  orig: 87, 79
+  offset: 0, 0
+  index: -1
+gl_08
+  rotate: false
+  xy: 215, 221
+  size: 82, 88
+  orig: 82, 88
+  offset: 0, 0
+  index: -1
+gl_09
+  rotate: false
+  xy: 359, 141
+  size: 61, 89
+  orig: 61, 89
+  offset: 0, 0
+  index: -1
+gl_q
+  rotate: false
+  xy: 343, 34
+  size: 79, 80
+  orig: 79, 80
+  offset: 0, 0
+  index: -1
+leaf_A4
+  rotate: false
+  xy: 304, 750
+  size: 144, 126
+  orig: 144, 126
+  offset: 0, 0
+  index: -1
+leaf_A42
+  rotate: false
+  xy: 8, 86
+  size: 102, 104
+  orig: 102, 104
+  offset: 0, 0
+  index: -1
+leaf_D1
+  rotate: false
+  xy: 118, 96
+  size: 155, 76
+  orig: 164, 86
+  offset: 5, 6
+  index: -1
+leaf_D2
+  rotate: false
+  xy: 305, 238
+  size: 56, 71
+  orig: 56, 71
+  offset: 0, 0
+  index: -1
+leaf_D3
+  rotate: false
+  xy: 8, 8
+  size: 125, 70
+  orig: 125, 70
+  offset: 0, 0
+  index: -1
+leaf_D4
+  rotate: false
+  xy: 281, 122
+  size: 70, 91
+  orig: 70, 91
+  offset: 0, 0
+  index: -1
+leaf_c
+  rotate: false
+  xy: 8, 401
+  size: 232, 192
+  orig: 439, 405
+  offset: 31, 117
+  index: -1
+petal_A1
+  rotate: false
+  xy: 248, 317
+  size: 225, 192
+  orig: 344, 337
+  offset: 24, 54
+  index: -1
+petal_B
+  rotate: false
+  xy: 8, 809
+  size: 288, 267
+  orig: 365, 311
+  offset: 8, 39
+  index: -1
+petal_C1
+  rotate: false
+  xy: 304, 884
+  size: 168, 192
+  orig: 252, 313
+  offset: 14, 54
+  index: -1

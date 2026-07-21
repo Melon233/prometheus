@@ -1,0 +1,97 @@
+
+rhiny_guo.png
+size: 774,774
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+guo
+  rotate: false
+  xy: 8, 400
+  size: 562, 366
+  orig: 562, 366
+  offset: 0, 0
+  index: -1
+guo2
+  rotate: false
+  xy: 8, 182
+  size: 541, 210
+  orig: 541, 210
+  offset: 0, 0
+  index: -1
+guo_shuidi
+  rotate: false
+  xy: 690, 718
+  size: 49, 48
+  orig: 49, 48
+  offset: 0, 0
+  index: -1
+la1
+  rotate: false
+  xy: 557, 210
+  size: 108, 63
+  orig: 108, 63
+  offset: 0, 0
+  index: -1
+la2
+  rotate: false
+  xy: 578, 517
+  size: 93, 114
+  orig: 93, 114
+  offset: 0, 0
+  index: -1
+la4
+  rotate: false
+  xy: 578, 639
+  size: 104, 127
+  orig: 104, 127
+  offset: 0, 0
+  index: -1
+la5
+  rotate: false
+  xy: 557, 281
+  size: 195, 68
+  orig: 208, 83
+  offset: 7, 7
+  index: -1
+pao
+  rotate: false
+  xy: 679, 572
+  size: 87, 59
+  orig: 87, 59
+  offset: 0, 0
+  index: -1
+tang
+  rotate: false
+  xy: 8, 30
+  size: 374, 144
+  orig: 389, 159
+  offset: 7, 8
+  index: -1
+tang_gaoguang
+  rotate: false
+  xy: 390, 52
+  size: 337, 122
+  orig: 352, 136
+  offset: 7, 7
+  index: -1
+wan1
+  rotate: false
+  xy: 578, 437
+  size: 135, 72
+  orig: 135, 72
+  offset: 0, 0
+  index: -1
+wan2
+  rotate: false
+  xy: 578, 357
+  size: 135, 72
+  orig: 135, 72
+  offset: 0, 0
+  index: -1
+wan_tang
+  rotate: false
+  xy: 679, 533
+  size: 84, 31
+  orig: 135, 72
+  offset: 30, 23
+  index: -1

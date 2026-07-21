@@ -1,0 +1,160 @@
+
+shumanity.png
+size: 828,828
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jian_1
+  rotate: false
+  xy: 577, 488
+  size: 77, 152
+  orig: 107, 174
+  offset: 13, 13
+  index: -1
+jian_2
+  rotate: false
+  xy: 561, 20
+  size: 84, 144
+  orig: 111, 168
+  offset: 14, 9
+  index: -1
+ke_1
+  rotate: false
+  xy: 688, 673
+  size: 132, 147
+  orig: 166, 182
+  offset: 17, 18
+  index: -1
+ke_10
+  rotate: false
+  xy: 662, 535
+  size: 150, 105
+  orig: 188, 138
+  offset: 22, 15
+  index: -1
+ke_11
+  rotate: false
+  xy: 451, 33
+  size: 89, 112
+  orig: 121, 142
+  offset: 16, 15
+  index: -1
+ke_12
+  rotate: false
+  xy: 451, 310
+  size: 208, 142
+  orig: 239, 174
+  offset: 15, 16
+  index: -1
+ke_13
+  rotate: false
+  xy: 423, 621
+  size: 119, 199
+  orig: 150, 231
+  offset: 16, 16
+  index: -1
+ke_14
+  rotate: false
+  xy: 667, 383
+  size: 144, 144
+  orig: 298, 318
+  offset: 15, 160
+  index: -1
+ke_2
+  rotate: false
+  xy: 423, 460
+  size: 146, 153
+  orig: 180, 187
+  offset: 17, 17
+  index: -1
+ke_3
+  rotate: false
+  xy: 561, 172
+  size: 169, 130
+  orig: 200, 162
+  offset: 15, 16
+  index: -1
+ke_4_1
+  rotate: false
+  xy: 353, 35
+  size: 88, 101
+  orig: 115, 133
+  offset: 11, 16
+  index: -1
+ke_4_2
+  rotate: false
+  xy: 653, 65
+  size: 165, 99
+  orig: 197, 130
+  offset: 16, 15
+  index: -1
+ke_4_3
+  rotate: false
+  xy: 181, 8
+  size: 164, 128
+  orig: 194, 158
+  offset: 15, 15
+  index: -1
+ke_5
+  rotate: false
+  xy: 8, 276
+  size: 167, 158
+  orig: 198, 189
+  offset: 16, 16
+  index: -1
+ke_6
+  rotate: false
+  xy: 738, 284
+  size: 58, 91
+  orig: 92, 125
+  offset: 17, 17
+  index: -1
+ke_7
+  rotate: false
+  xy: 8, 76
+  size: 165, 192
+  orig: 196, 224
+  offset: 16, 16
+  index: -1
+ke_8
+  rotate: false
+  xy: 266, 589
+  size: 149, 231
+  orig: 182, 262
+  offset: 15, 15
+  index: -1
+ke_9
+  rotate: false
+  xy: 451, 153
+  size: 102, 149
+  orig: 132, 180
+  offset: 15, 16
+  index: -1
+ke_back
+  rotate: false
+  xy: 183, 144
+  size: 260, 290
+  orig: 276, 308
+  offset: 8, 9
+  index: -1
+main
+  rotate: false
+  xy: 8, 442
+  size: 250, 378
+  orig: 267, 389
+  offset: 8, 11
+  index: -1
+main_2
+  rotate: false
+  xy: 266, 482
+  size: 140, 99
+  orig: 140, 99
+  offset: 0, 0
+  index: -1
+main_3
+  rotate: false
+  xy: 550, 648
+  size: 130, 172
+  orig: 130, 172
+  offset: 0, 0
+  index: -1

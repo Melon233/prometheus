@@ -1,0 +1,314 @@
+
+senyin_elf.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jingling_binjiao1
+  rotate: false
+  xy: 175, 48
+  size: 89, 133
+  orig: 89, 133
+  offset: 0, 0
+  index: -1
+jingling_binjiao2
+  rotate: false
+  xy: 433, 256
+  size: 36, 80
+  orig: 36, 80
+  offset: 0, 0
+  index: -1
+jingling_binjiao_2
+  rotate: false
+  xy: 405, 123
+  size: 78, 125
+  orig: 78, 125
+  offset: 0, 0
+  index: -1
+jingling_biyan_xiao
+  rotate: false
+  xy: 213, 482
+  size: 73, 22
+  orig: 73, 22
+  offset: 0, 0
+  index: -1
+jingling_chibang_you
+  rotate: false
+  xy: 8, 100
+  size: 159, 101
+  orig: 159, 101
+  offset: 0, 0
+  index: -1
+jingling_chibang_zuo
+  rotate: false
+  xy: 80, 209
+  size: 118, 85
+  orig: 118, 85
+  offset: 0, 0
+  index: -1
+jingling_chu_you
+  rotate: false
+  xy: 155, 302
+  size: 54, 65
+  orig: 54, 65
+  offset: 0, 0
+  index: -1
+jingling_chu_zuo
+  rotate: false
+  xy: 450, 344
+  size: 54, 63
+  orig: 54, 63
+  offset: 0, 0
+  index: -1
+jingling_duzi
+  rotate: false
+  xy: 8, 231
+  size: 64, 83
+  orig: 64, 83
+  offset: 0, 0
+  index: -1
+jingling_er_hua_2
+  rotate: false
+  xy: 217, 292
+  size: 42, 67
+  orig: 42, 67
+  offset: 0, 0
+  index: -1
+jingling_er_you
+  rotate: false
+  xy: 341, 276
+  size: 84, 67
+  orig: 84, 67
+  offset: 0, 0
+  index: -1
+jingling_er_zuo
+  rotate: false
+  xy: 108, 307
+  size: 39, 66
+  orig: 39, 66
+  offset: 0, 0
+  index: -1
+jingling_gaoguang
+  rotate: false
+  xy: 56, 489
+  size: 54, 15
+  orig: 54, 15
+  offset: 0, 0
+  index: -1
+jingling_hua_1
+  rotate: false
+  xy: 281, 363
+  size: 57, 51
+  orig: 57, 51
+  offset: 0, 0
+  index: -1
+jingling_hua_2
+  rotate: false
+  xy: 329, 476
+  size: 19, 28
+  orig: 19, 28
+  offset: 0, 0
+  index: -1
+jingling_hua_3
+  rotate: false
+  xy: 267, 285
+  size: 66, 70
+  orig: 66, 70
+  offset: 0, 0
+  index: -1
+jingling_jiao_1
+  rotate: false
+  xy: 136, 439
+  size: 28, 41
+  orig: 28, 41
+  offset: 0, 0
+  index: -1
+jingling_jiao_2
+  rotate: false
+  xy: 232, 430
+  size: 26, 44
+  orig: 26, 63
+  offset: 0, 19
+  index: -1
+jingling_lian
+  rotate: false
+  xy: 283, 164
+  size: 114, 104
+  orig: 114, 116
+  offset: 0, 0
+  index: -1
+jingling_liuhai_1
+  rotate: false
+  xy: 111, 381
+  size: 39, 50
+  orig: 39, 50
+  offset: 0, 0
+  index: -1
+jingling_liuhai_2
+  rotate: false
+  xy: 206, 189
+  size: 69, 88
+  orig: 69, 88
+  offset: 0, 0
+  index: -1
+jingling_meimao
+  rotate: false
+  xy: 118, 488
+  size: 60, 16
+  orig: 60, 17
+  offset: 0, 0
+  index: -1
+jingling_tongkong
+  rotate: false
+  xy: 356, 474
+  size: 65, 30
+  orig: 65, 30
+  offset: 0, 0
+  index: -1
+jingling_tou_chujiao_1
+  rotate: false
+  xy: 346, 359
+  size: 36, 52
+  orig: 36, 52
+  offset: 0, 0
+  index: -1
+jingling_tou_chujiao_2
+  rotate: false
+  xy: 86, 442
+  size: 42, 38
+  orig: 42, 38
+  offset: 0, 0
+  index: -1
+jingling_tou_hounaoshao
+  rotate: false
+  xy: 272, 46
+  size: 120, 110
+  orig: 120, 110
+  offset: 0, 0
+  index: -1
+jingling_xiong_hua
+  rotate: false
+  xy: 8, 322
+  size: 92, 57
+  orig: 92, 57
+  offset: 0, 0
+  index: -1
+jingling_yanbai
+  rotate: false
+  xy: 8, 446
+  size: 70, 35
+  orig: 70, 36
+  offset: 0, 1
+  index: -1
+jingling_yankuang_you
+  rotate: false
+  xy: 266, 425
+  size: 44, 44
+  orig: 44, 44
+  offset: 0, 0
+  index: -1
+jingling_yankuang_you_biyan
+  rotate: false
+  xy: 429, 472
+  size: 38, 32
+  orig: 38, 32
+  offset: 0, 0
+  index: -1
+jingling_yankuang_zuo
+  rotate: false
+  xy: 475, 468
+  size: 23, 36
+  orig: 23, 36
+  offset: 0, 0
+  index: -1
+jingling_yankuang_zuo_biyan
+  rotate: false
+  xy: 294, 477
+  size: 27, 27
+  orig: 27, 27
+  offset: 0, 0
+  index: -1
+jingling_yiba
+  rotate: false
+  xy: 376, 419
+  size: 62, 45
+  orig: 62, 45
+  offset: 0, 0
+  index: -1
+jingling_youshou_shang
+  rotate: false
+  xy: 390, 351
+  size: 52, 56
+  orig: 52, 56
+  offset: 0, 0
+  index: -1
+jingling_youshou_xia
+  rotate: false
+  xy: 158, 375
+  size: 67, 47
+  orig: 67, 47
+  offset: 0, 0
+  index: -1
+jingling_youtui_cao
+  rotate: false
+  xy: 186, 483
+  size: 19, 21
+  orig: 19, 21
+  offset: 0, 0
+  index: -1
+jingling_youtui_shang
+  rotate: false
+  xy: 62, 387
+  size: 41, 47
+  orig: 41, 47
+  offset: 0, 0
+  index: -1
+jingling_youtui_xia
+  rotate: false
+  xy: 233, 367
+  size: 40, 50
+  orig: 40, 50
+  offset: 0, 0
+  index: -1
+jingling_zui
+  rotate: false
+  xy: 8, 490
+  size: 16, 14
+  orig: 16, 14
+  offset: 0, 0
+  index: -1
+jingling_zui_xiao
+  rotate: false
+  xy: 32, 490
+  size: 16, 14
+  orig: 16, 14
+  offset: 0, 0
+  index: -1
+jingling_zuoshou_shang
+  rotate: false
+  xy: 8, 392
+  size: 46, 46
+  orig: 46, 46
+  offset: 0, 0
+  index: -1
+jingling_zuoshou_xia
+  rotate: false
+  xy: 446, 415
+  size: 49, 45
+  orig: 49, 45
+  offset: 0, 0
+  index: -1
+jingling_zuotui_shang
+  rotate: false
+  xy: 318, 422
+  size: 50, 44
+  orig: 50, 44
+  offset: 0, 0
+  index: -1
+jingling_zuotui_xia
+  rotate: false
+  xy: 172, 433
+  size: 52, 41
+  orig: 52, 41
+  offset: 0, 0
+  index: -1

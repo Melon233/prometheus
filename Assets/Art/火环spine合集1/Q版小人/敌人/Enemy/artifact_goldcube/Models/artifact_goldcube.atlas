@@ -1,0 +1,118 @@
+
+artifact_goldcube.png
+size: 1600,1600
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cube_1
+  rotate: false
+  xy: 838, 1009
+  size: 711, 583
+  orig: 714, 619
+  offset: 0, 16
+  index: -1
+cube_2
+  rotate: false
+  xy: 456, 732
+  size: 361, 337
+  orig: 381, 355
+  offset: 10, 4
+  index: -1
+shipin_1
+  rotate: false
+  xy: 8, 1077
+  size: 822, 515
+  orig: 826, 515
+  offset: 4, 0
+  index: -1
+shipin_1_F
+  rotate: false
+  xy: 1243, 502
+  size: 220, 115
+  orig: 826, 515
+  offset: 264, 306
+  index: -1
+shipin_2
+  rotate: false
+  xy: 825, 721
+  size: 503, 136
+  orig: 527, 165
+  offset: 13, 18
+  index: -1
+shipin_3
+  rotate: false
+  xy: 788, 516
+  size: 237, 197
+  orig: 248, 216
+  offset: 11, 19
+  index: -1
+shipin_4
+  rotate: false
+  xy: 825, 865
+  size: 640, 136
+  orig: 640, 147
+  offset: 0, 6
+  index: -1
+shipin_5
+  rotate: false
+  xy: 8, 477
+  size: 436, 132
+  orig: 460, 158
+  offset: 10, 20
+  index: -1
+tengman_1
+  rotate: false
+  xy: 1473, 850
+  size: 119, 151
+  orig: 128, 155
+  offset: 9, 4
+  index: -1
+tengman_2
+  rotate: false
+  xy: 8, 617
+  size: 440, 452
+  orig: 446, 458
+  offset: 0, 0
+  index: -1
+tengman_2_B
+  rotate: false
+  xy: 700, 638
+  size: 80, 86
+  orig: 80, 86
+  offset: 0, 0
+  index: -1
+tengman_3
+  rotate: false
+  xy: 456, 502
+  size: 236, 222
+  orig: 248, 258
+  offset: 12, 36
+  index: -1
+tengman_3_B
+  rotate: false
+  xy: 1445, 625
+  size: 122, 111
+  orig: 122, 111
+  offset: 0, 0
+  index: -1
+tengman_4
+  rotate: false
+  xy: 1336, 719
+  size: 101, 138
+  orig: 124, 156
+  offset: 13, 5
+  index: -1
+tengman_5
+  rotate: false
+  xy: 1033, 558
+  size: 202, 155
+  orig: 216, 161
+  offset: 6, 0
+  index: -1
+tengman_6
+  rotate: false
+  xy: 1445, 744
+  size: 139, 98
+  orig: 152, 128
+  offset: 13, 21
+  index: -1

@@ -1,0 +1,181 @@
+
+summon_hellnar_treant_l.png
+size: 1108,1108
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bi_L
+  rotate: false
+  xy: 509, 67
+  size: 105, 148
+  orig: 114, 158
+  offset: 5, 5
+  index: -1
+bi_R
+  rotate: false
+  xy: 619, 242
+  size: 122, 183
+  orig: 126, 186
+  offset: 4, 3
+  index: -1
+jian_L
+  rotate: false
+  xy: 762, 123
+  size: 102, 130
+  orig: 102, 130
+  offset: 0, 0
+  index: -1
+jian_R
+  rotate: false
+  xy: 622, 109
+  size: 132, 125
+  orig: 132, 125
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 424, 609
+  size: 164, 491
+  orig: 164, 491
+  offset: 0, 0
+  index: -1
+shou_L
+  rotate: false
+  xy: 749, 261
+  size: 123, 169
+  orig: 123, 169
+  offset: 0, 0
+  index: -1
+shou_R
+  rotate: false
+  xy: 916, 856
+  size: 127, 244
+  orig: 127, 244
+  offset: 0, 0
+  index: -1
+shuzhi
+  rotate: false
+  xy: 762, 9
+  size: 94, 106
+  orig: 94, 106
+  offset: 0, 0
+  index: -1
+tou
+  rotate: false
+  xy: 8, 437
+  size: 408, 327
+  orig: 408, 327
+  offset: 0, 0
+  index: -1
+tou_B
+  rotate: false
+  xy: 8, 772
+  size: 408, 328
+  orig: 417, 336
+  offset: 4, 4
+  index: -1
+tui_L
+  rotate: false
+  xy: 850, 629
+  size: 232, 219
+  orig: 236, 225
+  offset: 0, 6
+  index: -1
+tui_M
+  rotate: false
+  xy: 741, 438
+  size: 125, 182
+  orig: 130, 188
+  offset: 5, 6
+  index: -1
+tui_R
+  rotate: false
+  xy: 596, 628
+  size: 246, 248
+  orig: 252, 254
+  offset: 6, 6
+  index: -1
+xiaoshuzhi
+  rotate: false
+  xy: 424, 433
+  size: 309, 168
+  orig: 309, 168
+  offset: 0, 0
+  index: -1
+xiaoshuzhi_B
+  rotate: false
+  xy: 8, 18
+  size: 319, 178
+  orig: 319, 178
+  offset: 0, 0
+  index: -1
+yanbai
+  rotate: false
+  xy: 335, 16
+  size: 125, 73
+  orig: 125, 73
+  offset: 0, 0
+  index: -1
+yanzhu
+  rotate: false
+  xy: 622, 64
+  size: 85, 37
+  orig: 95, 48
+  offset: 5, 6
+  index: -1
+yezi_1
+  rotate: false
+  xy: 880, 324
+  size: 216, 140
+  orig: 216, 140
+  offset: 0, 0
+  index: -1
+yezi_1_B
+  rotate: false
+  xy: 874, 472
+  size: 226, 149
+  orig: 226, 149
+  offset: 0, 0
+  index: -1
+yezi_2
+  rotate: false
+  xy: 596, 884
+  size: 312, 216
+  orig: 312, 216
+  offset: 0, 0
+  index: -1
+yezi_2_B
+  rotate: false
+  xy: 8, 204
+  size: 322, 225
+  orig: 322, 225
+  offset: 0, 0
+  index: -1
+yezi_3
+  rotate: false
+  xy: 880, 176
+  size: 211, 140
+  orig: 211, 140
+  offset: 0, 0
+  index: -1
+yezi_4
+  rotate: false
+  xy: 338, 223
+  size: 273, 202
+  orig: 273, 202
+  offset: 0, 0
+  index: -1
+zui
+  rotate: false
+  xy: 872, 59
+  size: 153, 109
+  orig: 153, 109
+  offset: 0, 0
+  index: -1
+zui_B
+  rotate: false
+  xy: 338, 97
+  size: 163, 118
+  orig: 163, 118
+  offset: 0, 0
+  index: -1

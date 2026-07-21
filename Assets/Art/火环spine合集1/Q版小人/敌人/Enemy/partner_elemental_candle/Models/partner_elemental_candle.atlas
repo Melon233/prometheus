@@ -1,0 +1,76 @@
+
+partner_elemental_candle.png
+size: 346,346
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bin
+  rotate: false
+  xy: 152, 21
+  size: 92, 121
+  orig: 92, 121
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 8, 150
+  size: 119, 188
+  orig: 119, 188
+  offset: 0, 0
+  index: -1
+di
+  rotate: false
+  xy: 8, 8
+  size: 136, 134
+  orig: 136, 134
+  offset: 0, 0
+  index: -1
+dizuo
+  rotate: false
+  xy: 152, 268
+  size: 135, 70
+  orig: 135, 70
+  offset: 0, 0
+  index: -1
+fire
+  rotate: false
+  xy: 135, 150
+  size: 108, 110
+  orig: 108, 110
+  offset: 0, 0
+  index: -1
+fire0
+  rotate: false
+  xy: 295, 246
+  size: 43, 42
+  orig: 43, 42
+  offset: 0, 0
+  index: -1
+fire0_2
+  rotate: false
+  xy: 295, 296
+  size: 43, 42
+  orig: 43, 42
+  offset: 0, 0
+  index: -1
+fire2
+  rotate: false
+  xy: 252, 92
+  size: 61, 62
+  orig: 108, 110
+  offset: 24, 8
+  index: -1
+jie1
+  rotate: false
+  xy: 251, 162
+  size: 63, 63
+  orig: 63, 63
+  offset: 0, 0
+  index: -1
+jie2
+  rotate: false
+  xy: 251, 233
+  size: 30, 27
+  orig: 30, 27
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,69 @@
+
+summon_wind_elemental.png
+size: 689,689
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+S_huzi
+  rotate: false
+  xy: 8, 146
+  size: 263, 119
+  orig: 263, 119
+  offset: 0, 0
+  index: -1
+huan_1
+  rotate: false
+  xy: 374, 190
+  size: 102, 75
+  orig: 102, 75
+  offset: 0, 0
+  index: -1
+huan_2
+  rotate: false
+  xy: 8, 64
+  size: 385, 74
+  orig: 385, 74
+  offset: 0, 0
+  index: -1
+huan_3
+  rotate: false
+  xy: 154, 8
+  size: 56, 48
+  orig: 56, 48
+  offset: 0, 0
+  index: -1
+huan_4
+  rotate: false
+  xy: 401, 127
+  size: 113, 55
+  orig: 113, 55
+  offset: 0, 0
+  index: -1
+huan_5
+  rotate: false
+  xy: 8, 8
+  size: 138, 48
+  orig: 138, 48
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 273
+  size: 426, 408
+  orig: 426, 408
+  offset: 0, 0
+  index: -1
+yanjing
+  rotate: false
+  xy: 401, 46
+  size: 73, 73
+  orig: 73, 73
+  offset: 0, 0
+  index: -1
+yanjing_back
+  rotate: false
+  xy: 279, 175
+  size: 87, 90
+  orig: 87, 90
+  offset: 0, 0
+  index: -1

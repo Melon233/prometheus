@@ -1,0 +1,132 @@
+
+artifact_paper_geometry.png
+size: 1289,1289
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 496, 31
+  size: 328, 322
+  orig: 328, 322
+  offset: 0, 0
+  index: -1
+bow_1
+  rotate: false
+  xy: 1094, 178
+  size: 179, 137
+  orig: 180, 137
+  offset: 1, 0
+  index: -1
+bow_2
+  rotate: false
+  xy: 996, 323
+  size: 203, 121
+  orig: 203, 127
+  offset: 0, 3
+  index: -1
+bow_3
+  rotate: false
+  xy: 8, 471
+  size: 401, 246
+  orig: 401, 246
+  offset: 0, 0
+  index: -1
+cloak
+  rotate: false
+  xy: 454, 662
+  size: 466, 299
+  orig: 466, 299
+  offset: 0, 0
+  index: -1
+collar_1
+  rotate: false
+  xy: 417, 361
+  size: 448, 293
+  orig: 450, 293
+  offset: 0, 0
+  index: -1
+collar_2
+  rotate: false
+  xy: 873, 452
+  size: 341, 191
+  orig: 341, 191
+  offset: 0, 0
+  index: -1
+collar_3
+  rotate: false
+  xy: 832, 188
+  size: 137, 165
+  orig: 137, 165
+  offset: 0, 0
+  index: -1
+death_1
+  rotate: false
+  xy: 8, 725
+  size: 438, 556
+  orig: 438, 556
+  offset: 0, 0
+  index: -1
+death_2
+  rotate: false
+  xy: 960, 994
+  size: 295, 287
+  orig: 295, 287
+  offset: 0, 0
+  index: -1
+hand_L
+  rotate: false
+  xy: 996, 31
+  size: 152, 139
+  orig: 152, 139
+  offset: 0, 0
+  index: -1
+hand_R
+  rotate: false
+  xy: 832, 31
+  size: 156, 149
+  orig: 156, 149
+  offset: 0, 0
+  index: -1
+hat_1
+  rotate: false
+  xy: 454, 969
+  size: 498, 312
+  orig: 498, 312
+  offset: 0, 0
+  index: -1
+hat_2
+  rotate: false
+  xy: 8, 8
+  size: 220, 345
+  orig: 220, 345
+  offset: 0, 0
+  index: -1
+hat_3
+  rotate: false
+  xy: 977, 202
+  size: 109, 113
+  orig: 115, 119
+  offset: 6, 6
+  index: -1
+hat_4
+  rotate: false
+  xy: 960, 841
+  size: 293, 145
+  orig: 293, 147
+  offset: 0, 0
+  index: -1
+hat_5
+  rotate: false
+  xy: 928, 651
+  size: 353, 182
+  orig: 353, 182
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: false
+  xy: 236, 15
+  size: 252, 338
+  orig: 252, 338
+  offset: 0, 0
+  index: -1

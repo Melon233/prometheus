@@ -1,0 +1,27 @@
+
+collect_res_mashroom_1.png
+size: 348,348
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gugen1
+  rotate: false
+  xy: 262, 230
+  size: 78, 110
+  orig: 78, 110
+  offset: 0, 0
+  index: -1
+gusan1
+  rotate: false
+  xy: 8, 184
+  size: 246, 156
+  orig: 246, 156
+  offset: 0, 0
+  index: -1
+keng1
+  rotate: false
+  xy: 8, 164
+  size: 147, 12
+  orig: 147, 12
+  offset: 0, 0
+  index: -1

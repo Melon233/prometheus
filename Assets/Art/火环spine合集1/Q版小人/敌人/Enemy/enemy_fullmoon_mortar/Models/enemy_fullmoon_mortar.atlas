@@ -1,0 +1,41 @@
+
+enemy_fullmoon_mortar.png
+size: 1873,1873
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bottom
+  rotate: false
+  xy: 8, 1232
+  size: 1155, 633
+  orig: 1155, 633
+  offset: 0, 0
+  index: -1
+gun
+  rotate: false
+  xy: 8, 341
+  size: 914, 883
+  orig: 914, 883
+  offset: 0, 0
+  index: -1
+side1
+  rotate: false
+  xy: 1171, 1307
+  size: 694, 558
+  orig: 694, 558
+  offset: 0, 0
+  index: -1
+side2
+  rotate: false
+  xy: 930, 695
+  size: 725, 529
+  orig: 725, 529
+  offset: 0, 0
+  index: -1
+triangle
+  rotate: false
+  xy: 930, 401
+  size: 292, 286
+  orig: 292, 286
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,13 @@
+
+hellnar_bell.png
+size: 198,198
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+S/pendant
+  rotate: false
+  xy: 8, 8
+  size: 132, 182
+  orig: 132, 182
+  offset: 0, 0
+  index: -1

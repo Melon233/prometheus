@@ -1,0 +1,132 @@
+
+partner_bear_beast.png
+size: 402,402
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 8, 197
+  size: 228, 197
+  orig: 236, 204
+  offset: 4, 3
+  index: -1
+earL
+  rotate: false
+  xy: 128, 86
+  size: 83, 103
+  orig: 83, 103
+  offset: 0, 0
+  index: -1
+earR
+  rotate: false
+  xy: 244, 282
+  size: 107, 112
+  orig: 107, 112
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 219, 90
+  size: 92, 30
+  orig: 92, 30
+  offset: 0, 0
+  index: -1
+eyes
+  rotate: false
+  xy: 8, 23
+  size: 144, 49
+  orig: 144, 49
+  offset: 0, 0
+  index: -1
+handL
+  rotate: false
+  xy: 244, 210
+  size: 76, 64
+  orig: 83, 73
+  offset: 4, 4
+  index: -1
+handR
+  rotate: false
+  xy: 160, 13
+  size: 65, 65
+  orig: 70, 74
+  offset: 1, 5
+  index: -1
+horn
+  rotate: false
+  xy: 328, 204
+  size: 60, 70
+  orig: 67, 75
+  offset: 4, 0
+  index: -1
+mouth2
+  rotate: false
+  xy: 219, 128
+  size: 67, 61
+  orig: 67, 61
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 319, 90
+  size: 48, 41
+  orig: 48, 41
+  offset: 0, 0
+  index: -1
+mouth_open_1
+  rotate: false
+  xy: 233, 21
+  size: 67, 61
+  orig: 67, 61
+  offset: 0, 0
+  index: -1
+mouth_open_2
+  rotate: false
+  xy: 294, 139
+  size: 63, 57
+  orig: 63, 57
+  offset: 0, 0
+  index: -1
+spit1
+  rotate: false
+  xy: 359, 316
+  size: 28, 33
+  orig: 28, 33
+  offset: 0, 0
+  index: -1
+spit2
+  rotate: false
+  xy: 359, 357
+  size: 35, 37
+  orig: 35, 37
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 8, 80
+  size: 112, 109
+  orig: 112, 109
+  offset: 0, 0
+  index: -1
+teeth
+  rotate: false
+  xy: 365, 163
+  size: 27, 33
+  orig: 27, 33
+  offset: 0, 0
+  index: -1
+tongue
+  rotate: false
+  xy: 308, 53
+  size: 46, 29
+  orig: 59, 42
+  offset: 6, 6
+  index: -1
+tongue2
+  rotate: false
+  xy: 308, 13
+  size: 28, 32
+  orig: 59, 42
+  offset: 14, 4
+  index: -1

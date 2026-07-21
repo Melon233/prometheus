@@ -1,0 +1,55 @@
+
+grahill_box_rare.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 270, 52
+  size: 91, 71
+  orig: 95, 75
+  offset: 2, 2
+  index: -1
+2
+  rotate: false
+  xy: 270, 125
+  size: 114, 116
+  orig: 118, 120
+  offset: 2, 2
+  index: -1
+3
+  rotate: false
+  xy: 270, 243
+  size: 196, 223
+  orig: 200, 227
+  offset: 2, 2
+  index: -1
+5
+  rotate: false
+  xy: 2, 15
+  size: 266, 173
+  orig: 270, 177
+  offset: 2, 2
+  index: -1
+6
+  rotate: false
+  xy: 363, 83
+  size: 50, 40
+  orig: 50, 40
+  offset: 0, 0
+  index: -1
+7
+  rotate: false
+  xy: 386, 210
+  size: 20, 31
+  orig: 20, 31
+  offset: 0, 0
+  index: -1
+all
+  rotate: false
+  xy: 2, 190
+  size: 266, 276
+  orig: 270, 280
+  offset: 2, 2
+  index: -1

@@ -1,0 +1,13 @@
+
+dishes.png
+size: 329,329
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+dishes
+  rotate: false
+  xy: 8, 129
+  size: 313, 192
+  orig: 321, 200
+  offset: 4, 4
+  index: -1

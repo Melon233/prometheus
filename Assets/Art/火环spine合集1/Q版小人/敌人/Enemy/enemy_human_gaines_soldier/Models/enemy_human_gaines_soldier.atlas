@@ -1,0 +1,265 @@
+
+enemy_human_gaines_soldier.png
+size: 1045,1045
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+LNf
+  rotate: false
+  xy: 727, 45
+  size: 89, 84
+  orig: 89, 84
+  offset: 0, 0
+  index: -1
+Z_Lhand
+  rotate: false
+  xy: 727, 137
+  size: 96, 80
+  orig: 185, 238
+  offset: 85, 14
+  index: -1
+badge_Zahnher
+  rotate: false
+  xy: 8, 591
+  size: 383, 248
+  orig: 431, 286
+  offset: 24, 19
+  index: -1
+beihoudepifeng
+  rotate: false
+  xy: 610, 305
+  size: 94, 208
+  orig: 116, 240
+  offset: 10, 13
+  index: -1
+biaoqing1
+  rotate: false
+  xy: 712, 296
+  size: 162, 85
+  orig: 162, 85
+  offset: 0, 0
+  index: -1
+biaoqing2
+  rotate: false
+  xy: 855, 535
+  size: 162, 85
+  orig: 162, 85
+  offset: 0, 0
+  index: -1
+binjiao
+  rotate: false
+  xy: 980, 641
+  size: 40, 80
+  orig: 40, 80
+  offset: 0, 0
+  index: -1
+box
+  rotate: false
+  xy: 8, 43
+  size: 323, 284
+  orig: 323, 284
+  offset: 0, 0
+  index: -1
+daizi2
+  rotate: false
+  xy: 464, 8
+  size: 62, 154
+  orig: 62, 154
+  offset: 0, 0
+  index: -1
+lian
+  rotate: false
+  xy: 529, 783
+  size: 292, 254
+  orig: 315, 279
+  offset: 17, 10
+  index: -1
+lian2
+  rotate: false
+  xy: 399, 521
+  size: 292, 254
+  orig: 315, 279
+  offset: 17, 10
+  index: -1
+maozi
+  rotate: false
+  xy: 8, 335
+  size: 383, 248
+  orig: 431, 286
+  offset: 24, 19
+  index: -1
+maozidaizi
+  rotate: false
+  xy: 534, 23
+  size: 87, 159
+  orig: 94, 216
+  offset: 3, 25
+  index: -1
+meimao
+  rotate: false
+  xy: 882, 271
+  size: 147, 45
+  orig: 306, 58
+  offset: 84, 6
+  index: -1
+mood_O
+  rotate: false
+  xy: 8, 14
+  size: 25, 21
+  orig: 25, 21
+  offset: 0, 0
+  index: -1
+qiang
+  rotate: false
+  xy: 8, 847
+  size: 513, 190
+  orig: 553, 203
+  offset: 29, 6
+  index: -1
+qunzi
+  rotate: false
+  xy: 829, 808
+  size: 207, 229
+  orig: 218, 239
+  offset: 0, 10
+  index: -1
+shenti
+  rotate: false
+  xy: 399, 294
+  size: 203, 219
+  orig: 219, 246
+  offset: 6, 13
+  index: -1
+toufa2
+  rotate: false
+  xy: 699, 565
+  size: 148, 210
+  orig: 197, 210
+  offset: 30, 0
+  index: -1
+yanbai
+  rotate: false
+  xy: 711, 225
+  size: 140, 63
+  orig: 180, 81
+  offset: 20, 9
+  index: -1
+yanpi
+  rotate: false
+  xy: 339, 170
+  size: 163, 116
+  orig: 311, 164
+  offset: 74, 23
+  index: -1
+yanzhu
+  rotate: false
+  xy: 399, 787
+  size: 121, 52
+  orig: 121, 52
+  offset: 0, 0
+  index: -1
+yaodai
+  rotate: false
+  xy: 882, 324
+  size: 155, 52
+  orig: 155, 52
+  offset: 0, 0
+  index: -1
+youshanggebo
+  rotate: false
+  xy: 712, 389
+  size: 106, 168
+  orig: 139, 191
+  offset: 12, 20
+  index: -1
+youshou
+  rotate: false
+  xy: 980, 729
+  size: 54, 71
+  orig: 122, 125
+  offset: 34, 27
+  index: -1
+youshou3
+  rotate: false
+  xy: 831, 127
+  size: 75, 90
+  orig: 75, 98
+  offset: 0, 8
+  index: -1
+youshouxiashoubi
+  rotate: false
+  xy: 824, 30
+  size: 80, 89
+  orig: 103, 133
+  offset: 11, 24
+  index: -1
+youtui
+  rotate: false
+  xy: 855, 628
+  size: 117, 172
+  orig: 144, 198
+  offset: 8, 18
+  index: -1
+youtui2
+  rotate: false
+  xy: 935, 384
+  size: 90, 143
+  orig: 141, 196
+  offset: 20, 22
+  index: -1
+zuibi
+  rotate: false
+  xy: 339, 305
+  size: 31, 22
+  orig: 35, 38
+  offset: 4, 16
+  index: -1
+zuoshangbi
+  rotate: false
+  xy: 339, 8
+  size: 117, 154
+  orig: 131, 174
+  offset: 1, 20
+  index: -1
+zuoshou
+  rotate: false
+  xy: 610, 211
+  size: 93, 86
+  orig: 93, 86
+  offset: 0, 0
+  index: -1
+zuoshou2
+  rotate: false
+  xy: 914, 134
+  size: 66, 55
+  orig: 72, 66
+  offset: 6, 8
+  index: -1
+zuoshouzhi1
+  rotate: false
+  xy: 914, 197
+  size: 72, 66
+  orig: 72, 66
+  offset: 0, 0
+  index: -1
+zuotui
+  rotate: false
+  xy: 826, 391
+  size: 101, 136
+  orig: 116, 150
+  offset: 7, 6
+  index: -1
+zuotui2
+  rotate: false
+  xy: 629, 63
+  size: 90, 140
+  orig: 101, 216
+  offset: 4, 21
+  index: -1
+zuoxiabi
+  rotate: false
+  xy: 510, 190
+  size: 87, 96
+  orig: 93, 98
+  offset: 1, 0
+  index: -1

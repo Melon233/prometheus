@@ -1,0 +1,48 @@
+
+collect_res_rankup_dark_1_ctnr.png
+size: 480,480
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A1
+  rotate: false
+  xy: 141, 47
+  size: 61, 111
+  orig: 78, 128
+  offset: 8, 9
+  index: -1
+A2
+  rotate: false
+  xy: 8, 244
+  size: 125, 228
+  orig: 143, 244
+  offset: 9, 10
+  index: -1
+A3
+  rotate: false
+  xy: 141, 323
+  size: 98, 149
+  orig: 117, 167
+  offset: 10, 10
+  index: -1
+B1
+  rotate: false
+  xy: 210, 49
+  size: 60, 109
+  orig: 78, 128
+  offset: 9, 10
+  index: -1
+B2
+  rotate: false
+  xy: 8, 8
+  size: 125, 228
+  orig: 143, 244
+  offset: 9, 10
+  index: -1
+B3
+  rotate: false
+  xy: 141, 166
+  size: 98, 149
+  orig: 117, 167
+  offset: 10, 10
+  index: -1

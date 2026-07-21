@@ -1,0 +1,258 @@
+
+enemy_automata_dagger.png
+size: 1066,1066
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+c_shenti
+  rotate: false
+  xy: 475, 843
+  size: 120, 215
+  orig: 123, 217
+  offset: 3, 0
+  index: -1
+c_tou
+  rotate: false
+  xy: 396, 482
+  size: 242, 230
+  orig: 274, 232
+  offset: 31, 2
+  index: -1
+c_yanjing
+  rotate: false
+  xy: 398, 47
+  size: 90, 109
+  orig: 90, 109
+  offset: 0, 0
+  index: -1
+dagger
+  rotate: false
+  xy: 8, 395
+  size: 105, 307
+  orig: 105, 307
+  offset: 0, 0
+  index: -1
+dun_take
+  rotate: false
+  xy: 685, 219
+  size: 62, 54
+  orig: 62, 54
+  offset: 0, 0
+  index: -1
+huawen
+  rotate: false
+  xy: 240, 711
+  size: 70, 99
+  orig: 70, 99
+  offset: 0, 0
+  index: -1
+huawen_back
+  rotate: false
+  xy: 182, 710
+  size: 50, 100
+  orig: 50, 100
+  offset: 0, 0
+  index: -1
+hudiejie
+  rotate: false
+  xy: 479, 179
+  size: 112, 84
+  orig: 112, 84
+  offset: 0, 0
+  index: -1
+ice/dagger
+  rotate: false
+  xy: 8, 80
+  size: 105, 307
+  orig: 105, 307
+  offset: 0, 0
+  index: -1
+piaodai
+  rotate: false
+  xy: 139, 8
+  size: 71, 148
+  orig: 97, 154
+  offset: 0, 6
+  index: -1
+shangbi_L
+  rotate: false
+  xy: 218, 21
+  size: 80, 135
+  orig: 80, 135
+  offset: 0, 0
+  index: -1
+shangbi_R
+  rotate: false
+  xy: 306, 26
+  size: 84, 130
+  orig: 84, 130
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 401, 271
+  size: 172, 203
+  orig: 183, 210
+  offset: 0, 0
+  index: -1
+shoouzhi_R
+  rotate: false
+  xy: 708, 490
+  size: 50, 42
+  orig: 50, 42
+  offset: 0, 0
+  index: -1
+shou_L
+  rotate: false
+  xy: 496, 9
+  size: 78, 74
+  orig: 78, 74
+  offset: 0, 0
+  index: -1
+shou_L_1
+  rotate: false
+  xy: 578, 97
+  size: 78, 74
+  orig: 78, 74
+  offset: 0, 0
+  index: -1
+shou_L_2
+  rotate: false
+  xy: 582, 15
+  size: 78, 74
+  orig: 78, 74
+  offset: 0, 0
+  index: -1
+shou_R
+  rotate: false
+  xy: 646, 486
+  size: 54, 46
+  orig: 54, 46
+  offset: 0, 0
+  index: -1
+shou_R2
+  rotate: false
+  xy: 599, 199
+  size: 78, 74
+  orig: 78, 74
+  offset: 0, 0
+  index: -1
+suizi_2
+  rotate: false
+  xy: 401, 178
+  size: 70, 85
+  orig: 70, 85
+  offset: 0, 0
+  index: -1
+suizi_3
+  rotate: false
+  xy: 496, 91
+  size: 74, 80
+  orig: 74, 80
+  offset: 0, 0
+  index: -1
+take
+  rotate: false
+  xy: 664, 123
+  size: 63, 68
+  orig: 63, 68
+  offset: 0, 0
+  index: -1
+take_2
+  rotate: false
+  xy: 65, 16
+  size: 66, 56
+  orig: 66, 56
+  offset: 0, 0
+  index: -1
+xiaobi_L
+  rotate: false
+  xy: 675, 742
+  size: 73, 101
+  orig: 73, 101
+  offset: 0, 0
+  index: -1
+xiaobi_R
+  rotate: false
+  xy: 318, 720
+  size: 75, 90
+  orig: 75, 90
+  offset: 0, 0
+  index: -1
+yifu
+  rotate: false
+  xy: 8, 710
+  size: 166, 348
+  orig: 171, 387
+  offset: 0, 32
+  index: -1
+z_hounaoshao
+  rotate: false
+  xy: 329, 821
+  size: 138, 237
+  orig: 224, 237
+  offset: 1, 0
+  index: -1
+z_liuhai_1
+  rotate: false
+  xy: 182, 818
+  size: 139, 240
+  orig: 142, 249
+  offset: 3, 9
+  index: -1
+z_liuhai_2
+  rotate: false
+  xy: 581, 281
+  size: 125, 193
+  orig: 132, 198
+  offset: 3, 5
+  index: -1
+z_liuhai_3
+  rotate: false
+  xy: 646, 540
+  size: 108, 181
+  orig: 132, 189
+  offset: 11, 6
+  index: -1
+z_liuhai_4
+  rotate: false
+  xy: 603, 851
+  size: 94, 207
+  orig: 98, 212
+  offset: 3, 0
+  index: -1
+z_liuhai_back
+  rotate: false
+  xy: 121, 164
+  size: 272, 263
+  orig: 285, 263
+  offset: 0, 0
+  index: -1
+z_tou
+  rotate: false
+  xy: 121, 435
+  size: 267, 267
+  orig: 305, 280
+  offset: 38, 0
+  index: -1
+z_yanjing
+  rotate: false
+  xy: 483, 729
+  size: 184, 106
+  orig: 184, 114
+  offset: 0, 0
+  index: -1
+z_zui
+  rotate: false
+  xy: 8, 9
+  size: 49, 63
+  orig: 81, 79
+  offset: 15, 9
+  index: -1
+zuizi_1
+  rotate: false
+  xy: 401, 723
+  size: 74, 90
+  orig: 74, 90
+  offset: 0, 0
+  index: -1

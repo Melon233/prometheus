@@ -1,0 +1,97 @@
+
+yousaer_scarecrow.png
+size: 717,717
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+armL
+  rotate: false
+  xy: 8, 11
+  size: 204, 120
+  orig: 221, 134
+  offset: 10, 8
+  index: -1
+armR
+  rotate: false
+  xy: 305, 109
+  size: 197, 142
+  orig: 208, 156
+  offset: 11, 5
+  index: -1
+body
+  rotate: false
+  xy: 8, 139
+  size: 289, 204
+  orig: 289, 205
+  offset: 0, 1
+  index: -1
+bottom
+  rotate: false
+  xy: 364, 259
+  size: 241, 202
+  orig: 253, 216
+  offset: 7, 7
+  index: -1
+decoA
+  rotate: false
+  xy: 297, 30
+  size: 34, 71
+  orig: 55, 94
+  offset: 10, 13
+  index: -1
+decoB
+  rotate: false
+  xy: 305, 269
+  size: 34, 74
+  orig: 56, 94
+  offset: 9, 12
+  index: -1
+decoC
+  rotate: false
+  xy: 339, 29
+  size: 33, 72
+  orig: 56, 94
+  offset: 11, 13
+  index: -1
+face
+  rotate: false
+  xy: 364, 469
+  size: 240, 240
+  orig: 252, 254
+  offset: 9, 12
+  index: -1
+head
+  rotate: false
+  xy: 8, 351
+  size: 348, 358
+  orig: 348, 358
+  offset: 0, 0
+  index: -1
+hem
+  rotate: false
+  xy: 510, 83
+  size: 176, 168
+  orig: 198, 186
+  offset: 11, 9
+  index: -1
+ribbonL
+  rotate: false
+  xy: 220, 8
+  size: 69, 123
+  orig: 104, 148
+  offset: 24, 9
+  index: -1
+ribbonR
+  rotate: false
+  xy: 613, 311
+  size: 93, 158
+  orig: 116, 172
+  offset: 13, 6
+  index: -1
+stick
+  rotate: false
+  xy: 612, 477
+  size: 72, 232
+  orig: 72, 232
+  offset: 0, 0
+  index: -1

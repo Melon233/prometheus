@@ -1,0 +1,10 @@
+skip_title=救世的赝作;
+skip_overview=瑞茵启动巨炮证明创生仪式的正确性，以及影兽异常入侵的事实，却遭使徒背刺。巨炮失控对准白塔众人，为阻止其暴走，众人不得不与这尊“救世赝作”展开战斗。;
+spine=菲尔佳<lights=1,faces=scare>;mid_txt=……巨炮，它启动了！？<name=菲尔佳>;
+hide=spine;
+hide=txt;
+spine=奈菲娅<lights=1,faces=serious>;mid_txt=我感受到此地的元素力正在大量涌入那件兵器……不，等一下，不止元素力，还有影的力量！<name=奈菲娅>;
+spine=奈菲娅<lights=1,faces=serious>;mid_txt=——我明白了，她在创造拥有影化力量的赋生灵！“创生”二字……原来是这个意思。<name=奈菲娅>;
+hide=spine;
+hide=txt;
+spine=厄晞斯<lights=1,faces=anger>;mid_txt=不管她想做什么，聚集如此庞大的力量，一旦失控——<name=厄晞斯>;

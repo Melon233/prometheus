@@ -1,0 +1,13 @@
+
+jallest_qiang_cpi.png
+size: 960,960
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+weapon
+  rotate: false
+  xy: 8, 8
+  size: 304, 944
+  orig: 304, 944
+  offset: 0, 0
+  index: -1

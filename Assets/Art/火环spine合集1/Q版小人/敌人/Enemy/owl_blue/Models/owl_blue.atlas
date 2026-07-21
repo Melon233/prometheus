@@ -1,0 +1,83 @@
+
+owl_blue.png
+size: 528,528
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+chi_you
+  rotate: false
+  xy: 369, 148
+  size: 116, 84
+  orig: 130, 101
+  offset: 7, 7
+  index: -1
+chi_zuo
+  rotate: false
+  xy: 221, 106
+  size: 94, 78
+  orig: 111, 92
+  offset: 10, 7
+  index: -1
+mao_you
+  rotate: false
+  xy: 317, 77
+  size: 159, 69
+  orig: 176, 234
+  offset: 7, 158
+  index: -1
+mao_zuo
+  rotate: false
+  xy: 307, 27
+  size: 137, 48
+  orig: 154, 62
+  offset: 10, 7
+  index: -1
+shenti
+  rotate: false
+  xy: 2, 186
+  size: 365, 340
+  orig: 401, 345
+  offset: 35, 0
+  index: -1
+tui_you
+  rotate: false
+  xy: 369, 234
+  size: 88, 292
+  orig: 88, 292
+  offset: 0, 0
+  index: -1
+yanpi
+  rotate: false
+  xy: 2, 50
+  size: 217, 134
+  orig: 283, 202
+  offset: 35, 24
+  index: -1
+yanzhu
+  rotate: false
+  xy: 2, 2
+  size: 122, 46
+  orig: 135, 58
+  offset: 6, 6
+  index: -1
+yiba
+  rotate: false
+  xy: 221, 56
+  size: 84, 48
+  orig: 101, 63
+  offset: 7, 7
+  index: -1
+zui_shang
+  rotate: false
+  xy: 459, 474
+  size: 38, 52
+  orig: 58, 72
+  offset: 10, 10
+  index: -1
+zui_xia
+  rotate: false
+  xy: 459, 446
+  size: 33, 26
+  orig: 53, 46
+  offset: 10, 10
+  index: -1

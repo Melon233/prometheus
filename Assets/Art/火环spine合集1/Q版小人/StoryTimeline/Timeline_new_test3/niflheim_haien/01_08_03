@@ -1,0 +1,12 @@
+skip_title=獠牙;
+skip_overview=修什帝亚找到你们，告知商队遭遇袭击、核心遗失的紧急情况。就在你们准备随修什帝亚离开时，高利扬突然带人出现，他无视修什帝亚的职权，直接下令手下动手，一场冲突已不可避免。;
+spine=高利扬<lights=1>;mid_txt=你们想去哪儿啊？<name=高利扬>;
+spine=高利扬<lights=1>;mid_txt=哦……恕我眼拙，原来修什帝亚阁下已经抓到了这些白塔的臭虫，我刚才还以为，阁下是想将她们暗中送出城去呢。<name=高利扬>;
+hide=spine;
+hide=txt;
+spine=高利扬|修什帝亚<lights=0|1,faces=idleface|serious>;mid_txt=……高利扬。<name=修什帝亚>;
+spine=高利扬|修什帝亚<lights=1|0,faces=smile|serious>;mid_txt=正好，既然我来了，就不必再劳烦阁下——把她们交给我，我会将她们带回教会“好好”调查。<name=高利扬>;
+spine=高利扬|修什帝亚<lights=0|1,faces=smile|serious>;mid_txt=抱歉了，教士，她们需随我返回城防军协助调查。商队遇袭，乃是城防军的分内之责，就不劳烦你费心了。<name=修什帝亚>;
+spine=高利扬|修什帝亚<lights=1|0,faces=serious|serious>;mid_txt=呵，那你也应该也知道，那马车上装的是多么重要的东西，你觉得你一个小小的城防军统领，能担下那么大的责任吗？<name=高利扬>;
+spine=高利扬|修什帝亚<lights=1|0,faces=serious|serious>;mid_txt=况且，我可没收到什么“协助调查”，我得到的命令是——生死勿论！<name=高利扬>;
+spine=高利扬|修什帝亚<lights=1|0,faces=angry|serious>;mid_txt=给我上！<name=高利扬>;

@@ -1,0 +1,104 @@
+
+partner_elemental_thundercloud.png
+size: 804,804
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jianjia_L
+  rotate: false
+  xy: 618, 299
+  size: 128, 98
+  orig: 128, 98
+  offset: 0, 0
+  index: -1
+jianjia_R
+  rotate: false
+  xy: 560, 540
+  size: 92, 62
+  orig: 92, 62
+  offset: 0, 0
+  index: -1
+shandian
+  rotate: false
+  xy: 8, 523
+  size: 342, 273
+  orig: 342, 273
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: false
+  xy: 8, 308
+  size: 297, 207
+  orig: 297, 224
+  offset: 0, 17
+  index: -1
+shenti2
+  rotate: false
+  xy: 721, 747
+  size: 58, 49
+  orig: 58, 49
+  offset: 0, 0
+  index: -1
+shenti3
+  rotate: false
+  xy: 313, 308
+  size: 297, 207
+  orig: 297, 224
+  offset: 0, 17
+  index: -1
+shou_L
+  rotate: false
+  xy: 691, 636
+  size: 105, 101
+  orig: 105, 101
+  offset: 0, 0
+  index: -1
+shou_R
+  rotate: false
+  xy: 464, 528
+  size: 88, 74
+  orig: 88, 74
+  offset: 0, 0
+  index: -1
+shoubi_L
+  rotate: false
+  xy: 358, 651
+  size: 171, 145
+  orig: 171, 145
+  offset: 0, 0
+  index: -1
+shoubi_L1
+  rotate: false
+  xy: 618, 405
+  size: 140, 127
+  orig: 171, 145
+  offset: 31, 0
+  index: -1
+shoubi_L2
+  rotate: false
+  xy: 537, 610
+  size: 146, 127
+  orig: 171, 145
+  offset: 0, 18
+  index: -1
+shoubi_R
+  rotate: false
+  xy: 358, 528
+  size: 98, 115
+  orig: 98, 115
+  offset: 0, 0
+  index: -1
+tianshihuan_1
+  rotate: false
+  xy: 691, 540
+  size: 54, 88
+  orig: 54, 88
+  offset: 0, 0
+  index: -1
+tianshihuan_2
+  rotate: false
+  xy: 537, 745
+  size: 176, 51
+  orig: 176, 51
+  offset: 0, 0
+  index: -1
