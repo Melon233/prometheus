@@ -1,0 +1,55 @@
+# Keep files byte-for-byte by default. Unity projects contain many binary assets,
+# so line-ending normalization is enabled only for formats that need it below.
+* -text
+
+# Source files
+*.cs diff=csharp
+*.cginc text
+*.shader text
+
+# Treat common Unity binary assets as binary Git objects. These rules do not use
+# Git LFS; add explicit filter=lfs rules later only if LFS is intentionally used.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.tga binary
+*.psd binary
+*.exr binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+*.mp4 binary
+*.mov binary
+*.fbx binary
+*.blend binary
+*.skel binary
+*.spine binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.exe binary
+*.pdb binary
+*.bytes binary
+*.unitypackage binary
+
+# Collapse Unity-generated YAML files in GitHub diffs.
+*.asset linguist-generated
+*.mat linguist-generated
+*.meta linguist-generated
+*.prefab linguist-generated
+*.unity linguist-generated
+
+# Unity YAML Smart Merge
+*.anim text eol=lf merge=unityyamlmerge
+*.asset text eol=lf merge=unityyamlmerge
+*.controller text eol=lf merge=unityyamlmerge
+*.mat text eol=lf merge=unityyamlmerge
+*.meta text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.physicMaterial text eol=lf merge=unityyamlmerge
+*.physicMaterial2D text eol=lf merge=unityyamlmerge
+*.physicsMaterial text eol=lf merge=unityyamlmerge
+*.physicsMaterial2D text eol=lf merge=unityyamlmerge
+*.prefab text eol=lf merge=unityyamlmerge
+*.unity text eol=lf merge=unityyamlmerge
