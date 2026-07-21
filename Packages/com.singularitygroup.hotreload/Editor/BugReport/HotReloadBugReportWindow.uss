@@ -1,0 +1,218 @@
+.root {
+    padding: 12px;
+    flex-grow: 1;
+}
+
+.section {
+    margin-bottom: 12px;
+}
+
+.section-label {
+    font-size: 13px;
+    -unity-font-style: bold;
+    margin-bottom: 4px;
+    color: var(--unity-colors-label-text);
+}
+
+.input-field {
+    height: 28px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.contact-section {
+    padding: 10px;
+    border-width: 1px;
+    border-color: var(--unity-colors-input_field-border);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: rgba(127, 127, 127, 0.08);
+}
+
+.fine-print {
+    font-size: 10px;
+    color: var(--unity-colors-label-text-disabled);
+    margin-top: 4px;
+    white-space: normal;
+    -unity-font-style: italic;
+}
+
+.details-section {
+    flex-grow: 1;
+}
+
+.details-input {
+    flex-grow: 1;
+    min-height: 160px;
+}
+
+.details-input > .unity-text-field__input {
+    flex-grow: 1;
+    -unity-text-align: upper-left;
+    padding: 6px 8px;
+    white-space: normal;
+}
+
+.details-input .unity-text-element {
+    white-space: normal;
+}
+
+.validation-label {
+    color: rgb(220, 60, 60);
+    font-size: 12px;
+    margin-bottom: 4px;
+    -unity-text-align: middle-center;
+    display: none;
+}
+
+.validation-label--visible {
+    display: flex;
+}
+
+.submit-row {
+    flex-direction: row-reverse;
+    margin-top: 4px;
+    padding-bottom: 8px;
+}
+
+.submit-button {
+    width: 100px;
+    height: 30px;
+    font-size: 13px;
+    -unity-font-style: bold;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+/* Placeholder styling */
+.placeholder-active > .unity-text-field__input > .unity-text-element {
+    color: var(--unity-colors-label-text-disabled);
+}
+
+/* ── Result screens ── */
+
+.result-screen {
+    display: none;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    padding: 32px;
+}
+
+.result-screen--visible {
+    display: flex;
+}
+
+.result-content {
+    align-items: center;
+    max-width: 360px;
+}
+
+.result-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.result-icon--success {
+    color: rgb(40, 160, 40);
+}
+
+.result-icon--failure {
+    color: rgb(200, 40, 40);
+}
+
+.result-title {
+    font-size: 18px;
+    -unity-font-style: bold;
+    margin-bottom: 8px;
+    color: var(--unity-colors-label-text);
+    -unity-text-align: middle-center;
+}
+
+.result-message {
+    font-size: 12px;
+    color: var(--unity-colors-label-text-disabled);
+    margin-bottom: 6px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.result-message--error {
+    color: rgb(200, 60, 60);
+    -unity-font-style: italic;
+    margin-bottom: 12px;
+}
+
+.result-buttons {
+    margin-top: 16px;
+    align-items: center;
+}
+
+.result-button {
+    height: 30px;
+    min-width: 180px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    -unity-font-style: bold;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.result-button--primary {
+    background-color: rgb(60, 120, 200);
+    color: rgb(240, 240, 240);
+    border-width: 0;
+}
+
+.result-button--primary:hover {
+    background-color: rgb(75, 135, 215);
+}
+
+.result-button--secondary {
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--unity-colors-label-text-disabled);
+    border-width: 1px;
+    border-color: var(--unity-colors-input_field-border);
+    margin-top: 4px;
+}
+
+.result-button--secondary:hover {
+    color: var(--unity-colors-label-text);
+    border-color: var(--unity-colors-input_field-border-focus);
+}
+
+.tab-bar {
+    flex-direction: row;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--unity-colors-toolbar-border);
+    background-color: var(--unity-colors-toolbar-background);
+    flex-shrink: 0;
+    padding: 0 4px;
+}
+
+.tab {
+    flex: 1;
+    background-color: transparent;
+    border-width: 0;
+    border-radius: 0;
+    color: var(--unity-colors-label-text-disabled);
+    padding: 6px 0 5px 0;
+    margin: 0 2px;
+    -unity-font-style: normal;
+}
+
+.tab--active {
+    color: var(--unity-colors-label-text);
+    background-color: var(--unity-colors-toolbar-button-background-checked);
+    border-width: 0 0 2px 0;
+    border-color: #3c79f2;
+    padding-bottom: 3px;
+}

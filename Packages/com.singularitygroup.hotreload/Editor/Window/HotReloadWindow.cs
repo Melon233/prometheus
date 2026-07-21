@@ -1,0 +1,408 @@
+﻿
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Threading;
+using SingularityGroup.HotReload.DTO;
+using SingularityGroup.HotReload.Editor.Cli;
+using SingularityGroup.HotReload.Editor.Semver;
+using UnityEditor;
+using UnityEditor.Compilation;
+using SingularityGroup.HotReload.Editor.Localization;
+using UnityEngine;
+
+[assembly: InternalsVisibleTo("SingularityGroup.HotReload.EditorSamples")]
+
+namespace SingularityGroup.HotReload.Editor {
+    class HotReloadWindow : EditorWindow {
+        public static HotReloadWindow Current { get; private set; }
+
+        List<HotReloadTabBase> tabs;
+        List<HotReloadTabBase> Tabs => tabs ?? (tabs = new List<HotReloadTabBase> {
+            RunTab,
+            SettingsTab,
+            AboutTab,
+        });
+        int selectedTab;
+
+        internal static Vector2 scrollPos;
+        
+        static Timer timer; 
+
+
+        HotReloadRunTab runTab;
+        internal HotReloadRunTab RunTab => runTab ?? (runTab = new HotReloadRunTab(this));
+        HotReloadSettingsTab settingsTab;
+        internal HotReloadSettingsTab SettingsTab => settingsTab ?? (settingsTab = new HotReloadSettingsTab(this));
+        HotReloadAboutTab aboutTab;
+        internal HotReloadAboutTab AboutTab => aboutTab ?? (aboutTab = new HotReloadAboutTab(this));
+
+        static ShowOnStartupEnum _showOnStartupOption;
+
+        /// <summary>
+        /// This token is cancelled when the EditorWindow is disabled.
+        /// </summary>
+        /// <remarks>
+        /// Use it for all tasks.
+        /// When token is cancelled, scripts are about to be recompiled and this will cause tasks to fail for weird reasons.
+        /// </remarks>
+        [NonSerialized]
+        public CancellationToken cancelToken;
+        CancellationTokenSource cancelTokenSource;
+
+        static readonly PackageUpdateChecker packageUpdateChecker = new PackageUpdateChecker();
+
+        [MenuItem(Translations.MenuItems.OpenHotReload)]
+        internal static void Open() {
+            // Don't open Hot Reload window inside Virtual Player folder
+            if (MultiplayerPlaymodeHelper.IsClone) {
+                Log.Info("Virtual Player instances use the same Hot Reload server instance as the Main Editor. Use Hot Reload window in the Main Editor.");
+                return;
+            }
+            // opening the window on CI systems was keeping Unity open indefinitely
+            if (EditorWindowHelper.IsHumanControllingUs()) {
+                if (Current) {
+                    Current.Show();
+                    Current.Focus();
+                } else {
+                    Current = GetWindow<HotReloadWindow>();
+                }
+            }
+        }
+        
+        [MenuItem(Translations.MenuItems.OpenBugReport)]
+		internal static void MenuOpenBugReport() {
+			ReportWindowAPI.OpenBugReport();
+		}
+        
+        [MenuItem(Translations.MenuItems.RecompileHotReload)]
+        internal static void Recompile() {
+            HotReloadRunTab.Recompile();
+        }
+
+        void OnInterval(object o) {
+            HotReloadRunTab.RepaintInstant();
+        }
+
+        void OnEnable() {
+            if (timer == null) {
+                timer = new Timer(OnInterval, null, 20 * 1000, 20 * 1000);
+            }
+            Current = this;
+            if (cancelTokenSource != null) {
+                cancelTokenSource.Cancel();
+            }
+            // Set min size initially so that full UI is visible
+            if (!HotReloadPrefs.OpenedWindowAtLeastOnce) {
+                this.minSize = new Vector2(Constants.RecompileButtonTextHideWidth + 1, Constants.EventsListHideHeight + 70);
+                HotReloadPrefs.OpenedWindowAtLeastOnce = true;
+            }
+            cancelTokenSource = new CancellationTokenSource();
+            cancelToken = cancelTokenSource.Token;
+            
+            this.titleContent = new GUIContent(" Hot Reload", GUIHelper.GetInvertibleIcon(InvertibleIcon.Logo));
+            _showOnStartupOption = HotReloadPrefs.ShowOnStartup;
+
+            packageUpdateChecker.StartCheckingForNewVersion();
+        }
+
+        void Update() {
+            foreach (var tab in Tabs) {
+                tab.Update();
+            }
+        }
+
+        void OnDisable() {
+            if (cancelTokenSource != null) {
+                cancelTokenSource.Cancel();
+                cancelTokenSource = null;
+            }
+
+            if (Current == this) {
+                Current = null;
+            }
+            if (timer != null) {
+                timer.Dispose();
+                timer = null;
+            }
+        }
+
+        internal void SelectTab(Type tabType) {
+            selectedTab = Tabs.FindIndex(x => x.GetType() == tabType);
+        }
+        
+        public HotReloadRunTabState RunTabState { get; private set; }
+        void OnGUI() {
+            // TabState ensures rendering is consistent between Layout and Repaint calls
+            // Without it errors like this happen:
+            // ArgumentException: Getting control 2's position in a group with only 2 controls when doing repaint
+            // See thread for more context: https://answers.unity.com/questions/17718/argumentexception-getting-control-2s-position-in-a.html
+            if (Event.current.type == EventType.Layout) {
+                RunTabState = HotReloadRunTabState.Current;
+            }
+            using(var scope = new EditorGUILayout.ScrollViewScope(scrollPos, false, false)) {
+                scrollPos = scope.scrollPosition;
+                // RenderDebug();
+                RenderTabs();
+            }
+            GUILayout.FlexibleSpace(); // GUI below will be rendered on the bottom
+            if (HotReloadWindowStyles.windowScreenHeight > 90) {
+                RenderBottomBar();
+            }
+        }
+
+        void RenderDebug() {
+            if (GUILayout.Button("RESET WINDOW")) {
+                OnDisable();
+
+                RequestHelper.RequestLogin("test", "test", 1).Forget();
+
+                HotReloadPrefs.LicenseEmail = null;
+                HotReloadPrefs.ExposeServerToLocalNetwork = true;
+                HotReloadPrefs.LicensePassword = null;
+                HotReloadPrefs.LoggedBurstHint = false;
+                HotReloadPrefs.DontShowPromptForDownload = false;
+                HotReloadPrefs.RateAppShown = false;
+                HotReloadPrefs.ActiveDays = string.Empty;
+                HotReloadPrefs.LaunchOnEditorStart = false;
+                HotReloadPrefs.ShowUnsupportedChanges = true;
+                HotReloadPrefs.RedeemLicenseEmail = null;
+                HotReloadPrefs.RedeemLicenseInvoice = null;
+                OnEnable();
+                File.Delete(EditorCodePatcher.serverDownloader.GetExecutablePath(HotReloadCli.controller));
+                InstallUtility.DebugClearInstallState();
+                InstallUtility.CheckForNewInstall();
+                EditorPrefs.DeleteKey(Attribution.LastLoginKey);
+                File.Delete(RedeemLicenseHelper.registerOutcomePath);
+
+                CompileMethodDetourer.Reset();
+                AssetDatabase.Refresh();
+            }
+        }
+
+        internal static void RenderLogo(int width = 243) {
+            var isDarkMode = HotReloadWindowStyles.IsDarkMode;
+            var tex = Resources.Load<Texture>(isDarkMode ? "Logo_HotReload_DarkMode" : "Logo_HotReload_LightMode");
+            //Can happen during player builds where Editor Resources are unavailable
+            if(tex == null) {
+                return;
+            }
+            var targetWidth = width;
+            var targetHeight = 44;
+            GUILayout.Space(4f);
+            // background padding top and bottom
+            float padding = 5f;
+            // reserve layout space for the texture
+            var backgroundRect = GUILayoutUtility.GetRect(targetWidth + padding, targetHeight + padding, HotReloadWindowStyles.LogoStyle);
+            // draw the texture into that reserved space. First the bg then the logo.
+            if (isDarkMode) {
+                GUI.DrawTexture(backgroundRect, EditorTextures.DarkGray17, ScaleMode.StretchToFill);
+            } else {
+                GUI.DrawTexture(backgroundRect, EditorTextures.LightGray238, ScaleMode.StretchToFill);
+            }
+            
+            var foregroundRect = backgroundRect;
+            foregroundRect.yMin += padding;
+            foregroundRect.yMax -= padding;
+            // during player build (EditorWindow still visible), Resources.Load returns null
+            if (tex) {
+                GUI.DrawTexture(foregroundRect, tex, ScaleMode.ScaleToFit);
+            }
+        }
+
+        int? collapsedTab;
+        void RenderTabs() {
+            using(new EditorGUILayout.VerticalScope(HotReloadWindowStyles.BoxStyle)) {
+                if (HotReloadWindowStyles.windowScreenHeight > 210 && HotReloadWindowStyles.windowScreenWidth > 375) {
+                    selectedTab = GUILayout.Toolbar(
+                        selectedTab,
+                        Tabs.Select(t =>
+                            new GUIContent(t.Title.StartsWith(" ", StringComparison.Ordinal) ? t.Title : " " + t.Title,
+                                t.Icon, t.Tooltip)).ToArray(),
+                        GUILayout.Height(22f) // required, otherwise largest icon height determines toolbar height
+                    );
+                    if (collapsedTab != null) {
+                        selectedTab = collapsedTab.Value;
+                        collapsedTab = null;
+                    }
+                } else {
+                    if (collapsedTab == null) {
+                        collapsedTab = selectedTab;
+                    }
+                    // When window is super small, we pretty much can only show run tab
+                    SelectTab(typeof(HotReloadRunTab));
+                }
+
+                if (HotReloadWindowStyles.windowScreenHeight > 250 && HotReloadWindowStyles.windowScreenWidth > 275) {
+                    RenderLogo();
+                }
+
+                Tabs[selectedTab].OnGUI();
+            }
+        }
+
+        void RenderBottomBar() {
+            SemVersion newVersion;
+            var updateAvailable = packageUpdateChecker.TryGetNewVersion(out newVersion);
+
+            if (HotReloadWindowStyles.windowScreenWidth > Constants.RateAppHideWidth
+                && HotReloadWindowStyles.windowScreenHeight > Constants.RateAppHideHeight
+            ) {
+                RenderRateApp();
+            }
+
+            if (updateAvailable) {
+                RenderUpdateButton(newVersion);
+            }
+            
+            using(new EditorGUILayout.HorizontalScope("ProjectBrowserBottomBarBg", GUILayout.ExpandWidth(true), GUILayout.Height(25f))) {
+                RenderBottomBarCore();
+            }
+        }
+
+        static GUIStyle _renderAppBoxStyle;
+        static GUIStyle renderAppBoxStyle => _renderAppBoxStyle ?? (_renderAppBoxStyle = new GUIStyle(GUI.skin.box) {
+            padding = new RectOffset(10, 10, 0, 0)
+        });
+        
+        static GUILayoutOption[] _nonExpandable;
+        public static GUILayoutOption[] NonExpandableLayout => _nonExpandable ?? (_nonExpandable = new [] {GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(true)});
+        
+        internal static void RenderRateApp() {
+            if (!ShouldShowRateApp()) {
+                return;
+            }
+            using (new EditorGUILayout.VerticalScope(renderAppBoxStyle)) {
+                using (new EditorGUILayout.HorizontalScope()) {
+                    HotReloadGUIHelper.HelpBox(Translations.Miscellaneous.RateAppQuestion, MessageType.Info, 11);
+                    if (GUILayout.Button(Translations.Common.ButtonHide, NonExpandableLayout)) {
+                        EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), new EditorExtraData { { "dismissed", true } });
+                        HotReloadPrefs.RateAppShown = true;
+                    }
+                }
+                using (new EditorGUILayout.HorizontalScope()) {
+                    if (GUILayout.Button(Translations.Common.ButtonYes)) {
+                        var openedUrl = PackageConst.IsAssetStoreBuild && EditorUtility.DisplayDialog(Translations.Dialogs.DialogTitleRateApp, Translations.Dialogs.DialogMessageRateApp, Translations.Common.ButtonOpenInBrowser, Translations.Common.ButtonCancel);
+                        if (openedUrl) {
+                            Application.OpenURL(Constants.UnityStoreRateAppURL);
+                        }
+                        HotReloadPrefs.RateAppShown = true;
+                        var data = new EditorExtraData();
+                        if (PackageConst.IsAssetStoreBuild) {
+                            data.Add("opened_url", openedUrl);
+                        }
+                        data.Add("enjoy_app", true);
+                        EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), data);
+                    }
+                    if (GUILayout.Button(Translations.Common.ButtonNo)) {
+                        HotReloadPrefs.RateAppShown = true;
+                        var data = new EditorExtraData();
+                        data.Add("enjoy_app", false);
+                        EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), data);
+                        ReportWindowAPI.OpenFeedback();
+                    }
+                }
+            }
+        }
+
+        internal static bool ShouldShowRateApp() {
+            if (HotReloadPrefs.RateAppShown) {
+                return false;
+            }
+            var activeDays = EditorCodePatcher.GetActiveDaysForRateApp();
+            if (activeDays.Count < Constants.DaysToRateApp) {
+                return false;
+            }
+            return true;
+        }
+
+        void RenderUpdateButton(SemVersion newVersion) {
+            if (GUILayout.Button(string.Format(Translations.Miscellaneous.ButtonUpdateToVersionFormat, newVersion), HotReloadWindowStyles.UpgradeButtonStyle)) {
+                packageUpdateChecker.UpdatePackageAsync(newVersion).Forget(CancellationToken.None);
+            }
+        }
+        
+        internal static void RenderShowOnStartup() {
+            var prevLabelWidth = EditorGUIUtility.labelWidth;
+            try {
+                EditorGUIUtility.labelWidth = 105f;
+                using (new GUILayout.VerticalScope()) {
+                    using (new GUILayout.HorizontalScope()) {
+                        GUILayout.Label(Translations.Common.LabelShowOnStartup);
+                        Rect buttonRect = GUILayoutUtility.GetLastRect();
+                        if (EditorGUILayout.DropdownButton(new GUIContent(Regex.Replace(_showOnStartupOption.ToString(), "([a-z])([A-Z])", "$1 $2")), FocusType.Passive, GUILayout.Width(110f))) {
+                            GenericMenu menu = new GenericMenu();
+                            foreach (ShowOnStartupEnum option in Enum.GetValues(typeof(ShowOnStartupEnum))) {
+                                menu.AddItem(new GUIContent(Regex.Replace(option.ToString(), "([a-z])([A-Z])", "$1 $2")), false, () => {
+                                    if (_showOnStartupOption != option) {
+                                        _showOnStartupOption = option;
+                                        HotReloadPrefs.ShowOnStartup = _showOnStartupOption;
+                                    }
+                                });
+                            }
+                            menu.DropDown(new Rect(buttonRect.x, buttonRect.y, 100, 0));
+                        }
+                    }
+                }
+            } finally {
+                EditorGUIUtility.labelWidth = prevLabelWidth;
+            }
+        }
+
+        void RenderBottomBarCore() {
+            bool alertsShown = EditorCodePatcher.Started && HotReloadWindowStyles.windowScreenWidth > Constants.EventFiltersShownHideWidth;
+            bool showEventsButton = !HotReloadRunTab.CanRenderBars(RunTabState) && !RunTabState.starting;
+            bool troubleshootingShown = EditorCodePatcher.Started && HotReloadWindowStyles.windowScreenWidth >= 400 && !showEventsButton;
+            using (new EditorGUILayout.VerticalScope()) {
+                using (new EditorGUILayout.HorizontalScope(HotReloadWindowStyles.FooterStyle)) {
+                    if (!troubleshootingShown) {
+                        GUILayout.FlexibleSpace();
+                    } else {
+                        GUILayout.Space(21);
+                    }
+                    GUILayout.Space(0);
+                    var lastRect = GUILayoutUtility.GetLastRect();
+                    // show events button when scrolls are hidden
+                    if (showEventsButton) {
+                        using (new EditorGUILayout.VerticalScope()) {
+                            GUILayout.FlexibleSpace();
+                            var icon = HotReloadState.ShowingRedDot ? InvertibleIcon.EventsNew : InvertibleIcon.Events;
+                            if (GUILayout.Button(new GUIContent("", GUIHelper.GetInvertibleIcon(icon)))) {
+                                PopupWindow.Show(new Rect(lastRect.x, lastRect.y, 0, 0), HotReloadEventPopup.I);
+                            }
+                            GUILayout.FlexibleSpace();
+                        }
+                        GUILayout.Space(3f);
+                    }
+                    if (alertsShown) {
+                        using (new EditorGUILayout.VerticalScope()) {
+                            GUILayout.FlexibleSpace();
+                            HotReloadTimelineHelper.RenderAlertFilters();
+                            GUILayout.FlexibleSpace();
+                        }
+                    }
+
+                    if (troubleshootingShown) {
+                        GUILayout.FlexibleSpace();
+                        using (new EditorGUILayout.VerticalScope()) {
+                            GUILayout.FlexibleSpace();
+                            OpenURLButton.Render(Translations.Miscellaneous.ButtonTroubleshooting, Constants.TroubleshootingURL);
+                            GUILayout.FlexibleSpace();
+                        }
+                    }
+                    if (GUILayout.Button(GUIHelper.GetInvertibleIcon(InvertibleIcon.BugReport), GUILayout.MaxHeight(20), GUILayout.MaxWidth(30))) {
+                        ReportWindowAPI.OpenBugReport();
+                    }
+                    if (!troubleshootingShown) {
+                        GUILayout.FlexibleSpace();
+                    } else {
+                        GUILayout.Space(21);
+                    }
+                }
+            }
+        }
+    }
+}

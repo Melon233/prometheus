@@ -1,0 +1,78 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    
+    <ui:VisualElement name="tabs"  class="tab-bar">
+        <ui:Button name="tab-bug-report" text="Bug Report" class="tab tab--active" />
+        <ui:Button name="tab-feedback"   text="Feedback"   class="tab" />
+    </ui:VisualElement>
+
+    <!-- Form view -->
+    <ui:ScrollView name="scroll-view" class="root">
+
+        <!-- Title -->
+        <ui:VisualElement class="section">
+            <ui:Label text="Title" class="section-label" />
+            <ui:TextField name="title-field" class="input-field" />
+        </ui:VisualElement>
+
+        <!-- Issue Severity (PopupField added from C#, hidden in Feedback mode) -->
+        <ui:VisualElement name="severity-section" class="section">
+            <ui:Label text="Issue Severity" class="section-label" />
+            <ui:VisualElement name="severity-container" />
+        </ui:VisualElement>
+
+        <!-- How often does it happen? (hidden in Feedback mode) -->
+        <ui:VisualElement name="frequency-section" class="section">
+            <ui:Label text="How often does it happen?" class="section-label" />
+            <ui:VisualElement name="frequency-container" />
+        </ui:VisualElement>
+
+        <!-- Contact Email -->
+        <ui:VisualElement class="section contact-section">
+            <ui:Label text="Contact Email (optional)" class="section-label" />
+            <ui:TextField name="email-field" class="input-field" />
+            <ui:Label text="This email will only be used to follow up on this bug report and will not be stored or shared for any other purpose." class="fine-print" />
+        </ui:VisualElement>
+
+        <!-- Details / Feedback -->
+        <ui:VisualElement class="section details-section">
+            <ui:Label name="details-label" text="Details" class="section-label" />
+            <ui:VisualElement name="details-field-slot" class="details-input"/>
+        </ui:VisualElement>
+
+        <!-- Validation message -->
+        <ui:Label name="validation-label" class="validation-label" />
+
+        <!-- Submit -->
+        <ui:VisualElement class="submit-row">
+            <ui:Button name="submit-button" text="Submit" class="submit-button" />
+        </ui:VisualElement>
+
+    </ui:ScrollView>
+
+    <!-- Success screen (hidden by default) -->
+    <ui:VisualElement name="success-screen" class="result-screen">
+        <ui:VisualElement class="result-content">
+            <ui:Label text="&#x2713;" class="result-icon result-icon--success" />
+            <ui:Label text="Report Submitted" class="result-title" />
+            <ui:Label text="Thank you! We've accepted your report and are processing it." class="result-message" />
+            <ui:VisualElement class="result-buttons">
+                <ui:Button name="success-discord-button" text="Join Our Discord" class="result-button result-button--primary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- Failure screen (hidden by default) -->
+    <ui:VisualElement name="failure-screen" class="result-screen">
+        <ui:VisualElement class="result-content">
+            <ui:Label text="&#x2717;" class="result-icon result-icon--failure" />
+            <ui:Label text="Submission Failed" class="result-title" />
+            <ui:Label name="failure-error-label" text="" class="result-message result-message--error" />
+            <ui:Label text="Please reach out to us directly so we can help resolve your issue." class="result-message" />
+            <ui:VisualElement class="result-buttons">
+                <ui:Button name="failure-discord-button" text="Join Our Discord" class="result-button result-button--primary" />
+                <ui:Button name="failure-contact-button" text="Contact Us" class="result-button result-button--primary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+
+</ui:UXML>
