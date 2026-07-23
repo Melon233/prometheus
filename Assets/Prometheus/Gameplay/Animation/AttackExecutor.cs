@@ -14,10 +14,11 @@ namespace Xuan.Prometheus
         [SerializeField] public List<AnimationReferenceAsset> atkMoveAnis;
         [SerializeField] List<YefaVfx> atkVfx;
         [SerializeField] List<AudioClip> atkSfx;
-
-        public override void Init(CharacterAnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        AttackComponent atkComp;
+        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
         {
             base.Init(lib, spineComp, vfxComp);
+            spineComp.Entity.TryGetComp(out atkComp);
         }
         public TrackEntry Execute(int index, bool move)
         {
@@ -25,8 +26,14 @@ namespace Xuan.Prometheus
 
             if (index < 0 || index >= animations.Count)
                 return null;
-
-            return spineComp.Play(animations[index], mixDuration: 0f, onEvent: (_, spineEvent) => OnEvent(index, spineEvent));
+            var trackEntry = spineComp.Play(animations[index], mixDuration: 0f, onEvent: (_, spineEvent) => OnEvent(index, spineEvent));
+            trackEntry.Event += (entry, evt) =>
+            {
+                if (evt.ToString() == lib.hitStart)
+                    atkComp.atkCollider.cod.enabled = true;
+                else if (evt.ToString() == lib.hitEnd) atkComp.atkCollider.cod.enabled = false;
+            };
+            return trackEntry;
         }
         private void OnEvent(int index, Spine.Event spineEvent)
         {

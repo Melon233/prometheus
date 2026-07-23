@@ -10,9 +10,9 @@ namespace Xuan.Prometheus
     public class SpecialAttackExecutor : AnimationExecutor
     {
         [SerializeField] AnimationReferenceAsset specialAttackAni;
-        public TrackEntry Execute(SpineComponent spine)
+        public TrackEntry Execute()
         {
-            return spine.Play(specialAttackAni);
+            return spineComp.Play(specialAttackAni);
         }
     }
 }

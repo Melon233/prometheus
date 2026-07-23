@@ -45,17 +45,15 @@ namespace Xuan.Prometheus.Logic
     public abstract class Entity
     {
         public GameObject bindGo;
-        protected Dictionary<LogicTag, HashSet<object>> blockRegis = new Dictionary<LogicTag, HashSet<object>>();
-        protected Dictionary<Type, IComponent> comps = new Dictionary<Type, IComponent>();
-        protected List<ILogic> logicList = new List<ILogic>();
-        protected List<int> edges = new List<int>();
-        protected Dictionary<Type, ILogic> logics = new Dictionary<Type, ILogic>();
-        protected List<IComponent> toAddComps = new List<IComponent>();
-        protected List<ILogic> toAddLogics = new List<ILogic>();
-        public bool toDispose = false;
-        protected List<Type> toRemoveComps = new List<Type>();
-        protected List<Type> toRemoveLogics = new List<Type>();
-        Dictionary<Type, ScriptableObject> configs = new();
+        protected Dictionary<Type, IComponent> comps = new();
+        protected List<ILogic> logicList = new();
+        protected Dictionary<Type, ILogic> logics = new();
+        protected List<IComponent> toAddComps = new();
+        protected List<ILogic> toAddLogics = new();
+        protected List<Type> toRemoveComps = new();
+        protected List<Type> toRemoveLogics = new();
+        protected bool toDispose = false;
+        protected float delay = 1f;
         public void AfterNew()
         {
             logicList = logics.Values.ToList();
@@ -67,47 +65,47 @@ namespace Xuan.Prometheus.Logic
         {
             if (toDispose)
             {
-                OnDispose();
+                Dispose();
                 return;
             }
 
-            if (toAddComps.Count != 0)
-            {
-                foreach (var comp in toAddComps) comps.Add(comp.GetType(), comp);
-                toAddComps.Clear();
-            }
+            // if (toAddComps.Count != 0)
+            // {
+            //     foreach (var comp in toAddComps) comps.Add(comp.GetType(), comp);
+            //     toAddComps.Clear();
+            // }
 
-            if (toAddLogics.Count != 0)
-            {
-                foreach (var logic in toAddLogics)
-                {
-                    logics.Add(logic.GetType(), logic);
-                    logicList.Add(logic);
-                    logic.AfterNew();
-                }
+            // if (toAddLogics.Count != 0)
+            // {
+            //     foreach (var logic in toAddLogics)
+            //     {
+            //         logics.Add(logic.GetType(), logic);
+            //         logicList.Add(logic);
+            //         logic.AfterNew();
+            //     }
 
-                toAddLogics.Clear();
-            }
+            //     toAddLogics.Clear();
+            // }
 
-            if (toRemoveComps.Count != 0)
-            {
-                foreach (var type in toRemoveComps)
-                    comps.Remove(type);
-                toRemoveComps.Clear();
-            }
+            // if (toRemoveComps.Count != 0)
+            // {
+            //     foreach (var type in toRemoveComps)
+            //         comps.Remove(type);
+            //     toRemoveComps.Clear();
+            // }
 
-            if (toRemoveLogics.Count != 0)
-            {
-                foreach (var type in toRemoveLogics)
-                    if (logics.TryGetValue(type, out var logic))
-                    {
-                        logic.OnDispose();
-                        logics.Remove(type);
-                    }
+            // if (toRemoveLogics.Count != 0)
+            // {
+            //     foreach (var type in toRemoveLogics)
+            //         if (logics.TryGetValue(type, out var logic))
+            //         {
+            //             logic.OnDispose();
+            //             logics.Remove(type);
+            //         }
 
 
-                toRemoveLogics.Clear();
-            }
+            //     toRemoveLogics.Clear();
+            // }
 
             logicList.Sort((a, b) => a.LogicGroup.CompareTo(b.LogicGroup));
             foreach (var logic in logicList)
@@ -117,12 +115,18 @@ namespace Xuan.Prometheus.Logic
             }
         }
 
-        public void OnDispose()
+        public void OnDispose(float delay = 2f)
         {
-            foreach (var logic in logicList) logic.OnDispose();
+            this.delay = delay;
+            toDispose = true;
+        }
+        void Dispose()
+        {
             comps.Clear();
             logicList.Clear();
             logics.Clear();
+            foreach (var logic in logicList) logic.OnDispose();
+            GameObject.Destroy(bindGo, delay);
         }
         public void CheckLogic<T>(T logic) where T : ILogic
         {
@@ -181,31 +185,31 @@ namespace Xuan.Prometheus.Logic
                 comp = (T)dat;
                 return true;
             }
-
+            Debug.LogError($"{GetType()} Can't find comp {typeof(T)}");
             comp = default;
             return false;
         }
 
-        public IComponent GetComp(Type type)
-        {
-            if (comps.TryGetValue(type, out var dat)) return dat;
+        // public IComponent GetComp(Type type)
+        // {
+        //     if (comps.TryGetValue(type, out var dat)) return dat;
 
-            return null;
-        }
+        //     return null;
+        // }
 
-        public void AddLogicRuntime<T>() where T : ILogic, new()
-        {
-            var logic = new T();
-            toAddLogics.Add(logic);
-            logic.Entity = this;
-        }
+        // public void AddLogicRuntime<T>() where T : ILogic, new()
+        // {
+        //     var logic = new T();
+        //     toAddLogics.Add(logic);
+        //     logic.Entity = this;
+        // }
 
-        public void AddCompRuntime<T>() where T : IComponent, new()
-        {
-            var comp = new T();
-            toAddComps.Add(comp);
-            comp.Entity = this;
-        }
+        // public void AddCompRuntime<T>() where T : IComponent, new()
+        // {
+        //     var comp = new T();
+        //     toAddComps.Add(comp);
+        //     comp.Entity = this;
+        // }
 
         // public void RemoveLogic<T>() where T : ILogic
         // {
@@ -265,9 +269,9 @@ namespace Xuan.Prometheus.Logic
         //     return blockRegis.ContainsKey(logicTag);
         // }
 
-        public bool HasLogic<T>() where T : ILogic
-        {
-            return logics.ContainsKey(typeof(T));
-        }
+        // public bool HasLogic<T>() where T : ILogic
+        // {
+        //     return logics.ContainsKey(typeof(T));
+        // }
     }
 }

@@ -18,8 +18,8 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
-            groundMoveExecutor = spineComp.charaAniLib.groundMoveExecutor;
-            idleExecutor = spineComp.charaAniLib.idleExecutor;
+            groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
+            idleExecutor = spineComp.animationLib.idleExecutor;
         }
 
         public override bool CanEnable()
@@ -48,13 +48,13 @@ namespace Xuan.Prometheus.Logic
             if (inputComp.moveDir != Vector2.zero)
             {
                 motionComp.baseSpeed = new Vector3(inputComp.moveDir.x, -2f, inputComp.moveDir.y) * motionComp.walkVelo;
-                groundMoveExecutor.Execute(spineComp);
+                groundMoveExecutor.Execute();
             }
             else
             {
                 motionComp.baseSpeed.x = 0f;
                 motionComp.baseSpeed.z = 0f;
-                idleExecutor.Execute(spineComp);
+                idleExecutor.Execute();
             }
         }
 

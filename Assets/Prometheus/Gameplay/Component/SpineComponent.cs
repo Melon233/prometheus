@@ -33,19 +33,14 @@ namespace Xuan.Prometheus.Component
         Left,
         Right
     }
+    [DefaultExecutionOrder(-100)]
     [RequireComponent(typeof(SkeletonAnimation))]
     [RequireComponent(typeof(VfxComponent))]
     public class SpineComponent : MonoComponent
     {
-
         AnimationState aniState;
-        public SkeletonAnimation spineAnimator;
-        public CharacterAnimationLibrary charaAniLib;
-        public List<GameObject> atkVfx;
-        public GameObject skillVfx;
-        public GameObject ultVfx;
-        // public SignalTimelinePlayer player;
-        // public SignalTimelineAsset timeline;
+        [NonSerialized] public SkeletonAnimation spineAnimator;
+        public AnimationLibrary animationLib;
         public FaceDir CurFaceDir
         {
             get
@@ -67,11 +62,12 @@ namespace Xuan.Prometheus.Component
         private void Awake()
         {
             spineAnimator = GetComponent<SkeletonAnimation>();
-            charaAniLib.Init(this, GetComponent<VfxComponent>());
+            animationLib = Instantiate(animationLib);
         }
         private void Start()
         {
             aniState = spineAnimator.state;
+            animationLib.Init(this, GetComponent<VfxComponent>());
         }
         public TrackEntry Play(Animation ani, bool loop = false, float mixDuration = 0.2f, int track = 0)
         {
@@ -88,10 +84,17 @@ namespace Xuan.Prometheus.Component
             trackEntry.MixDuration = mixDuration;
             return trackEntry;
         }
-        public TrackEntry Play(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f, bool refresh = false, AnimationReferenceAsset nextAni = null, bool nextLoop = false, TrackEntryEventDelegate onEvent = null)
+        public TrackEntry Play(AnimationReferenceAsset animation,
+                               bool loop = false,
+                               int track = 0,
+                               float mixDuration = 0.2f,
+                               bool canRefresh = false,
+                               AnimationReferenceAsset nextAni = null,
+                               bool nextLoop = false,
+                               TrackEntryEventDelegate onEvent = null)
         {
             var curTrack = aniState.GetCurrent(track);
-            if (!refresh && animation.Animation == curTrack?.Animation) return curTrack;
+            if (!canRefresh && animation.Animation == curTrack?.Animation) return curTrack;
             var entry = aniState.SetAnimation(track, animation, loop);
             // Debug.Log("播放动画" + animation.name);
             entry.MixDuration = mixDuration;

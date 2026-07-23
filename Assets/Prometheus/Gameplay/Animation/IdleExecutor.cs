@@ -10,9 +10,9 @@ namespace Xuan.Prometheus
     public class IdleExecutor : AnimationExecutor
     {
         [SerializeField] AnimationReferenceAsset idleAni;
-        public TrackEntry Execute(SpineComponent spine)
+        public TrackEntry Execute()
         {
-            return spine.Play(idleAni, true);
+            return spineComp.Play(idleAni, true);
         }
     }
 }

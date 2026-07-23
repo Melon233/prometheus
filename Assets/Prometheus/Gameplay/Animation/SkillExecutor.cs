@@ -30,13 +30,13 @@ namespace Xuan.Prometheus
         [SerializeField] AnimationReferenceAsset skillAni;
         [SerializeField] AudioClip skillAudio;
         [SerializeField] YefaVfx skillVfx;
-        public override void Init(CharacterAnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
         {
             base.Init(lib, spineComp, vfxComp);
         }
-        public TrackEntry Execute(SpineComponent spine)
+        public TrackEntry Execute()
         {
-            return spine.Play(skillStartAni, nextAni: skillAni, onEvent: OnEvent);
+            return spineComp.Play(skillStartAni, nextAni: skillAni, onEvent: OnEvent);
         }
         private void OnEvent(TrackEntry entry, Spine.Event e)
         {

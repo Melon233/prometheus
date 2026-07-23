@@ -12,14 +12,14 @@ namespace Xuan.Prometheus
         [SerializeField] AnimationReferenceAsset ultimateAni;
         [SerializeField] AudioClip ultimateAudio;
         [SerializeField] YefaVfx ultVfx;
-        public override void Init(CharacterAnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
         {
             base.Init(lib, spineComp, vfxComp);
         }
 
-        public TrackEntry Execute(SpineComponent spine)
+        public TrackEntry Execute()
         {
-            return spine.Play(ultimateAni, onEvent: OnEvent);
+            return spineComp.Play(ultimateAni, onEvent: OnEvent);
         }
         public void OnEvent(TrackEntry entry, Spine.Event e)
         {

@@ -1,32 +1,42 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using Xuan.Prometheus;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 
 namespace Prometheus.Gameplay
 {
+    [DefaultExecutionOrder(-99)]
     public class StartUp : MonoBehaviour
     {
         private static PlayerEntity player;
-        private static SlimeEntity enemy;
-
-        private void Start()
+        private static List<SlimeEntity> enemies = new();
+        public EnemySpawnConfig enemySpawnConfig;
+        private void Awake()
         {
             Application.targetFrameRate = 999;
             player = new PlayerEntity(GameObject.Find("Yefa"));
             // FillField<DataAttribute, IComponent>(player, player.AddComp);
             // FillField<LogicAttribute, ILogic>(player, player.AddLogic);
             player.AfterNew();
-            enemy = new SlimeEntity(GameObject.Find("Slime"));
-            enemy.AfterNew();
+            var slime = GameObject.Find("Slime");
+            foreach (var p in enemySpawnConfig.spawnPoints)
+            {
+                var enemy = new SlimeEntity(Instantiate(slime, p));
+                enemy.AfterNew();
+                enemies.Add(enemy);
+            }
+            Destroy(slime);
         }
 
         private void Update()
         {
             player.OnUpdate(Time.deltaTime);
-            enemy.OnUpdate(Time.deltaTime);
+            foreach (var enemy in enemies)
+                enemy.OnUpdate(Time.deltaTime);
         }
 
         // public void FillField<TAbbr, TField>(Entity obj, Action<TField> callback = null)

@@ -14,7 +14,7 @@ namespace Xuan.Prometheus.Component
         public AnimationCurve chaseCurve;
         public float delta;
         public bool wasHpChangedThisFrame;
-
+        public CanvasGroup canvasGroup;
         private void Update()
         {
             if (wasHpChangedThisFrame)
@@ -43,7 +43,6 @@ namespace Xuan.Prometheus.Component
 
         public void SetHp(float p)
         {
-            if (Mathf.Approximately(hpImg.fillAmount, p)) return;
             hpImg.fillAmount = p;
             wasHpChangedThisFrame = true;
         }

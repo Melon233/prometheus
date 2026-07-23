@@ -10,7 +10,7 @@ namespace Xuan.Prometheus
     public class DodgeExecutor : AnimationExecutor
     {
         [SerializeField] AnimationReferenceAsset dodgeAni;
-        public override void Init(CharacterAnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
         {
             base.Init(lib, spineComp, vfxComp);
         }

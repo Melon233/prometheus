@@ -10,9 +10,9 @@ namespace Xuan.Prometheus
     public class GroundMoveExecutor : AnimationExecutor
     {
         [SerializeField] public AnimationReferenceAsset groundMoveAni;
-        public TrackEntry Execute(SpineComponent spine)
+        public TrackEntry Execute()
         {
-            return spine.Play(groundMoveAni, true);
+            return spineComp.Play(groundMoveAni, true);
         }
     }
 }

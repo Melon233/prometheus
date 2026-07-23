@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Xuan.Prometheus.Component
 {
-    public interface ICollisionHandler
+    public interface ITriggerHandler
     {
         void OnTriggerEnter(Collider other);
     }
@@ -11,7 +11,7 @@ namespace Xuan.Prometheus.Component
     public class ColliderProxy : MonoBehaviour
     {
         public Collider cod;
-        public ICollisionHandler handler;
+        public ITriggerHandler handler;
 
         private void Awake()
         {

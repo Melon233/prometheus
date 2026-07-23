@@ -1,12 +1,10 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic.Talent;
-using Animation = Xuan.Prometheus.Component.Animation;
 
 namespace Xuan.Prometheus.Logic
 {
-    public class TalentLogic : Logic, ICollisionHandler
+    public class TalentLogic : Logic, ITriggerHandler, IAttacker
     {
         InputComponent inputComp;
         SpineComponent spineComp;
@@ -26,14 +24,15 @@ namespace Xuan.Prometheus.Logic
         {
             if (other.CompareTag("Enemy"))
             {
-                var comp = other.GetComponent<PropertyComponent>();
-                comp.OnTakeDamage(30);
-                // DmgShower.Ins.ShowDamage(30.ToString(), other.transform.position);
-                if (!comp.Entity.HasLogic<FireDotLogic>())
+                var effectComp = other.GetComponent<EffectComponent>();
+                if (effectComp == null || effectComp.Entity == null)
                 {
-                    other.GetComponent<PropertyComponent>().Entity.AddCompRuntime<FireDotComponent>();
-                    other.GetComponent<PropertyComponent>().Entity.AddLogicRuntime<FireDotLogic>();
+                    Debug.LogWarning($"无法获取敌人 EffectComponent：{other.name}");
+                    return;
                 }
+                Debug.Log($"攻击命中：{effectComp.name}");
+                effectComp.toAddEffects.Add(new DamageEffect(effectComp.Entity));
+                effectComp.toAddEffects.Add(new FireDotEffect(effectComp.Entity));
             }
         }
 
@@ -43,21 +42,14 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out atkComp);
-            Entity.TryGetComp(out specialAtkComp);
-            Entity.TryGetComp(out skillComp);
-            Entity.TryGetComp(out ultComp);
-            Entity.TryGetComp(out coreTalentComp);
-            atkExecutor = spineComp.charaAniLib.atkExecutor;
-            groundMoveExecutor = spineComp.charaAniLib.groundMoveExecutor;
-            ultimateExecutor = spineComp.charaAniLib.ultimateExecutor;
-            skillExecutor = spineComp.charaAniLib.skillExecutor;
-            spineComp.AddEventListener((entry, evt) =>
-            {
-                if (evt.ToString() == "hit_start")
-                    atkComp.atkCollider.cod.enabled = true;
-                else if (evt.ToString() == "hit_end") atkComp.atkCollider.cod.enabled = false;
-            });
-
+            // Entity.TryGetComp(out specialAtkComp);
+            // Entity.TryGetComp(out skillComp);
+            // Entity.TryGetComp(out ultComp);
+            // Entity.TryGetComp(out coreTalentComp);
+            atkExecutor = spineComp.animationLib.atkExecutor;
+            groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
+            ultimateExecutor = spineComp.animationLib.ultimateExecutor;
+            skillExecutor = spineComp.animationLib.skillExecutor;
             atkComp.atkCollider.handler = this;
             atkComp.minComboInterval = 0.5f;
         }
@@ -85,11 +77,11 @@ namespace Xuan.Prometheus.Logic
 
             if (inputComp.wasSkillPressedThisFrame)
             {
-                atkComp.curTrackEntry = skillExecutor.Execute(spineComp);
+                atkComp.curTrackEntry = skillExecutor.Execute();
             }
             if (inputComp.wasUltPressedThisFrame)
             {
-                atkComp.curTrackEntry = ultimateExecutor.Execute(spineComp);
+                atkComp.curTrackEntry = ultimateExecutor.Execute();
             }
         }
 
@@ -101,7 +93,7 @@ namespace Xuan.Prometheus.Logic
         public override void OnEnable()
         {
             Entity.BlockLogic<GroundMoveLogic>();
-            // Entity.BlockLogic<JumpLogic>();
+            Entity.BlockLogic<JumpLogic>();
             Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<RotateLogic>();
         }
@@ -111,7 +103,7 @@ namespace Xuan.Prometheus.Logic
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<MotionLogic>();
             Entity.UnBlockLogic<RotateLogic>();
-            // Entity.UnBlockLogic<JumpLogic>();
+            Entity.UnBlockLogic<JumpLogic>();
         }
     }
 }

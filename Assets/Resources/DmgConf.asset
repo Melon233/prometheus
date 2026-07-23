@@ -19,20 +19,38 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 0.8251285
+      outSlope: 0.8251285
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.32731506
+    - serializedVersion: 3
+      time: 0.34670377
+      value: 0.450262
+      inSlope: 0.6590219
+      outSlope: 0.6590219
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.23381114
+      outWeight: 0.15710418
+    - serializedVersion: 3
+      time: 0.6856053
+      value: 0.733636
+      inSlope: 0.7692181
+      outSlope: 0.7692181
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.236933
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
+      inSlope: 1.0957028
+      outSlope: 1.0957028
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.21336961
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -43,17 +61,35 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 13.273494
+      outSlope: 13.273494
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.061392337
+    - serializedVersion: 3
+      time: 0.12367189
+      value: 2.7812672
+      inSlope: 0.06267046
+      outSlope: 0.06267046
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 1
+    - serializedVersion: 3
+      time: 0.2227422
+      value: 1.2250843
+      inSlope: -0.58533496
+      outSlope: -0.58533496
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.2500747
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -61,5 +97,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  height: 120
+  height: 500
   lifeTime: 1.5

@@ -10,7 +10,15 @@ namespace Xuan.Prometheus.Logic
             this.bindGo = bindGo;
             AddComp(bindGo.GetComponent<PropertyComponent>());
             AddComp(bindGo.GetComponent<SlimeComponent>());
+            AddComp(bindGo.GetComponent<EffectComponent>());
+            AddComp(bindGo.GetComponent<AttackComponent>());
+            AddComp(bindGo.GetComponent<SpineComponent>());
+            AddComp<EventComponent>();
             AddLogic<EnmityLogic>();
+            AddLogic<EffectLogic>();
+            AddLogic<AttackedLogic>();
+            AddLogic<PatrolLogic>();
+            AddLogic<DieLogic>();
         }
     }
 }

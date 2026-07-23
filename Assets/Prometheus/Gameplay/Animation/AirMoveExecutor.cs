@@ -20,14 +20,14 @@ namespace Xuan.Prometheus
         [SerializeField] AnimationReferenceAsset riseAni;
         [SerializeField] AnimationReferenceAsset fallAni;
         [SerializeField] AnimationReferenceAsset landAni;
-        public TrackEntry Execute(SpineComponent spine, AirMoveState state)
+        public TrackEntry Execute(AirMoveState state)
         {
             if (state == AirMoveState.Land)
-                return spine.Play(landAni, track: 1);
+                return spineComp.Play(landAni, track: 1);
             return state switch
             {
-                AirMoveState.Jump => spine.Play(jumpAni, nextAni: riseAni, nextLoop: true),
-                AirMoveState.Fall => spine.Play(fallAni),
+                AirMoveState.Jump => spineComp.Play(jumpAni, nextAni: riseAni, nextLoop: true),
+                AirMoveState.Fall => spineComp.Play(fallAni),
                 _ => null,
             };
         }

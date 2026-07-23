@@ -15,7 +15,7 @@ namespace Xuan.Prometheus
 
         private static void OnSignal(PlaySpineAnimationSignal signal, SignalContext context)
         {
-            context.Target.GetComponent<SpineComponent>().charaAniLib.atkExecutor.Execute(0, false);
+            context.Target.GetComponent<SpineComponent>().animationLib.atkExecutor.Execute(0, false);
         }
     }
 }

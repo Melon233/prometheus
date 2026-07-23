@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 
 namespace Xuan.Prometheus
 {
@@ -15,8 +16,8 @@ namespace Xuan.Prometheus
 
     public class XMap<TKey, TValue> : IXMap<TKey, TValue>, IEnumerable<TValue>
     {
-        private List<TValue> list;
-        private Dictionary<TKey, TValue> map;
+        private List<TValue> list = new();
+        private Dictionary<TKey, TValue> map = new();
 
         public IEnumerator<TValue> GetEnumerator()
         {
@@ -36,7 +37,7 @@ namespace Xuan.Prometheus
 
         public void Remove(TKey key)
         {
-            if (!map.TryGetValue(key, out var value))
+            if (map.TryGetValue(key, out var value))
             {
                 map.Remove(key);
                 list.Remove(value);

@@ -1,3 +1,6 @@
+using DG.Tweening;
+using UnityEngine;
+
 namespace Xuan.Prometheus.Component
 {
     public class PropertyComponent : MonoComponent
@@ -9,17 +12,18 @@ namespace Xuan.Prometheus.Component
         public float hp = 100f;
         public float maxHp = 100f;
         public HpBar hpBar;
-
+        public bool NoHp => hp <= 0;
         public void OnTakeDamage(float damage)
         {
-            if ((hp -= damage) < 0)
+            if ((hp -= damage) <= 0)
             {
                 hp = 0;
-                Entity.toDispose = true;
-                Destroy(gameObject);
+                DOVirtual.Float(1f, 0f, 1f, f =>
+                {
+                    hpBar.canvasGroup.alpha = f;
+                });
             }
-            FloatDamageKit.Instance.CastDamageText(30, transform.position);
-
+            FloatDamageKit.Instance.CastDamageText(damage, transform.position);
             hpBar.SetHp(hp / maxHp);
         }
     }

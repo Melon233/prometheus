@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
-            airMoveExecutor = spineComp.charaAniLib.airMoveExecutor;
+            airMoveExecutor = spineComp.animationLib.airMoveExecutor;
         }
 
         public override bool CanEnable()
@@ -31,7 +31,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnEnable()
         {
-            airMoveExecutor.Execute(spineComp, AirMoveState.Land);
+            airMoveExecutor.Execute(AirMoveState.Land);
         }
 
         public override void OnDisable()

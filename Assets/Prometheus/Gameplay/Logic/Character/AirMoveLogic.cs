@@ -18,7 +18,7 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
-            airMoveExecutor = spineComp.charaAniLib.airMoveExecutor;
+            airMoveExecutor = spineComp.animationLib.airMoveExecutor;
         }
 
         public override bool CanEnable()
@@ -49,7 +49,7 @@ namespace Xuan.Prometheus.Logic
         {
             motionComp.baseSpeed.y -= 9.8f * dt;
             if (motionComp.baseSpeed.y < 0f)
-                trackEntry = airMoveExecutor.Execute(spineComp, AirMoveState.Fall);
+                trackEntry = airMoveExecutor.Execute(AirMoveState.Fall);
             if (inputComp.moveDir != Vector2.zero)
             {
                 motionComp.baseSpeed = new Vector3(inputComp.moveDir.x * motionComp.walkVelo,
