@@ -17,7 +17,7 @@ namespace Prometheus.Gameplay
         public EnemySpawnConfig enemySpawnConfig;
         private void Awake()
         {
-            Application.targetFrameRate = 999;
+            // Application.targetFrameRate = 999;
             player = new PlayerEntity(GameObject.Find("Yefa"));
             // FillField<DataAttribute, IComponent>(player, player.AddComp);
             // FillField<LogicAttribute, ILogic>(player, player.AddLogic);

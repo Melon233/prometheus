@@ -30,26 +30,16 @@ namespace Xuan.Prometheus
                 return;
             }
 
-            var screenPosition = worldCamera.WorldToScreenPoint(worldPosition);
-            if (screenPosition.z <= 0f)
-                return;
-
             var canvasRect = canvas.transform as RectTransform;
-            var uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
-                ? null
-                : canvas.worldCamera;
-
-            if (canvasRect == null ||
-                !RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect, screenPosition, uiCamera, out var localPosition))
+            if (canvasRect == null)
             {
-                Debug.LogError("[FloatDamageKit] 无法将伤害位置转换到 Canvas 坐标。");
+                Debug.LogError("[FloatDamageKit] Canvas 缺少 RectTransform。");
                 return;
             }
 
             var instance = Instantiate(config.dmgComp, canvasRect, false);
             instance.gameObject.SetActive(true);
-            instance.Initialize(damage, localPosition, config);
+            instance.Initialize(damage, worldPosition, worldCamera, canvas, config);
         }
 
         private bool EnsureReady()

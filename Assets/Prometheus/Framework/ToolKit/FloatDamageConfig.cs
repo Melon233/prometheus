@@ -8,7 +8,8 @@ namespace Xuan.Prometheus
         public FloatDmgComponent dmgComp;
         public AnimationCurve yCurve;
         public AnimationCurve scaleCurve;
-
+        public float radius = 1f;
+        public float startHeight = 1f;
         [Min(0f)]
         public float height;
 
