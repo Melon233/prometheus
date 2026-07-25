@@ -17,14 +17,6 @@
       },
       "hash": "c14de1e6dc01ab42d2bb358730cff954bce0ce6b"
     },
-    "com.esotericsoftware.spine.timeline": {
-      "version": "file:C:/Users/Wiki/Downloads/新建文件夹/com.esotericsoftware.spine.timeline-3.8",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "com.unity.timeline": "1.2.10"
-      }
-    },
     "com.esotericsoftware.spine.urp-shaders": {
       "version": "file:com.esotericsoftware.spine.urp-shaders-3.8-2019.3",
       "depth": 0,

@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
-    "com.esotericsoftware.spine.timeline": "file:C:/Users/Wiki/Downloads/新建文件夹/com.esotericsoftware.spine.timeline-3.8",
     "com.unity.2d.common": "4.2.1",
     "com.unity.collab-proxy": "2.0.4",
     "com.unity.ide.rider": "3.0.36",
