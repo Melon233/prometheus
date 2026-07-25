@@ -31,6 +31,7 @@ namespace Xuan.Prometheus.Logic
         {
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<TalentLogic>();
+            Entity.BlockLogic<DodgeLogic>();
             airMoveExecutor.Execute(AirMoveState.Jump);
             motionComp.baseSpeed.y = motionComp.jumpVelo;
         }
@@ -39,6 +40,7 @@ namespace Xuan.Prometheus.Logic
         {
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<TalentLogic>();
+            Entity.UnBlockLogic<DodgeLogic>();
         }
 
         public override void OnUpdate(float dt)

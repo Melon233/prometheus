@@ -37,12 +37,14 @@ namespace Xuan.Prometheus.Logic
         {
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<TalentLogic>();
+            Entity.BlockLogic<DodgeLogic>();
         }
 
         public override void OnDisable()
         {
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<TalentLogic>();
+            Entity.UnBlockLogic<DodgeLogic>();
         }
 
         public override void OnUpdate(float dt)

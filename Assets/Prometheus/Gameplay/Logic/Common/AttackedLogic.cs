@@ -23,6 +23,7 @@ namespace Xuan.Prometheus
             Entity.BlockLogic<PatrolLogic>();
             trackEntry = attackedExecutor.Execute();
             trackEntry.Complete += (e) => Entity.UnBlockLogic<PatrolLogic>();
+            trackEntry.Interrupt += (e) => Entity.UnBlockLogic<PatrolLogic>();
         }
 
         public override bool CanDisable()
