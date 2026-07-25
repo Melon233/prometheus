@@ -2558,7 +2558,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000011115520770}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23754cb233b76a647b9d8598787994f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 5fc861774284aba438c69fdfc8177804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MinLightIntensity: 0.5
@@ -2572,7 +2572,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000013728492720}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23754cb233b76a647b9d8598787994f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 5fc861774284aba438c69fdfc8177804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MinLightIntensity: 0.5
@@ -2586,7 +2586,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000011041373460}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23754cb233b76a647b9d8598787994f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 5fc861774284aba438c69fdfc8177804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MinLightIntensity: 0.5
@@ -2600,7 +2600,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000010309930552}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23754cb233b76a647b9d8598787994f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 5fc861774284aba438c69fdfc8177804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MinLightIntensity: 0.5

@@ -12,7 +12,9 @@ using UnityEngine;
 public sealed class ParticlePrefabPreviewWindow : EditorWindow
 {
     const float MinDistance = 0.05f;
+    const float InitialDistance = 1.5f;
     const float MaxDeltaTime = 1f / 20f;
+    const float AxisLengthRelativeToView = 0.7f;
 
     PreviewRenderUtility preview;
     GameObject prefab;
@@ -23,8 +25,8 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
     float previewTime;
     double lastUpdateTime;
     Vector2 orbit = new Vector2(25f, -35f);
-    float distance = 3f;
-    Vector3 target;
+    float distance = InitialDistance;
+    Vector3 target = Vector3.zero;
     Rect previewRect;
 
     [MenuItem("Tools/Effects/Particle Prefab Preview")]
@@ -118,6 +120,9 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
             if (GUILayout.Button("Restart", EditorStyles.toolbarButton))
                 RestartPreview();
 
+            if (GUILayout.Button("Origin", EditorStyles.toolbarButton))
+                ResetViewToOrigin();
+
             if (GUILayout.Button("Frame", EditorStyles.toolbarButton))
                 FramePreview();
         }
@@ -159,7 +164,7 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
         }
 
         RestartPreview();
-        FramePreview();
+        ResetViewToOrigin();
     }
 
     void RestartPreview()
@@ -185,6 +190,7 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
         preview.camera.Render();
         var texture = preview.EndPreview();
         GUI.DrawTexture(rect, texture, ScaleMode.StretchToFill, false);
+        DrawXZAxes(rect);
     }
 
     void ConfigureCamera()
@@ -199,6 +205,82 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
         preview.camera.backgroundColor = new Color(0.08f, 0.08f, 0.08f, 1f);
     }
 
+    void ResetViewToOrigin()
+    {
+        target = Vector3.zero;
+        orbit = new Vector2(25f, -35f);
+        distance = InitialDistance;
+        Repaint();
+    }
+
+    void DrawXZAxes(Rect rect)
+    {
+        if (preview == null || preview.camera == null)
+            return;
+
+        // Size the axes from the camera's visible height so their ends stay on screen.
+        var halfViewHeight = distance *
+            Mathf.Tan(preview.camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+        var axisLength = Mathf.Max(MinDistance, halfViewHeight * AxisLengthRelativeToView);
+        var origin = WorldToPreviewPoint(Vector3.zero, rect);
+        var xNegative = WorldToPreviewPoint(Vector3.left * axisLength, rect);
+        var xPositive = WorldToPreviewPoint(Vector3.right * axisLength, rect);
+        var zNegative = WorldToPreviewPoint(Vector3.back * axisLength, rect);
+        var zPositive = WorldToPreviewPoint(Vector3.forward * axisLength, rect);
+
+        Handles.BeginGUI();
+
+        DrawAxisHalf(origin, xNegative, new Color(0.8f, 0.15f, 0.15f, 0.4f));
+        DrawAxisHalf(origin, xPositive, new Color(1f, 0.2f, 0.2f, 0.95f));
+        DrawAxisHalf(origin, zNegative, new Color(0.15f, 0.4f, 0.9f, 0.4f));
+        DrawAxisHalf(origin, zPositive, new Color(0.2f, 0.55f, 1f, 0.95f));
+
+        EditorGUI.DrawRect(
+            new Rect(origin.x - 2f, origin.y - 2f, 4f, 4f),
+            new Color(1f, 1f, 1f, 0.9f));
+        DrawAxisLabel(xPositive, "X", new Color(1f, 0.35f, 0.35f));
+        DrawAxisLabel(zPositive, "Z", new Color(0.35f, 0.65f, 1f));
+
+        Handles.EndGUI();
+    }
+
+    Vector3 WorldToPreviewPoint(Vector3 worldPosition, Rect rect)
+    {
+        var viewportPoint = preview.camera.WorldToViewportPoint(worldPosition);
+        return new Vector3(
+            rect.x + viewportPoint.x * rect.width,
+            rect.y + (1f - viewportPoint.y) * rect.height,
+            viewportPoint.z);
+    }
+
+    static void DrawAxisHalf(Vector3 origin, Vector3 end, Color color)
+    {
+        if (origin.z <= 0f || end.z <= 0f)
+            return;
+
+        // GUI handles must use a 2D depth. Camera-space Z is kept only for visibility checks.
+        var origin2D = new Vector3(origin.x, origin.y, 0f);
+        var end2D = new Vector3(end.x, end.y, 0f);
+        Handles.color = new Color(0f, 0f, 0f, 0.75f);
+        Handles.DrawAAPolyLine(5f, origin2D, end2D);
+        Handles.color = color;
+        Handles.DrawAAPolyLine(3f, origin2D, end2D);
+    }
+
+    static void DrawAxisLabel(Vector3 position, string text, Color color)
+    {
+        if (position.z <= 0f)
+            return;
+
+        var previousContentColor = GUI.contentColor;
+        GUI.contentColor = color;
+        GUI.Label(
+            new Rect(position.x + 4f, position.y - 8f, 16f, 16f),
+            text,
+            EditorStyles.miniBoldLabel);
+        GUI.contentColor = previousContentColor;
+    }
+
     void FramePreview()
     {
         if (instance == null)
@@ -208,7 +290,7 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
         if (renderers.Length == 0)
         {
             target = instance.transform.position;
-            distance = 3f;
+            distance = InitialDistance;
             return;
         }
 
