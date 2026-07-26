@@ -5,15 +5,13 @@ namespace Xuan.Prometheus.Logic
 {
     public class RotateLogic : Logic
     {
-        private SpineComponent aniComp;
-        private InputComponent inputComp;
-        MotionComponent motionComp;
+        InputComponent inputComp;
+        SpineComponent spineComp;
         public override void AfterNew()
         {
             LogicGroup = LogicGroup.Gameplay;
-            Entity.TryGetComp(out aniComp);
             Entity.TryGetComp(out inputComp);
-            Entity.TryGetComp(out motionComp);
+            Entity.TryGetComp(out spineComp);
         }
 
         public override bool CanEnable()
@@ -36,8 +34,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
-            if (inputComp.moveDir.x > 0) { aniComp.CurFaceDir = FaceDir.Right; motionComp.rotateRoot.rotation = Quaternion.Euler(Vector3.zero); }
-            else if (inputComp.moveDir.x < 0) { aniComp.CurFaceDir = FaceDir.Left; motionComp.rotateRoot.rotation = Quaternion.Euler(new Vector3(0f, 180f, 0f)); }
+            spineComp.SetFaceDir(inputComp.moveDir);
         }
 
 

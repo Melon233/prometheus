@@ -8,6 +8,7 @@ namespace Xuan.Prometheus.Logic
     {
         InputComponent inputComp;
         SpineComponent spineComp;
+        SpineComponent motionComp;
         AttackComponent atkComp;
         SpecialAttackComponent specialAtkComp;
         SkillComponent skillComp;
@@ -18,7 +19,7 @@ namespace Xuan.Prometheus.Logic
         UltimateExecutor ultimateExecutor;
         SkillExecutor skillExecutor;
         SpecialAttackExecutor specialAttackExecutor;
-
+        PropertyComponent propComp;
 
         public void OnTriggerEnter(Collider other)
         {
@@ -31,7 +32,7 @@ namespace Xuan.Prometheus.Logic
                     return;
                 }
                 Debug.Log($"攻击命中：{effectComp.name}");
-                effectComp.toAddEffects.Add(new DamageEffect(effectComp.Entity));
+                effectComp.toAddEffects.Add(new DamageEffect(effectComp.Entity, propComp.GetAttackDamage()));
                 effectComp.toAddEffects.Add(new FireDotEffect(effectComp.Entity));
             }
         }
@@ -42,6 +43,8 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out atkComp);
+            Entity.TryGetComp(out motionComp);
+            Entity.TryGetComp(out propComp);
             // Entity.TryGetComp(out specialAtkComp);
             // Entity.TryGetComp(out skillComp);
             // Entity.TryGetComp(out ultComp);
@@ -69,6 +72,7 @@ namespace Xuan.Prometheus.Logic
         {
             if (inputComp.wasAtkPressedThisFrame && atkComp.canCombo)
             {
+                spineComp.SetFaceDir(inputComp.moveDir);
                 atkComp.curTrackEntry = atkExecutor.Execute(atkComp.nextComboIndex, inputComp.moveDir != Vector2.zero);
                 atkComp.nextComboIndex++;
                 atkComp.canCombo = false;
@@ -96,6 +100,7 @@ namespace Xuan.Prometheus.Logic
             Entity.BlockLogic<JumpLogic>();
             Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<RotateLogic>();
+            Entity.BlockLogic<DodgeLogic>();
         }
 
         public override void OnDisable()
@@ -104,6 +109,7 @@ namespace Xuan.Prometheus.Logic
             Entity.UnBlockLogic<MotionLogic>();
             Entity.UnBlockLogic<RotateLogic>();
             Entity.UnBlockLogic<JumpLogic>();
+            Entity.UnBlockLogic<DodgeLogic>();
         }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Xuan.Prometheus
 {
 
-
+    [Obsolete]
     /// <summary>
     /// A data-only timeline. The list uses SerializeReference so it can contain any Signal subtype.
     /// </summary>

@@ -13,7 +13,7 @@ namespace Xuan.Prometheus.Logic
         private SpineComponent aniComp;
         private TrackEntry dodgeAni;
         private InputComponent inputComp;
-        private MotionComponent motionComp;
+        private SpineComponent motionComp;
 
         public override void AfterNew()
         {

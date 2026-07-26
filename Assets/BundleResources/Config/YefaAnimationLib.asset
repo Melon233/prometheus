@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d95d7e353c374e43a9e50a9077dd812, type: 3}
+  m_Name: YefaAnimationLib
+  m_EditorClassIdentifier: 
+  skeletonDataAsset: {fileID: 11400000, guid: 27d40a5c4b3cf944688c0b183e56f327, type: 2}
+  hitStart: hit_start
+  hitEnd: hit_end
+  atkExecutor:
+    atkAnis:
+    - {fileID: 11400000, guid: 708e47660af050345ac8b098e9093954, type: 2}
+    - {fileID: 11400000, guid: 4c18896d9064d8c48ad312470b151750, type: 2}
+    - {fileID: 11400000, guid: 9ff5df920cbf59445b67a29db6679d49, type: 2}
+    - {fileID: 11400000, guid: ca684cfb85afd904b98d4f722cdda892, type: 2}
+    atkMoveAnis:
+    - {fileID: 11400000, guid: 913af5bde6decd545bc1c52615d5ed85, type: 2}
+    - {fileID: 11400000, guid: b97afd70750830547b64fab1c464e02e, type: 2}
+    - {fileID: 11400000, guid: 9ff5df920cbf59445b67a29db6679d49, type: 2}
+    - {fileID: 11400000, guid: c9f67865f04ee194bb2752a96ccdb81b, type: 2}
+    hasVfx: 1
+    atkVfx: 00000000010000000200000003000000
+    atkSfx:
+    - {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
+    - {fileID: 8300000, guid: 96dce5d38fb6e7f41aab6604e84c7d0b, type: 3}
+    - {fileID: 8300000, guid: dc0cb85044ee16d43a0e161da49bc36f, type: 3}
+    - {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
+  idleExecutor:
+    idleAni: {fileID: 11400000, guid: 005083d14ae8de842ac8e16f5994e4dd, type: 2}
+  groundMoveExecutor:
+    groundMoveAni: {fileID: 11400000, guid: 357b629127e2ccd41abb8a46e7e78a81, type: 2}
+  dodgeExecutor:
+    dodgeAni: {fileID: 0}
+  airMoveExecutor:
+    jumpAni: {fileID: 11400000, guid: 0652071da607aa047bd08cfbade1f823, type: 2}
+    riseAni: {fileID: 11400000, guid: e265f9c0960db4341ac84b712c2074a5, type: 2}
+    fallAni: {fileID: 11400000, guid: b0e6b03641ffbbd4397e7b3a50a4f200, type: 2}
+    landAni: {fileID: 11400000, guid: 156d1ee6111613a41a01018569d329ec, type: 2}
+  ultimateExecutor:
+    ultimateAni: {fileID: 11400000, guid: 08aa1b470a795c64da25e7f952468c09, type: 2}
+    ultimateAudio: {fileID: 8300000, guid: 329278a9a60ea7641a22379c6bccbaba, type: 3}
+    ultVfx: 5
+  skillExecutor:
+    skillStartAni: {fileID: 11400000, guid: 27d5caf5854274c45987588bcd0de504, type: 2}
+    skillAni: {fileID: 11400000, guid: ee8e39e3041033f48a4a822cc5d3d3eb, type: 2}
+    skillAudio: {fileID: 8300000, guid: 4e529cc69e89e1f4dbed8cb0097f44c1, type: 3}
+    skillVfx: 4
+  specialAttackExecutor:
+    specialAttackAni: {fileID: 11400000, guid: 0c85288e288d93d43b2bae14d04345ec, type: 2}
+  attackedExecutor:
+    attackedAni: {fileID: 11400000, guid: 498bf3a45bf1b6e42b5f899ba35769af, type: 2}
+    attackedSfx: {fileID: 8300000, guid: 74d1ee2c4cf2c45479bd1aceec8ccb3e, type: 3}
+    hasNextAni: 1
+    nextAttackedAni: {fileID: 11400000, guid: 56f8b36f7b7fd71458676a8886b81107, type: 2}
+  dieExecutor:
+    dieAnimation: {fileID: 11400000, guid: e7545d291581cab4a882cd5f34dd7aaa, type: 2}

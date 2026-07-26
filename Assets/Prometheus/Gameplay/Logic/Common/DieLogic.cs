@@ -1,5 +1,3 @@
-using System;
-using Spine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 
@@ -14,11 +12,11 @@ namespace Xuan.Prometheus
         {
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out eventComp);
-            eventComp.AddListener(EventName.Die, OnDie);
+            eventComp.AddListener<DieEvent>(OnDie);
             dieExecutor = spineComp.animationLib.dieExecutor;
         }
 
-        private void OnDie(object obj)
+        private void OnDie(DieEvent evt)
         {
             Entity.BlockLogic<PatrolLogic>();
             dieExecutor.Execute();
@@ -42,7 +40,7 @@ namespace Xuan.Prometheus
 
         public override void OnDispose()
         {
-            eventComp.RemoveListener(EventName.Die, OnDie);
+            eventComp.RemoveListener<DieEvent>(OnDie);
         }
 
         public override void OnEnable()

@@ -5,26 +5,31 @@ namespace Xuan.Prometheus.Component
 {
     public class PropertyComponent : MonoComponent
     {
-        public float atk = 30f;
-        public float critDmg = 0.5f;
-        public float critRate = 0.1f;
-        public float def = 10f;
-        public float hp = 100f;
-        public float maxHp = 100f;
-        public HpBar hpBar;
-        public bool NoHp => hp <= 0;
+        public PropertyConfig propConfig;
+        public float curHp;
+        public bool NoHp => curHp <= 0;
+        void Start()
+        {
+            curHp = propConfig.hp;
+        }
         public void OnTakeDamage(float damage)
         {
-            if ((hp -= damage) <= 0)
+            if ((curHp -= damage) <= 0)
             {
-                hp = 0;
-                DOVirtual.Float(1f, 0f, 1f, f =>
-                {
-                    hpBar.canvasGroup.alpha = f;
-                });
+                curHp = 0;
             }
             FloatDamageKit.Instance.CastDamageText(damage, transform.position);
-            hpBar.SetHp(hp / maxHp);
+        }
+        public void OnRecoverHp(float recover)
+        {
+            if ((curHp += recover) > propConfig.hp)
+            {
+                curHp = propConfig.hp;
+            }
+        }
+        public float GetAttackDamage()
+        {
+            return propConfig.atk * (1f + (Random.Range(0f, 1f) >= propConfig.critRate ? propConfig.critDmg : 0));
         }
     }
 }

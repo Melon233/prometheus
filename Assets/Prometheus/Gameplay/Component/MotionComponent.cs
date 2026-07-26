@@ -13,7 +13,7 @@ namespace Xuan.Prometheus.Component
         public float gravity = 9.8f;
         public bool wasGroundedLastFrame;
         public bool landThisFrame;
-        public Transform rotateRoot;
         public float jumpVelo = 6f;
+
     }
 }

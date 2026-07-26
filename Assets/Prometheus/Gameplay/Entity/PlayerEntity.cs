@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic.Talent;
@@ -8,7 +9,9 @@ namespace Xuan.Prometheus.Logic
     {
         public PlayerEntity(GameObject bindGo)
         {
+            if (bindGo == null) throw new ArgumentNullException(nameof(bindGo));
             this.bindGo = bindGo;
+            bindGo.SetActive(true);
             AddComp<InputComponent>();
             AddComp<EventComponent>();
             AddComp<SpecialAttackComponent>();
@@ -16,6 +19,8 @@ namespace Xuan.Prometheus.Logic
             AddComp(bindGo.GetComponent<MotionComponent>());
             AddComp(bindGo.GetComponent<AttackComponent>());
             AddComp(bindGo.GetComponent<EffectComponent>());
+            AddComp(bindGo.GetComponent<PropertyComponent>());
+
             AddLogic<GroundMoveLogic>();
             AddLogic<MotionLogic>();
             AddLogic<TalentLogic>();

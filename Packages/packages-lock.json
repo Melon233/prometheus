@@ -34,6 +34,18 @@
         "com.unity.modules.unitywebrequest": "1.0.0"
       }
     },
+    "com.tuyoogame.yooasset": {
+      "version": "3.0.5",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.assetbundle": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0",
+        "com.unity.scriptablebuildpipeline": "1.21.25"
+      },
+      "url": "https://package.openupm.com"
+    },
     "com.unity.2d.common": {
       "version": "4.2.1",
       "depth": 0,
@@ -126,6 +138,13 @@
         "com.unity.render-pipelines.core": "12.1.15",
         "com.unity.shadergraph": "12.1.15"
       }
+    },
+    "com.unity.scriptablebuildpipeline": {
+      "version": "1.21.25",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
     },
     "com.unity.searcher": {
       "version": "4.9.1",

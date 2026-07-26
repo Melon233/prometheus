@@ -36,18 +36,23 @@ namespace Xuan.Prometheus.Component
     }
     public class DamageEffect : Effect
     {
-        public float damage = 10f;
-        public DamageEffect(Entity owner) : base(owner)
+        public float damage;
+        public DamageEffect(Entity owner, float damage) : base(owner)
         {
             isInstant = true;
+            this.damage = damage; // 100ms
         }
         public override void OnUpdate(float dt)
         {
             owner.TryGetComp(out PropertyComponent propComp);
             owner.TryGetComp(out EventComponent eventComp);
             propComp.OnTakeDamage(damage);
-            if (propComp.NoHp) eventComp.Invoke(EventName.Die);//控制死亡，最大化Effect能力边界
-            else eventComp.Invoke(EventName.Attacked);
+            if (propComp.NoHp) eventComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
+            else
+            {
+                eventComp.Invoke(new AttackedEvent());
+                eventComp.Invoke(new HpChangedEvent() { hp = propComp.curHp, maxHp = propComp.propConfig.hp });
+            }
         }
     }
     public class FireDotEffect : Effect
@@ -69,8 +74,12 @@ namespace Xuan.Prometheus.Component
                 owner.TryGetComp(out PropertyComponent propComp);
                 owner.TryGetComp(out EventComponent eventComp);
                 propComp.OnTakeDamage(dotDmg);
-                if (propComp.NoHp) eventComp.Invoke(EventName.Die);//控制死亡，最大化Effect能力边界
-                else eventComp.Invoke(EventName.Attacked);
+                if (propComp.NoHp) eventComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
+                else
+                {
+                    eventComp.Invoke(new AttackedEvent());
+                    eventComp.Invoke(new HpChangedEvent() { hp = propComp.curHp, maxHp = propComp.propConfig.hp });
+                }
             }
         }
     }

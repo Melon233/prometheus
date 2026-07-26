@@ -1,16 +1,22 @@
-using Codice.Client.Common;
-using Xuan.Prometheus.Config;
+using UnityEngine;
+using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus
 {
     public class EnmityLogic : Logic.Logic
     {
-        SlimeComponent slimeComp;
+        EnmityComponent enmityComp;
+        PatrolComponent patrolComp;
+        SpineComponent spineComp;
+        EnemyAttackComponent enemyAttackComp;
         public override void AfterNew()
         {
-            Entity.TryGetComp(out slimeComp);
-            slimeComp.hp = slimeComp.slimeConfig.maxHp;
+            Entity.TryGetComp(out patrolComp);
+            Entity.TryGetComp(out enmityComp);
+            Entity.TryGetComp(out spineComp);
+            Entity.TryGetComp(out enemyAttackComp);
+            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.chaseRadius, Color.yellow, 999f);
         }
 
         public override bool CanDisable()
@@ -20,35 +26,39 @@ namespace Xuan.Prometheus
 
         public override bool CanEnable()
         {
-            return slimeComp.enmityTarget != null;
+            return enmityComp.CheckEnmity();
         }
 
         public override void OnDisable()
         {
-
+            Entity.UnBlockLogic<PatrolLogic>();
         }
 
         public override void OnDispose()
         {
-
         }
 
         public override void OnEnable()
         {
-
+            spineComp.animationLib.groundMoveExecutor.Execute();
+            Entity.BlockLogic<PatrolLogic>();
         }
 
         public override void OnUpdate(float dt)
         {
-            var vec = (slimeComp.enmityTarget.position - slimeComp.transform.position);
-            // if (vec.magnitude < slimeData.slimeConfig.enmityRadius)
-            // {
-
-            // }
-            // else
+            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
+            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enemyAttackComp.enemyAttackConfig.attckRadius, Color.blue);
+            if (enmityComp.needGoHome)
             {
-                slimeComp.cc.Move(vec.normalized * slimeComp.slimeConfig.walkVelo * dt);
+                patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.spawnPoint - patrolComp.transform.position).normalized);
+                if (Vector3.Distance(patrolComp.transform.position, patrolComp.spawnPoint) < patrolComp.patrolConfig.patrolRadius) enmityComp.needGoHome = false;
             }
+            else
+            {
+                patrolComp.cc.Move(dt * enmityComp.enmityConfig.chaseSpeed * (enmityComp.target.position - patrolComp.transform.position).normalized);
+                if (Vector3.Distance(patrolComp.transform.position, patrolComp.spawnPoint) > enmityComp.enmityConfig.chaseRadius) enmityComp.needGoHome = true;
+            }
+            spineComp.SetFaceDir(patrolComp.cc.velocity.x);
         }
     }
 }

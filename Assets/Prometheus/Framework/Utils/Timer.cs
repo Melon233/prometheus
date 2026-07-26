@@ -20,21 +20,22 @@ namespace Xuan.Prometheus.Component
         private float leftTime;
         private Action onTimeOut;
         private float totalTime;
-
+        public bool IsActive => isRunning;
+        public bool IsTimeOut => leftTime <= 0;
         public Timer(float totalTime, Action onTimeOut = null)
         {
             this.totalTime = totalTime;
             this.onTimeOut = onTimeOut;
         }
-
-        public void Activate()
+        public void Reset(bool active = false)
         {
-            isRunning = true;
+            isRunning = active;
+            leftTime = totalTime;
+            elapsedTime = 0f;
         }
-
-        public void Pause()
+        public void SetActive(bool active)
         {
-            isRunning = false;
+            isRunning = active;
         }
 
         public void SetTotalTime(float total)

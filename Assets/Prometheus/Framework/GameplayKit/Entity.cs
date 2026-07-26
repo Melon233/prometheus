@@ -122,10 +122,10 @@ namespace Xuan.Prometheus.Logic
         }
         void Dispose()
         {
+            foreach (var logic in logicList) logic.OnDispose();
             comps.Clear();
             logicList.Clear();
             logics.Clear();
-            foreach (var logic in logicList) logic.OnDispose();
             GameObject.Destroy(bindGo, delay);
         }
         public void CheckLogic<T>(T logic) where T : ILogic

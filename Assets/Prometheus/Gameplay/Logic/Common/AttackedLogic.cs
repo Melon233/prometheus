@@ -15,15 +15,15 @@ namespace Xuan.Prometheus
             Entity.TryGetComp(out eventComp);
             Entity.TryGetComp(out spineComp);
             attackedExecutor = spineComp.animationLib.attackedExecutor;
-            eventComp.AddListener(EventName.Attacked, OnAttacked);
+            eventComp.AddListener<AttackedEvent>(OnAttacked);
         }
 
         private void OnAttacked(object obj)
         {
-            Entity.BlockLogic<PatrolLogic>();
+            eventComp.Invoke(new StunStartEvent());
             trackEntry = attackedExecutor.Execute();
-            trackEntry.Complete += (e) => Entity.UnBlockLogic<PatrolLogic>();
-            trackEntry.Interrupt += (e) => Entity.UnBlockLogic<PatrolLogic>();
+            trackEntry.Complete += (e) => eventComp.Invoke(new StunEndEvent());
+            trackEntry.Interrupt += (e) => eventComp.Invoke(new StunEndEvent());
         }
 
         public override bool CanDisable()
@@ -43,7 +43,7 @@ namespace Xuan.Prometheus
 
         public override void OnDispose()
         {
-            eventComp.RemoveListener(EventName.Attacked, OnAttacked);
+            eventComp.RemoveListener<AttackedEvent>(OnAttacked);
         }
 
         public override void OnEnable()

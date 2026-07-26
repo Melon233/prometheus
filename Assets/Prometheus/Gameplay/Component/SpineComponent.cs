@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
@@ -39,8 +38,11 @@ namespace Xuan.Prometheus.Component
     public class SpineComponent : MonoComponent
     {
         AnimationState aniState;
+
         [NonSerialized] public SkeletonAnimation spineAnimator;
         public AnimationLibrary animationLib;
+        public Transform rotateRoot;
+
         public FaceDir CurFaceDir
         {
             get
@@ -53,10 +55,30 @@ namespace Xuan.Prometheus.Component
             set
             {
                 if (value == FaceDir.Right)
+                {
                     spineAnimator.skeleton.ScaleX = 1;
+                    rotateRoot.rotation = Quaternion.Euler(Vector3.zero);
+                }
                 else
+                {
                     spineAnimator.skeleton.ScaleX = -1;
+                    rotateRoot.rotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                }
             }
+        }
+        public void SetFaceDir(Vector2 moveDir)
+        {
+            if (moveDir.x > 0)
+                CurFaceDir = FaceDir.Right;
+            else if (moveDir.x < 0)
+                CurFaceDir = FaceDir.Left;
+        }
+        public void SetFaceDir(float x)
+        {
+            if (x > 0)
+                CurFaceDir = FaceDir.Right;
+            else if (x < 0)
+                CurFaceDir = FaceDir.Left;
         }
 
         private void Awake()
@@ -122,9 +144,5 @@ namespace Xuan.Prometheus.Component
         {
             return trackEntry.AnimationTime / trackEntry.Animation.Duration;
         }
-        // public static TrackEntry Link(this TrackEntry trackEntry, AnimationReferenceAsset animation)
-        // {
-        //     trackEntry.Animation.
-        // }
     }
 }

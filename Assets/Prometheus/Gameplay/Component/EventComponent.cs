@@ -3,39 +3,47 @@ using System.Collections.Generic;
 
 namespace Xuan.Prometheus
 {
-    public enum EventName
+    public class AttackedEvent : IEvent { }
+    public class StunStartEvent : IEvent { }
+    public class StunEndEvent : IEvent { }
+    public class DieEvent : IEvent { }
+    public class HpChangedEvent : IEvent
     {
-        Attacked,
-        Die
+        public float hp;
+        public float maxHp;
     }
+
     public class EventComponent : Component.Component
     {
-        Dictionary<EventName, List<Action<object>>> eventDict = new();
-        public void AddListener(EventName e, Action<object> action)
+        Dictionary<Type, Delegate> eventDict = new();
+        public void AddListener<T>(Action<T> action) where T : IEvent
         {
-            if (!eventDict.ContainsKey(e))
-            {
-                eventDict.Add(e, new List<Action<object>>());
-            }
-            eventDict[e].Add(action);
+            Type type = typeof(T);
+
+            if (eventDict.TryGetValue(type, out Delegate callbacks))
+                eventDict[type] = Delegate.Combine(callbacks, action);
+            else
+                eventDict[type] = action;
         }
 
-        public void RemoveListener(EventName e, Action<object> action)
+        public void RemoveListener<T>(Action<T> action)
+         where T : IEvent
         {
-            if (eventDict.ContainsKey(e))
-            {
-                eventDict[e].Remove(action);
-            }
+            Type type = typeof(T);
+
+            if (!eventDict.TryGetValue(type, out Delegate callbacks))
+                return;
+
+            callbacks = Delegate.Remove(callbacks, action);
+            if (callbacks == null)
+                eventDict.Remove(type);
+            else
+                eventDict[type] = callbacks;
         }
-        public void Invoke(EventName e, object param = null)
+        public void Invoke<T>(T evt) where T : IEvent
         {
-            if (eventDict.ContainsKey(e))
-            {
-                foreach (var action in eventDict[e])
-                {
-                    action(param);
-                }
-            }
+            if (eventDict.TryGetValue(typeof(T), out Delegate callbacks))
+                ((Action<T>)callbacks)?.Invoke(evt);
         }
     }
 }

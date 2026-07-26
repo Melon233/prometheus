@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,14 @@ namespace Xuan.Prometheus.Component
         public float delta;
         public bool wasHpChangedThisFrame;
         public CanvasGroup canvasGroup;
+        public EventComponent evtComp;
+        public PropertyComponent propComp;
+        void Start()
+        {
+            propComp.Entity.TryGetComp(out evtComp);
+            evtComp.AddListener<HpChangedEvent>(SetHp);
+            evtComp.AddListener<DieEvent>(OnDie);
+        }
         private void Update()
         {
             if (wasHpChangedThisFrame)
@@ -40,11 +49,14 @@ namespace Xuan.Prometheus.Component
 
             wasHpChangedThisFrame = false;
         }
-
-        public void SetHp(float p)
+        public void SetHp(HpChangedEvent evt)
         {
-            hpImg.fillAmount = p;
+            hpImg.fillAmount = evt.hp / evt.maxHp;
             wasHpChangedThisFrame = true;
+        }
+        private void OnDie(DieEvent evt)
+        {
+            DOVirtual.Float(1f, 0f, 1f, f => canvasGroup.alpha = f);
         }
     }
 }
