@@ -9,5 +9,6 @@ namespace Xuan.Prometheus
         public float patrolSpeed = 2f;
         public float moveDelta = 3f;
         public float moveInterval = 3f;
+        public float patrolFrequency = 2f;
     }
 }

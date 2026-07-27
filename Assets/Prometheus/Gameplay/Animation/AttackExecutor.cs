@@ -36,6 +36,8 @@ namespace Xuan.Prometheus
                 else if (evt.ToString() == lib.hitEnd) atkComp.atkCollider.cod.enabled = false;
             };
             trackEntry.Complete += (entry) => atkComp.atkCollider.cod.enabled = false;
+            trackEntry.Interrupt += (entry) => atkComp.atkCollider.cod.enabled = false;
+
             return trackEntry;
         }
         private void OnEvent(int index, Spine.Event spineEvent)

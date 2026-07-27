@@ -16,26 +16,21 @@ namespace Xuan.Prometheus.Component
     public class Timer
     {
         private float elapsedTime;
-        private bool isRunning;
         private float leftTime;
         private Action onTimeOut;
         private float totalTime;
-        public bool IsActive => isRunning;
         public bool IsTimeOut => leftTime <= 0;
         public Timer(float totalTime, Action onTimeOut = null)
         {
             this.totalTime = totalTime;
             this.onTimeOut = onTimeOut;
+            this.leftTime = totalTime;
+            this.elapsedTime = 0f;
         }
-        public void Reset(bool active = false)
+        public void Reset()
         {
-            isRunning = active;
             leftTime = totalTime;
             elapsedTime = 0f;
-        }
-        public void SetActive(bool active)
-        {
-            isRunning = active;
         }
 
         public void SetTotalTime(float total)
@@ -46,18 +41,18 @@ namespace Xuan.Prometheus.Component
         public void SetLeftTime(float time)
         {
             leftTime = time;
-            elapsedTime = totalTime - elapsedTime;
+            elapsedTime = totalTime - leftTime;
         }
 
         public void OnUpdate(float dt)
         {
-            if (!isRunning) return;
             elapsedTime += dt;
             leftTime = totalTime - elapsedTime;
             if (leftTime <= 0)
             {
                 onTimeOut?.Invoke();
-                isRunning = false;
+                elapsedTime = totalTime;
+                leftTime = 0f; // Reset left time to avoid negative values
             }
         }
     }

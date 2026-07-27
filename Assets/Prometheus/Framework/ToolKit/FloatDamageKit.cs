@@ -18,7 +18,7 @@ namespace Xuan.Prometheus
             ResolveCanvas();
         }
 
-        public void CastDamageText(float damage, Vector3 worldPosition)
+        public void CastDamageText(float damage, Vector3 worldPosition, bool isHeal = false)
         {
             if (!EnsureReady())
                 return;
@@ -39,7 +39,7 @@ namespace Xuan.Prometheus
 
             var instance = Instantiate(config.dmgComp, canvasRect, false);
             instance.gameObject.SetActive(true);
-            instance.Initialize(damage, worldPosition, worldCamera, canvas, config);
+            instance.Initialize(damage, worldPosition, worldCamera, canvas, config, isHeal);
         }
 
         private bool EnsureReady()

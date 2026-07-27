@@ -31,7 +31,8 @@ namespace Xuan.Prometheus
             Vector3 spawnWorldPosition,
             Camera camera,
             Canvas ownerCanvas,
-            FloatDamageConfig damageConfig)
+            FloatDamageConfig damageConfig
+            , bool isHeal = false)
         {
             config = damageConfig;
             canvas = ownerCanvas;
@@ -46,6 +47,7 @@ namespace Xuan.Prometheus
             initialized = true;
 
             text.text = damage.ToString("0.#");
+            text.color = isHeal ? Color.green : text.color;
             ApplyAnimation(0f);
             RefreshScreenPosition();
         }

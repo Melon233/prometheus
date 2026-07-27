@@ -12,19 +12,21 @@ namespace Xuan.Prometheus
         IdleExecutor idleExecutor;
         GroundMoveExecutor groundMoveExecutor;
         EventComponent evtComp;
+        EIdleComponent eIdleComp;
         public override void AfterNew()
         {
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out patrolComp);
             Entity.TryGetComp(out enmityComp);
             Entity.TryGetComp(out evtComp);
+            Entity.TryGetComp(out eIdleComp);
             evtComp.AddListener<StunStartEvent>(OnStunStart);
             evtComp.AddListener<StunEndEvent>(OnStunEnd);
 
             idleExecutor = spineComp.animationLib.idleExecutor;
             groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
             patrolComp.spawnPoint = patrolComp.transform.position;
-            patrolComp.moveTimer = new(patrolComp.patrolConfig.moveInterval);
+            // patrolComp.patrolTimer = new(patrolComp.patrolConfig.moveInterval);
             GizmosKit.Instance.DrawWireCircle(patrolComp.spawnPoint, Vector3.up, patrolComp.patrolConfig.patrolRadius, Color.green, duration: 999f);
         }
 
@@ -35,12 +37,12 @@ namespace Xuan.Prometheus
 
         public override bool CanEnable()
         {
-            return true;
+            return eIdleComp.idleTimer.IsTimeOut;
         }
 
         public override void OnDisable()
         {
-            patrolComp.moveTimer.SetActive(false);
+
         }
 
         public override void OnDispose()
@@ -50,48 +52,34 @@ namespace Xuan.Prometheus
 
         public override void OnEnable()
         {
-            idleExecutor.Execute();
-            patrolComp.moveTimer.SetActive(true);
+            patrolComp.Execute();
+            spineComp.animationLib.groundMoveExecutor.Execute();
         }
 
         public override void OnUpdate(float dt)
         {
             GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
-            if (!patrolComp.isPatrolling)
-            {
-                patrolComp.moveTimer.OnUpdate(dt);
-                idleExecutor.Execute();
-            }
-            if (patrolComp.moveTimer.IsTimeOut)
-            {
-                var angle = Random.Range(0f, Mathf.PI * 2f);
-                while (Vector3.Distance(patrolComp.nextTargetPoint = patrolComp.transform.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * patrolComp.patrolConfig.moveDelta, patrolComp.spawnPoint) > patrolComp.patrolConfig.patrolRadius) angle = Random.Range(0f, Mathf.PI * 2f);
-                patrolComp.isPatrolling = true;
-                patrolComp.moveTimer.Reset(false);
-            }
-            if (patrolComp.isPatrolling)
-            {
-                patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.nextTargetPoint - patrolComp.transform.position).normalized);
-                groundMoveExecutor.Execute();
-                spineComp.SetFaceDir(patrolComp.cc.velocity.x);
-            }
+            // patrolComp.patrolTimer.OnUpdate(dt);
+            patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.nextTargetPoint - patrolComp.transform.position).normalized);
+            spineComp.SetFaceDir(patrolComp.cc.velocity.x);
             if (Vector3.Distance(patrolComp.transform.position, patrolComp.nextTargetPoint) < 0.1f)
             {
                 patrolComp.isPatrolling = false;
-                patrolComp.moveTimer.SetActive(true);
+                eIdleComp.idleTimer.Reset();
+                // patrolComp.patrolTimer.SetActive(true);
             }
         }
         private void OnStunStart(StunStartEvent evt)
         {
             Entity.BlockLogic<PatrolLogic>();
             Entity.BlockLogic<EnmityLogic>();
-            Entity.BlockLogic<EnemyAttackLogic>();
+            Entity.BlockLogic<EAttackLogic>();
         }
         private void OnStunEnd(StunEndEvent evt)
         {
             Entity.UnBlockLogic<PatrolLogic>();
             Entity.UnBlockLogic<EnmityLogic>();
-            Entity.UnBlockLogic<EnemyAttackLogic>();
+            Entity.UnBlockLogic<EAttackLogic>();
         }
     }
 }

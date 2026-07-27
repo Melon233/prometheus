@@ -26,9 +26,11 @@ namespace Xuan.Prometheus.Component
         public float NormalizedTime => curTime / duration;
         public bool IsOver => curTime >= duration;
         public Entity owner;
+        public Entity caster;
         public bool isInstant;
-        public Effect(Entity owner)
+        public Effect(Entity caster, Entity owner)
         {
+            this.caster = caster;
             this.owner = owner;
             uid = nextUid++;
         }
@@ -37,7 +39,7 @@ namespace Xuan.Prometheus.Component
     public class DamageEffect : Effect
     {
         public float damage;
-        public DamageEffect(Entity owner, float damage) : base(owner)
+        public DamageEffect(Entity caster, Entity owner, float damage) : base(caster, owner)
         {
             isInstant = true;
             this.damage = damage; // 100ms
@@ -55,10 +57,26 @@ namespace Xuan.Prometheus.Component
             }
         }
     }
+    public class RecoverEffect : Effect
+    {
+        public float recover;
+        public RecoverEffect(Entity caster, Entity owner, float recover) : base(caster, owner)
+        {
+            isInstant = true;
+            this.recover = recover; // 100ms
+        }
+        public override void OnUpdate(float dt)
+        {
+            owner.TryGetComp(out PropertyComponent propComp);
+            owner.TryGetComp(out EventComponent eventComp);
+            propComp.OnRecoverHp(recover);
+            eventComp.Invoke(new HpChangedEvent() { hp = propComp.curHp, maxHp = propComp.propConfig.hp });
+        }
+    }
     public class FireDotEffect : Effect
     {
         public float dotDmg = 5f;
-        public FireDotEffect(Entity owner) : base(owner)
+        public FireDotEffect(Entity caster, Entity owner) : base(caster, owner)
         {
             duration = 10f;
             tickTime = 1f;
@@ -73,7 +91,9 @@ namespace Xuan.Prometheus.Component
                 curTickTime -= tickTime;
                 owner.TryGetComp(out PropertyComponent propComp);
                 owner.TryGetComp(out EventComponent eventComp);
-                propComp.OnTakeDamage(dotDmg);
+                var dmg = propComp.OnTakeDamage(dotDmg);
+                caster.TryGetComp(out EffectComponent effectComp);
+                effectComp.toAddEffects.Add(new RecoverEffect(owner, caster, dmg * 10f));
                 if (propComp.NoHp) eventComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
                 else
                 {

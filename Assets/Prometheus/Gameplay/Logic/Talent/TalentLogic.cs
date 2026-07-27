@@ -32,8 +32,8 @@ namespace Xuan.Prometheus.Logic
                     return;
                 }
                 Debug.Log($"攻击命中：{effectComp.name}");
-                effectComp.toAddEffects.Add(new DamageEffect(effectComp.Entity, propComp.GetAttackDamage()));
-                effectComp.toAddEffects.Add(new FireDotEffect(effectComp.Entity));
+                effectComp.toAddEffects.Add(new DamageEffect(Entity, effectComp.Entity, propComp.GetAttackDamage()));
+                effectComp.toAddEffects.Add(new FireDotEffect(Entity, effectComp.Entity));
             }
         }
 

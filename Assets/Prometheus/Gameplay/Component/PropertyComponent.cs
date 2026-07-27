@@ -12,13 +12,16 @@ namespace Xuan.Prometheus.Component
         {
             curHp = propConfig.hp;
         }
-        public void OnTakeDamage(float damage)
+        public float OnTakeDamage(float damage)
         {
-            if ((curHp -= damage) <= 0)
+            FloatDamageKit.Instance.CastDamageText(damage, transform.position);
+            if (curHp <= damage)
             {
                 curHp = 0;
+                damage = curHp;
             }
-            FloatDamageKit.Instance.CastDamageText(damage, transform.position);
+            else curHp -= damage;
+            return damage;
         }
         public void OnRecoverHp(float recover)
         {
@@ -26,6 +29,7 @@ namespace Xuan.Prometheus.Component
             {
                 curHp = propConfig.hp;
             }
+            FloatDamageKit.Instance.CastDamageText(recover, transform.position, true);
         }
         public float GetAttackDamage()
         {

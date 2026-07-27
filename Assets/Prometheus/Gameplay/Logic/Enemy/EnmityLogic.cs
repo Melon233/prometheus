@@ -9,13 +9,15 @@ namespace Xuan.Prometheus
         EnmityComponent enmityComp;
         PatrolComponent patrolComp;
         SpineComponent spineComp;
-        EnemyAttackComponent enemyAttackComp;
+        EAttackComponent eAttackComp;
+        EIdleComponent eIdleComp;
         public override void AfterNew()
         {
             Entity.TryGetComp(out patrolComp);
             Entity.TryGetComp(out enmityComp);
             Entity.TryGetComp(out spineComp);
-            Entity.TryGetComp(out enemyAttackComp);
+            Entity.TryGetComp(out eAttackComp);
+            Entity.TryGetComp(out eIdleComp);
             GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.chaseRadius, Color.yellow, 999f);
         }
 
@@ -40,14 +42,15 @@ namespace Xuan.Prometheus
 
         public override void OnEnable()
         {
+            Entity.BlockLogic<PatrolLogic>(); // Block the PatrolLogic
+            eIdleComp.Interrupt();
             spineComp.animationLib.groundMoveExecutor.Execute();
-            Entity.BlockLogic<PatrolLogic>();
         }
 
         public override void OnUpdate(float dt)
         {
             GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
-            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enemyAttackComp.enemyAttackConfig.attckRadius, Color.blue);
+            // GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enemyAttackComp.eAttackConfig.attckRadius, Color.blue);
             if (enmityComp.needGoHome)
             {
                 patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.spawnPoint - patrolComp.transform.position).normalized);

@@ -19,8 +19,9 @@ GameObject:
   - component: {fileID: 491497129945753466}
   - component: {fileID: 272598093441255365}
   - component: {fileID: 6595570044981525347}
-  - component: {fileID: 2997025836598774065}
   - component: {fileID: 2980487244475764144}
+  - component: {fileID: 1244817630823250593}
+  - component: {fileID: 1741153668963263915}
   m_Layer: 7
   m_Name: Slime
   m_TagString: Enemy
@@ -235,20 +236,6 @@ MonoBehaviour:
   enmityConfig: {fileID: 11400000, guid: 4f1e017e593136a4a88ea980e1a39c04, type: 2}
   target: {fileID: 0}
   needGoHome: 0
---- !u!114 &2997025836598774065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0a272fb676811f4398475af35f0d411, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enemyAttackConfig: {fileID: 11400000, guid: 57c1a28279eaa334188f71702b57d163, type: 2}
-  targetEffectComp: {fileID: 0}
 --- !u!114 &2980487244475764144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,6 +255,33 @@ MonoBehaviour:
   minComboInterval: 0.5
   nextComboIndex: 0
   atkCollider: {fileID: 8140240498181792558}
+--- !u!114 &1244817630823250593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491497129945753440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08b9e156a9f4fdf48932f93826336e2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eAttackConfig: {fileID: 11400000, guid: 57c1a28279eaa334188f71702b57d163, type: 2}
+  targetEffectComp: {fileID: 0}
+--- !u!114 &1741153668963263915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491497129945753440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938d6e5e7e46df84e89429294018c1b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idleTime: 2
 --- !u!1 &491497130122872046
 GameObject:
   m_ObjectHideFlags: 0
