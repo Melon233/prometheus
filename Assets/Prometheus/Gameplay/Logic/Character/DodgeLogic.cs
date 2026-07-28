@@ -1,6 +1,5 @@
 using Spine;
 using Xuan.Prometheus.Component;
-using Animation = Xuan.Prometheus.Component.Animation;
 
 namespace Xuan.Prometheus.Logic
 {
@@ -13,14 +12,14 @@ namespace Xuan.Prometheus.Logic
         private SpineComponent aniComp;
         private TrackEntry dodgeAni;
         private InputComponent inputComp;
-        private SpineComponent motionComp;
+        private SpineComponent spineComp;
 
         public override void AfterNew()
         {
             LogicGroup = LogicGroup.Controller;
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out aniComp);
-            Entity.TryGetComp(out motionComp);
+            Entity.TryGetComp(out spineComp);
         }
 
         public override bool CanEnable()
@@ -39,7 +38,7 @@ namespace Xuan.Prometheus.Logic
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<AirMoveLogic>();
-            dodgeAni = aniComp.Play(Animation.dodge_front_move);
+            dodgeAni = spineComp.animationLib.dodgeExecutor.Execute();
         }
 
         public override void OnDisable()

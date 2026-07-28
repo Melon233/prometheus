@@ -2,6 +2,7 @@ using System;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus
@@ -9,10 +10,12 @@ namespace Xuan.Prometheus
     [Serializable]
     public class IdleExecutor : AnimationExecutor
     {
-        [SerializeField] AnimationReferenceAsset idleAni;
+        [SerializeField] AnimationReferenceAsset idleAnimation;
         public TrackEntry Execute()
         {
-            return spineComp.Play(idleAni, true);
+            if (spineComp.IsPlaying(AnimationName.idle1_1)) return null;
+            Debug.Log("IdleExecutor Execute");
+            return spineComp.Play(idleAnimation, true, 0);
         }
     }
 }

@@ -19,7 +19,6 @@ namespace Xuan.Prometheus
         protected SpineComponent spineComp;
         protected VfxComponent vfxComp;
 
-
         public virtual void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
         {
             this.lib = lib;

@@ -28,33 +28,21 @@ namespace Xuan.Prometheus
 
             if (index < 0 || index >= animations.Count)
                 return null;
-            var trackEntry = spineComp.Play(animations[index], mixDuration: 0f, onEvent: (_, spineEvent) => OnEvent(index, spineEvent));
+            var trackEntry = spineComp.Play(animations[index], mixDuration: 0f);
             trackEntry.Event += (entry, evt) =>
             {
                 if (evt.ToString() == lib.hitStart)
+                {
                     atkComp.atkCollider.cod.enabled = true;
+                    if (hasVfx) vfxComp.Play(atkVfx[index]);
+                    Debug.Assert(atkSfx[index] != null, "攻击音效不存在");
+                    AudioKit.Instance.Play(atkSfx[index]);
+                }
                 else if (evt.ToString() == lib.hitEnd) atkComp.atkCollider.cod.enabled = false;
             };
-            trackEntry.Complete += (entry) => atkComp.atkCollider.cod.enabled = false;
             trackEntry.Interrupt += (entry) => atkComp.atkCollider.cod.enabled = false;
-
+            trackEntry.Complete += (entry) => lib.idleExecutor.Execute(); // Reset track entry after completion
             return trackEntry;
-        }
-        private void OnEvent(int index, Spine.Event spineEvent)
-        {
-            if (spineEvent.Data.Name != lib.hitStart)
-                return;
-
-            if (index < 0 || index >= atkVfx.Count || index >= atkSfx.Count)
-            {
-                Debug.LogWarning($"Attack presentation is missing at index {index}.");
-                return;
-            }
-
-            if (hasVfx) vfxComp.Play(atkVfx[index]);
-            var sfx = atkSfx[index];
-            if (sfx != null)
-                AudioKit.Instance.Play(sfx);
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Xuan.Prometheus.Logic
             {
                 motionComp.baseSpeed.x = 0f;
                 motionComp.baseSpeed.z = 0f;
-                idleExecutor.Execute();
+                // idleExecutor.Execute();
             }
         }
 

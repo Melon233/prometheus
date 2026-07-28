@@ -12,6 +12,7 @@ namespace Xuan.Prometheus
         [SerializeField] public AnimationReferenceAsset groundMoveAni;
         public TrackEntry Execute()
         {
+            if (spineComp.IsPlaying(AnimationName.run)) return null;
             return spineComp.Play(groundMoveAni, true);
         }
     }

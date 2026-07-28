@@ -58,6 +58,7 @@ namespace Xuan.Prometheus
         public override void OnUpdate(float dt)
         {
             eIdleComp.idleTimer.OnUpdate(dt);
+            // if (spineComp.spineAnimator.state.GetCurrent(0).Animation.)
         }
     }
 }

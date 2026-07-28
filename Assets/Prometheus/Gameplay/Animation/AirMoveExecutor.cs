@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
@@ -22,14 +21,19 @@ namespace Xuan.Prometheus
         [SerializeField] AnimationReferenceAsset landAni;
         public TrackEntry Execute(AirMoveState state)
         {
-            if (state == AirMoveState.Land)
-                return spineComp.Play(landAni, track: 1);
-            return state switch
+            switch (state)
             {
-                AirMoveState.Jump => spineComp.Play(jumpAni, nextAni: riseAni, nextLoop: true),
-                AirMoveState.Fall => spineComp.Play(fallAni),
-                _ => null,
-            };
+                case AirMoveState.Land:
+                    return spineComp.Play(landAni, track: 1);
+                case AirMoveState.Jump:
+                    spineComp.Play(jumpAni);
+                    return spineComp.Add(riseAni, true);
+                case AirMoveState.Fall:
+                    if (spineComp.IsPlaying(AnimationName.jump_atk_loop)) return null;
+                    return spineComp.Play(fallAni, true);
+                default:
+                    return null;
+            }
         }
     }
 }

@@ -16,7 +16,19 @@ namespace Xuan.Prometheus
         public TrackEntry Execute()
         {
             AudioKit.Instance.Play(attackedSfx);
-            return hasNextAni ? spineComp.Play(attackedAni, canRefresh: true, mixDuration: 0f, nextAni: nextAttackedAni) : spineComp.Play(attackedAni, canRefresh: true, mixDuration: 0f);
+            if (hasNextAni)
+            {
+                spineComp.Play(attackedAni);
+                var entry = spineComp.Play(nextAttackedAni);
+                entry.Complete += (entry) => lib.idleExecutor.Execute();
+                return entry;
+            }
+            else
+            {
+                var entry = spineComp.Play(attackedAni);
+                entry.Complete += (entry) => lib.idleExecutor.Execute();
+                return entry;
+            }
         }
     }
 }

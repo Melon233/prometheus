@@ -19,18 +19,16 @@ namespace Xuan.Prometheus
 
         public TrackEntry Execute()
         {
-            return spineComp.Play(ultimateAni, onEvent: OnEvent);
-        }
-        public void OnEvent(TrackEntry entry, Spine.Event e)
-        {
-            if (e.Data.Name == lib.hitStart)
+            var entry = spineComp.Play(ultimateAni);
+            entry.Event += (entry, evt) =>
             {
-                vfxComp.Play(ultVfx);
-                AudioKit.Instance.Play(ultimateAudio);
-            }
-            else if (e.Data.Name == lib.hitEnd)
-            {
-            }
+                if (evt.Data.Name == lib.hitStart)
+                {
+                    vfxComp.Play(ultVfx);
+                    AudioKit.Instance.Play(ultimateAudio);
+                }
+            };
+            return entry;
         }
     }
 }

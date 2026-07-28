@@ -34,11 +34,11 @@ MonoBehaviour:
     - {fileID: 8300000, guid: dc0cb85044ee16d43a0e161da49bc36f, type: 3}
     - {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
   idleExecutor:
-    idleAni: {fileID: 11400000, guid: 005083d14ae8de842ac8e16f5994e4dd, type: 2}
+    idleAnimation: {fileID: 11400000, guid: 005083d14ae8de842ac8e16f5994e4dd, type: 2}
   groundMoveExecutor:
     groundMoveAni: {fileID: 11400000, guid: 357b629127e2ccd41abb8a46e7e78a81, type: 2}
   dodgeExecutor:
-    dodgeAni: {fileID: 0}
+    dodgeAnimation: {fileID: 11400000, guid: 94be6b6fe3d9e2c4385ac364ada87696, type: 2}
   airMoveExecutor:
     jumpAni: {fileID: 11400000, guid: 0652071da607aa047bd08cfbade1f823, type: 2}
     riseAni: {fileID: 11400000, guid: e265f9c0960db4341ac84b712c2074a5, type: 2}

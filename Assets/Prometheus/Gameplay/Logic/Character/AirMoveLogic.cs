@@ -1,7 +1,6 @@
 using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
-using Animation = Xuan.Prometheus.Component.Animation;
 
 namespace Xuan.Prometheus.Logic
 {

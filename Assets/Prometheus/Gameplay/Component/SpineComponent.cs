@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
@@ -7,7 +8,7 @@ using AnimationState = Spine.AnimationState;
 
 namespace Xuan.Prometheus.Component
 {
-    public enum Animation
+    public enum AnimationName
     {
         none,
         idle1_1,
@@ -26,7 +27,6 @@ namespace Xuan.Prometheus.Component
         dodge_front_move,
         dodge_back_move
     }
-
     public enum FaceDir
     {
         Left,
@@ -42,7 +42,7 @@ namespace Xuan.Prometheus.Component
         [NonSerialized] public SkeletonAnimation spineAnimator;
         public AnimationLibrary animationLib;
         public Transform rotateRoot;
-
+        public List<AnimationExecutor> executors;
         public FaceDir CurFaceDir
         {
             get
@@ -91,50 +91,69 @@ namespace Xuan.Prometheus.Component
             aniState = spineAnimator.state;
             animationLib.Init(this, GetComponent<VfxComponent>());
         }
-        public TrackEntry Play(Animation ani, bool loop = false, float mixDuration = 0.2f, int track = 0)
+
+        // public TrackEntry Play(string aniName, bool loop = false, float mixDuration = 0.2f, int track = 0)
+        // {
+        //     Debug.Log("播放动画" + aniName);
+        //     var trackEntry = spineAnimator.AnimationState.SetAnimation(track, aniName, loop);
+        //     trackEntry.MixDuration = mixDuration;
+        //     return trackEntry;
+        // }
+        // public TrackEntry Play(AnimationReferenceAsset animation,
+        //                        bool loop = false,
+        //                        int track = 0,
+        //                        float mixDuration = 0.2f,
+        //                        bool canRefresh = false,
+        //                        AnimationReferenceAsset nextAni = null,
+        //                        bool nextLoop = false,
+        //                        TrackEntryEventDelegate onEvent = null)
+        // {
+        //     var curTrack = aniState.GetCurrent(track);
+        //     if (!canRefresh && animation.Animation == curTrack?.Animation) return curTrack;
+        //     var entry = aniState.SetAnimation(track, animation, loop);
+        //     // Debug.Log("播放动画" + animation.name);
+        //     entry.MixDuration = mixDuration;
+
+        //     if (nextAni)
+        //     {
+        //         var nextEntry = aniState.AddAnimation(track, nextAni, nextLoop, 0f);
+        //         if (onEvent != null) { nextEntry.Event += onEvent; }
+        //         return nextEntry;
+        //     }
+        //     else if (onEvent != null) { entry.Event += onEvent; }
+        //     if (track != 0) aniState.AddEmptyAnimation(track, 0.2f, 0f);
+        //     return entry;
+        // }
+
+
+
+        public TrackEntry Play(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f)
         {
-            Debug.Log("播放动画" + ani);
-            var trackEntry = spineAnimator.AnimationState.SetAnimation(track, ani.ToString(), loop);
-            trackEntry.MixDuration = mixDuration;
-            return trackEntry;
+            return spineAnimator.AnimationState.SetAnimation(track, animation, loop);
+        }
+        public TrackEntry Add(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f)
+        {
+            return spineAnimator.AnimationState.AddAnimation(track, animation, loop, 0f);
+        }
+        public void Stop(int track = 0, float mixDuration = 0.2f)
+        {
+            if (mixDuration == 0f)
+                spineAnimator.AnimationState.ClearTrack(track);
+            else
+                spineAnimator.AnimationState.SetEmptyAnimation(track, mixDuration);
+        }
+        public void SetSpeed(int track = 0, float speed = 1f)
+        {
+            spineAnimator.AnimationState.GetCurrent(track).TimeScale = speed;
+        }
+        public string GetCurrentAnimation(int track = 0)
+        {
+            return spineAnimator.AnimationState.GetCurrent(track)?.Animation?.Name;
         }
 
-        public TrackEntry Play(string aniName, bool loop = false, float mixDuration = 0.2f, int track = 0)
+        public bool IsPlaying(AnimationName animationName, int track = 0)
         {
-            Debug.Log("播放动画" + aniName);
-            var trackEntry = spineAnimator.AnimationState.SetAnimation(track, aniName, loop);
-            trackEntry.MixDuration = mixDuration;
-            return trackEntry;
-        }
-        public TrackEntry Play(AnimationReferenceAsset animation,
-                               bool loop = false,
-                               int track = 0,
-                               float mixDuration = 0.2f,
-                               bool canRefresh = false,
-                               AnimationReferenceAsset nextAni = null,
-                               bool nextLoop = false,
-                               TrackEntryEventDelegate onEvent = null)
-        {
-            var curTrack = aniState.GetCurrent(track);
-            if (!canRefresh && animation.Animation == curTrack?.Animation) return curTrack;
-            var entry = aniState.SetAnimation(track, animation, loop);
-            // Debug.Log("播放动画" + animation.name);
-            entry.MixDuration = mixDuration;
-
-            if (nextAni)
-            {
-                var nextEntry = aniState.AddAnimation(track, nextAni, nextLoop, 0f);
-                if (onEvent != null) { nextEntry.Event += onEvent; }
-                return nextEntry;
-            }
-            else if (onEvent != null) { entry.Event += onEvent; }
-            if (track != 0) aniState.AddEmptyAnimation(track, 0.2f, 0f);
-            return entry;
-        }
-
-        public void AddEventListener(AnimationState.TrackEntryEventDelegate callback)
-        {
-            spineAnimator.AnimationState.Event += callback;
+            return spineAnimator.AnimationState.GetCurrent(track)?.Animation?.Name == animationName.ToString();
         }
     }
 

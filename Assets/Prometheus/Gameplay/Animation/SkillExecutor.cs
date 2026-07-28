@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Codice.CM.Common.Merge;
 using Sirenix.OdinInspector;
 using Spine;
 using Spine.Unity;
@@ -36,15 +37,17 @@ namespace Xuan.Prometheus
         }
         public TrackEntry Execute()
         {
-            return spineComp.Play(skillStartAni, nextAni: skillAni, onEvent: OnEvent);
-        }
-        private void OnEvent(TrackEntry entry, Spine.Event e)
-        {
-            if (e.Data.Name == lib.hitStart)
+            spineComp.Play(skillStartAni);
+            var entry = spineComp.Add(skillAni);
+            entry.Event += (entry, evt) =>
             {
-                vfxComp.Play(skillVfx);
-                AudioKit.Instance.Play(skillAudio);
-            }
+                if (evt.Data.Name == lib.hitStart)
+                {
+                    vfxComp.Play(skillVfx);
+                    AudioKit.Instance.Play(skillAudio);
+                }
+            };
+            return entry;
         }
     }
 }
