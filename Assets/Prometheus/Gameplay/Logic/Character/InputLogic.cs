@@ -9,7 +9,7 @@ namespace Xuan.Prometheus.Logic
         public InputComponent inputComp;
         public override void AfterNew()
         {
-            LogicGroup = LogicGroup.Input;
+            LogicGroup = OrderTag.Input;
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out spineComp);
         }

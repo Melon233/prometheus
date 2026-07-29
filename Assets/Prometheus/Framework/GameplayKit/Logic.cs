@@ -4,7 +4,7 @@ namespace Xuan.Prometheus.Logic
     {
         int BlockCnt { get; set; }
         bool Enable { get; set; }
-        LogicGroup LogicGroup { get; set; }
+        OrderTag LogicGroup { get; set; }
         Entity Entity { get; set; }
         void AfterNew();
         bool CanEnable();
@@ -19,7 +19,7 @@ namespace Xuan.Prometheus.Logic
     {
         public int BlockCnt { get; set; }
         public bool Enable { get; set; }
-        public LogicGroup LogicGroup { get; set; } = LogicGroup.Gameplay;
+        public OrderTag LogicGroup { get; set; } = OrderTag.Gameplay;
         public Entity Entity { get; set; }
         public abstract void AfterNew();
         public abstract bool CanEnable();

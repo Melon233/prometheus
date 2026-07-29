@@ -10,6 +10,7 @@ namespace Xuan.Prometheus
         PropertyComponent propComp;
         SpineComponent spineComp;
         AttackComponent atkComp;
+        EventComponent evtComp;
         public override void AfterNew()
         {
             Entity.TryGetComp(out eAttackComp);
@@ -17,14 +18,16 @@ namespace Xuan.Prometheus
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out atkComp);
             Entity.TryGetComp(out enmityComp); // Add this line to get the EnmityComponent
-            eAttackComp.atkTimer = new(5f);
+            Entity.TryGetComp(out evtComp);
+            eAttackComp.recoveryTimer = new(3f);
             atkComp.atkCollider.handler = this;
+            // evtComp.AddListener<AttackedEvent>(evt => eAttackComp.isAttacking = false);
         }
 
         public override bool CanDisable()
         {
             // return eAttackComp.trackEntry == null || eAttackComp.trackEntry.IsComplete;
-            return !CanEnable() && !eAttackComp.isAttacking;
+            return !CanEnable() && !eAttackComp.isAttacking && !eAttackComp.isRecovery;
         }
 
         public override bool CanEnable()
@@ -36,7 +39,7 @@ namespace Xuan.Prometheus
         {
             Entity.UnBlockLogic<EnmityLogic>();
             Entity.UnBlockLogic<PatrolLogic>();
-            eAttackComp.atkTimer.Reset();
+            eAttackComp.recoveryTimer.TimeOut();
         }
 
         public override void OnDispose()
@@ -48,8 +51,7 @@ namespace Xuan.Prometheus
         {
             Entity.BlockLogic<EnmityLogic>();
             Entity.BlockLogic<PatrolLogic>();
-            eAttackComp.trackEntry = spineComp.animationLib.atkExecutor.Execute();
-            eAttackComp.isAttacking = true;
+            eAttackComp.recoveryTimer.TimeOut();
             // eAttackComp.trackEntry.Complete += (entry) => spineComp.animationLib.idleExecutor.Execute();
             // eAttackComp.trackEntry.Interrupt += (entry) => entry = null;
             // enemyAttackComp.atkTimer.SetActive(true);
@@ -59,11 +61,13 @@ namespace Xuan.Prometheus
         {
             if (other.CompareTag("Player"))
             {
+                if (eAttackComp.targetEffectComp == null) other.TryGetComponent(out eAttackComp.targetEffectComp); // Check if the target has an EffectComponent
                 eAttackComp.targetEffectComp.toAddEffects.Add(new DamageEffect(Entity, eAttackComp.targetEffectComp.Entity, propComp.propConfig.atk));
             }
         }
         public bool CheckAttack()
         {
+            GizmosKit.Instance.DrawWireCircle(Entity.bindGo.transform.position, Vector3.up, eAttackComp.eAttackConfig.attckRadius, Color.yellow); // Debug log to confirm the enemy is chasing the player
             if (enmityComp.target != null && Vector3.Distance(Entity.bindGo.transform.position, enmityComp.target.position) < eAttackComp.eAttackConfig.attckRadius)
             {
                 eAttackComp.targetEffectComp = enmityComp.target.GetComponent<EffectComponent>();
@@ -74,17 +78,27 @@ namespace Xuan.Prometheus
         }
         public override void OnUpdate(float dt)
         {
-            eAttackComp.atkTimer.OnUpdate(dt);
-            if (eAttackComp.atkTimer.IsTimeOut)
+            if (eAttackComp.isRecovery)
+                eAttackComp.recoveryTimer.OnUpdate(dt);
+            if (eAttackComp.recoveryTimer.IsTimeOut && !eAttackComp.isAttacking)
             {
-                eAttackComp.trackEntry = spineComp.animationLib.atkExecutor.Execute();
-                eAttackComp.isAttacking = true;
-                eAttackComp.atkTimer.Reset();
-            }
-            if (eAttackComp.trackEntry.IsComplete)
-            {
-                spineComp.animationLib.idleExecutor.Execute();
-                eAttackComp.isAttacking = false;
+                eAttackComp.isRecovery = false;
+                if (eAttackComp.targetEffectComp != null)
+                {
+                    eAttackComp.isAttacking = true;
+                    eAttackComp.trackEntry = spineComp.animationLib.atkExecutor.Execute();
+                    eAttackComp.trackEntry.Complete += (entry) =>
+                    {
+                        spineComp.animationLib.idleExecutor.Execute();
+                        eAttackComp.recoveryTimer.Reset();
+                        eAttackComp.isAttacking = false;
+                        eAttackComp.isRecovery = true;
+                    };
+                    eAttackComp.trackEntry.Interrupt += (entry) =>
+                    {
+                        eAttackComp.isAttacking = false;
+                    };
+                }
             }
         }
     }

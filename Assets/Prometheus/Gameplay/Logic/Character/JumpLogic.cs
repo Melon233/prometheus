@@ -10,7 +10,7 @@ namespace Xuan.Prometheus.Logic
         AirMoveExecutor airMoveExecutor;
         public override void AfterNew()
         {
-            LogicGroup = LogicGroup.Gameplay;
+            LogicGroup = OrderTag.Gameplay;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);

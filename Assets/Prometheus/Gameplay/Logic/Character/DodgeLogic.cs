@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void AfterNew()
         {
-            LogicGroup = LogicGroup.Controller;
+            LogicGroup = OrderTag.Controller;
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out aniComp);
             Entity.TryGetComp(out spineComp);

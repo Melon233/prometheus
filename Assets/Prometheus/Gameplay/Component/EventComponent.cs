@@ -4,14 +4,16 @@ using System.Collections.Generic;
 namespace Xuan.Prometheus
 {
     public class AttackedEvent : IEvent { }
-    public class StunStartEvent : IEvent { }
-    public class StunEndEvent : IEvent { }
+    public class AttackedStartEvent : IEvent { }
+    public class AttackedEndEvent : IEvent { }
     public class DieEvent : IEvent { }
     public class HpChangedEvent : IEvent
     {
         public float hp;
         public float maxHp;
     }
+    public class StiffnessStartEvent : IEvent { }
+    public class StiffnessEndEvent : IEvent { }
 
     public class EventComponent : Component.Component
     {

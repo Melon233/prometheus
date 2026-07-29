@@ -34,12 +34,13 @@ namespace Xuan.Prometheus.Logic
                 Debug.Log($"攻击命中：{effectComp.name}");
                 effectComp.toAddEffects.Add(new DamageEffect(Entity, effectComp.Entity, propComp.GetAttackDamage()));
                 effectComp.toAddEffects.Add(new FireDotEffect(Entity, effectComp.Entity));
+                effectComp.toAddEffects.Add(new StiffnessEffect(Entity, effectComp.Entity, 2f));
             }
         }
 
         public override void AfterNew()
         {
-            LogicGroup = LogicGroup.Gameplay;
+            LogicGroup = OrderTag.Gameplay;
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out atkComp);

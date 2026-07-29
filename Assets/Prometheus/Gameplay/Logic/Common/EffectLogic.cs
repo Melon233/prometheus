@@ -35,17 +35,17 @@ namespace Xuan.Prometheus.Logic
             {
                 effectComp.effects.Add(effect.uid, effect);
             }
-            foreach (var effect in effectComp.effects)
-            {
-                effect.OnUpdate(dt);
-                if (effect.IsOver || effect.isInstant) effectComp.toRemoveEffects.Add(effect);
-            }
             foreach (var effect in effectComp.toRemoveEffects)
             {
                 effectComp.effects.Remove(effect.uid);
             }
             effectComp.toAddEffects.Clear();
             effectComp.toRemoveEffects.Clear();
+            foreach (var effect in effectComp.effects)
+            {
+                effect.OnUpdate(dt);
+                if (effect.IsOver || effect.isInstant) effectComp.toRemoveEffects.Add(effect);
+            }
         }
 
         public override void OnDispose()

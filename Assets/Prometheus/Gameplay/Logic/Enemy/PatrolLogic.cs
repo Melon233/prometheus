@@ -20,8 +20,8 @@ namespace Xuan.Prometheus
             Entity.TryGetComp(out enmityComp);
             Entity.TryGetComp(out evtComp);
             Entity.TryGetComp(out eIdleComp);
-            evtComp.AddListener<StunStartEvent>(OnStunStart);
-            evtComp.AddListener<StunEndEvent>(OnStunEnd);
+            // evtComp.AddListener<StunStartEvent>(OnStunStart);
+            // evtComp.AddListener<StunEndEvent>(OnStunEnd);
 
             idleExecutor = spineComp.animationLib.idleExecutor;
             groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
@@ -69,17 +69,17 @@ namespace Xuan.Prometheus
                 // patrolComp.patrolTimer.SetActive(true);
             }
         }
-        private void OnStunStart(StunStartEvent evt)
-        {
-            Entity.BlockLogic<PatrolLogic>();
-            Entity.BlockLogic<EnmityLogic>();
-            Entity.BlockLogic<EAttackLogic>();
-        }
-        private void OnStunEnd(StunEndEvent evt)
-        {
-            Entity.UnBlockLogic<PatrolLogic>();
-            Entity.UnBlockLogic<EnmityLogic>();
-            Entity.UnBlockLogic<EAttackLogic>();
-        }
+        // private void OnStunStart(StunStartEvent evt)
+        // {
+        //     Entity.BlockLogic<PatrolLogic>();
+        //     Entity.BlockLogic<EnmityLogic>();
+        //     Entity.BlockLogic<EAttackLogic>();
+        // }
+        // private void OnStunEnd(StunEndEvent evt)
+        // {
+        //     Entity.UnBlockLogic<PatrolLogic>();
+        //     Entity.UnBlockLogic<EnmityLogic>();
+        //     Entity.UnBlockLogic<EAttackLogic>();
+        // }
     }
 }

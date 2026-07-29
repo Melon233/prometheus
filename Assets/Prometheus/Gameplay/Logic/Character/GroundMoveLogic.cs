@@ -1,3 +1,4 @@
+using System;
 using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
@@ -11,15 +12,31 @@ namespace Xuan.Prometheus.Logic
         MotionComponent motionComp;
         GroundMoveExecutor groundMoveExecutor;
         IdleExecutor idleExecutor;
+        EventComponent evtComp;
 
         public override void AfterNew()
         {
-            LogicGroup = LogicGroup.Gameplay;
+            LogicGroup = OrderTag.Gameplay;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
+            Entity.TryGetComp(out evtComp);
             groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
             idleExecutor = spineComp.animationLib.idleExecutor;
+            evtComp.AddListener<AttackedStartEvent>(OnAttackedStart);
+            evtComp.AddListener<AttackedEndEvent>(OnAttackedEnd);
+        }
+
+        private void OnAttackedEnd(AttackedEndEvent @event)
+        {
+            Entity.UnBlockLogic<GroundMoveLogic>();
+            Entity.UnBlockLogic<JumpLogic>();
+        }
+
+        private void OnAttackedStart(AttackedStartEvent @event)
+        {
+            Entity.BlockLogic<GroundMoveLogic>();
+            Entity.BlockLogic<JumpLogic>();
         }
 
         public override bool CanEnable()
@@ -54,13 +71,15 @@ namespace Xuan.Prometheus.Logic
             {
                 motionComp.baseSpeed.x = 0f;
                 motionComp.baseSpeed.z = 0f;
-                // idleExecutor.Execute();
+                idleExecutor.Execute();
             }
         }
 
 
         public override void OnDispose()
         {
+            evtComp.RemoveListener<AttackedStartEvent>(OnAttackedStart);
+            evtComp.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
         }
     }
 }

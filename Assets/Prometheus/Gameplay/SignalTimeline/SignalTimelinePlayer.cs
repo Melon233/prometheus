@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Xuan.Prometheus
 {
+    [Obsolete]
     /// <summary>
     /// Plays a SignalTimelineAsset. It has no knowledge of animation, VFX, audio or combat;
     /// all work is delegated through SignalDispatcher.

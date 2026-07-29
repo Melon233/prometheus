@@ -14,7 +14,6 @@ namespace Xuan.Prometheus
         public TrackEntry Execute()
         {
             if (spineComp.IsPlaying(AnimationName.idle1_1)) return null;
-            Debug.Log("IdleExecutor Execute");
             return spineComp.Play(idleAnimation, true, 0);
         }
     }

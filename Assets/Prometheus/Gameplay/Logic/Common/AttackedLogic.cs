@@ -20,10 +20,10 @@ namespace Xuan.Prometheus
 
         private void OnAttacked(object obj)
         {
-            eventComp.Invoke(new StunStartEvent());
+            eventComp.Invoke(new AttackedStartEvent());
             trackEntry = attackedExecutor.Execute();
-            trackEntry.Complete += (e) => eventComp.Invoke(new StunEndEvent());
-            trackEntry.Interrupt += (e) => eventComp.Invoke(new StunEndEvent());
+            trackEntry.Complete += (e) => eventComp.Invoke(new AttackedEndEvent());
+            trackEntry.Interrupt += (e) => eventComp.Invoke(new AttackedEndEvent());
         }
 
         public override bool CanDisable()

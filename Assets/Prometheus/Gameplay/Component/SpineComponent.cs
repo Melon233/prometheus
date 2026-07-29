@@ -86,7 +86,7 @@ namespace Xuan.Prometheus.Component
             spineAnimator = GetComponent<SkeletonAnimation>();
             animationLib = Instantiate(animationLib);
         }
-        private void Start()
+        void Start()
         {
             aniState = spineAnimator.state;
             animationLib.Init(this, GetComponent<VfxComponent>());

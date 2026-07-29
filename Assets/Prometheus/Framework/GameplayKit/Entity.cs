@@ -7,17 +7,7 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    public enum LogicTag
-    {
-        GroundMove,
-        Atk,
-        Jump,
-        AirMove,
-        Rotate,
-        Dodge
-    }
-
-    public enum LogicGroup
+    public enum OrderTag
     {
         Input,
         Talent,
