@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d95d7e353c374e43a9e50a9077dd812, type: 3}
-  m_Name: SlimeAnimationLib
+  m_Name: SlimeAnimationLibrary
   m_EditorClassIdentifier: 
   skeletonDataAsset: {fileID: 11400000, guid: 49c2de8d7a2f07e45bfd2a4b94b03b3b, type: 2}
   hitStart: hit_start
@@ -26,9 +26,12 @@ MonoBehaviour:
   idleExecutor:
     idleAnimation: {fileID: 11400000, guid: a86b54a740df8214691388a916f29ad5, type: 2}
   groundMoveExecutor:
-    groundMoveAni: {fileID: 11400000, guid: c9c01d19a231ee04fb1ef46651b8138c, type: 2}
+    walkAnimation: {fileID: 11400000, guid: a0c8ea86a374fb2469a8a25569916065, type: 2}
+    runAnimaiton: {fileID: 11400000, guid: c9c01d19a231ee04fb1ef46651b8138c, type: 2}
+    sprintAnimation: {fileID: 0}
   dodgeExecutor:
-    dodgeAnimation: {fileID: 0}
+    dodgeFrontAnimation: {fileID: 0}
+    dodgeBackAnimation: {fileID: 0}
   airMoveExecutor:
     jumpAni: {fileID: 11400000, guid: 0652071da607aa047bd08cfbade1f823, type: 2}
     riseAni: {fileID: 11400000, guid: e265f9c0960db4341ac84b712c2074a5, type: 2}

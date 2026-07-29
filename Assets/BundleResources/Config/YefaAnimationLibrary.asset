@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d95d7e353c374e43a9e50a9077dd812, type: 3}
-  m_Name: YefaAnimationLib
+  m_Name: YefaAnimationLibrary
   m_EditorClassIdentifier: 
   skeletonDataAsset: {fileID: 11400000, guid: 27d40a5c4b3cf944688c0b183e56f327, type: 2}
   hitStart: hit_start
@@ -26,6 +26,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: b97afd70750830547b64fab1c464e02e, type: 2}
     - {fileID: 11400000, guid: 9ff5df920cbf59445b67a29db6679d49, type: 2}
     - {fileID: 11400000, guid: c9f67865f04ee194bb2752a96ccdb81b, type: 2}
+    - {fileID: 11400000, guid: 913af5bde6decd545bc1c52615d5ed85, type: 2}
     hasVfx: 1
     atkVfx: 00000000010000000200000003000000
     atkSfx:
@@ -36,14 +37,18 @@ MonoBehaviour:
   idleExecutor:
     idleAnimation: {fileID: 11400000, guid: 005083d14ae8de842ac8e16f5994e4dd, type: 2}
   groundMoveExecutor:
-    groundMoveAni: {fileID: 11400000, guid: 357b629127e2ccd41abb8a46e7e78a81, type: 2}
+    walkAnimation: {fileID: 11400000, guid: 998230832714d8d409e55d1ac7c2eda7, type: 2}
+    runAnimaiton: {fileID: 11400000, guid: 357b629127e2ccd41abb8a46e7e78a81, type: 2}
+    sprintAnimation: {fileID: 11400000, guid: 97ac898503acedb4ebeb1f22423efd9e, type: 2}
   dodgeExecutor:
-    dodgeAnimation: {fileID: 11400000, guid: 94be6b6fe3d9e2c4385ac364ada87696, type: 2}
+    dodgeFrontAnimation: {fileID: 11400000, guid: 94be6b6fe3d9e2c4385ac364ada87696, type: 2}
+    dodgeBackAnimation: {fileID: 11400000, guid: 16af4230689df8943a57dcd698a67317, type: 2}
   airMoveExecutor:
     jumpAni: {fileID: 11400000, guid: 0652071da607aa047bd08cfbade1f823, type: 2}
     riseAni: {fileID: 11400000, guid: e265f9c0960db4341ac84b712c2074a5, type: 2}
     fallAni: {fileID: 11400000, guid: b0e6b03641ffbbd4397e7b3a50a4f200, type: 2}
     landAni: {fileID: 11400000, guid: 156d1ee6111613a41a01018569d329ec, type: 2}
+  hasTalent: 1
   ultimateExecutor:
     ultimateAni: {fileID: 11400000, guid: 08aa1b470a795c64da25e7f952468c09, type: 2}
     ultimateAudio: {fileID: 8300000, guid: 329278a9a60ea7641a22379c6bccbaba, type: 3}
@@ -55,6 +60,8 @@ MonoBehaviour:
     skillVfx: 4
   specialAttackExecutor:
     specialAttackAni: {fileID: 11400000, guid: 0c85288e288d93d43b2bae14d04345ec, type: 2}
+    specialAttackAudio: {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
+    specialAttackVfx: 4
   attackedExecutor:
     attackedAni: {fileID: 11400000, guid: 498bf3a45bf1b6e42b5f899ba35769af, type: 2}
     attackedSfx: {fileID: 8300000, guid: 74d1ee2c4cf2c45479bd1aceec8ccb3e, type: 3}

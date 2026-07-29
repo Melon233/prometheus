@@ -18,18 +18,18 @@ namespace Xuan.Prometheus
         [SerializeField] AnimationReferenceAsset jumpAni;
         [SerializeField] AnimationReferenceAsset riseAni;
         [SerializeField] AnimationReferenceAsset fallAni;
-        [SerializeField] AnimationReferenceAsset landAni;
+        [SerializeField] public AnimationReferenceAsset landAni;
         public TrackEntry Execute(AirMoveState state)
         {
             switch (state)
             {
                 case AirMoveState.Land:
-                    return spineComp.Play(landAni, track: 1);
+                    return spineComp.Play(landAni);
                 case AirMoveState.Jump:
                     spineComp.Play(jumpAni);
                     return spineComp.Add(riseAni, true);
                 case AirMoveState.Fall:
-                    if (spineComp.IsPlaying(AnimationName.jump_atk_loop)) return null;
+                    if (spineComp.IsPlaying(fallAni)) return null;
                     return spineComp.Play(fallAni, true);
                 default:
                     return null;

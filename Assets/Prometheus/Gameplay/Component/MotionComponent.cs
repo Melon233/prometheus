@@ -1,19 +1,23 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Xuan.Prometheus.Component
 {
+    public enum MoveMode
+    {
+        Walk,
+        Run,
+        Sprint
+    }
     public class MotionComponent : MonoComponent
     {
         public CharacterController cc;
-        public float runVelo;
-        public Vector3 baseSpeed;
-        public Vector3 addSpeed;
-        public float walkVelo = 3f;
-        public float gravity = 9.8f;
+        public Vector3 curVelo;
         public bool wasGroundedLastFrame;
         public bool landThisFrame;
-        public float jumpVelo = 6f;
-
+        public MoveMode moveMode = MoveMode.Run;
+        public float curMoveSpeed;
+        public PropertyConfig propertyConfig;
     }
 }

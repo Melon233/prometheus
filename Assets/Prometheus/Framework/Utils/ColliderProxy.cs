@@ -11,7 +11,7 @@ namespace Xuan.Prometheus.Component
     [RequireComponent(typeof(Collider))]
     public class ColliderProxy : MonoBehaviour
     {
-        public Collider cod;
+        [NonSerialized] public Collider cod;
         public ITriggerHandler handler;
 
         private void Awake()

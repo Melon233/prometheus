@@ -38,7 +38,7 @@ namespace Xuan.Prometheus.Logic
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<AirMoveLogic>();
-            dodgeAni = spineComp.animationLib.dodgeExecutor.Execute();
+            dodgeAni = spineComp.animationLib.dodgeExecutor.Execute(inputComp.moveDir.x != 0f);
         }
 
         public override void OnDisable()

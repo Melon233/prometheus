@@ -51,7 +51,7 @@ namespace Xuan.Prometheus.Component
         }
         public void SetHp(HpChangedEvent evt)
         {
-            hpImg.fillAmount = evt.hp / evt.maxHp;
+            hpImg.fillAmount = evt.newHp / evt.maxHp;
             wasHpChangedThisFrame = true;
         }
         private void OnDie(DieEvent evt)

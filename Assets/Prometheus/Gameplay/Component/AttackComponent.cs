@@ -14,5 +14,6 @@ namespace Xuan.Prometheus.Component
         public int nextComboIndex;
         public ColliderProxy atkCollider;
         public TrackEntry curTrackEntry;
+        public bool isBlocking;
     }
 }

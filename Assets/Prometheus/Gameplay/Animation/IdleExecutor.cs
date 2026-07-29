@@ -13,7 +13,7 @@ namespace Xuan.Prometheus
         [SerializeField] AnimationReferenceAsset idleAnimation;
         public TrackEntry Execute()
         {
-            if (spineComp.IsPlaying(AnimationName.idle1_1)) return null;
+            if (spineComp.IsPlaying(idleAnimation)) return null;
             return spineComp.Play(idleAnimation, true, 0);
         }
     }

@@ -23,7 +23,7 @@ namespace Xuan.Prometheus.Logic
         public override bool CanEnable()
         {
             if (!motionComp.cc.isGrounded) return true;
-            if (motionComp.cc.isGrounded && motionComp.baseSpeed.y > 0.1f) return true;
+            if (motionComp.cc.isGrounded && motionComp.curVelo.y > 0.1f) return true;
             return false;
         }
 
@@ -48,19 +48,19 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
-            motionComp.baseSpeed.y -= 9.8f * dt;
-            if (motionComp.baseSpeed.y < 0f)
+            motionComp.curVelo.y -= 9.8f * dt;
+            if (motionComp.curVelo.y < 0f)
                 trackEntry = airMoveExecutor.Execute(AirMoveState.Fall);
             if (inputComp.moveDir != Vector2.zero)
             {
-                motionComp.baseSpeed = new Vector3(inputComp.moveDir.x * motionComp.walkVelo,
-                                                    motionComp.baseSpeed.y,
-                                                    inputComp.moveDir.y * motionComp.walkVelo);
+                motionComp.curVelo = new Vector3(inputComp.moveDir.x * motionComp.propertyConfig.airMoveSpeed,
+                                                    motionComp.curVelo.y,
+                                                    inputComp.moveDir.y * motionComp.propertyConfig.airMoveSpeed);
             }
             else
             {
-                motionComp.baseSpeed.x = 0f;
-                motionComp.baseSpeed.z = 0f;
+                motionComp.curVelo.x = 0f;
+                motionComp.curVelo.z = 0f;
             }
 
         }

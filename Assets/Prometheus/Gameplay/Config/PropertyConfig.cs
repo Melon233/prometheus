@@ -10,5 +10,13 @@ namespace Xuan.Prometheus
         public float critRate;
         public float def;
         public float hp; // 100ms
+        public float walkSpeed;
+        public float runSpeed;
+        public float sprintSpeed;
+        public float airMoveSpeed;
+        public float jumpSpeed;
+        public float gravity;
+        public float coreEnergyLimit;
+        public float ultEnergyLimit;
     }
 }

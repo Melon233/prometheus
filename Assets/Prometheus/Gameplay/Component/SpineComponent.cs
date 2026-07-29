@@ -12,8 +12,9 @@ namespace Xuan.Prometheus.Component
     {
         none,
         idle1_1,
-        WALK,
+        base_walk,
         run,
+        run2,
         jump_atk_start,
         jump_atk_loop,
         jump_atk_end,
@@ -151,9 +152,10 @@ namespace Xuan.Prometheus.Component
             return spineAnimator.AnimationState.GetCurrent(track)?.Animation?.Name;
         }
 
-        public bool IsPlaying(AnimationName animationName, int track = 0)
+        public bool IsPlaying(AnimationReferenceAsset animation, int track = 0)
         {
-            return spineAnimator.AnimationState.GetCurrent(track)?.Animation?.Name == animationName.ToString();
+            var entry = spineAnimator.AnimationState.GetCurrent(track);
+            return entry?.Animation?.Name == animation.Animation.Name && (entry.Loop || !entry.IsComplete);
         }
     }
 
@@ -162,6 +164,11 @@ namespace Xuan.Prometheus.Component
         public static float NormalizedTime(this TrackEntry trackEntry)
         {
             return trackEntry.AnimationTime / trackEntry.Animation.Duration;
+        }
+        public static void OnStop(this TrackEntry trackEntry, Action callback)
+        {
+            trackEntry.Complete += entry => callback?.Invoke();
+            trackEntry.Interrupt += entry => callback?.Invoke();
         }
     }
 }

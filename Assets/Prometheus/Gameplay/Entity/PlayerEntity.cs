@@ -14,13 +14,15 @@ namespace Xuan.Prometheus.Logic
             bindGo.SetActive(true);
             AddComp<InputComponent>();
             AddComp<EventComponent>();
-            AddComp<SpecialAttackComponent>();
             AddComp(bindGo.GetComponent<SpineComponent>());
             AddComp(bindGo.GetComponent<MotionComponent>());
             AddComp(bindGo.GetComponent<AttackComponent>());
             AddComp(bindGo.GetComponent<EffectComponent>());
             AddComp(bindGo.GetComponent<PropertyComponent>());
-
+            AddComp(bindGo.GetComponent<SkillComponent>());
+            AddComp(bindGo.GetComponent<SpecialAttackComponent>());
+            AddComp(bindGo.GetComponent<UltimateComponent>());
+            AddComp<CoreTalentComponent>();
             AddLogic<GroundMoveLogic>();
             AddLogic<MotionLogic>();
             AddLogic<TalentLogic>();

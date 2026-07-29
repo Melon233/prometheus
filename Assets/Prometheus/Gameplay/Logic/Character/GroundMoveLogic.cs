@@ -21,6 +21,7 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
             Entity.TryGetComp(out evtComp);
+            SetMoveMode(MoveMode.Run);
             groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
             idleExecutor = spineComp.animationLib.idleExecutor;
             evtComp.AddListener<AttackedStartEvent>(OnAttackedStart);
@@ -51,26 +52,33 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnEnable()
         {
-            motionComp.baseSpeed.y = -2f;
+            motionComp.curVelo.y = -2f;
         }
 
         public override void OnDisable()
         {
-            motionComp.baseSpeed.x = 0f;
-            motionComp.baseSpeed.z = 0f;
+            motionComp.curVelo.x = 0f;
+            motionComp.curVelo.z = 0f;
         }
 
         public override void OnUpdate(float dt)
         {
+            var curMoveMode = motionComp.moveMode;
+            if (inputComp.wasToggleSprintPressedThisFrame)
+                if (curMoveMode != MoveMode.Sprint) SetMoveMode(MoveMode.Sprint);
+                else SetMoveMode(MoveMode.Run);
+            else if (inputComp.wasToggleWalkPressedThisFrame)
+                if (curMoveMode != MoveMode.Walk) SetMoveMode(MoveMode.Walk);
+                else SetMoveMode(MoveMode.Run);
             if (inputComp.moveDir != Vector2.zero)
             {
-                motionComp.baseSpeed = new Vector3(inputComp.moveDir.x, -2f, inputComp.moveDir.y) * motionComp.walkVelo;
-                groundMoveExecutor.Execute();
+                motionComp.curVelo = new Vector3(inputComp.moveDir.x, -2f, inputComp.moveDir.y) * motionComp.curMoveSpeed;
+                groundMoveExecutor.Execute(motionComp.moveMode);
             }
             else
             {
-                motionComp.baseSpeed.x = 0f;
-                motionComp.baseSpeed.z = 0f;
+                motionComp.curVelo.x = 0f;
+                motionComp.curVelo.z = 0f;
                 idleExecutor.Execute();
             }
         }
@@ -80,6 +88,24 @@ namespace Xuan.Prometheus.Logic
         {
             evtComp.RemoveListener<AttackedStartEvent>(OnAttackedStart);
             evtComp.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
+        }
+        public void SetMoveMode(MoveMode mode)
+        {
+            switch (mode)
+            {
+                case MoveMode.Walk:
+                    motionComp.moveMode = MoveMode.Walk;
+                    motionComp.curMoveSpeed = motionComp.propertyConfig.walkSpeed;
+                    break;
+                case MoveMode.Run:
+                    motionComp.moveMode = MoveMode.Run;
+                    motionComp.curMoveSpeed = motionComp.propertyConfig.runSpeed;
+                    break;
+                case MoveMode.Sprint:
+                    motionComp.moveMode = MoveMode.Sprint;
+                    motionComp.curMoveSpeed = motionComp.propertyConfig.sprintSpeed;
+                    break;
+            }
         }
     }
 }

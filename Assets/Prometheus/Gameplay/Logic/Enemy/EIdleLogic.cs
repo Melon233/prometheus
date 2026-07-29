@@ -23,8 +23,24 @@ namespace Xuan.Prometheus
             evtComp.AddListener<AttackedEvent>(OnAttacked);
             evtComp.AddListener<StiffnessStartEvent>(OnStiffnessStart);
             evtComp.AddListener<StiffnessEndEvent>(OnStiffnessEnd);
+            evtComp.AddListener<AttackedStartEvent>(OnAttackedStart);
+            evtComp.AddListener<AttackedEndEvent>(OnAttackedEnd);
 
             eIdleComp.idleTimer = new(eIdleComp.idleTime);
+        }
+
+        private void OnAttackedEnd(AttackedEndEvent @event)
+        {
+            Entity.UnBlockLogic<PatrolLogic>();
+            Entity.UnBlockLogic<EnmityLogic>();
+            Entity.UnBlockLogic<EAttackLogic>();
+        }
+
+        private void OnAttackedStart(AttackedStartEvent @event)
+        {
+            Entity.BlockLogic<PatrolLogic>();
+            Entity.BlockLogic<EnmityLogic>();
+            Entity.BlockLogic<EAttackLogic>();
         }
 
         private void OnStiffnessEnd(StiffnessEndEvent @event)

@@ -3,16 +3,16 @@ using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus.Component
 {
-    public interface IAttacker
-    { }
-    public interface IDefender
-    { }
-    public class DamageInfo
-    {
-        public IAttacker attacker;
-        public IDefender defender;
-        public List<Effect> effects = new();
-    }
+    // public interface IAttacker
+    // { }
+    // public interface IDefender
+    // { }
+    // public class DamageInfo
+    // {
+    //     public IAttacker attacker;
+    //     public IDefender defender;
+    //     public List<Effect> effects = new();
+    // }
     public abstract class Effect
     {
         public static int nextUid;
@@ -48,12 +48,12 @@ namespace Xuan.Prometheus.Component
         {
             owner.TryGetComp(out PropertyComponent propComp);
             owner.TryGetComp(out EventComponent eventComp);
-            propComp.OnTakeDamage(damage);
+            var dmg = propComp.OnTakeDamage(damage);
             if (propComp.NoHp) eventComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
             else
             {
                 eventComp.Invoke(new AttackedEvent());
-                eventComp.Invoke(new HpChangedEvent() { hp = propComp.curHp, maxHp = propComp.propConfig.hp });
+                eventComp.Invoke(new HpChangedEvent() { newHp = propComp.curHp + dmg, maxHp = propComp.propConfig.hp });
             }
         }
     }
@@ -70,7 +70,7 @@ namespace Xuan.Prometheus.Component
             owner.TryGetComp(out PropertyComponent propComp);
             owner.TryGetComp(out EventComponent eventComp);
             propComp.OnRecoverHp(recover);
-            eventComp.Invoke(new HpChangedEvent() { hp = propComp.curHp, maxHp = propComp.propConfig.hp });
+            eventComp.Invoke(new HpChangedEvent() { oldHp = propComp.curHp - recover, newHp = propComp.curHp, maxHp = propComp.propConfig.hp });
         }
     }
     public class FireDotEffect : Effect
@@ -98,13 +98,13 @@ namespace Xuan.Prometheus.Component
             {
                 curTickTime -= tickTime;
                 var dmg = propComp.OnTakeDamage(dotDmg);
-                selfEffectComp.toAddEffects.Add(new StiffnessEffect(caster, owner, 3f));
+                // selfEffectComp.toAddEffects.Add(new StiffnessEffect(caster, owner, 3f));
                 otherEffectComp.toAddEffects.Add(new RecoverEffect(owner, caster, dmg * 10f));
                 if (propComp.NoHp) evtComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
                 else
                 {
                     evtComp.Invoke(new AttackedEvent());
-                    evtComp.Invoke(new HpChangedEvent() { hp = propComp.curHp, maxHp = propComp.propConfig.hp });
+                    evtComp.Invoke(new HpChangedEvent() { oldHp = propComp.curHp + dmg, newHp = propComp.curHp, maxHp = propComp.propConfig.hp });
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace Xuan.Prometheus.Component
                 evtComp.Invoke(new StiffnessEndEvent());
         }
     }
-    public class EffectComponent : MonoComponent, IDefender
+    public class EffectComponent : MonoComponent
     {
         public List<Effect> toAddEffects = new();
         public XMap<int, Effect> effects = new();

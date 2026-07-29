@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Sirenix.OdinInspector;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
@@ -37,9 +38,10 @@ namespace Xuan.Prometheus
         public GroundMoveExecutor groundMoveExecutor;
         public DodgeExecutor dodgeExecutor;
         public AirMoveExecutor airMoveExecutor;
-        public UltimateExecutor ultimateExecutor;
-        public SkillExecutor skillExecutor;
-        public SpecialAttackExecutor specialAttackExecutor;
+        public bool hasTalent;
+        [ShowIf("hasTalent")] public UltimateExecutor ultimateExecutor;
+        [ShowIf("hasTalent")] public SkillExecutor skillExecutor;
+        [ShowIf("hasTalent")] public SpecialAttackExecutor specialAttackExecutor;
         public AttackedExecutor attackedExecutor;
         public DieExecutor dieExecutor;
         public void Init(SpineComponent spineComp, VfxComponent vfxComp)
@@ -48,9 +50,12 @@ namespace Xuan.Prometheus
             idleExecutor.Init(this, spineComp, vfxComp);
             groundMoveExecutor.Init(this, spineComp, vfxComp);
             airMoveExecutor.Init(this, spineComp, vfxComp);
-            ultimateExecutor.Init(this, spineComp, vfxComp);
-            skillExecutor.Init(this, spineComp, vfxComp);
-            specialAttackExecutor.Init(this, spineComp, vfxComp);
+            if (hasTalent)
+            {
+                ultimateExecutor.Init(this, spineComp, vfxComp);
+                skillExecutor.Init(this, spineComp, vfxComp);
+                specialAttackExecutor.Init(this, spineComp, vfxComp);
+            }
             dodgeExecutor.Init(this, spineComp, vfxComp);
             attackedExecutor.Init(this, spineComp, vfxComp);
             dieExecutor.Init(this, spineComp, vfxComp);

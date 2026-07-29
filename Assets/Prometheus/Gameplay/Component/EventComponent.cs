@@ -9,12 +9,14 @@ namespace Xuan.Prometheus
     public class DieEvent : IEvent { }
     public class HpChangedEvent : IEvent
     {
-        public float hp;
+        public float oldHp;
+        public float newHp;
         public float maxHp;
     }
     public class StiffnessStartEvent : IEvent { }
     public class StiffnessEndEvent : IEvent { }
-
+    public class MotionBlockerStartEvent : IEvent { }
+    public class MotionBlockerEndEvent : IEvent { }
     public class EventComponent : Component.Component
     {
         Dictionary<Type, Delegate> eventDict = new();
@@ -28,8 +30,7 @@ namespace Xuan.Prometheus
                 eventDict[type] = action;
         }
 
-        public void RemoveListener<T>(Action<T> action)
-         where T : IEvent
+        public void RemoveListener<T>(Action<T> action) where T : IEvent
         {
             Type type = typeof(T);
 

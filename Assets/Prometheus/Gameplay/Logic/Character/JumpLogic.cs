@@ -33,7 +33,7 @@ namespace Xuan.Prometheus.Logic
             Entity.BlockLogic<TalentLogic>();
             Entity.BlockLogic<DodgeLogic>();
             airMoveExecutor.Execute(AirMoveState.Jump);
-            motionComp.baseSpeed.y = motionComp.jumpVelo;
+            motionComp.curVelo.y = motionComp.propertyConfig.jumpSpeed;
         }
 
         public override void OnDisable()

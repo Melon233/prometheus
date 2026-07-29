@@ -11,6 +11,7 @@ namespace Xuan.Prometheus
         Atk2,
         Atk3,
         Atk4,
+        Special,
         Skill,
         Ult
     }

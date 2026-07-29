@@ -26,16 +26,18 @@ namespace Xuan.Prometheus.Logic
 
         public override bool CanDisable()
         {
-            return !CanEnable();
+            return !spineComp.IsPlaying(airMoveExecutor.landAni) || inputComp.hasInputThisFrame;
         }
 
         public override void OnEnable()
         {
+            Entity.BlockLogic<GroundMoveLogic>();
             airMoveExecutor.Execute(AirMoveState.Land);
         }
 
         public override void OnDisable()
         {
+            Entity.UnBlockLogic<GroundMoveLogic>();
         }
 
         public override void OnUpdate(float dt)

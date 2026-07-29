@@ -13,7 +13,15 @@ MonoBehaviour:
   m_Name: YefaPropertyConfig
   m_EditorClassIdentifier: 
   atk: 1
-  critDmg: 0.5
+  critDmg: 1
   critRate: 0.5
   def: 10
   hp: 3000
+  walkSpeed: 2
+  runSpeed: 3
+  sprintSpeed: 5
+  airMoveSpeed: 3
+  jumpSpeed: 5
+  gravity: 9.8
+  coreEnergyLimit: 100
+  ultEnergyLimit: 100

@@ -17,7 +17,7 @@ namespace Xuan.Prometheus
 
         public override bool CanEnable()
         {
-            return true;
+            return false;
         }
 
         public override void OnDisable()
@@ -36,18 +36,7 @@ namespace Xuan.Prometheus
 
         public override void OnUpdate(float dt)
         {
-            var t = atkComp.elapsedComboTime += dt;
 
-            if (t > atkComp.maxComboInterval)
-            {
-                atkComp.canCombo = true;
-                atkComp.nextComboIndex = 0;
-            }
-            else if (t > atkComp.minComboInterval)
-            {
-                atkComp.canCombo = true;
-                if (atkComp.nextComboIndex > atkComp.maxComboIndex) atkComp.nextComboIndex = 0;
-            }
 
         }
     }

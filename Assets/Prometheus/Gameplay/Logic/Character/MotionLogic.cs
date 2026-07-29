@@ -34,7 +34,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
-            motionComp.cc.Move(motionComp.baseSpeed * dt);
+            motionComp.cc.Move(motionComp.curVelo * dt);
             motionComp.landThisFrame = motionComp.cc.isGrounded && !motionComp.wasGroundedLastFrame;
             motionComp.wasGroundedLastFrame = motionComp.cc.isGrounded;
         }
