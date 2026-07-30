@@ -11,6 +11,7 @@ namespace Xuan.Prometheus
         [SerializeField] public AnimationReferenceAsset dieAnimation;
         public TrackEntry Execute()
         {
+            spineComp.ClearTrack();
             return spineComp.Play(dieAnimation);
         }
     }

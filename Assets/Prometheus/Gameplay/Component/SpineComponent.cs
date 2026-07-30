@@ -157,6 +157,10 @@ namespace Xuan.Prometheus.Component
             var entry = spineAnimator.AnimationState.GetCurrent(track);
             return entry?.Animation?.Name == animation.Animation.Name && (entry.Loop || !entry.IsComplete);
         }
+        public void ClearTrack(int track = 0)
+        {
+            spineAnimator.AnimationState.ClearTrack(track);
+        }
     }
 
     public static class SpineExtensions
