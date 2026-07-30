@@ -26,18 +26,23 @@ namespace Xuan.Prometheus.Logic
 
         public override bool CanDisable()
         {
-            return !spineComp.IsPlaying(airMoveExecutor.landAni) || inputComp.hasInputThisFrame;
+            return true;
         }
 
         public override void OnEnable()
         {
-            Entity.BlockLogic<GroundMoveLogic>();
-            airMoveExecutor.Execute(AirMoveState.Land);
+            var entry = airMoveExecutor.Execute(AirMoveState.Land);
+            entry.Event += (entry, e) =>
+            {
+                if (e.Data.Name == spineComp.animationLib.hitEnd)
+                {
+                    motionComp.landThisFrame = false;
+                }
+            };
         }
 
         public override void OnDisable()
         {
-            Entity.UnBlockLogic<GroundMoveLogic>();
         }
 
         public override void OnUpdate(float dt)

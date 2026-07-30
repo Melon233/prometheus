@@ -48,7 +48,7 @@ namespace Xuan.Prometheus
                             // 标记为 DontDestroyOnLoad，跨场景持久化
                             DontDestroyOnLoad(singletonGO);
 
-                            Debug.Log($"[{typeof(T)}] 自动创建单例实例");
+                            // Debug.Log($"[{typeof(T)}] 自动创建单例实例");
                         }
                         else
                         {

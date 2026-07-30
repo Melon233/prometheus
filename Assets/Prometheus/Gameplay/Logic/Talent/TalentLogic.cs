@@ -22,6 +22,7 @@ namespace Xuan.Prometheus.Logic
         SpecialAttackExecutor specialAttackExecutor;
         PropertyComponent propComp;
         EventComponent evtComp;
+        EffectComponent effectComp;
         public void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Enemy"))
@@ -33,9 +34,10 @@ namespace Xuan.Prometheus.Logic
                     return;
                 }
                 Debug.Log($"攻击命中：{effectComp.name}");
-                effectComp.toAddEffects.Add(new DamageEffect(Entity, effectComp.Entity, propComp.GetAttackDamage()));
-                effectComp.toAddEffects.Add(new FireDotEffect(Entity, effectComp.Entity));
-                effectComp.toAddEffects.Add(new StiffnessEffect(Entity, effectComp.Entity, 3f));
+                evtComp.Invoke<HitEvent>(new());
+                effectComp.AddEffect<DamageEffect, float>(Entity, effectComp.Entity, propComp.GetAttackDamage());
+                effectComp.AddEffect<FireDotEffect>(Entity, effectComp.Entity);
+                effectComp.AddEffect<StiffnessEffect, float>(Entity, effectComp.Entity, 3f);
             }
         }
 
@@ -51,7 +53,8 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out specialAtkComp);
             Entity.TryGetComp(out skillComp);
             Entity.TryGetComp(out ultComp);
-            // Entity.TryGetComp(out coreTalentComp);
+            Entity.TryGetComp(out coreTalentComp);
+            Entity.TryGetComp(out effectComp);
             atkExecutor = spineComp.animationLib.atkExecutor;
             groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
             ultimateExecutor = spineComp.animationLib.ultimateExecutor;
@@ -64,7 +67,7 @@ namespace Xuan.Prometheus.Logic
             skillComp.colliderProxy.handler = this;
             ultComp.colliderProxy.handler = this;
             specialAtkComp.colliderProxy.handler = this;
-            atkComp.minComboInterval = 0.5f;
+            effectComp.AddEffect<YefaCoreTalentEffect>(Entity, Entity);
         }
 
         private void OnMotionBlockerStart(MotionBlockerStartEvent @event)
@@ -102,18 +105,8 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
-            var t = atkComp.elapsedComboTime += dt;
-
-            if (t > atkComp.maxComboInterval)
-            {
-                atkComp.canCombo = true;
+            if ((atkComp.elapsedComboTime += dt) > atkComp.maxComboInterval)
                 atkComp.nextComboIndex = 0;
-            }
-            else if (t > atkComp.minComboInterval)
-            {
-                atkComp.canCombo = true;
-                if (atkComp.nextComboIndex > atkComp.maxComboIndex) atkComp.nextComboIndex = 0;
-            }
 
             if (inputComp.wasAtkPressed && specialAtkComp.canSpecial)
             {
@@ -136,10 +129,10 @@ namespace Xuan.Prometheus.Logic
             {
                 spineComp.SetFaceDir(inputComp.moveDir);
                 evtComp.Invoke<MotionBlockerStartEvent>(new());
-                atkComp.curTrackEntry = atkExecutor.Execute(atkComp.nextComboIndex, inputComp.moveDir != Vector2.zero);
+                atkComp.curTrackEntry = atkExecutor.Execute(atkComp.nextComboIndex, inputComp.moveDir != Vector2.zero, propComp.AtkSpeed);
                 atkComp.curTrackEntry.OnStop(() => evtComp.Invoke<MotionBlockerEndEvent>(new()));
                 atkComp.nextComboIndex++;
-                atkComp.canCombo = false;
+                if (atkComp.nextComboIndex > atkComp.maxComboIndex) atkComp.nextComboIndex = 0;
                 atkComp.elapsedComboTime = 0;
             }
 

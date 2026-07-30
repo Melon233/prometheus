@@ -16,4 +16,12 @@ MonoBehaviour:
   critDmg: 0
   critRate: 0
   def: 2
-  hp: 100
+  hp: 3000
+  walkSpeed: 0
+  runSpeed: 0
+  sprintSpeed: 0
+  airMoveSpeed: 0
+  jumpSpeed: 0
+  gravity: 0
+  coreEnergyLimit: 0
+  ultEnergyLimit: 0

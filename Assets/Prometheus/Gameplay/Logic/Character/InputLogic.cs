@@ -43,11 +43,6 @@ namespace Xuan.Prometheus.Logic
             inputComp.wasToggleSprintPressedThisFrame = Input.GetKeyDown(KeyCode.LeftShift);
             inputComp.wasToggleWalkPressedThisFrame = Input.GetKeyDown(KeyCode.LeftControl);
             inputComp.wasAtkPressed = Input.GetMouseButton(0);
-            inputComp.hasInputThisFrame = inputComp.moveDir != Vector2.zero ||
-                                            inputComp.wasAtkPressedThisFrame ||
-                                            inputComp.wasSkillPressedThisFrame ||
-                                            inputComp.wasUltPressedThisFrame ||
-                                            inputComp.wasDodgePressedThisFrame;
         }
 
 

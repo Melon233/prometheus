@@ -22,13 +22,15 @@ namespace Xuan.Prometheus
             base.Init(lib, spineComp, vfxComp);
             spineComp.Entity.TryGetComp(out atkComp);
         }
-        public TrackEntry Execute(int index = 0, bool move = false)
+        public TrackEntry Execute(int index = 0, bool move = false, float speed = 1f)
         {
             var animations = move ? atkMoveAnis : atkAnis;
 
             if (index < 0 || index >= animations.Count)
                 return null;
             var trackEntry = spineComp.Play(animations[index], mixDuration: 0f);
+            atkComp.canCombo = false;
+            trackEntry.TimeScale = speed;
             trackEntry.Event += (entry, evt) =>
             {
                 if (evt.ToString() == lib.hitStart)
@@ -38,10 +40,18 @@ namespace Xuan.Prometheus
                     Debug.Assert(atkSfx[index] != null, "攻击音效不存在");
                     AudioKit.Instance.Play(atkSfx[index]);
                 }
-                else if (evt.ToString() == lib.hitEnd) atkComp.atkCollider.cod.enabled = false;
+                else if (evt.ToString() == lib.hitEnd)
+                {
+                    atkComp.atkCollider.cod.enabled = false;
+                    atkComp.canCombo = true;
+                }
             };
-            trackEntry.Interrupt += (entry) => atkComp.atkCollider.cod.enabled = false;
-            trackEntry.Complete += (entry) => lib.idleExecutor.Execute(); // Reset track entry after completion
+            trackEntry.OnStop(() =>
+            {
+                atkComp.atkCollider.cod.enabled = false;
+                trackEntry.TimeScale = 1f;
+                atkComp.canCombo = true;
+            });
             return trackEntry;
         }
     }

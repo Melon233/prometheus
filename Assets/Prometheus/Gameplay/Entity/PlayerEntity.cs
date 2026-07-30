@@ -14,6 +14,7 @@ namespace Xuan.Prometheus.Logic
             bindGo.SetActive(true);
             AddComp<InputComponent>();
             AddComp<EventComponent>();
+            AddComp<DodgeComponent>();
             AddComp(bindGo.GetComponent<SpineComponent>());
             AddComp(bindGo.GetComponent<MotionComponent>());
             AddComp(bindGo.GetComponent<AttackComponent>());
@@ -24,6 +25,7 @@ namespace Xuan.Prometheus.Logic
             AddComp(bindGo.GetComponent<UltimateComponent>());
             AddComp<CoreTalentComponent>();
             AddLogic<GroundMoveLogic>();
+            AddLogic<IdleLogic>();
             AddLogic<MotionLogic>();
             AddLogic<TalentLogic>();
             AddLogic<AirMoveLogic>();
@@ -32,7 +34,6 @@ namespace Xuan.Prometheus.Logic
             AddLogic<LandLogic>();
             AddLogic<InputLogic>();
             AddLogic<DodgeLogic>();
-            AddLogic<CooldownLogic>();
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();

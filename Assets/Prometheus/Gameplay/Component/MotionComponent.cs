@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Spine;
 using UnityEngine;
 
 namespace Xuan.Prometheus.Component
@@ -19,5 +20,6 @@ namespace Xuan.Prometheus.Component
         public MoveMode moveMode = MoveMode.Run;
         public float curMoveSpeed;
         public PropertyConfig propertyConfig;
+        public TrackEntry entry;
     }
 }

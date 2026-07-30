@@ -10,35 +10,44 @@ namespace Xuan.Prometheus.Logic
     public class DodgeLogic : Logic
     {
         private SpineComponent aniComp;
-        private TrackEntry dodgeAni;
+        private TrackEntry entry;
         private InputComponent inputComp;
         private SpineComponent spineComp;
-
+        DodgeComponent dodgeComp;
         public override void AfterNew()
         {
             LogicGroup = OrderTag.Controller;
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out aniComp);
             Entity.TryGetComp(out spineComp);
+            Entity.TryGetComp(out dodgeComp);
         }
 
         public override bool CanEnable()
         {
-            return inputComp.wasDodgePressedThisFrame;
+            return inputComp.wasDodgePressedThisFrame && !dodgeComp.isDodging;
         }
 
         public override bool CanDisable()
         {
-            return dodgeAni.Animation == null || dodgeAni.NormalizedTime() >= 0.99f;
+            return !dodgeComp.isDodging;
         }
 
         public override void OnEnable()
         {
+            dodgeComp.isDodging = true;
             Entity.BlockLogic<RotateLogic>();
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<AirMoveLogic>();
-            dodgeAni = spineComp.animationLib.dodgeExecutor.Execute(inputComp.moveDir.x != 0f);
+            entry = spineComp.animationLib.dodgeExecutor.Execute(inputComp.moveDir.x != 0f);
+            entry.Event += (entry, e) =>
+            {
+                if (e.Data.Name == spineComp.animationLib.hitEnd)
+                {
+                    dodgeComp.isDodging = false;
+                }
+            };
         }
 
         public override void OnDisable()

@@ -53,12 +53,12 @@ namespace Xuan.Prometheus
             // GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enemyAttackComp.eAttackConfig.attckRadius, Color.blue);
             if (enmityComp.needGoHome)
             {
-                patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.spawnPoint - patrolComp.transform.position).normalized);
+                patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.spawnPoint - patrolComp.transform.position).NormalizeToXZ());
                 if (Vector3.Distance(patrolComp.transform.position, patrolComp.spawnPoint) < patrolComp.patrolConfig.patrolRadius) enmityComp.needGoHome = false;
             }
             else
             {
-                patrolComp.cc.Move(dt * enmityComp.enmityConfig.chaseSpeed * (enmityComp.target.position - patrolComp.transform.position).normalized);
+                patrolComp.cc.Move(dt * enmityComp.enmityConfig.chaseSpeed * (enmityComp.target.position - patrolComp.transform.position).NormalizeToXZ());
                 if (Vector3.Distance(patrolComp.transform.position, patrolComp.spawnPoint) > enmityComp.enmityConfig.chaseRadius) enmityComp.needGoHome = true;
             }
             spineComp.SetFaceDir(patrolComp.cc.velocity.x);

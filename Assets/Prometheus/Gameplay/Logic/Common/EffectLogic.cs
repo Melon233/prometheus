@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
@@ -33,18 +34,23 @@ namespace Xuan.Prometheus.Logic
         {
             foreach (var effect in effectComp.toAddEffects)
             {
-                effectComp.effects.Add(effect.uid, effect);
+                if (effectComp.effects.HasKey(effect.GetType()))
+                    effect.OnStack();
+                else
+                {
+                    effectComp.effects.Add(effect.GetType(), effect);
+                }
             }
             foreach (var effect in effectComp.toRemoveEffects)
             {
-                effectComp.effects.Remove(effect.uid);
+                effectComp.effects.Remove(effect.GetType());
+                effect.OnRemove();
             }
             effectComp.toAddEffects.Clear();
             effectComp.toRemoveEffects.Clear();
             foreach (var effect in effectComp.effects)
             {
                 effect.OnUpdate(dt);
-                if (effect.IsOver || effect.isInstant) effectComp.toRemoveEffects.Add(effect);
             }
         }
 

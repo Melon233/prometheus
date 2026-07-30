@@ -30,5 +30,11 @@ namespace Xuan.Prometheus
                     return null;
             }
         }
+        public void Stop()
+        {
+            if (spineComp.IsPlaying(walkAnimation) ||
+            spineComp.IsPlaying(runAnimaiton) ||
+            spineComp.IsPlaying(sprintAnimation)) spineComp.Stop();
+        }
     }
 }

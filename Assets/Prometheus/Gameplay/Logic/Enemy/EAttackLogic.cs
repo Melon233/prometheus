@@ -62,7 +62,7 @@ namespace Xuan.Prometheus
             if (other.CompareTag("Player"))
             {
                 if (eAttackComp.targetEffectComp == null) other.TryGetComponent(out eAttackComp.targetEffectComp); // Check if the target has an EffectComponent
-                eAttackComp.targetEffectComp.toAddEffects.Add(new DamageEffect(Entity, eAttackComp.targetEffectComp.Entity, propComp.propConfig.atk));
+                eAttackComp.targetEffectComp.AddEffect<DamageEffect, float>(Entity, eAttackComp.targetEffectComp.Entity, propComp.propConfig.atk);
             }
         }
         public bool CheckAttack()

@@ -17,6 +17,7 @@ namespace Xuan.Prometheus
     public class StiffnessEndEvent : IEvent { }
     public class MotionBlockerStartEvent : IEvent { }
     public class MotionBlockerEndEvent : IEvent { }
+    public class HitEvent : IEvent { }
     public class EventComponent : Component.Component
     {
         Dictionary<Type, Delegate> eventDict = new();

@@ -130,11 +130,15 @@ namespace Xuan.Prometheus.Component
 
         public TrackEntry Play(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f)
         {
-            return spineAnimator.AnimationState.SetAnimation(track, animation, loop);
+            var entry = spineAnimator.AnimationState.SetAnimation(track, animation, loop);
+            entry.MixDuration = mixDuration;
+            return entry;
         }
         public TrackEntry Add(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f)
         {
-            return spineAnimator.AnimationState.AddAnimation(track, animation, loop, 0f);
+            var entry = spineAnimator.AnimationState.AddAnimation(track, animation, loop, 0f);
+            entry.MixDuration = mixDuration;
+            return entry;
         }
         public void Stop(int track = 0, float mixDuration = 0.2f)
         {
@@ -151,7 +155,13 @@ namespace Xuan.Prometheus.Component
         {
             return spineAnimator.AnimationState.GetCurrent(track)?.Animation?.Name;
         }
-
+        public bool IsEmpty(int track = 0)
+        {
+            var entry = spineAnimator.AnimationState.GetCurrent(track);
+            if (entry.Animation == null || entry.IsComplete)
+                return true;
+            return false;
+        }
         public bool IsPlaying(AnimationReferenceAsset animation, int track = 0)
         {
             var entry = spineAnimator.AnimationState.GetCurrent(track);
