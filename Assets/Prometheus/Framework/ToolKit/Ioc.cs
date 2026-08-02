@@ -1,35 +1,43 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine.Tilemaps;
-
 namespace Xuan.Prometheus
 {
-    public abstract class Kit
+    /// <summary>
+    /// 定义由 GameCore 托管模块的统一生命周期。
+    /// 无状态 Kit 可以直接继承默认实现，仅在确实需要初始化、逐帧更新或释放资源时覆写对应方法。
+    /// </summary>
+    public abstract class Kit : IDisposable
     {
-        public IIoc Ioc { get; set; }  // Ioc接口
+        /// <summary>
+        /// 在 GameCore 完成全部 Kit 注册和异步前置初始化后调用。
+        /// </summary>
+        public virtual void AfterNew()
+        {
+        }
+
+        /// <summary>
+        /// 由 GameCore 在入口组件的 Update 中统一驱动。
+        /// </summary>
+        /// <param name="dt">当前帧的增量时间。</param>
+        public virtual void OnUpdate(float dt)
+        {
+        }
+
+        /// <summary>
+        /// 按注册顺序的逆序释放 Kit 持有的运行时状态。
+        /// </summary>
+        public virtual void Dispose()
+        {
+        }
     }
     public interface IIoc
     {
-        void Register<T>(T singleton);
+        void Add<T>(T singleton);
         T Get<T>();
-        UIKit UIKit { get; }  // UIKit接口
-        EventKit EventKit { get; }  // EventKit接口
-        StaticEventKit StaticEventKit { get; }  // StaticEventKit接口
-        FsmKit FsmKit { get; }  // FsmKit接口
-        AssetKit AssetKit { get; }  // AssetKit接口
     }
     public class Ioc : IIoc
     {
-        private Dictionary<Type, object> objDict = new Dictionary<Type, object>();
-        public UIKit UIKit => Get<UIKit>();
-
-        public EventKit EventKit => Get<EventKit>();
-
-        public StaticEventKit StaticEventKit => Get<StaticEventKit>();
-
-        public FsmKit FsmKit => Get<FsmKit>();
-
-        public AssetKit AssetKit => Get<AssetKit>();  // 获取实例
+        private Dictionary<Type, object> objDict = new();
 
         public T Get<T>()
         {
@@ -40,8 +48,12 @@ namespace Xuan.Prometheus
             throw new Exception($"未找到类型 {typeof(T)} 的实例");  // 未找到实例时抛出异常
         }
 
-        public void Register<T>(T singleton)
+        public void Add<T>(T singleton)
         {
+            if (objDict.ContainsKey(typeof(T)))
+            {
+                throw new Exception($"类型 {typeof(T)} 已经存在");  // 类型已经存在时抛出异常
+            }
             objDict.Add(typeof(T), singleton);
         }
     }

@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Codice.CM.Common.Merge;
-using Sirenix.OdinInspector;
 using Spine;
 using Spine.Unity;
 using UnityEngine;

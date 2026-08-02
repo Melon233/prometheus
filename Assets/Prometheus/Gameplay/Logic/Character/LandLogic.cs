@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void AfterNew()
         {
-            LogicGroup = OrderTag.Buff;
+            OrderTag = OrderTag.Buff;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);

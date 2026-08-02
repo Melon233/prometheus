@@ -21,8 +21,6 @@ namespace Xuan.Prometheus
             Entity.TryGetComp(out eIdleComp); // Add this line to get the EIdleComponent
             Entity.TryGetComp(out evtComp);
             evtComp.AddListener<AttackedEvent>(OnAttacked);
-            evtComp.AddListener<StiffnessStartEvent>(OnStiffnessStart);
-            evtComp.AddListener<StiffnessEndEvent>(OnStiffnessEnd);
             evtComp.AddListener<AttackedStartEvent>(OnAttackedStart);
             evtComp.AddListener<AttackedEndEvent>(OnAttackedEnd);
 
@@ -37,20 +35,6 @@ namespace Xuan.Prometheus
         }
 
         private void OnAttackedStart(AttackedStartEvent @event)
-        {
-            Entity.BlockLogic<PatrolLogic>();
-            Entity.BlockLogic<EnmityLogic>();
-            Entity.BlockLogic<EAttackLogic>();
-        }
-
-        private void OnStiffnessEnd(StiffnessEndEvent @event)
-        {
-            Entity.UnBlockLogic<PatrolLogic>();
-            Entity.UnBlockLogic<EnmityLogic>();
-            Entity.UnBlockLogic<EAttackLogic>();
-        }
-
-        private void OnStiffnessStart(StiffnessStartEvent @event)
         {
             Entity.BlockLogic<PatrolLogic>();
             Entity.BlockLogic<EnmityLogic>();
@@ -80,8 +64,8 @@ namespace Xuan.Prometheus
         public override void OnDispose()
         {
             evtComp.RemoveListener<AttackedEvent>(OnAttacked);
-            evtComp.RemoveListener<StiffnessStartEvent>(OnStiffnessStart);
-            evtComp.RemoveListener<StiffnessEndEvent>(OnStiffnessEnd);
+            evtComp.RemoveListener<AttackedStartEvent>(OnAttackedStart);
+            evtComp.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
         }
 
         public override void OnEnable()

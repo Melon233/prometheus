@@ -31,5 +31,17 @@ namespace Xuan.Prometheus
             currentState = state;  // 切换状态
             currentState.OnEnter();  // 当前状态进入
         }
+
+        public override void AfterNew()
+        {
+        }
+
+        public override void OnUpdate(float dt)
+        {
+        }
+
+        public override void Dispose()
+        {
+        }
     }
 }

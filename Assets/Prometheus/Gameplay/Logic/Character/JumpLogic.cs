@@ -7,13 +7,19 @@ namespace Xuan.Prometheus.Logic
         private SpineComponent spineComp;
         private InputComponent inputComp;
         private MotionComponent motionComp;
+        /// <summary>
+        /// 提供经过 modifier 计算后的跳跃速度。
+        /// </summary>
+        private PropertyComponent propComp;
         AirMoveExecutor airMoveExecutor;
         public override void AfterNew()
         {
-            LogicGroup = OrderTag.Gameplay;
+            OrderTag = OrderTag.Gameplay;
+            ControlRequirement = LogicControlRequirement.Move;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
+            Entity.TryGetComp(out propComp);
             airMoveExecutor = spineComp.animationLib.airMoveExecutor;
         }
 
@@ -33,7 +39,7 @@ namespace Xuan.Prometheus.Logic
             Entity.BlockLogic<TalentLogic>();
             Entity.BlockLogic<DodgeLogic>();
             airMoveExecutor.Execute(AirMoveState.Jump);
-            motionComp.curVelo.y = motionComp.propertyConfig.jumpSpeed;
+            motionComp.curVelo.y = propComp.JumpSpeed;
         }
 
         public override void OnDisable()

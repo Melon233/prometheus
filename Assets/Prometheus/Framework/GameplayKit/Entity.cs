@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
+    /// <summary>定义 Entity 内 Logic 的逐帧执行阶段，枚举顺序就是默认执行顺序。</summary>
     public enum OrderTag
     {
         Input,
@@ -23,245 +22,306 @@ namespace Xuan.Prometheus.Logic
         AfterGameplay
     }
 
+    /// <summary>标记可被 Entity 注册的 Logic 类型。</summary>
     public class LogicAttribute : Attribute
     {
     }
 
-
+    /// <summary>标记可被 Entity 注册的数据类型。</summary>
     public class DataAttribute : Attribute
     {
     }
 
+    /// <summary>描述 Entity 从构造、注册、运行到回收的唯一生命周期状态。</summary>
+    public enum EntityLifecycleState
+    {
+        /// <summary>Entity 正在构造组件和 Logic，尚未注册到 GameplayKit。</summary>
+        Created,
+        /// <summary>Entity 已获得运行时编号并绑定 GameplayKit，但尚未完成 Logic 初始化。</summary>
+        Registered,
+        /// <summary>Entity 已完成初始化，可以参与逐帧更新。</summary>
+        Active,
+        /// <summary>Entity 已请求回收，立即停止更新并等待 GameplayKit 在安全边界移除。</summary>
+        DespawnRequested,
+        /// <summary>Entity 已完成 Logic、Component 和场景对象清理，不能再次使用。</summary>
+        Disposed
+    }
+
+    /// <summary>组合一个运行时对象的组件与 Logic，并与所属 GameplayKit 协同管理完整生命周期。</summary>
     public abstract class Entity
     {
+        private readonly Dictionary<Type, IComponent> comps = new Dictionary<Type, IComponent>();
+        private readonly List<ILogic> logicList = new List<ILogic>();
+        private readonly Dictionary<Type, ILogic> logics = new Dictionary<Type, ILogic>();
+        private readonly Dictionary<ILogic, int> logicRegistrationOrders = new Dictionary<ILogic, int>();
+        private IGameplayKit gameplayKit;
+        private int nextLogicRegistrationOrder;
+        private int initializedLogicCount;
+        private float destroyDelay;
+
+        /// <summary>获取当前实体所属的单局 GameplayKit；未注册或已释放时访问会抛出明确异常。</summary>
+        public IGameplayKit GameplayKit => gameplayKit ?? throw new InvalidOperationException($"Entity '{GetType().FullName}' has not been registered with a GameplayKit.");
+
+        /// <summary>获取 GameplayKit 分配的单局运行时编号；未注册实体返回零，已释放实体保留原编号用于诊断。</summary>
+        public int EntityId { get; private set; }
+
+        /// <summary>获取当前生命周期状态。</summary>
+        public EntityLifecycleState LifecycleState { get; private set; } = EntityLifecycleState.Created;
+
+        /// <summary>获取当前实体是否已经完成初始化并允许参与逐帧玩法更新。</summary>
+        public bool IsActive => LifecycleState == EntityLifecycleState.Active;
+
+        /// <summary>获取当前实体是否已经进入回收流程或完成回收。</summary>
+        public bool IsDespawningOrDisposed => LifecycleState == EntityLifecycleState.DespawnRequested || LifecycleState == EntityLifecycleState.Disposed;
+
+        /// <summary>当前实体绑定的场景对象；资源定位和实例化由 GameplayKit 负责。</summary>
         public GameObject bindGo;
-        protected Dictionary<Type, IComponent> comps = new();
-        protected List<ILogic> logicList = new();
-        protected Dictionary<Type, ILogic> logics = new();
-        protected List<IComponent> toAddComps = new();
-        protected List<ILogic> toAddLogics = new();
-        protected List<Type> toRemoveComps = new();
-        protected List<Type> toRemoveLogics = new();
-        protected bool toDispose = false;
-        protected float delay = 1f;
+
+        /// <summary>由 GameplayKit 在实体初始化前建立所属单局关系并写入唯一运行时编号。</summary>
+        internal void BindGameplayKit(IGameplayKit ownerGameplayKit, int entityId)
+        {
+            if (ownerGameplayKit == null) throw new ArgumentNullException(nameof(ownerGameplayKit));
+            if (entityId <= 0) throw new ArgumentOutOfRangeException(nameof(entityId), entityId, "Entity runtime ID must be positive.");
+            if (LifecycleState != EntityLifecycleState.Created) throw new InvalidOperationException($"Entity '{GetType().FullName}' cannot be registered from lifecycle state '{LifecycleState}'.");
+            gameplayKit = ownerGameplayKit;
+            EntityId = entityId;
+            LifecycleState = EntityLifecycleState.Registered;
+        }
+
+        /// <summary>初始化全部 Logic，并在初始化完成后按照 OrderTag 与注册序号建立稳定执行顺序。</summary>
         public void AfterNew()
         {
-            logicList = logics.Values.ToList();
-            logicList.Sort((a, b) => a.LogicGroup.CompareTo(b.LogicGroup));
-            foreach (var logic in logicList) logic.AfterNew();
+            if (LifecycleState != EntityLifecycleState.Registered) throw new InvalidOperationException($"Entity '{GetType().FullName}' cannot initialize from lifecycle state '{LifecycleState}'.");
+            SortLogics();
+            try
+            {
+                for (int index = 0; index < logicList.Count; index++)
+                {
+                    initializedLogicCount = index + 1;
+                    logicList[index].AfterNew();
+                }
+                SortLogics();
+                LifecycleState = EntityLifecycleState.Active;
+            }
+            catch
+            {
+                RequestDispose(0f);
+                throw;
+            }
         }
 
+        /// <summary>驱动 Active Entity 的全部 Logic；帧内请求回收后立即终止剩余 Logic，避免死亡后的额外行动。</summary>
         public void OnUpdate(float dt)
         {
-            if (toDispose)
+            if (LifecycleState != EntityLifecycleState.Active) return;
+            for (int index = 0; index < logicList.Count; index++)
             {
-                Dispose();
-                return;
-            }
-
-            // if (toAddComps.Count != 0)
-            // {
-            //     foreach (var comp in toAddComps) comps.Add(comp.GetType(), comp);
-            //     toAddComps.Clear();
-            // }
-
-            // if (toAddLogics.Count != 0)
-            // {
-            //     foreach (var logic in toAddLogics)
-            //     {
-            //         logics.Add(logic.GetType(), logic);
-            //         logicList.Add(logic);
-            //         logic.AfterNew();
-            //     }
-
-            //     toAddLogics.Clear();
-            // }
-
-            // if (toRemoveComps.Count != 0)
-            // {
-            //     foreach (var type in toRemoveComps)
-            //         comps.Remove(type);
-            //     toRemoveComps.Clear();
-            // }
-
-            // if (toRemoveLogics.Count != 0)
-            // {
-            //     foreach (var type in toRemoveLogics)
-            //         if (logics.TryGetValue(type, out var logic))
-            //         {
-            //             logic.OnDispose();
-            //             logics.Remove(type);
-            //         }
-
-
-            //     toRemoveLogics.Clear();
-            // }
-
-            logicList.Sort((a, b) => a.LogicGroup.CompareTo(b.LogicGroup));
-            foreach (var logic in logicList)
-            {
+                ILogic logic = logicList[index];
                 CheckLogic(logic);
+                if (LifecycleState != EntityLifecycleState.Active) break;
                 if (logic.Enable && logic.BlockCnt == 0) logic.OnUpdate(dt);
+                if (LifecycleState != EntityLifecycleState.Active) break;
             }
         }
 
+        /// <summary>请求 GameplayKit 在本帧安全边界移除当前实体，首次请求决定场景对象的延迟销毁时间。</summary>
+        public bool RequestDispose(float delay = 2f)
+        {
+            if (IsDespawningOrDisposed) return false;
+            float safeDelay = Mathf.Max(0f, delay);
+            if (gameplayKit != null) return gameplayKit.RequestRemoveEntity(EntityId, safeDelay);
+            if (!MarkDespawnRequested(safeDelay)) return false;
+            DisposeImmediately();
+            return true;
+        }
+
+        /// <summary>保留旧调用入口并转交给幂等的 RequestDispose，调用方无需自行驱动 Entity 更新执行释放。</summary>
         public void OnDispose(float delay = 2f)
         {
-            this.delay = delay;
-            toDispose = true;
+            RequestDispose(delay);
         }
-        void Dispose()
+
+        /// <summary>由 GameplayKit 标记首次回收请求，使 Entity 立即停止参与逐帧更新。</summary>
+        internal bool MarkDespawnRequested(float delay)
         {
-            foreach (var logic in logicList) logic.OnDispose();
+            if (IsDespawningOrDisposed) return false;
+            destroyDelay = Mathf.Max(0f, delay);
+            LifecycleState = EntityLifecycleState.DespawnRequested;
+            return true;
+        }
+
+        /// <summary>由 GameplayKit 在安全边界执行一次最终清理，并保证禁用、注销和解绑阶段都只执行一次。</summary>
+        internal bool DisposeImmediately()
+        {
+            if (LifecycleState == EntityLifecycleState.Disposed) return false;
+            if (LifecycleState != EntityLifecycleState.DespawnRequested) MarkDespawnRequested(0f);
+            int cleanupCount = Mathf.Min(initializedLogicCount, logicList.Count);
+            for (int index = cleanupCount - 1; index >= 0; index--)
+            {
+                ILogic logic = logicList[index];
+                if (!logic.Enable) continue;
+                logic.Enable = false;
+                try
+                {
+                    logic.OnDisable();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
+            }
+            for (int index = cleanupCount - 1; index >= 0; index--)
+            {
+                try
+                {
+                    logicList[index].OnDispose();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogException(exception);
+                }
+            }
+            if (comps.TryGetValue(typeof(EventComponent), out IComponent eventComponent) && eventComponent is EventComponent typedEventComponent) typedEventComponent.ClearListeners();
+            foreach (IComponent component in comps.Values) component.Entity = null;
+            foreach (ILogic logic in logicList) logic.Entity = null;
             comps.Clear();
             logicList.Clear();
             logics.Clear();
-            GameObject.Destroy(bindGo, delay);
+            logicRegistrationOrders.Clear();
+            gameplayKit = null;
+            GameObject objectToDestroy = bindGo;
+            bindGo = null;
+            LifecycleState = EntityLifecycleState.Disposed;
+            if (objectToDestroy != null)
+            {
+                if (Application.isPlaying) UnityEngine.Object.Destroy(objectToDestroy, destroyDelay);
+                else UnityEngine.Object.DestroyImmediate(objectToDestroy);
+            }
+            return true;
         }
-        public void CheckLogic<T>(T logic) where T : ILogic
+
+        /// <summary>根据阻塞计数、控制状态和 Logic 自身条件执行唯一一次启用或禁用跃迁。</summary>
+        private void CheckLogic(ILogic logic)
         {
-            if (!logic.Enable && logic.BlockCnt == 0 && logic.CanEnable())
+            bool controlAllowed = IsLogicAllowedByControlState(logic);
+            if (!logic.Enable && logic.BlockCnt == 0 && controlAllowed && logic.CanEnable())
             {
                 logic.Enable = true;
-                logic.OnEnable();
+                try
+                {
+                    logic.OnEnable();
+                }
+                catch
+                {
+                    logic.Enable = false;
+                    throw;
+                }
             }
-            else if (logic.Enable && (logic.BlockCnt != 0 || logic.CanDisable()))
+            else if (logic.Enable && (logic.BlockCnt != 0 || !controlAllowed || logic.CanDisable()))
             {
                 logic.Enable = false;
                 logic.OnDisable();
             }
         }
+
+        /// <summary>根据 Logic 声明的能力需求查询 PropertyComponent；没有属性组件的基础设施实体维持原有调度行为。</summary>
+        private bool IsLogicAllowedByControlState(ILogic logic)
+        {
+            LogicControlRequirement requirement = logic is Logic gameplayLogic ? gameplayLogic.ControlRequirement : LogicControlRequirement.Act;
+            if (requirement == LogicControlRequirement.None) return true;
+            if (!comps.TryGetValue(typeof(PropertyComponent), out IComponent component) || !(component is PropertyComponent property)) return true;
+            if ((requirement & LogicControlRequirement.Act) != 0 && !property.CanAct) return false;
+            if ((requirement & LogicControlRequirement.Move) != 0 && !property.CanMove) return false;
+            if ((requirement & LogicControlRequirement.ActiveSkill) != 0 && !property.CanUseActiveSkill) return false;
+            return true;
+        }
+
+        /// <summary>在 Entity 构造阶段创建并注册一个具体 Logic。</summary>
         public void AddLogic<T>() where T : ILogic, new()
         {
-            var logic = new T();
-            logics.Add(typeof(T), logic);
-            logic.Entity = this;
-            // typeof(T).GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
-            //     .ToList().ForEach(f =>
-            //     {
-            //         if (f.GetCustomAttribute<InjectDataAttribute>() != null) f.SetValue(logic, GetComp(f.FieldType));
-            //     });
+            AddLogic(new T());
         }
 
+        /// <summary>在 Entity 构造阶段注册一个 Logic，并保存稳定注册序号作为同优先级排序依据。</summary>
         public void AddLogic<T>(T logic) where T : ILogic
         {
-            logics.Add(logic.GetType(), logic);
+            EnsureCanCompose();
+            if (ReferenceEquals(logic, null)) throw new ArgumentNullException(nameof(logic));
+            Type logicType = logic.GetType();
+            logics.Add(logicType, logic);
+            logicList.Add(logic);
+            logicRegistrationOrders.Add(logic, nextLogicRegistrationOrder++);
             logic.Entity = this;
-            // logic.GetType().GetTypeInfo()
-            //     .GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
-            //     .ToList().ForEach(f =>
-            //     {
-            //         if (f.GetCustomAttribute<InjectDataAttribute>() != null) f.SetValue(logic, GetComp(f.FieldType));
-            //     });
         }
 
+        /// <summary>在 Entity 构造阶段注册一个已经存在的具体组件。</summary>
         public void AddComp<T>(T comp) where T : IComponent
         {
+            EnsureCanCompose();
+            if (ReferenceEquals(comp, null)) throw new ArgumentNullException(nameof(comp), $"Entity '{GetType().FullName}' cannot register a null component of type '{typeof(T).FullName}'.");
             comps.Add(comp.GetType(), comp);
             comp.Entity = this;
         }
 
+        /// <summary>在 Entity 构造阶段创建并注册一个普通 C# 组件。</summary>
         public void AddComp<T>() where T : IComponent, new()
         {
-            var comp = new T();
-            comps.Add(comp.GetType(), comp);
-            comp.Entity = this;
+            AddComp(new T());
         }
 
+        /// <summary>按具体类型尝试获取当前 Entity 仍然持有的组件。</summary>
         public bool TryGetComp<T>(out T comp) where T : IComponent
         {
-            if (comps.TryGetValue(typeof(T), out var dat))
+            if (comps.TryGetValue(typeof(T), out IComponent data) && data is T typedComponent)
             {
-                comp = (T)dat;
+                comp = typedComponent;
                 return true;
             }
-            Debug.LogError($"{GetType()} Can't find comp {typeof(T)}");
             comp = default;
             return false;
         }
 
-        // public IComponent GetComp(Type type)
-        // {
-        //     if (comps.TryGetValue(type, out var dat)) return dat;
+        /// <summary>按具体类型尝试获取当前 Entity 注册的 Logic，回收完成后始终返回 false。</summary>
+        public bool TryGetLogic<T>(out T logic) where T : ILogic
+        {
+            if (logics.TryGetValue(typeof(T), out ILogic registeredLogic) && registeredLogic is T typedLogic)
+            {
+                logic = typedLogic;
+                return true;
+            }
+            logic = default;
+            return false;
+        }
 
-        //     return null;
-        // }
-
-        // public void AddLogicRuntime<T>() where T : ILogic, new()
-        // {
-        //     var logic = new T();
-        //     toAddLogics.Add(logic);
-        //     logic.Entity = this;
-        // }
-
-        // public void AddCompRuntime<T>() where T : IComponent, new()
-        // {
-        //     var comp = new T();
-        //     toAddComps.Add(comp);
-        //     comp.Entity = this;
-        // }
-
-        // public void RemoveLogic<T>() where T : ILogic
-        // {
-        //     toRemoveLogics.Add(typeof(T));
-        // }
-
-        // public void RemoveComp<T>() where T : IComponent
-        // {
-        //     toRemoveComps.Add(typeof(T));
-        // }
-        // public void AddConfig<T>() where T : ScriptableObject
-        // {
-        // }
-
-        // public void BlockTag(LogicTag logicTag, object blocker)
-        // {
-        //     if (!blockRegis.ContainsKey(logicTag)) blockRegis[logicTag] = new HashSet<object>();
-        //     blockRegis[logicTag].Add(blocker);
-        // }
-
-        // public void UnBlockTag(LogicTag logicTag, object blocker)
-        // {
-        //     if (blockRegis.ContainsKey(logicTag)) blockRegis[logicTag].Remove(blocker);
-        //     if (blockRegis[logicTag].Count == 0) blockRegis.Remove(logicTag);
-        // }
-
-        // public void BlockLogic<T>(object blocker) where T : ILogic
-        // {
-        //     var logic = logics[typeof(T)];
-        //     logic.BlockCnt++;
-        //     CheckLogic(logic);
-        // }
-
-        // public void UnBlockLogic<T>(object blocker) where T : ILogic
-        // {
-        //     var logic = logics[typeof(T)];
-        //     logic.BlockCnt--;
-        //     CheckLogic(logic);
-        // }
-
+        /// <summary>为指定 Logic 增加一层阻塞，并使用饱和保护避免计数溢出后意外启用。</summary>
         public void BlockLogic<T>() where T : ILogic
         {
-            var logic = logics[typeof(T)];
+            if (!TryGetLogic(out T logic)) throw new InvalidOperationException($"Entity '{GetType().FullName}' does not contain Logic '{typeof(T).FullName}'.");
+            if (logic.BlockCnt == int.MaxValue) throw new OverflowException($"Logic '{typeof(T).FullName}' block count reached Int32.MaxValue.");
             logic.BlockCnt++;
-            // CheckLogic(logic);
         }
 
+        /// <summary>为指定 Logic 释放一层阻塞，重复释放会稳定停留在零。</summary>
         public void UnBlockLogic<T>() where T : ILogic
         {
-            var logic = logics[typeof(T)];
-            logic.BlockCnt = --logic.BlockCnt < 0 ? 0 : logic.BlockCnt;
-            // CheckLogic(logic);
+            if (!TryGetLogic(out T logic)) throw new InvalidOperationException($"Entity '{GetType().FullName}' does not contain Logic '{typeof(T).FullName}'.");
+            if (logic.BlockCnt > 0) logic.BlockCnt--;
         }
 
-        // public bool HasBlockTag(LogicTag logicTag)
-        // {
-        //     return blockRegis.ContainsKey(logicTag);
-        // }
+        /// <summary>按照 OrderTag 和注册序号稳定排序，避免相同 OrderTag 产生不确定执行顺序。</summary>
+        private void SortLogics()
+        {
+            logicList.Sort((left, right) =>
+            {
+                int orderComparison = left.OrderTag.CompareTo(right.OrderTag);
+                return orderComparison != 0 ? orderComparison : logicRegistrationOrders[left].CompareTo(logicRegistrationOrders[right]);
+            });
+        }
 
-        // public bool HasLogic<T>() where T : ILogic
-        // {
-        //     return logics.ContainsKey(typeof(T));
-        // }
+        /// <summary>禁止在 Entity 注册后改变组件和 Logic 组成，避免更新期间修改集合或漏掉初始化与清理。</summary>
+        private void EnsureCanCompose()
+        {
+            if (LifecycleState != EntityLifecycleState.Created) throw new InvalidOperationException($"Entity '{GetType().FullName}' cannot change components or Logic from lifecycle state '{LifecycleState}'.");
+        }
     }
 }

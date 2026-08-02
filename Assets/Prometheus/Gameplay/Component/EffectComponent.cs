@@ -1,291 +1,104 @@
 using System;
-using System.Collections.Generic;
-using UnityEngine;
+using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic;
+
 namespace Xuan.Prometheus.Component
 {
-    // public interface IAttacker
-    // { }
-    // public interface IDefender
-    // { }
-    // public class DamageInfo
-    // {
-    //     public IAttacker attacker;
-    //     public IDefender defender;
-    //     public List<Effect> effects = new();
-    // }
-    public enum DurationType
+    /// <summary>
+    /// 保存单个 Entity 接入 EffectSystem 时产生的运行时状态。
+    /// EffectLogic 只保留该 Component 引用，EffectSystem、Entity 所有者和 IDisposable 注册句柄全部集中在此处管理。
+    /// </summary>
+    public sealed class EffectComponent : MonoComponent
     {
-        Instant,
-        Normal,
-        Permanent
-    }
-    public abstract class Effect
-    {
-        public static int nextUid;
-        public int uid;
-        public int eid;
-        public float curTickTime;
-        public float curTime;
-        public float duration;
-        public int maxStacks;
-        public int curStacks = 1;
-        public List<float> paras = new() { };
-        public float tickTime = 1f;
-        public float NormalizedTime => curTime / duration;
-        public bool IsOver => curTime > duration;
-        public Entity owner;
-        public Entity caster;
-        public DurationType durationType = DurationType.Normal;
-        public EffectComponent ownerEffectComp;
-        public Effect()
-        {
-            uid = nextUid++;
-        }
-        public virtual void OnStack() { }
-        public virtual void OnUpdate(float dt) { }
-        public virtual void OnRemove() { }
-    }
-    public class DamageEffect : Effect, IAdd<float>
-    {
-        public DamageEffect() : base()
-        {
-            durationType = DurationType.Instant;
-        }
+        private EffectSystem effectSystem;
+        private Entity owner;
+        private IDisposable attackTriggerRegistration;
+        private IDisposable combatFlowTriggerRegistration;
 
-        public void OnAdd(float dmg)
+        /// <summary>
+        /// 获取当前 Entity 所属单局的 EffectRuntime；组件尚未初始化时抛出明确异常。
+        /// </summary>
+        public EffectRuntime Runtime
         {
-            owner.TryGetComp(out PropertyComponent propComp);
-            owner.TryGetComp(out EventComponent eventComp);
-            var actualDmg = propComp.OnTakeDamage(dmg);
-            if (propComp.NoHp) eventComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
-            else
+            get
             {
-                eventComp.Invoke(new AttackedEvent());
-                eventComp.Invoke(new HpChangedEvent() { newHp = propComp.Hp + actualDmg, maxHp = propComp.propConfig.hp });
+                if (effectSystem == null)
+                    throw new InvalidOperationException("EffectComponent has not been initialized by EffectLogic.");
+
+                return effectSystem.Runtime;
             }
-            ownerEffectComp.toRemoveEffects.Add(this);
-        }
-    }
-    public class RecoverEffect : Effect, IAdd<float>
-    {
-        public RecoverEffect() : base()
-        {
-            durationType = DurationType.Instant;
         }
 
-        public void OnAdd(float recover)
+        /// <summary>
+        /// 将当前 Entity 接入指定单局 EffectSystem，并注册基础攻击触发规则。
+        /// </summary>
+        /// <param name="ownerSystem">从 Entity.GameplayKit 获取的单局 EffectSystem。</param>
+        /// <param name="ownerEntity">当前组件所属的 Entity。</param>
+        public void Initialize(EffectSystem ownerSystem, Entity ownerEntity)
         {
-            owner.TryGetComp(out PropertyComponent propComp);
-            owner.TryGetComp(out EventComponent eventComp);
-            propComp.OnRecoverHp(recover);
-            eventComp.Invoke(new HpChangedEvent() { oldHp = propComp.Hp - recover, newHp = propComp.Hp, maxHp = propComp.propConfig.hp });
-            ownerEffectComp.toRemoveEffects.Add(this);
-        }
-    }
-    public class FireDotEffect : Effect, IAdd
-    {
-        public float dotDmg = 1f;
-        PropertyComponent propComp;
-        EventComponent evtComp;
-        EffectComponent casterEffectComp;
+            if (ownerSystem == null)
+                throw new ArgumentNullException(nameof(ownerSystem));
 
-        public FireDotEffect() : base()
-        {
-            duration = 10f;
-            tickTime = 1f;
-        }
+            if (ownerEntity == null)
+                throw new ArgumentNullException(nameof(ownerEntity));
 
-        public void OnAdd()
-        {
-            owner.TryGetComp(out propComp);
-            owner.TryGetComp(out evtComp);
-            caster.TryGetComp(out casterEffectComp);
-        }
-
-        public override void OnUpdate(float dt)
-        {
-            curTime += dt;
-            if (IsOver)
+            if (effectSystem != null)
             {
-                ownerEffectComp.toRemoveEffects.Add(this);
+                if (ReferenceEquals(effectSystem, ownerSystem) && ReferenceEquals(owner, ownerEntity))
+                    return;
+
+                throw new InvalidOperationException("EffectComponent is already bound to another EffectSystem or Entity.");
+            }
+
+            effectSystem = ownerSystem;
+            owner = ownerEntity;
+            try
+            {
+                attackTriggerRegistration = effectSystem.DefaultLibrary.RegisterAttackTriggers(effectSystem.Runtime, owner);
+            }
+            catch
+            {
+                effectSystem = null;
+                owner = null;
+                attackTriggerRegistration = null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 为当前 Entity 注册由实际攻击伤害驱动的战意规则；重复调用不会重复安装规则。
+        /// </summary>
+        /// <param name="ownerEntity">请求注册战意规则的 Entity，必须与初始化所有者一致。</param>
+        public void RegisterCombatFlowTriggers(Entity ownerEntity)
+        {
+            if (effectSystem == null || owner == null)
+                throw new InvalidOperationException("EffectComponent must be initialized before registering combat-flow triggers.");
+
+            if (!ReferenceEquals(owner, ownerEntity))
+                throw new InvalidOperationException("EffectComponent cannot register triggers for another Entity.");
+
+            if (combatFlowTriggerRegistration != null)
                 return;
-            }
-            curTickTime += dt;
-            if (curTickTime > tickTime)
-            {
-                curTickTime -= tickTime;
-                var dmg = propComp.OnTakeDamage(dotDmg);
-                ownerEffectComp.AddEffect<StiffnessEffect, float>(caster, owner, 2f);
-                casterEffectComp.AddEffect<RecoverEffect, float>(owner, caster, dmg * 10f);
-                if (propComp.NoHp) evtComp.Invoke(new DieEvent());//控制死亡，最大化Effect能力边界
-                else
-                {
-                    evtComp.Invoke(new AttackedEvent());
-                    evtComp.Invoke(new HpChangedEvent() { oldHp = propComp.Hp + dmg, newHp = propComp.Hp, maxHp = propComp.propConfig.hp });
-                }
-            }
-        }
-    }
-    public class StiffnessEffect : Effect, IAdd<float>
-    {
-        EventComponent evtComp;
-        public StiffnessEffect() : base()
-        {
+
+            combatFlowTriggerRegistration = effectSystem.DefaultLibrary.RegisterCombatFlowTriggers(effectSystem.Runtime, owner);
         }
 
-        public void OnAdd(float duration)
+        /// <summary>
+        /// 注销当前 Entity 的全部触发规则，并移除其持有的持续效果和属性句柄。
+        /// </summary>
+        public void DisposeBindings()
         {
-            this.duration = duration;
-            owner.TryGetComp(out evtComp);
-            evtComp.Invoke(new StiffnessStartEvent());
-        }
-        public override void OnStack()
-        {
-            curTime = 0f;
-        }
-        public override void OnUpdate(float dt)
-        {
-            curTime += dt;
-            if (IsOver)
-            {
-                evtComp.Invoke(new StiffnessEndEvent());
-                ownerEffectComp.toRemoveEffects.Add(this);
-            }
-        }
-    }
-    public class YefaCoreTalentEffect : Effect, IAdd
-    {
-        EventComponent evtComp;
-        public YefaCoreTalentEffect() : base()
-        {
-            durationType = DurationType.Permanent;
-        }
-        public void OnAdd()
-        {
-            owner.TryGetComp(out evtComp);
-            owner.TryGetComp(out ownerEffectComp);
-            evtComp.AddListener<HitEvent>(OnHit);
-        }
-        private void OnHit(HitEvent @event)
-        {
-            ownerEffectComp.AddEffect<CombatFlowEffect>(caster, owner);
-        }
+            EffectSystem activeSystem = effectSystem;
+            Entity activeOwner = owner;
+            combatFlowTriggerRegistration?.Dispose();
+            combatFlowTriggerRegistration = null;
+            attackTriggerRegistration?.Dispose();
+            attackTriggerRegistration = null;
+            effectSystem = null;
+            owner = null;
 
-        public override void OnRemove()
-        {
-            evtComp.RemoveListener<HitEvent>(OnHit);
-        }
-    }
-    public class CombatFlowEffect : Effect, IAdd
-    {
-        PropertyComponent propComp;
-        float atkBoost = 1f;
-        float atkSpeedBoost = 1f;
-        float moveSpeedBoost = 0.2f;
-        float critRateBoost = 0.2f;
-        float critDmgBoost = 0.2f;
-        public CombatFlowEffect() : base()
-        {
-            duration = 3f;
-        }
-        public void OnAdd()
-        {
-            owner.TryGetComp(out propComp);
-            propComp.atkBoost += atkBoost;
-            propComp.atkSpeedBoost += atkSpeedBoost;
-            propComp.moveSpeedBoost += moveSpeedBoost;
-            propComp.critRateBoost += critRateBoost;
-            propComp.critDmgBoost += critDmgBoost;
-            Debug.Log($"CombatFlowEffect: {curStacks}");
-        }
-        public override void OnStack()
-        {
-            curTime = 0f;
-            if (curStacks == maxStacks) return;
-            curStacks++;
-            propComp.atkBoost += atkBoost;
-            propComp.atkSpeedBoost += atkSpeedBoost;
-            propComp.moveSpeedBoost += moveSpeedBoost;
-            propComp.critRateBoost += critRateBoost;
-            propComp.critDmgBoost += critDmgBoost;
-            Debug.Log($"CombatFlowEffect: {curStacks}");
-        }
-        public override void OnUpdate(float dt)
-        {
-            curTime += dt;
-            if (IsOver)
-            {
-                ownerEffectComp.toRemoveEffects.Add(this);
-                return;
-            }
-        }
-        public override void OnRemove()
-        {
-            propComp.atkBoost -= atkBoost * curStacks;
-            propComp.atkSpeedBoost -= atkSpeedBoost * curStacks;
-            propComp.moveSpeedBoost -= moveSpeedBoost * curStacks;
-            propComp.critRateBoost -= critRateBoost * curStacks;
-            propComp.critDmgBoost -= critDmgBoost * curStacks;
-            Debug.Log($"Lose stacks: {curStacks}");
-        }
-    }
-    public interface IAdd { void OnAdd(); }
-    public interface IAdd<P1> { void OnAdd(P1 p1); }
-    public interface IAdd<P1, P2> { void OnAdd(P1 p1, P2 p2); }
-
-    public class EffectComponent : MonoComponent
-    {
-        public List<Effect> toAddEffects = new();
-        public List<Effect> toRemoveEffects = new();
-        public XMap<Type, Effect> effects = new();
-        public void AddEffect<TEffect>(Entity caster, Entity owner) where TEffect : Effect, IAdd, new()
-        {
-            if (effects.TryGet(typeof(TEffect), out var e))
-            {
-                e.OnStack();
-                return;
-            }
-            TEffect effect = new()
-            {
-                owner = owner,
-                caster = caster,
-                ownerEffectComp = this
-            };
-            toAddEffects.Add(effect);
-            effect.OnAdd();
-        }
-        public void AddEffect<TEffect, P1>(Entity caster, Entity owner, P1 p1) where TEffect : Effect, IAdd<P1>, new()
-        {
-            if (effects.TryGet(typeof(TEffect), out var e))
-            {
-                e.OnStack();
-                return;
-            }
-            TEffect effect = new()
-            {
-                owner = owner,
-                caster = caster,
-                ownerEffectComp = this
-            };
-            toAddEffects.Add(effect);
-            effect.OnAdd(p1);
-        }
-        public void AddEffect<TEffect, P1, P2>(Entity caster, Entity owner, P1 p1, P2 p2) where TEffect : Effect, IAdd<P1, P2>, new()
-        {
-            if (effects.TryGet(typeof(TEffect), out var e))
-            {
-                e.OnStack();
-                return;
-            }
-            TEffect effect = new()
-            {
-                owner = owner,
-                caster = caster,
-                ownerEffectComp = this
-            };
-            toAddEffects.Add(effect);
-            effect.OnAdd(p1, p2);
+            if (activeSystem != null && !activeSystem.IsDisposed && activeOwner != null)
+                activeSystem.Runtime.RemoveAll(activeOwner, EffectRemovalReason.OwnerDisposed);
         }
     }
 }

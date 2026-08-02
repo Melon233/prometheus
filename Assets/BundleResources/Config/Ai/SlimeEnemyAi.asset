@@ -1,0 +1,212 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11164dadab106dc4796cdf61d114723c, type: 3}
+  m_Name: SlimeEnemyAi
+  m_EditorClassIdentifier:
+  definitionId: Enemy.Slime
+  initialStateId: Idle
+  perceptionInterval: 0.2
+  decisionInterval: 0.1
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  targetTag: Player
+  perceptionRadius: 4
+  chaseRadius: 8
+  attackRadius: 2
+  patrolRadius: 5
+  patrolStepDistance: 3
+  patrolSpeed: 2
+  chaseSpeed: 3
+  returnSpeed: 3
+  idleDuration: 2
+  attackCooldown: 2
+  arrivalDistance: 0.1
+  attackSignalId: Enemy.NormalAttack
+  states:
+  - stateId: Idle
+    enterActions:
+    - actionType: 1
+      parameter: 0
+    - actionType: 4
+      parameter: 0
+    tickActions:
+    - actionType: 1
+      parameter: 0
+    exitActions: []
+    transitions:
+    - targetStateId: Chase
+      priority: 100
+      conditions:
+      - conditionType: 1
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+    - targetStateId: Patrol
+      priority: 10
+      conditions:
+      - conditionType: 7
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+  - stateId: Patrol
+    enterActions:
+    - actionType: 5
+      parameter: 0
+    - actionType: 2
+      parameter: 0
+    tickActions:
+    - actionType: 6
+      parameter: 0
+    exitActions:
+    - actionType: 3
+      parameter: 0
+    transitions:
+    - targetStateId: Chase
+      priority: 100
+      conditions:
+      - conditionType: 1
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+    - targetStateId: Idle
+      priority: 10
+      conditions:
+      - conditionType: 8
+        valueSource: 5
+        constantValue: 0
+        negate: 0
+  - stateId: Chase
+    enterActions:
+    - actionType: 2
+      parameter: 0
+    tickActions:
+    - actionType: 7
+      parameter: 0
+    exitActions:
+    - actionType: 3
+      parameter: 0
+    transitions:
+    - targetStateId: ReturnHome
+      priority: 300
+      conditions:
+      - conditionType: 2
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 6
+        valueSource: 5
+        constantValue: 0
+        negate: 0
+    - targetStateId: Idle
+      priority: 200
+      conditions:
+      - conditionType: 2
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 5
+        valueSource: 5
+        constantValue: 0
+        negate: 0
+    - targetStateId: Attack
+      priority: 100
+      conditions:
+      - conditionType: 1
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 3
+        valueSource: 3
+        constantValue: 0
+        negate: 0
+  - stateId: Attack
+    enterActions:
+    - actionType: 3
+      parameter: 0
+    - actionType: 1
+      parameter: 0
+    tickActions:
+    - actionType: 9
+      parameter: 0
+    - actionType: 10
+      parameter: 0
+    exitActions:
+    - actionType: 3
+      parameter: 0
+    transitions:
+    - targetStateId: ReturnHome
+      priority: 300
+      conditions:
+      - conditionType: 2
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 11
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 6
+        valueSource: 5
+        constantValue: 0
+        negate: 0
+    - targetStateId: Idle
+      priority: 250
+      conditions:
+      - conditionType: 2
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 11
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+      - conditionType: 5
+        valueSource: 5
+        constantValue: 0
+        negate: 0
+    - targetStateId: Chase
+      priority: 200
+      conditions:
+      - conditionType: 4
+        valueSource: 3
+        constantValue: 0
+        negate: 0
+      - conditionType: 11
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+  - stateId: ReturnHome
+    enterActions:
+    - actionType: 2
+      parameter: 0
+    tickActions:
+    - actionType: 8
+      parameter: 0
+    exitActions:
+    - actionType: 3
+      parameter: 0
+    transitions:
+    - targetStateId: Chase
+      priority: 100
+      conditions:
+      - conditionType: 1
+        valueSource: 0
+        constantValue: 0
+        negate: 0
+    - targetStateId: Idle
+      priority: 10
+      conditions:
+      - conditionType: 5
+        valueSource: 5
+        constantValue: 0
+        negate: 0

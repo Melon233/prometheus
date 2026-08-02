@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e429abcbba345214885c2fc0f647c8f8, type: 3}
+  m_Name: CombatFlow
+  m_EditorClassIdentifier: 
+  effectId: Example.CombatFlow
+  tags: 1280
+  durationType: 1
+  duration: 3
+  tickInterval: 0
+  stackPolicy: 4
+  stackKeyPolicy: 0
+  maxStacks: 5
+  phase: 500
+  priority: 10
+  onApplyOperations:
+  - rid: 1348142047778570248
+  - rid: 1348142047778570249
+  onStackOperations:
+  - rid: 1348142047778570250
+  - rid: 1348142047778570251
+  onTickOperations: []
+  onRemoveOperations: []
+  grantedTriggers: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1348142047778570248
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      data:
+        keyPolicy: 0
+        customModifierKey: 
+        propertyType: 0
+        modifierMode: 0
+        valuePerStack:
+          source: 0
+          multiplier: 0
+          offset: 0.1
+    - rid: 1348142047778570249
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      data:
+        keyPolicy: 0
+        customModifierKey: 
+        propertyType: 3
+        modifierMode: 0
+        valuePerStack:
+          source: 0
+          multiplier: 0
+          offset: 0.05
+    - rid: 1348142047778570250
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      data:
+        keyPolicy: 0
+        customModifierKey: 
+        propertyType: 0
+        modifierMode: 0
+        valuePerStack:
+          source: 0
+          multiplier: 0
+          offset: 0.1
+    - rid: 1348142047778570251
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      data:
+        keyPolicy: 0
+        customModifierKey: 
+        propertyType: 3
+        modifierMode: 0
+        valuePerStack:
+          source: 0
+          multiplier: 0
+          offset: 0.05

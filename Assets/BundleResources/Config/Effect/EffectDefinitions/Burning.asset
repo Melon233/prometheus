@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e429abcbba345214885c2fc0f647c8f8, type: 3}
+  m_Name: Burning
+  m_EditorClassIdentifier: 
+  effectId: Example.Burning
+  tags: 536
+  durationType: 1
+  duration: 10
+  tickInterval: 2
+  stackPolicy: 2
+  stackKeyPolicy: 1
+  maxStacks: 1
+  phase: 400
+  priority: 20
+  onApplyOperations: []
+  onStackOperations: []
+  onTickOperations:
+  - rid: 1348142047778570247
+  onRemoveOperations: []
+  grantedTriggers: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 1348142047778570247
+      type: {class: DamageOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      data:
+        amount:
+          source: 6
+          multiplier: 0.2
+          offset: 0
+        additionalTags: 56

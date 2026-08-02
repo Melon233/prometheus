@@ -15,6 +15,7 @@ namespace Xuan.Prometheus
         EIdleComponent eIdleComp;
         public override void AfterNew()
         {
+            ControlRequirement = LogicControlRequirement.Move;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out patrolComp);
             Entity.TryGetComp(out enmityComp);

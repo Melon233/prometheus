@@ -1,0 +1,21 @@
+{
+    "name": "Prometheus.GameplayKit.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.Tests",
+    "references": [
+        "Runtime"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

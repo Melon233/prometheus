@@ -16,7 +16,8 @@ namespace Xuan.Prometheus.Logic
         DodgeComponent dodgeComp;
         public override void AfterNew()
         {
-            LogicGroup = OrderTag.Controller;
+            OrderTag = OrderTag.Controller;
+            ControlRequirement = LogicControlRequirement.Move;
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out aniComp);
             Entity.TryGetComp(out spineComp);
@@ -50,8 +51,13 @@ namespace Xuan.Prometheus.Logic
             };
         }
 
+        /// <summary>结束闪避状态并释放阻塞；死亡回收时保留 DieLogic 已经切换到的死亡动画。</summary>
         public override void OnDisable()
         {
+            bool entityIsDead = Entity.TryGetComp(out PropertyComponent propertyComponent) && propertyComponent.IsDead;
+            if (!entityIsDead && entry != null && !entry.IsComplete) spineComp.Stop(0, 0f);
+            entry = null;
+            dodgeComp.isDodging = false;
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<RotateLogic>();
             Entity.UnBlockLogic<MotionLogic>();

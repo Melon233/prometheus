@@ -17,11 +17,8 @@ GameObject:
   - component: {fileID: 491497129945753465}
   - component: {fileID: 491497129945753467}
   - component: {fileID: 491497129945753466}
-  - component: {fileID: 272598093441255365}
-  - component: {fileID: 6595570044981525347}
   - component: {fileID: 2980487244475764144}
-  - component: {fileID: 1244817630823250593}
-  - component: {fileID: 1741153668963263915}
+  - component: {fileID: 3247687134074917520}
   m_Layer: 7
   m_Name: Slime
   m_TagString: Enemy
@@ -146,7 +143,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   propConfig: {fileID: 11400000, guid: a2a39929b7d7ce54c998359d38c04f34, type: 2}
-  curHp: 100
 --- !u!143 &491497129945753471
 CharacterController:
   m_ObjectHideFlags: 0
@@ -204,38 +200,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animationLib: {fileID: 11400000, guid: e637ee4e4a996f1468ecc56e62888208, type: 2}
   rotateRoot: {fileID: 8856089555610823684}
---- !u!114 &272598093441255365
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3eb8c3f13ddb2c841a096987e3cc2aca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  patrolConfig: {fileID: 11400000, guid: 49f8de3c6fca2524bbaccce5abc7958a, type: 2}
-  cc: {fileID: 491497129945753471}
-  spawnPoint: {x: 0, y: 0, z: 0}
-  nextTargetPoint: {x: 0, y: 0, z: 0}
-  isPatrolling: 0
---- !u!114 &6595570044981525347
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 572bad167d7520e47b5abc8363858e6f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enmityConfig: {fileID: 11400000, guid: 4f1e017e593136a4a88ea980e1a39c04, type: 2}
-  target: {fileID: 0}
-  needGoHome: 0
 --- !u!114 &2980487244475764144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,14 +212,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe9d9703fa244062acbc3c5dfd79ca55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canCombo: 0
   elapsedComboTime: 0
   maxComboIndex: 3
   maxComboInterval: 2
-  minComboInterval: 0.5
   nextComboIndex: 0
   atkCollider: {fileID: 8140240498181792558}
---- !u!114 &1244817630823250593
+  isBlocking: 0
+--- !u!114 &3247687134074917520
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -264,24 +227,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 491497129945753440}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08b9e156a9f4fdf48932f93826336e2f, type: 3}
+  m_Script: {fileID: 11500000, guid: 98420dec92cf0264db9dde5f79d0948c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eAttackConfig: {fileID: 11400000, guid: 57c1a28279eaa334188f71702b57d163, type: 2}
-  targetEffectComp: {fileID: 0}
---- !u!114 &1741153668963263915
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 938d6e5e7e46df84e89429294018c1b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  idleTime: 2
+  definition: {fileID: 11400000, guid: 51133297670dba947ab337f3e6300fb0, type: 2}
+  characterController: {fileID: 491497129945753471}
 --- !u!1 &491497130122872046
 GameObject:
   m_ObjectHideFlags: 0
@@ -782,4 +732,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06b5f60a8fa947a98f756b3ceedf0900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cod: {fileID: 958330738429229874}

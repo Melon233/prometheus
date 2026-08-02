@@ -1,26 +1,26 @@
+using System;
 using UnityEngine;
+using Xuan.Prometheus.Ai;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
     public class SlimeEntity : Entity
     {
-        public SlimeEntity(GameObject bindGo)
+        /// <summary>
+        /// 使用 GameplayKit 已实例化的敌人对象构建实体，实体本身不关心资源地址或加载方式。
+        /// </summary>
+        /// <param name="bindGameObject">包含敌人表现组件和玩法组件的场景对象。</param>
+        public SlimeEntity(GameObject bindGameObject)
         {
-            this.bindGo = bindGo;
+            bindGo = bindGameObject != null ? bindGameObject : throw new ArgumentNullException(nameof(bindGameObject));
             AddComp(bindGo.GetComponent<PropertyComponent>());
-            AddComp(bindGo.GetComponent<EffectComponent>());
             AddComp(bindGo.GetComponent<AttackComponent>());
             AddComp(bindGo.GetComponent<SpineComponent>());
-            AddComp(bindGo.GetComponent<PatrolComponent>());
-            AddComp(bindGo.GetComponent<EnmityComponent>());
-            AddComp(bindGo.GetComponent<EAttackComponent>());
-            AddComp(bindGo.GetComponent<EIdleComponent>());
+            AddComp(bindGo.GetComponent<EnemyAiComponent>());
             AddComp<EventComponent>();
-            AddLogic<PatrolLogic>();
-            AddLogic<EnmityLogic>();
-            AddLogic<EIdleLogic>();
-            AddLogic<EAttackLogic>();
+            AddComp(bindGo.GetComponent<EffectComponent>());
+            AddLogic<EnemyAiLogic>();
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();

@@ -39,5 +39,20 @@ namespace Xuan.Prometheus
         {
             EventHandler<T>.RemoveListener(callback);
         }
+
+        public override void AfterNew()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void OnUpdate(float dt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

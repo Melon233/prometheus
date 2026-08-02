@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 887a6962f29a5764d929b412a125df96, type: 3}
+  m_Name: CombatFlowTriggers
+  m_EditorClassIdentifier: 
+  triggers:
+  - triggerId: Example.OnAttackDamage.CombatFlow
+    signalType: 2
+    listenScope: 0
+    targetSelector: 0
+    chance: 1
+    cooldown: 0
+    oncePerSignalChain: 1
+    priority: 0
+    conditions:
+    - type: 7
+      tags: 0
+      threshold: 0
+    - type: 4
+      tags: 1
+      threshold: 0
+    - type: 6
+      tags: 16
+      threshold: 0
+    effects:
+    - {fileID: 11400000, guid: b24dec1869864ae4faef9c06a48f61c8, type: 2}

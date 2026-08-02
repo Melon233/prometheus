@@ -1,0 +1,21 @@
+{
+    "name": "Prometheus.Effects.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.Effects.Tests",
+    "references": [
+        "Runtime"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

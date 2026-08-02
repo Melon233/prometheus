@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 887a6962f29a5764d929b412a125df96, type: 3}
+  m_Name: AttackTriggers
+  m_EditorClassIdentifier: 
+  triggers:
+  - triggerId: Example.OnControlHit.Stun
+    signalType: 1
+    listenScope: 0
+    targetSelector: 1
+    chance: 1
+    cooldown: 0
+    oncePerSignalChain: 1
+    priority: 0
+    conditions:
+    - type: 2
+      tags: 0
+      threshold: 0
+    - type: 5
+      tags: 2048
+      threshold: 0
+    effects:
+    - {fileID: 11400000, guid: 55696f8d904e90140a11852e12c003cb, type: 2}
+  - triggerId: Example.OnAttackHit.Damage
+    signalType: 1
+    listenScope: 0
+    targetSelector: 1
+    chance: 1
+    cooldown: 0
+    oncePerSignalChain: 1
+    priority: 0
+    conditions:
+    - type: 2
+      tags: 0
+      threshold: 0
+    - type: 5
+      tags: 1
+      threshold: 0
+    effects:
+    - {fileID: 11400000, guid: 0f82c33f324baa349b0caca8c2801801, type: 2}
+  - triggerId: Example.OnFireHit.Burning
+    signalType: 1
+    listenScope: 0
+    targetSelector: 1
+    chance: 1
+    cooldown: 0
+    oncePerSignalChain: 1
+    priority: 0
+    conditions:
+    - type: 2
+      tags: 0
+      threshold: 0
+    - type: 5
+      tags: 8
+      threshold: 0
+    effects:
+    - {fileID: 11400000, guid: 95e8053e36792be4b8dcba7b66027a36, type: 2}

@@ -16,7 +16,8 @@ namespace Xuan.Prometheus.Logic
         PropertyComponent propComp;
         public override void AfterNew()
         {
-            LogicGroup = OrderTag.Gameplay;
+            OrderTag = OrderTag.Gameplay;
+            ControlRequirement = LogicControlRequirement.Move;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
@@ -72,7 +73,7 @@ namespace Xuan.Prometheus.Logic
             else if (inputComp.wasToggleWalkPressedThisFrame)
                 if (curMoveMode != MoveMode.Walk) SetMoveMode(MoveMode.Walk);
                 else SetMoveMode(MoveMode.Run);
-            motionComp.curVelo = new Vector3(inputComp.moveDir.x, -2f, inputComp.moveDir.y) * propComp.Speed;
+            motionComp.curVelo = new Vector3(inputComp.moveDir.x, -2f, inputComp.moveDir.y) * propComp.MoveSpeed;
             motionComp.entry = groundMoveExecutor.Execute(motionComp.moveMode);
         }
 
@@ -88,15 +89,15 @@ namespace Xuan.Prometheus.Logic
             {
                 case MoveMode.Walk:
                     motionComp.moveMode = MoveMode.Walk;
-                    propComp.moveSpeed = motionComp.propertyConfig.walkSpeed;
+                    propComp.SetBaseValue(PropertyType.MoveSpeed, motionComp.propertyConfig.walkSpeed);
                     break;
                 case MoveMode.Run:
                     motionComp.moveMode = MoveMode.Run;
-                    propComp.moveSpeed = motionComp.propertyConfig.runSpeed;
+                    propComp.SetBaseValue(PropertyType.MoveSpeed, motionComp.propertyConfig.runSpeed);
                     break;
                 case MoveMode.Sprint:
                     motionComp.moveMode = MoveMode.Sprint;
-                    propComp.moveSpeed = motionComp.propertyConfig.sprintSpeed;
+                    propComp.SetBaseValue(PropertyType.MoveSpeed, motionComp.propertyConfig.sprintSpeed);
                     break;
             }
         }

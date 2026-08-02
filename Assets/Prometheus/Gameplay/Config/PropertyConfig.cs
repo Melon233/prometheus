@@ -6,6 +6,10 @@ namespace Xuan.Prometheus
     public class PropertyConfig : ScriptableObject
     {
         public float atk = 1f;
+        /// <summary>
+        /// 攻击速度的基础倍率，默认值 1 表示正常播放速度。
+        /// </summary>
+        public float atkSpeed = 1f;
         public float critDmg;
         public float critRate;
         public float def;

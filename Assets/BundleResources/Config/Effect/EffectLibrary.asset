@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7719b0ce8c7087b42898b0fcd68ba3ee, type: 3}
+  m_Name: EffectLibrary
+  m_EditorClassIdentifier: 
+  directDamage: {fileID: 11400000, guid: 0f82c33f324baa349b0caca8c2801801, type: 2}
+  burning: {fileID: 11400000, guid: 95e8053e36792be4b8dcba7b66027a36, type: 2}
+  combatFlow: {fileID: 11400000, guid: b24dec1869864ae4faef9c06a48f61c8, type: 2}
+  stun: {fileID: 11400000, guid: 55696f8d904e90140a11852e12c003cb, type: 2}
+  attackTriggers: {fileID: 11400000, guid: f195c3a919579a24ebddd68d9ed79aa9, type: 2}
+  combatFlowTriggers: {fileID: 11400000, guid: 28c94af1feadfa740b7c5a191266a605, type: 2}

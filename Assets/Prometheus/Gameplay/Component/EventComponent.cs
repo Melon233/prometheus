@@ -13,8 +13,24 @@ namespace Xuan.Prometheus
         public float newHp;
         public float maxHp;
     }
-    public class StiffnessStartEvent : IEvent { }
-    public class StiffnessEndEvent : IEvent { }
+    /// <summary>
+    /// ControlStateChangedEvent 是 PropertyComponent 聚合控制状态发生变化后的只读事实，供表现层和调试工具订阅。
+    /// </summary>
+    public sealed class ControlStateChangedEvent : IEvent
+    {
+        /// <summary>获取变化前的控制状态集合。</summary>
+        public Xuan.Prometheus.Component.ControlState PreviousStates { get; }
+
+        /// <summary>获取变化后的控制状态集合。</summary>
+        public Xuan.Prometheus.Component.ControlState CurrentStates { get; }
+
+        /// <summary>创建一条包含变化前后完整快照的控制状态事件。</summary>
+        public ControlStateChangedEvent(Xuan.Prometheus.Component.ControlState previousStates, Xuan.Prometheus.Component.ControlState currentStates)
+        {
+            PreviousStates = previousStates;
+            CurrentStates = currentStates;
+        }
+    }
     public class MotionBlockerStartEvent : IEvent { }
     public class MotionBlockerEndEvent : IEvent { }
     public class HitEvent : IEvent { }
@@ -48,6 +64,12 @@ namespace Xuan.Prometheus
         {
             if (eventDict.TryGetValue(typeof(T), out Delegate callbacks))
                 ((Action<T>)callbacks)?.Invoke(evt);
+        }
+
+        /// <summary>清除当前实体的全部监听器，由 Entity 最终回收阶段调用以阻断延迟动画回调持有的失效订阅。</summary>
+        public void ClearListeners()
+        {
+            eventDict.Clear();
         }
     }
 }

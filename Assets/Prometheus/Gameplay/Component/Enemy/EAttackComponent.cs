@@ -8,7 +8,7 @@ namespace Xuan.Prometheus
     {
         public EnemyAttackConfig eAttackConfig;
         public Timer recoveryTimer;
-        public EffectComponent targetEffectComp;
+        public PropertyComponent targetPropertyComp;
         public TrackEntry trackEntry;
         public bool isAttacking = false;
         public bool isRecovery = false;
@@ -19,10 +19,10 @@ namespace Xuan.Prometheus
             var cods = Physics.OverlapSphere(Entity.bindGo.transform.position, eAttackConfig.attckRadius, LayerMask.GetMask("Character"), QueryTriggerInteraction.UseGlobal);
             if (cods.Length > 0)
             {
-                targetEffectComp = cods[0].GetComponent<EffectComponent>();
+                targetPropertyComp = cods[0].GetComponent<PropertyComponent>();
                 return true;
             }
-            targetEffectComp = null; // If no target is found, set the target to null
+            targetPropertyComp = null; // If no target is found, set the target to null
             return false;
         }
     }

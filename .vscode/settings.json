@@ -40,6 +40,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Prometheus.sln",
+    "dotnet.defaultSolution": "Prometheus.slnx",
     "git.ignoreLimitWarning": true
 }

@@ -5,7 +5,7 @@ namespace Xuan.Prometheus
     /// <summary>
     /// 将世界坐标中的伤害转换到屏幕 UI，并创建飘字实例。
     /// </summary>
-    public class FloatDamageKit : MonoSingleton<FloatDamageKit>
+    public class FloatTextKit : MonoSingleton<FloatTextKit>
     {
         private const string ConfigPath = "DmgConf";
 
@@ -18,7 +18,7 @@ namespace Xuan.Prometheus
             ResolveCanvas();
         }
 
-        public void CastDamageText(float damage, Vector3 worldPosition, bool isHeal = false)
+        public void CastNumberText(float number, Vector3 worldPosition, bool isHeal = false)
         {
             if (!EnsureReady())
                 return;
@@ -39,7 +39,7 @@ namespace Xuan.Prometheus
 
             var instance = Instantiate(config.dmgComp, canvasRect, false);
             instance.gameObject.SetActive(true);
-            instance.Initialize(damage, worldPosition, worldCamera, canvas, config, isHeal);
+            instance.Initialize(number, worldPosition, worldCamera, canvas, config, isHeal);
         }
 
         private bool EnsureReady()

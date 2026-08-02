@@ -10,7 +10,8 @@ namespace Xuan.Prometheus.Logic
 
         public override void AfterNew()
         {
-            LogicGroup = OrderTag.AfterGameplay;
+            OrderTag = OrderTag.AfterGameplay;
+            ControlRequirement = LogicControlRequirement.None;
             Entity.TryGetComp(out motionComp);
         }
 

@@ -9,14 +9,20 @@ namespace Xuan.Prometheus.Logic
         private SpineComponent spineComp;
         private InputComponent inputComp;
         private MotionComponent motionComp;
+        /// <summary>
+        /// 提供经过 modifier 计算后的空中移动速度和重力。
+        /// </summary>
+        private PropertyComponent propComp;
         private TrackEntry trackEntry;
         AirMoveExecutor airMoveExecutor;
         public override void AfterNew()
         {
-            LogicGroup = OrderTag.Gameplay;
+            OrderTag = OrderTag.Gameplay;
+            ControlRequirement = LogicControlRequirement.None;
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComp);
+            Entity.TryGetComp(out propComp);
             airMoveExecutor = spineComp.animationLib.airMoveExecutor;
         }
 
@@ -48,14 +54,11 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
-            motionComp.curVelo.y -= 9.8f * dt;
-            if (motionComp.curVelo.y < 0f)
-                trackEntry = airMoveExecutor.Execute(AirMoveState.Fall);
-            if (inputComp.moveDir != Vector2.zero)
+            motionComp.curVelo.y -= propComp.Gravity * dt;
+            if (propComp.CanAct && motionComp.curVelo.y < 0f) trackEntry = airMoveExecutor.Execute(AirMoveState.Fall);
+            if (propComp.CanMove && inputComp.moveDir != Vector2.zero)
             {
-                motionComp.curVelo = new Vector3(inputComp.moveDir.x * motionComp.propertyConfig.airMoveSpeed,
-                                                    motionComp.curVelo.y,
-                                                    inputComp.moveDir.y * motionComp.propertyConfig.airMoveSpeed);
+                motionComp.curVelo = new Vector3(inputComp.moveDir.x * propComp.AirMoveSpeed, motionComp.curVelo.y, inputComp.moveDir.y * propComp.AirMoveSpeed);
             }
             else
             {
