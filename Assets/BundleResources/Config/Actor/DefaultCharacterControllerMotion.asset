@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a5e55246dba9fb40acc4bd4f9acd465, type: 3}
+  m_Name: DefaultCharacterControllerMotion
+  m_EditorClassIdentifier: 
+  acceleration: 35
+  deceleration: 45
+  airAcceleration: 10
+  gravity: -25
+  jumpSpeed: 9
+  groundedVerticalSpeed: -2
+  maximumFallSpeed: 40

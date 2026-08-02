@@ -68,6 +68,14 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
+        /// 在角色运动和动画状态完成当帧更新后驱动镜头与客户端迟更新表现。
+        /// </summary>
+        private void LateUpdate()
+        {
+            core?.OnLateUpdate(Time.deltaTime);
+        }
+
+        /// <summary>
         /// 入口被销毁时按依赖逆序释放玩法实体和资源句柄，并允许后续场景重新建立入口。
         /// </summary>
         private void OnDestroy()

@@ -17,10 +17,26 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
+        /// 在当帧 Entity 更新前调用，适合采样输入、解析控制租约以及生成本帧只读控制快照。
+        /// </summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public virtual void OnBeforeEntityUpdate(float dt)
+        {
+        }
+
+        /// <summary>
         /// 在当帧 Entity 更新结束后调用，适合推进依赖 Entity 当帧输入结果的公共状态。
         /// </summary>
         /// <param name="dt">当前帧增量时间。</param>
         public virtual void OnUpdate(float dt)
+        {
+        }
+
+        /// <summary>
+        /// 在全部普通玩法更新完成后调用，适合镜头、插值和其他仅属于客户端的迟更新表现。
+        /// </summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public virtual void OnLateUpdate(float dt)
         {
         }
 

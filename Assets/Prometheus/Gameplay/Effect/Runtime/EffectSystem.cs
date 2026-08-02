@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Xuan.Prometheus.Actor;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -13,6 +14,7 @@ namespace Xuan.Prometheus.Effects
         private readonly bool logTrace;
         private readonly EffectLibrary defaultLibrary;
         private EffectRuntime runtime;
+        private ActorSimulationSystem simulationSystem;
         private bool isDisposed;
 
         /// <summary>
@@ -69,18 +71,17 @@ namespace Xuan.Prometheus.Effects
 
             ThrowIfDisposed();
             EnsureRuntime();
+            simulationSystem = gameplayKit.GetSystem<ActorSimulationSystem>();
+            simulationSystem.SimulationTickCompleted += OnSimulationTickCompleted;
         }
 
         /// <summary>
-        /// 在 Entity 完成当帧更新和信号发布后推进触发冷却、持续时间与周期效果。
+        /// EffectRuntime 已由 ActorSimulationSystem 的固定 Tick 后置阶段推进；渲染帧更新不再改变任何战斗时间。
         /// </summary>
         /// <param name="dt">当前帧增量时间。</param>
         public override void OnUpdate(float dt)
         {
-            if (isDisposed || runtime == null)
-                return;
-
-            runtime.Tick(dt);
+            if (float.IsNaN(dt) || float.IsInfinity(dt) || dt < 0f) throw new ArgumentOutOfRangeException(nameof(dt), dt, "Effect frame delta time must be finite and non-negative.");
         }
 
         /// <summary>
@@ -91,6 +92,8 @@ namespace Xuan.Prometheus.Effects
             if (isDisposed)
                 return;
 
+            if (simulationSystem != null) simulationSystem.SimulationTickCompleted -= OnSimulationTickCompleted;
+            simulationSystem = null;
             runtime?.Dispose();
             runtime = null;
             isDisposed = true;
@@ -107,6 +110,13 @@ namespace Xuan.Prometheus.Effects
             runtime = new EffectRuntime(randomSeed);
             if (logTrace)
                 runtime.Trace += LogTrace;
+        }
+
+        /// <summary>在本 Tick 全部 Actor 完成运动与命中解析后推进效果持续时间、周期结算和触发冷却，确保回放与卡帧补步使用同一模拟时钟。</summary>
+        private void OnSimulationTickCompleted(long simulationTick, float fixedDeltaTime)
+        {
+            if (isDisposed || runtime == null) return;
+            runtime.Tick(fixedDeltaTime);
         }
 
         /// <summary>

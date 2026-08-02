@@ -1,0 +1,22 @@
+{
+    "name": "Prometheus.Actor.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.Actor.Tests",
+    "references": [
+        "Runtime",
+        "spine-unity"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

@@ -1,0 +1,131 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 118236ae9a4560041baf4a245912e901, type: 3}
+  m_Name: YefaBasicAttack1
+  m_EditorClassIdentifier: 
+  behaviorId: Yefa.BasicAttack.1
+  command: 1
+  commandIndex: 0
+  durationTicks: 85
+  chainFromTick: 13
+  simulationClips:
+  - clipId: HitWindow
+    kind: 0
+    startTick: 0
+    endTick: 13
+    bindingId: Attack
+    blockedCapabilities: 0
+  - clipId: Motion
+    kind: 3
+    startTick: 0
+    endTick: 85
+    bindingId: Yefa.BasicAttack.1.Motion
+    blockedCapabilities: 0
+  - clipId: ControlBlock
+    kind: 1
+    startTick: 0
+    endTick: 85
+    bindingId: 
+    blockedCapabilities: 102
+  hitSignal:
+    signalId: Yefa.BasicAttack.1
+    tags: 3
+    targetFactions: 4
+    targetLayerMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    requiredTargetTag: 
+    damageSource: 0
+    constantDamage: 1
+  presentationVariants:
+  - variantId: Default
+    cues:
+    - cueId: Animation
+      kind: 0
+      startTick: 0
+      endTick: 85
+      bindingId: 
+      animation: {fileID: 11400000, guid: 708e47660af050345ac8b098e9093954, type: 2}
+      audioClip: {fileID: 0}
+      spineTrack: 0
+      loop: 0
+      mixIn: 0
+      mixOut: 0
+      cameraProfile: {fileID: 0}
+      cameraPriority: 100
+    - cueId: Audio
+      kind: 1
+      startTick: 0
+      endTick: 0
+      bindingId: 
+      animation: {fileID: 0}
+      audioClip: {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
+      spineTrack: 0
+      loop: 0
+      mixIn: 0
+      mixOut: 0
+      cameraProfile: {fileID: 0}
+      cameraPriority: 100
+    - cueId: Vfx
+      kind: 2
+      startTick: 0
+      endTick: 0
+      bindingId: Yefa.BasicAttack.1.Vfx
+      animation: {fileID: 0}
+      audioClip: {fileID: 0}
+      spineTrack: 0
+      loop: 0
+      mixIn: 0
+      mixOut: 0
+      cameraProfile: {fileID: 0}
+      cameraPriority: 100
+  - variantId: Moving
+    cues:
+    - cueId: Animation
+      kind: 0
+      startTick: 0
+      endTick: 85
+      bindingId: 
+      animation: {fileID: 11400000, guid: 913af5bde6decd545bc1c52615d5ed85, type: 2}
+      audioClip: {fileID: 0}
+      spineTrack: 0
+      loop: 0
+      mixIn: 0
+      mixOut: 0
+      cameraProfile: {fileID: 0}
+      cameraPriority: 100
+    - cueId: Audio
+      kind: 1
+      startTick: 0
+      endTick: 0
+      bindingId: 
+      animation: {fileID: 0}
+      audioClip: {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
+      spineTrack: 0
+      loop: 0
+      mixIn: 0
+      mixOut: 0
+      cameraProfile: {fileID: 0}
+      cameraPriority: 100
+    - cueId: Vfx
+      kind: 2
+      startTick: 0
+      endTick: 0
+      bindingId: Yefa.BasicAttack.1.Vfx
+      animation: {fileID: 0}
+      audioClip: {fileID: 0}
+      spineTrack: 0
+      loop: 0
+      mixIn: 0
+      mixOut: 0
+      cameraProfile: {fileID: 0}
+      cameraPriority: 100

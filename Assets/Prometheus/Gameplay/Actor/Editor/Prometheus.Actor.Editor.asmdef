@@ -1,0 +1,19 @@
+{
+    "name": "Prometheus.Actor.Editor",
+    "rootNamespace": "Xuan.Prometheus.Actor.Editor",
+    "references": [
+        "Runtime",
+        "spine-unity"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

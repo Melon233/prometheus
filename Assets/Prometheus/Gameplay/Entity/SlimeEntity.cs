@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Xuan.Prometheus.Ai;
+using Xuan.Prometheus.Actor;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
@@ -15,13 +16,15 @@ namespace Xuan.Prometheus.Logic
         {
             bindGo = bindGameObject != null ? bindGameObject : throw new ArgumentNullException(nameof(bindGameObject));
             AddComp(bindGo.GetComponent<PropertyComponent>());
-            AddComp(bindGo.GetComponent<AttackComponent>());
             AddComp(bindGo.GetComponent<SpineComponent>());
             AddComp(bindGo.GetComponent<EnemyAiComponent>());
             AddComp<EventComponent>();
             AddComp(bindGo.GetComponent<EffectComponent>());
-            AddLogic<EnemyAiLogic>();
+            AddComp(bindGo.GetComponent<ActorAuthoringComponent>());
+            AddComp<PawnComponent>();
+            AddLogic<PawnRegistrationLogic>();
             AddLogic<EffectLogic>();
+            AddLogic(new ActorRuntimeLogic(ActorControlRole.EnemyAi));
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();
         }

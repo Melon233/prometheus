@@ -39,31 +39,56 @@ namespace Xuan.Prometheus.Component
     public class SpineComponent : MonoComponent
     {
         AnimationState aniState;
+        private Quaternion facingRootRightLocalRotation = Quaternion.identity;
+        private float facingSkeletonScaleXMagnitude = 1f;
+        private bool facingReferenceInitialized;
 
         [NonSerialized] public SkeletonAnimation spineAnimator;
         public AnimationLibrary animationLib;
         public Transform rotateRoot;
         public List<AnimationExecutor> executors;
+        /// <summary>获取 FacingRoot 资产化右朝向的局部旋转基准；命中体与 VFX 镜像不得使用世界 identity 代替该值。</summary>
+        public Quaternion FacingRootRightLocalRotation
+        {
+            get
+            {
+                EnsureFacingReference();
+                return facingRootRightLocalRotation;
+            }
+        }
+
+        /// <summary>获取当前 Spine 朝向的稳定符号；正一为右，负一为左，可用于客户端根运动和形状镜像诊断。</summary>
+        public float FacingSign
+        {
+            get
+            {
+                EnsureFacingReference();
+                return spineAnimator.Skeleton.ScaleX >= 0f ? 1f : -1f;
+            }
+        }
+
         public FaceDir CurFaceDir
         {
             get
             {
-                if (spineAnimator.skeleton.ScaleX > 0)
+                EnsureFacingReference();
+                if (spineAnimator.Skeleton.ScaleX > 0f)
                     return FaceDir.Right;
                 return FaceDir.Left;
             }
 
             set
             {
+                EnsureFacingReference();
                 if (value == FaceDir.Right)
                 {
-                    spineAnimator.skeleton.ScaleX = 1;
-                    rotateRoot.rotation = Quaternion.Euler(Vector3.zero);
+                    spineAnimator.Skeleton.ScaleX = facingSkeletonScaleXMagnitude;
+                    if (rotateRoot != null) rotateRoot.localRotation = facingRootRightLocalRotation;
                 }
                 else
                 {
-                    spineAnimator.skeleton.ScaleX = -1;
-                    rotateRoot.rotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                    spineAnimator.Skeleton.ScaleX = -facingSkeletonScaleXMagnitude;
+                    if (rotateRoot != null) rotateRoot.localRotation = facingRootRightLocalRotation * Quaternion.Euler(0f, 180f, 0f);
                 }
             }
         }
@@ -85,7 +110,21 @@ namespace Xuan.Prometheus.Component
         private void Awake()
         {
             spineAnimator = GetComponent<SkeletonAnimation>();
+            EnsureFacingReference();
             animationLib = Instantiate(animationLib);
+        }
+
+        /// <summary>延迟捕获 Spine X 缩放幅值和 FacingRoot 右朝向局部基准，使预制体出生旋转与父级旋转永远不会被朝向切换覆盖。</summary>
+        private void EnsureFacingReference()
+        {
+            if (facingReferenceInitialized) return;
+            if (spineAnimator == null) spineAnimator = GetComponent<SkeletonAnimation>();
+            if (spineAnimator == null) throw new InvalidOperationException($"SpineComponent '{name}' requires a SkeletonAnimation.");
+            spineAnimator.Initialize(false);
+            if (spineAnimator.Skeleton == null) throw new InvalidOperationException($"SpineComponent '{name}' cannot initialize its Skeleton data.");
+            facingSkeletonScaleXMagnitude = Mathf.Max(Mathf.Abs(spineAnimator.Skeleton.ScaleX), Mathf.Epsilon);
+            facingRootRightLocalRotation = rotateRoot == null ? Quaternion.identity : rotateRoot.localRotation;
+            facingReferenceInitialized = true;
         }
         void Start()
         {

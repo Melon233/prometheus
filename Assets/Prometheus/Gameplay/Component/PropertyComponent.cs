@@ -174,7 +174,7 @@ namespace Xuan.Prometheus.Component
     public class PropertyComponent : MonoComponent
     {
         /// <summary>
-        /// 保存 Inspector 配置的基础属性资产；组件在 Start 阶段据此建立全部属性缓存。
+        /// 保存 Inspector 配置的基础属性资产；组件在 Awake 阶段据此建立全部属性缓存。
         /// </summary>
         [SerializeField] private PropertyConfig propConfig;
 
@@ -332,9 +332,10 @@ namespace Xuan.Prometheus.Component
         public bool CanUseActiveSkill => CanAct && !HasAnyControlState(ControlState.Silence);
 
         /// <summary>
-        /// 在 Unity Start 阶段根据 Inspector 配置建立全部属性缓存，并将当前生命值初始化为 MaxHp。
+        /// 在 Unity Awake 阶段根据 Inspector 配置建立全部属性缓存，并将当前生命值初始化为 MaxHp。
+        /// Awake 早于 GameplayKit 的 Entity.AfterNew，因此 ActorDefinition 可以在初始化后安全覆盖角色专属基础值，且不会再被 Start 二次覆盖。
         /// </summary>
-        private void Start()
+        private void Awake()
         {
             RefreshBaseValuesInternal();
             Hp = MaxHp;
@@ -457,7 +458,7 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 返回目标属性对象；调用方必须遵守 Unity 生命周期，在 Start 完成后使用运行时属性。
+        /// 返回目标属性对象；调用方必须遵守 Unity 生命周期，在 Awake 完成后使用运行时属性。
         /// </summary>
         private ModifiableProperty GetProperty(PropertyType type)
         {

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1e37211641b63c489ac6c5c62c6ebb8, type: 3}
+  m_Name: SlimeActorDefinition
+  m_EditorClassIdentifier: 
+  actorId: Slime
+  category: 1
+  faction: 2
+  defaultCapabilities: 526
+  motionModel: {fileID: 11400000, guid: 9c1ab71f2bf41594686906f82b9e5bbf, type: 2}
+  cameraProfile: {fileID: 0}
+  locomotionPresentation:
+    idle: {fileID: 11400000, guid: a86b54a740df8214691388a916f29ad5, type: 2}
+    move: {fileID: 11400000, guid: c9c01d19a231ee04fb1ef46651b8138c, type: 2}
+    sprint: {fileID: 0}
+    jump: {fileID: 0}
+    fall: {fileID: 0}
+    land: {fileID: 0}
+    mixDuration: 0.15
+  moveSpeed: 3
+  sprintSpeed: 3
+  heldAttackSpecialTriggerTicks: 30
+  motionBindings: []
+  behaviors:
+  - {fileID: 11400000, guid: 56414d8f19492f947887422b159e1ad2, type: 2}

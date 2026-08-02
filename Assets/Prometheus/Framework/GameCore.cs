@@ -36,6 +36,7 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 初始化资源包和玩法世界。
         /// 资源初始化是异步步骤，全部前置条件完成后才调用各 Kit 的 AfterNew。
+        /// 任意阶段失败或协程被取消时都会逆序释放已经建立的局部状态，失败实例不能被再次使用。
         /// </summary>
         /// <param name="options">由 Entry 提供的场景启动参数。</param>
         public IEnumerator Initialize(GameplayStartupOptions options)
@@ -52,6 +53,7 @@ namespace Xuan.Prometheus
                 throw new InvalidOperationException("GameCore initialization is already in progress.");
 
             isInitializing = true;
+            bool initializedSuccessfully = false;
             try
             {
                 IGameplayKit gameplayContract = GetKit<IGameplayKit>();
@@ -64,10 +66,12 @@ namespace Xuan.Prometheus
                     kit.AfterNew();
 
                 IsReady = true;
+                initializedSuccessfully = true;
             }
             finally
             {
                 isInitializing = false;
+                if (!initializedSuccessfully && !isDisposed) Dispose();
             }
         }
 
@@ -97,6 +101,19 @@ namespace Xuan.Prometheus
 
             foreach (Kit kit in kitInitializationOrder)
                 kit.OnUpdate(dt);
+        }
+
+        /// <summary>
+        /// 在 Unity LateUpdate 中按注册顺序驱动全部 Kit，使镜头和插值表现读取到当帧最终玩法状态。
+        /// </summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnLateUpdate(float dt)
+        {
+            if (!IsReady || isDisposed)
+                return;
+
+            foreach (Kit kit in kitInitializationOrder)
+                kit.OnLateUpdate(dt);
         }
 
         /// <summary>

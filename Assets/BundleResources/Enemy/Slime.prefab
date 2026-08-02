@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 491497129945753466}
   - component: {fileID: 2980487244475764144}
   - component: {fileID: 3247687134074917520}
+  - component: {fileID: 8629796136477199739}
   m_Layer: 7
   m_Name: Slime
   m_TagString: Enemy
@@ -232,6 +233,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   definition: {fileID: 11400000, guid: 51133297670dba947ab337f3e6300fb0, type: 2}
   characterController: {fileID: 491497129945753471}
+--- !u!114 &8629796136477199739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491497129945753440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11b8e22fb1b95224da940244b4a5bea1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  definition: {fileID: 11400000, guid: 323a427648d4f1b418cf0a65fc35bbcb, type: 2}
+  cameraSubject: {fileID: 0}
+  facingRoot: {fileID: 8856089555610823684}
+  rightFacingRootLocalEulerAngles: {x: 0, y: 0, z: 0}
+  hitboxes:
+  - bindingId: Attack
+    shape: {fileID: 958330738429229874}
+    facingRule: 0
+  vfxBindings: []
 --- !u!1 &491497130122872046
 GameObject:
   m_ObjectHideFlags: 0

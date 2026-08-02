@@ -24,6 +24,14 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
+        /// 由 GameCore 在入口组件的 LateUpdate 中统一驱动，适合镜头等必须发生在玩法更新之后的客户端表现。
+        /// </summary>
+        /// <param name="dt">当前帧的增量时间。</param>
+        public virtual void OnLateUpdate(float dt)
+        {
+        }
+
+        /// <summary>
         /// 按注册顺序的逆序释放 Kit 持有的运行时状态。
         /// </summary>
         public virtual void Dispose()

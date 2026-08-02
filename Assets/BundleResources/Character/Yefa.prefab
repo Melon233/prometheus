@@ -437,6 +437,8 @@ GameObject:
   - component: {fileID: 8356801192691331113}
   - component: {fileID: 5895581109648259310}
   - component: {fileID: 6200664063791877712}
+  - component: {fileID: 7708902079305015903}
+  - component: {fileID: 1242409823614191902}
   m_Layer: 6
   m_Name: Yefa
   m_TagString: Player
@@ -625,11 +627,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe9d9703fa244062acbc3c5dfd79ca55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canCombo: 0
   elapsedComboTime: 0
   maxComboIndex: 3
   maxComboInterval: 2
-  minComboInterval: 0.5
   nextComboIndex: 0
   atkCollider: {fileID: 1520222618}
   isBlocking: 0
@@ -691,7 +691,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   propConfig: {fileID: 11400000, guid: 419c909ad1a1fb04091d95ca9e703feb, type: 2}
-  curHp: 100
 --- !u!114 &8356801192691331113
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -705,6 +704,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colliderProxy: {fileID: 1339774994947632687}
+  canSpecial: 1
 --- !u!114 &5895581109648259310
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -731,6 +731,64 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colliderProxy: {fileID: 7939482117543475403}
+--- !u!114 &7708902079305015903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5686316864933578544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11b8e22fb1b95224da940244b4a5bea1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  definition: {fileID: 11400000, guid: b6d089a414cb0e44d8b8b6f1829798cd, type: 2}
+  cameraSubject: {fileID: 1242409823614191902}
+  facingRoot: {fileID: 313841810}
+  rightFacingRootLocalEulerAngles: {x: 0, y: 0, z: 0}
+  hitboxes:
+  - bindingId: Attack
+    shape: {fileID: 1520222616}
+    facingRule: 0
+  - bindingId: Yefa.Skill.Hitbox
+    shape: {fileID: 7180613931812209582}
+    facingRule: 1
+  - bindingId: Yefa.Ultimate.Hitbox
+    shape: {fileID: 7583941433357374263}
+    facingRule: 1
+  - bindingId: Yefa.SpecialAttack.Hitbox
+    shape: {fileID: 3944320228878571132}
+    facingRule: 1
+  vfxBindings:
+  - bindingId: Yefa.BasicAttack.1.Vfx
+    visualRoot: {fileID: 2115483495263277456}
+  - bindingId: Yefa.BasicAttack.2.Vfx
+    visualRoot: {fileID: 2115483494986185045}
+  - bindingId: Yefa.BasicAttack.3.Vfx
+    visualRoot: {fileID: 2115483493951615528}
+  - bindingId: Yefa.BasicAttack.4.Vfx
+    visualRoot: {fileID: 2115483495495862690}
+  - bindingId: Yefa.Skill.Vfx
+    visualRoot: {fileID: 2114900581486018174}
+  - bindingId: Yefa.Ultimate.Vfx
+    visualRoot: {fileID: 2114499700531864430}
+  - bindingId: Yefa.SpecialAttack.Vfx
+    visualRoot: {fileID: 2114900581486018174}
+--- !u!114 &1242409823614191902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5686316864933578544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4775bf2d53de0454399474c0db454f5a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  followAnchor: {fileID: 0}
+  lookAtAnchor: {fileID: 0}
 --- !u!1 &5856432657852674998
 GameObject:
   m_ObjectHideFlags: 0

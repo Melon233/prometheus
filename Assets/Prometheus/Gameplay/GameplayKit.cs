@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Xuan.Prometheus.Asset;
+using Xuan.Prometheus.Actor;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic;
 
@@ -133,6 +134,9 @@ namespace Xuan.Prometheus
     /// </summary>
     public sealed class GameplayKit : Kit, IGameplayKit
     {
+        /// <summary>当前客户端启动流程为本地玩家保留的稳定控制器编号。</summary>
+        private const int LocalPlayerControllerId = 1;
+
         private readonly IAssetKit assetKit;
         private readonly XMap<int, Entity> entities = new XMap<int, Entity>();
         private readonly XMap<Type, XSystem> systems = new XMap<Type, XSystem>();
@@ -143,6 +147,8 @@ namespace Xuan.Prometheus
         private int nextEntityId = 1;
         private bool isDisposing;
         private bool isDisposed;
+        private ControlLeaseHandle localPlayerControlLease;
+        private bool localPlayerControllerRegistered;
         /// <summary>标记当前是否正在枚举实体，直接移除请求会在该阶段自动转为安全边界回收。</summary>
         private bool isUpdatingEntities;
 
@@ -181,6 +187,9 @@ namespace Xuan.Prometheus
                 throw new InvalidOperationException("GameplayKit can only be configured once.");
             }
 
+            AddSystem(new PossessionSystem());
+            AddSystem(new ActorSimulationSystem());
+            AddSystem(new CameraDirectorSystem());
             AddSystem(new EffectSystem(library: options.EffectLibrary));
             startupOptions = options;
         }
@@ -220,7 +229,7 @@ namespace Xuan.Prometheus
 
             pendingEntityRemovals.Remove(entityId);
             entities.Remove(entityId);
-            if (ReferenceEquals(Player, entity)) Player = null;
+            ClearLocalPlayerBinding(entity);
             entity.MarkDespawnRequested(0f);
             entity.DisposeImmediately();
             return true;
@@ -324,6 +333,9 @@ namespace Xuan.Prometheus
             DrainPendingEntityRemovals();
             if (!IsReady) return;
 
+            foreach (XSystem system in systemInitializationOrder)
+                system.OnBeforeEntityUpdate(dt);
+
             isUpdatingEntities = true;
             try
             {
@@ -343,6 +355,18 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
+        /// 在全部普通玩法更新完成后按稳定注册顺序驱动客户端迟更新系统。
+        /// </summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public override void OnLateUpdate(float dt)
+        {
+            if (isDisposed || !IsReady) return;
+
+            foreach (XSystem system in systemInitializationOrder)
+                system.OnLateUpdate(dt);
+        }
+
+        /// <summary>
         /// 立即释放全部 Entity；GameCore 随后才会释放 AssetKit 句柄，保证销毁顺序安全。
         /// </summary>
         public override void Dispose()
@@ -354,6 +378,7 @@ namespace Xuan.Prometheus
             IsReady = false;
             try
             {
+                ReleaseLocalPlayerControl();
                 foreach (Entity entity in entities)
                 {
                     entity.MarkDespawnRequested(0f);
@@ -396,6 +421,7 @@ namespace Xuan.Prometheus
                 Player = new PlayerEntity(playerObject);
                 entityId = AddEntity(Player);
                 Player.AfterNew();
+                BindLocalPlayerSystems(playerObject, Player);
             }
             catch
             {
@@ -404,6 +430,24 @@ namespace Xuan.Prometheus
                 Player = null;
                 throw;
             }
+        }
+
+        /// <summary>为已经注册完成的玩家 Pawn 建立默认本地控制租约和基础镜头目标。</summary>
+        private void BindLocalPlayerSystems(GameObject playerObject, PlayerEntity playerEntity)
+        {
+            PossessionSystem possessionSystem = GetSystem<PossessionSystem>();
+            ReleaseLocalPlayerControl();
+            possessionSystem.RegisterController(new LegacyPlayerControllerRuntime(LocalPlayerControllerId));
+            localPlayerControllerRegistered = true;
+            localPlayerControlLease = possessionSystem.AcquireLease(new ControlLeaseRequest(LocalPlayerControllerId, playerEntity.EntityId, ControlScope.All, 0));
+            ActorAuthoringComponent authoring = playerObject.GetComponent<ActorAuthoringComponent>();
+            if (authoring == null || authoring.Definition == null) throw new InvalidOperationException($"Player prefab '{playerObject.name}' requires ActorAuthoringComponent and ActorDefinition.");
+            Camera playerCamera = playerObject.GetComponentInChildren<Camera>(true);
+            if (playerCamera == null) throw new InvalidOperationException($"Player prefab '{playerObject.name}' does not contain a camera for the current client bootstrap.");
+            if (authoring.CameraSubject == null || authoring.Definition.CameraProfile == null) throw new InvalidOperationException($"Player actor '{authoring.Definition.ActorId}' requires CameraSubject and CameraFollowProfile.");
+            CameraDirectorSystem cameraDirector = GetSystem<CameraDirectorSystem>();
+            cameraDirector.AdoptCameraRig(playerCamera, startupOptions.RuntimeRoot, playerObject.transform);
+            cameraDirector.SetBaseTarget(authoring.CameraSubject, authoring.Definition.CameraProfile, true);
         }
 
         /// <summary>
@@ -455,10 +499,34 @@ namespace Xuan.Prometheus
                 pendingEntityRemovals.Remove(entityId);
                 if (!entities.TryGet(entityId, out Entity entity)) continue;
                 entities.Remove(entityId);
-                if (ReferenceEquals(Player, entity)) Player = null;
+                ClearLocalPlayerBinding(entity);
                 entity.DisposeImmediately();
             }
             pendingEntityRemovalBuffer.Clear();
+        }
+
+        /// <summary>在本地玩家 Pawn 回收前清除基础镜头目标，同时保留独立 CameraRig 供后续切换目标或重建 Pawn 使用。</summary>
+        private void ClearLocalPlayerBinding(Entity entity)
+        {
+            if (!ReferenceEquals(Player, entity)) return;
+            if (TryGetSystem(out CameraDirectorSystem cameraDirector)) cameraDirector.ClearBaseTarget();
+            ReleaseLocalPlayerControl();
+            Player = null;
+        }
+
+        /// <summary>成对释放本地玩家租约与控制器，使玩家回收、重建和后续小队切换不会遗留重复控制器编号或幽灵租约。</summary>
+        private void ReleaseLocalPlayerControl()
+        {
+            if (!TryGetSystem(out PossessionSystem possessionSystem))
+            {
+                localPlayerControlLease = default;
+                localPlayerControllerRegistered = false;
+                return;
+            }
+            if (localPlayerControlLease.IsValid) possessionSystem.ReleaseLease(localPlayerControlLease);
+            localPlayerControlLease = default;
+            if (localPlayerControllerRegistered) possessionSystem.UnregisterController(LocalPlayerControllerId);
+            localPlayerControllerRegistered = false;
         }
 
         /// <summary>
