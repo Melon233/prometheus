@@ -28,7 +28,7 @@ namespace Xuan.Prometheus
                 if (evt.Data.Name == lib.hitStart)
                 {
                     vfxComp.Play(ultVfx);
-                    AudioKit.Instance.Play(ultimateAudio);
+                    AudioKit.Ins.Play(ultimateAudio);
                     ultimateComp.colliderProxy.cod.enabled = true; // Reset collider proxy after ultimate execution
                 }
                 else if (evt.Data.Name == lib.hitEnd)

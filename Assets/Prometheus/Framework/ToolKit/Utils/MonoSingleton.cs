@@ -20,7 +20,7 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 公开的实例访问器
         /// </summary>
-        public static T Instance
+        public static T Ins
         {
             get
             {

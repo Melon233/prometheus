@@ -19,7 +19,7 @@ namespace Xuan.Prometheus
             Entity.TryGetComp(out spineComp);
             Entity.TryGetComp(out eAttackComp);
             Entity.TryGetComp(out eIdleComp);
-            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.chaseRadius, Color.yellow, 999f);
+            GizmosKit.Ins.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.chaseRadius, Color.yellow, 999f);
         }
 
         public override bool CanDisable()
@@ -50,7 +50,7 @@ namespace Xuan.Prometheus
 
         public override void OnUpdate(float dt)
         {
-            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
+            GizmosKit.Ins.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
             // GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enemyAttackComp.eAttackConfig.attckRadius, Color.blue);
             if (enmityComp.needGoHome)
             {

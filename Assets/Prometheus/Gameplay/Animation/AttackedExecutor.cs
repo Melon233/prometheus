@@ -15,7 +15,7 @@ namespace Xuan.Prometheus
         [SerializeField][ShowIf("hasNextAni")] AnimationReferenceAsset nextAttackedAni;
         public TrackEntry Execute()
         {
-            AudioKit.Instance.Play(attackedSfx);
+            AudioKit.Ins.Play(attackedSfx);
             if (hasNextAni)
             {
                 spineComp.Play(attackedAni);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using YooAsset;
 
 namespace Xuan.Prometheus
 {
@@ -74,7 +75,7 @@ namespace Xuan.Prometheus
 
         private void LoadConfig()
         {
-            config = Resources.Load<FloatDamageConfig>(ConfigPath);
+            // config = Resources.Load<FloatDamageConfig>(ConfigPath);
         }
 
         private void ResolveCanvas()

@@ -44,7 +44,7 @@ namespace Xuan.Prometheus
                 if (evt.Data.Name == lib.hitStart)
                 {
                     vfxComp.Play(skillVfx);
-                    AudioKit.Instance.Play(skillAudio);
+                    AudioKit.Ins.Play(skillAudio);
                     skillComp.colliderProxy.cod.enabled = true;
                 }
                 else if (evt.Data.Name == lib.hitEnd)

@@ -86,7 +86,7 @@ namespace Xuan.Prometheus
         }
         public bool CheckAttack()
         {
-            GizmosKit.Instance.DrawWireCircle(Entity.bindGo.transform.position, Vector3.up, eAttackComp.eAttackConfig.attckRadius, Color.yellow); // Debug log to confirm the enemy is chasing the player
+            GizmosKit.Ins.DrawWireCircle(Entity.bindGo.transform.position, Vector3.up, eAttackComp.eAttackConfig.attckRadius, Color.yellow); // Debug log to confirm the enemy is chasing the player
             if (enmityComp.target != null && Vector3.Distance(Entity.bindGo.transform.position, enmityComp.target.position) < eAttackComp.eAttackConfig.attckRadius)
             {
                 eAttackComp.targetPropertyComp = enmityComp.target.GetComponent<PropertyComponent>();

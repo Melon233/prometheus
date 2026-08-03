@@ -28,7 +28,7 @@ namespace Xuan.Prometheus
             groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
             patrolComp.spawnPoint = patrolComp.transform.position;
             // patrolComp.patrolTimer = new(patrolComp.patrolConfig.moveInterval);
-            GizmosKit.Instance.DrawWireCircle(patrolComp.spawnPoint, Vector3.up, patrolComp.patrolConfig.patrolRadius, Color.green, duration: 999f);
+            GizmosKit.Ins.DrawWireCircle(patrolComp.spawnPoint, Vector3.up, patrolComp.patrolConfig.patrolRadius, Color.green, duration: 999f);
         }
 
         public override bool CanDisable()
@@ -59,7 +59,7 @@ namespace Xuan.Prometheus
 
         public override void OnUpdate(float dt)
         {
-            GizmosKit.Instance.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
+            GizmosKit.Ins.DrawWireCircle(patrolComp.transform.position, Vector3.up, enmityComp.enmityConfig.enmityRadius, Color.red);
             // patrolComp.patrolTimer.OnUpdate(dt);
             patrolComp.cc.Move(dt * patrolComp.patrolConfig.patrolSpeed * (patrolComp.nextTargetPoint - patrolComp.transform.position).normalized);
             spineComp.SetFaceDir(patrolComp.cc.velocity.x);

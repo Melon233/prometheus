@@ -430,7 +430,7 @@ namespace Xuan.Prometheus.Component
             float actualDamage = oldHp - Hp;
             wasFatal = oldHp > 0f && Hp <= 0f;
             if (wasFatal) isDead = true;
-            if (Application.isPlaying && safeDamage > 0f) FloatTextKit.Instance.CastNumberText(safeDamage, transform.position);
+            if (Application.isPlaying && safeDamage > 0f) FloatTextKit.Ins.CastNumberText(safeDamage, transform.position);
             return actualDamage;
         }
 
@@ -444,7 +444,7 @@ namespace Xuan.Prometheus.Component
             float oldHp = Hp;
             Hp = Mathf.Min(MaxHp, oldHp + safeRecover);
             float actualRecover = Hp - oldHp;
-            if (Application.isPlaying) FloatTextKit.Instance.CastNumberText(actualRecover, transform.position, true);
+            if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(actualRecover, transform.position, true);
             return actualRecover;
         }
 

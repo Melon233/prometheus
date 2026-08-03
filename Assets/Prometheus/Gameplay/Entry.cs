@@ -10,7 +10,7 @@ namespace Xuan.Prometheus
     /// 游戏的正式场景入口，负责把 Inspector 配置转换成启动参数并驱动 GameCore 生命周期。
     /// 场景中应只存在一个 Entry，运行时跨场景保留它所在的独立根对象。
     /// </summary>
-    [DefaultExecutionOrder(-99)]
+    [DefaultExecutionOrder(-100)]
     public sealed class Entry : MonoBehaviour
     {
         [SerializeField] private string packageName = AssetKit.DefaultPackageName;

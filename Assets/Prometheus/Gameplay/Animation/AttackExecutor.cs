@@ -38,7 +38,7 @@ namespace Xuan.Prometheus
                     atkComp.atkCollider.cod.enabled = true;
                     if (hasVfx) vfxComp.Play(atkVfx[index]);
                     Debug.Assert(atkSfx[index] != null, "攻击音效不存在");
-                    AudioKit.Instance.Play(atkSfx[index]);
+                    AudioKit.Ins.Play(atkSfx[index]);
                 }
                 else if (evt.ToString() == lib.hitEnd)
                 {
