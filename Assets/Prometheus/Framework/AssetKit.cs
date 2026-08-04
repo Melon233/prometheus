@@ -77,6 +77,7 @@ namespace Xuan.Prometheus.Asset
         /// 项目默认资源包名称。
         /// </summary>
         public const string DefaultPackageName = "Prometheus";
+        public static IAssetKit Ins { get; private set; }
 
         /// <summary>
         /// 按资源地址缓存有效句柄，确保返回的资源对象和已实例化对象使用期间其依赖资源不会被提前卸载。
@@ -93,6 +94,11 @@ namespace Xuan.Prometheus.Asset
         /// </summary>
         public bool IsReady => !isDisposed && defaultPackage != null && defaultPackage.InitializeStatus == EOperationStatus.Succeeded && defaultPackage.PackageValid;
 
+
+        public AssetKit()
+        {
+            Ins = this;
+        }
         /// <summary>
         /// 初始化指定的 YooAsset 资源包，并在需要时请求版本和加载资源清单。
         /// 多个调用方同时初始化时，后续调用会等待首个初始化流程结束，不会重复创建初始化操作。
