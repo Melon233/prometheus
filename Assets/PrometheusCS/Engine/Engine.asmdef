@@ -1,0 +1,16 @@
+{
+    "name": "PrometheusCS.Engine",
+    "rootNamespace": "Xuan.PrometheusCS.Engine",
+    "references": [
+        "GUID:7686bf3dd8a77184c9eae87fcd74b108"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

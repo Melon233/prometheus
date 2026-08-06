@@ -1,0 +1,21 @@
+{
+    "name": "PrometheusCS.Simulation.EditorTests",
+    "rootNamespace": "Xuan.PrometheusCS.Simulation.Tests",
+    "references": [
+        "GUID:7686bf3dd8a77184c9eae87fcd74b108"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

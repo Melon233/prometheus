@@ -1,0 +1,19 @@
+{
+    "name": "PrometheusCS.Editor",
+    "rootNamespace": "Xuan.PrometheusCS.Editor",
+    "references": [
+        "GUID:3a7620113ac304648bff46d5b1e2daee",
+        "GUID:b35da734adf400f4f9cf9ad6e5dac5f8"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
