@@ -1,0 +1,16 @@
+{
+    "name": "PromeArchTrial.Game.Native",
+    "rootNamespace": "PromeArchTrial.Game",
+    "references": [
+        "GUID:0e300274294f8654ca2b21138a24fdbb"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

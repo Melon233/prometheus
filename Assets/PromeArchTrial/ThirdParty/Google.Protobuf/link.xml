@@ -1,0 +1,7 @@
+<linker>
+    <!-- 保留 Protobuf 运行时和生成消息，避免 IL2CPP Managed Stripping 删除反射描述符访问的成员。 -->
+    <assembly fullname="Google.Protobuf" preserve="all" />
+    <assembly fullname="PromeArchTrial.Core.Native">
+        <type fullname="PromeArchTrial.Core.Networking.Protobuf.*" preserve="all" />
+    </assembly>
+</linker>

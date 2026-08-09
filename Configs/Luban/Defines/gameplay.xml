@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This XML schema is the single source of type and table definitions for the shared character configuration workbook. Gameplay fields explicitly belong to both client and server groups, while presentation-only fields explicitly belong to the client group. -->
+<module name="gameplay">
+    <!-- ActionKind selects the deterministic gameplay branch that consumes an action row; animation selection remains a client-only concern. -->
+    <enum name="ActionKind" group="c,s" comment="Character action category shared by the authoritative server and predicted client.">
+        <var name="NONE" value="0" comment="No action; reserved as the enum default."/>
+        <var name="NORMAL_ATTACK" value="1" comment="A normal combo attack selected from ActionSet.normal_attack_ids."/>
+        <var name="MOVING_ATTACK" value="2" comment="A moving combo attack selected from ActionSet.moving_attack_ids."/>
+        <var name="SKILL" value="3" comment="The character's regular active skill."/>
+        <var name="SPECIAL_ATTACK" value="4" comment="The held-input special attack."/>
+        <var name="ULTIMATE" value="5" comment="The energy-consuming ultimate action."/>
+    </enum>
+
+    <!-- BattleRule contains global fixed-tick and prediction limits but is not a root configuration object; a character references the applicable row directly. -->
+    <bean name="BattleRule" group="c,s" comment="Shared fixed-tick battle rules used by prediction, authority, combo timing, and reconciliation.">
+        <var name="id" type="int" group="c,s" comment="Stable primary key referenced by Character.battle_rule_id."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable rule-set name for diagnostics and authoring."/>
+        <var name="tick_rate" type="int#range=[1,240]" group="c,s" comment="Authoritative simulation ticks per second; the client must use the same value."/>
+        <var name="reconciliation_distance_milli_units" type="int#(range=[0,])" group="c,s" comment="Prediction correction threshold in one-thousandth world units."/>
+        <var name="combo_reset_ticks" type="int#(range=[1,])" group="c,s" comment="Idle ticks after which the normal-attack combo index resets."/>
+        <var name="special_hold_ticks" type="int#(range=[1,])" group="c,s" comment="Continuous attack-input ticks required to select the special attack."/>
+        <var name="attack_buffer_ticks" type="int#(range=[1,])" group="c,s" comment="Ticks for which one released light-attack intent remains buffered while the character cannot act."/>
+        <var name="land_recovery_ticks" type="int#(range=[1,])" group="c,s" comment="Positive grounded recovery ticks synthesized into the runtime Land action by the Luban adapter."/>
+        <var name="input_timeout_ticks" type="int#(range=[1,])" group="c,s" comment="Maximum ticks for which the server may reuse the last input before forcing neutral input."/>
+        <var name="prediction_history_ticks" type="int#(range=[1,])" group="c,s" comment="Maximum predicted snapshots retained for reconciliation and replay."/>
+    </bean>
+    <table name="TbBattleRule" value="BattleRule" index="id" group="c,s" input="BattleRule@CharacterConfig.xlsx" comment="Fixed-tick battle rule rows."/>
+
+    <!-- CharacterProperty replaces the mutable ScriptableObject property asset with immutable shared numbers. Permille values avoid cross-runtime floating-point ambiguity. -->
+    <bean name="CharacterProperty" group="c,s" comment="Shared immutable combat attributes for a character archetype.">
+        <var name="id" type="int" group="c,s" comment="Stable primary key referenced by Character.property_id."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable property-profile name."/>
+        <var name="attack" type="int#(range=[0,])" group="c,s" comment="Base attack used by damage formulas."/>
+        <var name="attack_speed_permille" type="int#(range=[1,])" group="c,s" comment="Attack-speed multiplier where 1000 equals 1.0."/>
+        <var name="critical_damage_permille" type="int#(range=[0,])" group="c,s" comment="Critical bonus damage where 1000 adds another 100 percent of the pre-critical damage."/>
+        <var name="critical_rate_permille" type="int#range=[0,1000]" group="c,s" comment="Critical-hit probability where 1000 equals 100 percent."/>
+        <var name="defense" type="int#(range=[0,])" group="c,s" comment="Base defense used by damage formulas."/>
+        <var name="max_hp" type="int#(range=[1,])" group="c,s" comment="Maximum hit points at spawn."/>
+        <var name="core_energy_limit" type="int#(range=[0,])" group="c,s" comment="Maximum core or special energy."/>
+        <var name="ultimate_energy_limit" type="int#(range=[0,])" group="c,s" comment="Maximum ultimate energy."/>
+    </bean>
+    <table name="TbCharacterProperty" value="CharacterProperty" index="id" group="c,s" input="CharacterProperty@CharacterConfig.xlsx" comment="Character combat attribute profiles."/>
+
+    <!-- Locomotion stores scaled integers so both runtimes convert values to the same fixed-point representation during Setup. -->
+    <bean name="Locomotion" group="c,s" comment="Shared walk, run, sprint, jump, gravity, and air-control parameters.">
+        <var name="id" type="int" group="c,s" comment="Stable primary key referenced by Character.locomotion_id."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable locomotion-profile name."/>
+        <var name="walk_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Walking speed in one-thousandth world units per second."/>
+        <var name="run_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Running speed in one-thousandth world units per second."/>
+        <var name="sprint_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Sprinting speed in one-thousandth world units per second."/>
+        <var name="air_move_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Maximum horizontal air-control speed in one-thousandth world units per second."/>
+        <var name="jump_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Initial upward jump speed in one-thousandth world units per second."/>
+        <var name="gravity_milli_units_per_second_squared" type="int#(range=[0,])" group="c,s" comment="Downward acceleration in one-thousandth world units per second squared."/>
+    </bean>
+    <table name="TbLocomotion" value="Locomotion" index="id" group="c,s" input="Locomotion@CharacterConfig.xlsx" comment="Character locomotion profiles."/>
+
+    <!-- Dodge timing and invulnerability are authoritative gameplay data; the animation itself is selected by CharacterPresentation. -->
+    <bean name="Dodge" group="c,s" comment="Shared deterministic dodge movement, cooldown, and invulnerability window.">
+        <var name="id" type="int" group="c,s" comment="Stable primary key referenced by Character.dodge_id."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable dodge-profile name."/>
+        <var name="forward_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Forward dodge speed in one-thousandth world units per second."/>
+        <var name="backward_speed_milli_units_per_second" type="int#(range=[0,])" group="c,s" comment="Backward dodge speed in one-thousandth world units per second."/>
+        <var name="duration_ticks" type="int#(range=[1,])" group="c,s" comment="Total dodge duration in simulation ticks."/>
+        <var name="cooldown_ticks" type="int#(range=[0,])" group="c,s" comment="Ticks between accepted dodge starts."/>
+        <var name="invulnerable_start_tick" type="int#(range=[0,])" group="c,s" comment="First dodge-local tick that grants invulnerability."/>
+        <var name="invulnerable_end_tick" type="int#(range=[0,])" group="c,s" comment="Last dodge-local tick that grants invulnerability."/>
+    </bean>
+    <table name="TbDodge" value="Dodge" index="id" group="c,s" input="Dodge@CharacterConfig.xlsx" comment="Character dodge profiles."/>
+
+    <!-- Action rows align one-for-one with CharacterActionRuntimeConfig inputs. The client-only animation list supports one or more sequential Spine clips without leaking asset names to the server. -->
+    <bean name="Action" group="c,s" comment="Shared attack or skill phases, movement, hit rules, resource changes, and a client-only animation sequence binding.">
+        <var name="id" type="int" group="c,s" comment="Stable action primary key referenced by ActionSet lists and fields."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable action name used in diagnostics."/>
+        <var name="kind" type="ActionKind" group="c,s" comment="Gameplay branch that executes this action."/>
+        <var name="windup_ticks" type="int#(range=[0,])" group="c,s" comment="Authoritative startup ticks before the active hit phase."/>
+        <var name="active_ticks" type="int#(range=[0,])" group="c,s" comment="Authoritative active ticks in which hit detection may resolve."/>
+        <var name="recovery_ticks" type="int#(range=[0,])" group="c,s" comment="Authoritative recovery ticks after the active phase."/>
+        <var name="cooldown_ticks" type="int#(range=[0,])" group="c,s" comment="Additional cooldown ticks before this action can start again."/>
+        <var name="invincible_start_tick" type="int#(range=[-1,])" group="c,s" comment="Inclusive invulnerability start tick, or -1 when the action has no invulnerability window."/>
+        <var name="invincible_end_tick" type="int#(range=[-1,])" group="c,s" comment="Inclusive invulnerability end tick, or -1 when the action has no invulnerability window."/>
+        <var name="motion_start_tick" type="int#(range=[0,])" group="c,s" comment="Start tick of the half-open authoritative displacement interval."/>
+        <var name="motion_end_tick" type="int#(range=[0,])" group="c,s" comment="End tick of the half-open authoritative displacement interval."/>
+        <var name="forward_displacement_milli_units" type="int#(range=[0,])" group="c,s" comment="Total forward displacement over the motion interval in one-thousandth world units."/>
+        <var name="damage_permille" type="int#(range=[0,])" group="c,s" comment="Attack multiplier where 1000 equals base attack."/>
+        <var name="hit_range_milli_units" type="int#(range=[0,])" group="c,s" comment="Authoritative target query range in one-thousandth world units."/>
+        <var name="core_energy_cost" type="int#(range=[0,])" group="c,s" comment="Core energy consumed when the action is accepted."/>
+        <var name="ultimate_energy_cost" type="int#(range=[0,])" group="c,s" comment="Ultimate energy consumed when the action is accepted."/>
+        <var name="core_energy_gain_on_confirmed_hit" type="int#(range=[0,])" group="c,s" comment="Core energy granted only after the authoritative hit is confirmed."/>
+        <var name="ultimate_energy_gain_on_confirmed_hit" type="int#(range=[0,])" group="c,s" comment="Ultimate energy granted only after the authoritative hit is confirmed."/>
+        <var name="animation_clip_ids" type="list,(int#ref=gameplay.TbAnimationClip)" group="c" comment="Ordered client-only Spine clip references; skill startup and skill body can use two entries."/>
+    </bean>
+    <table name="TbAction" value="Action" index="id" group="c,s" input="Action@CharacterConfig.xlsx" comment="Normal attacks, moving attacks, skill, held special, and ultimate actions."/>
+
+    <!-- ActionSet uses ref validation for every scalar and collection element, making broken combo and skill IDs generation errors instead of runtime surprises. -->
+    <bean name="ActionSet" group="c,s" comment="Shared action composition for one character archetype.">
+        <var name="id" type="int" group="c,s" comment="Stable primary key referenced by Character.action_set_id."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable action-set name."/>
+        <var name="normal_attack_ids" type="list,(int#ref=gameplay.TbAction)" group="c,s" comment="Ordered normal-attack combo action references."/>
+        <var name="moving_attack_ids" type="list,(int#ref=gameplay.TbAction)" group="c,s" comment="Ordered moving-attack combo action references."/>
+        <var name="skill_action_id" type="int#ref=gameplay.TbAction" group="c,s" comment="Regular skill action reference."/>
+        <var name="special_action_id" type="int#ref=gameplay.TbAction" group="c,s" comment="Held-input special action reference."/>
+        <var name="ultimate_action_id" type="int#ref=gameplay.TbAction" group="c,s" comment="Ultimate action reference."/>
+    </bean>
+    <table name="TbActionSet" value="ActionSet" index="id" group="c,s" input="ActionSet@CharacterConfig.xlsx" comment="Character combo and active-skill compositions."/>
+
+    <!-- Character is the selected archetype row and references each independently authored profile; there is deliberately no rootId aggregate. -->
+    <bean name="Character" group="c,s" comment="Character archetype composed entirely through validated table references.">
+        <var name="id" type="int" group="c,s" comment="Stable character archetype ID selected by session or gameplay code."/>
+        <var name="name" type="string" group="c,s" comment="Human-readable character name."/>
+        <var name="battle_rule_id" type="int#ref=gameplay.TbBattleRule" group="c,s" comment="Applicable fixed-tick battle-rule reference."/>
+        <var name="property_id" type="int#ref=gameplay.TbCharacterProperty" group="c,s" comment="Combat property-profile reference."/>
+        <var name="locomotion_id" type="int#ref=gameplay.TbLocomotion" group="c,s" comment="Locomotion-profile reference."/>
+        <var name="dodge_id" type="int#ref=gameplay.TbDodge" group="c,s" comment="Dodge-profile reference."/>
+        <var name="action_set_id" type="int#ref=gameplay.TbActionSet" group="c,s" comment="Combo and skill action-set reference."/>
+        <var name="presentation_id" type="int#ref=gameplay.TbCharacterPresentation" group="c" comment="Client-only visual presentation reference."/>
+    </bean>
+    <table name="TbCharacter" value="Character" index="id" group="c,s" input="Character@CharacterConfig.xlsx" comment="Composable character archetypes without a root configuration object."/>
+
+    <!-- AnimationClip and CharacterPresentation are deliberately client-only; the server never generates or loads these asset-facing fields. -->
+    <bean name="AnimationClip" group="c" comment="Client-only Spine animation clip binding and playback metadata.">
+        <var name="id" type="int" group="c" comment="Stable animation binding ID referenced by Action and CharacterPresentation."/>
+        <var name="name" type="string" group="c" comment="Human-readable animation binding name."/>
+        <var name="spine_animation_name" type="string" group="c" comment="Exact animation name stored in the Spine SkeletonData asset."/>
+        <var name="loop" type="bool" group="c" comment="Whether the Spine track entry loops."/>
+        <var name="track_index" type="int#(range=[0,])" group="c" comment="Spine track index; full-body character clips normally use track zero."/>
+        <var name="mix_duration_milliseconds" type="int#(range=[0,])" group="c" comment="Cross-fade duration in milliseconds."/>
+        <var name="playback_speed_permille" type="int#(range=[1,])" group="c" comment="Playback speed where 1000 equals normal speed."/>
+    </bean>
+    <table name="TbAnimationClip" value="AnimationClip" index="id" group="c" input="AnimationClip@CharacterConfig.xlsx" comment="Client-only Spine animation bindings."/>
+
+    <bean name="CharacterPresentation" group="c" comment="Client-only prefab and locomotion-state animation bindings for a character.">
+        <var name="id" type="int" group="c" comment="Stable presentation primary key referenced by Character.presentation_id."/>
+        <var name="name" type="string" group="c" comment="Human-readable presentation-profile name."/>
+        <var name="prefab_asset_path" type="string" group="c" comment="Unity project asset path or address used to instantiate the visual prefab."/>
+        <var name="idle_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Idle animation reference."/>
+        <var name="walk_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Walk animation reference."/>
+        <var name="run_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Run animation reference."/>
+        <var name="sprint_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Sprint animation reference."/>
+        <var name="jump_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Jump startup animation reference."/>
+        <var name="rise_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Ascending airborne animation reference."/>
+        <var name="fall_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Descending airborne animation reference."/>
+        <var name="land_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Landing animation reference."/>
+        <var name="forward_dodge_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Forward dodge animation reference."/>
+        <var name="backward_dodge_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Backward dodge animation reference."/>
+        <var name="attacked_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Hit-reaction animation reference."/>
+        <var name="death_clip_id" type="int#ref=gameplay.TbAnimationClip" group="c" comment="Death animation reference."/>
+    </bean>
+    <table name="TbCharacterPresentation" value="CharacterPresentation" index="id" group="c" input="CharacterPresentation@CharacterConfig.xlsx" comment="Client-only visual prefab and locomotion animation profile."/>
+</module>

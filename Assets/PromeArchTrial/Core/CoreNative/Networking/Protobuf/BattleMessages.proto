@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package prome_arch_trial.battle;
+
+option csharp_namespace = "PromeArchTrial.Core.Networking.Protobuf";
+
+// BattleEnvelope 是每个 TCP 数据帧中唯一允许出现的 Protobuf 根消息，并通过 oneof 保证一帧只携带一种业务负载。
+message BattleEnvelope {
+  oneof payload {
+    ClientHelloPayload client_hello = 1;
+    ServerWelcomePayload server_welcome = 2;
+    ClientInputPayload client_input = 3;
+    ServerSnapshotPayload server_snapshot = 4;
+    ServerRejectPayload server_reject = 5;
+    ClientPingPayload client_ping = 6;
+    ServerPongPayload server_pong = 7;
+  }
+}
+
+// ClientHelloPayload 携带协议版本和全部共享 Luban 配置的内容哈希，用于连接建立阶段的双端一致性校验。
+message ClientHelloPayload {
+  int32 protocol_version = 1;
+  reserved 2, 3;
+  reserved "config_root_id", "config_version";
+  fixed64 config_hash = 4;
+}
+
+// ServerWelcomePayload 返回玩家身份、实体身份、默认角色、当前完整权威状态和服务器最终采用的共享配置哈希。
+message ServerWelcomePayload {
+  int32 player_id = 1;
+  int32 server_tick = 2;
+  int32 tick_rate = 3;
+  reserved 4;
+  reserved "move_speed_raw";
+  fixed64 config_hash = 5;
+  int32 character_id = 6;
+  CharacterStatePayload initial_state = 7;
+  int32 entity_id = 8;
+}
+
+// ClientInputPayload 每个客户端固定 Tick 上传量化输入、动作按键和该 Tick 结束后的完整本地预测状态。
+message ClientInputPayload {
+  int32 client_tick = 1;
+  sint32 move_x = 2;
+  sint32 move_z = 3;
+  reserved 4, 5;
+  reserved "predicted_x", "predicted_z";
+  int32 requested_move_mode = 6;
+  fixed32 input_buttons = 7;
+  CharacterStatePayload predicted_state = 8;
+}
+
+// ServerSnapshotPayload 每个服务器固定 Tick 推送完整权威角色状态，使客户端能够恢复后重放未确认命令。
+message ServerSnapshotPayload {
+  int32 server_tick = 1;
+  sint32 acknowledged_client_tick = 2;
+  reserved 3, 4, 5, 6;
+  reserved "position_x", "position_z", "remainder_x", "remainder_z";
+  CharacterStatePayload state = 7;
+  repeated BattleEventPayload events = 8;
+}
+
+// BattleEventPayload 传输服务器在本 Tick 已经确定性排序的角色事件或命中结算事件，客户端只能用它驱动表现而不能反写模拟。
+message BattleEventPayload {
+  int32 kind = 1;
+  int32 source_entity_id = 2;
+  int32 target_entity_id = 3;
+  int32 world_tick = 4;
+  int32 ordinal = 5;
+  int32 character_event_type = 6;
+  int32 action_kind = 7;
+  int32 action_id = 8;
+  sint32 value = 9;
+  bool is_critical = 10;
+}
+
+// CharacterStatePayload 是预测和权威快照共同使用的完整可回滚角色状态，不包含任何 Unity 或表现层数据。
+message CharacterStatePayload {
+  int32 tick = 1;
+  sint64 position_x = 2;
+  sint64 position_y = 3;
+  sint64 position_z = 4;
+  sint64 facing_x_raw = 5;
+  sint64 facing_z_raw = 6;
+  int32 locomotion_state = 7;
+  int32 action_kind = 8;
+  sint32 action_elapsed_ticks = 9;
+  sint64 action_direction_x_raw = 10;
+  sint64 action_direction_z_raw = 11;
+  sint64 horizontal_remainder_x = 12;
+  sint64 horizontal_remainder_z = 13;
+  sint64 vertical_velocity_raw = 14;
+  sint64 vertical_acceleration_remainder = 15;
+  sint64 vertical_position_remainder = 16;
+  bool is_grounded = 17;
+  bool is_invincible = 18;
+  sint32 hp = 19;
+  sint32 core_energy = 20;
+  sint32 ultimate_energy = 21;
+  sint32 attack_charge_ticks = 22;
+  sint32 next_attack_combo_index = 23;
+  sint32 combo_timeout_remaining_ticks = 24;
+  sint32 dodge_cooldown_remaining_ticks = 25;
+  sint32 attack_cooldown_remaining_ticks = 26;
+  sint32 heavy_attack_cooldown_remaining_ticks = 27;
+  sint32 skill_cooldown_remaining_ticks = 28;
+  sint32 ultimate_cooldown_remaining_ticks = 29;
+  bool attack_hold_consumed = 30;
+  sint32 light_attack_buffer_remaining_ticks = 31;
+  bool uses_moving_attack_variant = 32;
+}
+
+// ServerRejectPayload 描述服务器拒绝连接或消息的稳定机器可读原因。
+message ServerRejectPayload {
+  ServerRejectReasonCode reason = 1;
+}
+
+// ClientPingPayload 携带客户端递增序号，以测量不包含权威 Tick 排队的网络往返时间。
+message ClientPingPayload {
+  int32 sequence = 1;
+}
+
+// ServerPongPayload 原样返回客户端 Ping 序号，使客户端能够匹配并计算往返时间。
+message ServerPongPayload {
+  int32 sequence = 1;
+}
+
+// ServerRejectReasonCode 使用稳定数值表示拒绝原因，新增枚举值时不得复用已经发布的编号。
+enum ServerRejectReasonCode {
+  SERVER_REJECT_REASON_UNKNOWN = 0;
+  SERVER_REJECT_REASON_PROTOCOL_MISMATCH = 1;
+  SERVER_REJECT_REASON_CONFIG_MISMATCH = 2;
+  SERVER_REJECT_REASON_SERVER_FULL = 3;
+  SERVER_REJECT_REASON_INVALID_MESSAGE = 4;
+}

@@ -1,0 +1,21 @@
+{
+    "name": "PromeArchTrial.Game.Unity",
+    "rootNamespace": "PromeArchTrial.Game.Unity",
+    "references": [
+        "GUID:0e300274294f8654ca2b21138a24fdbb",
+        "GUID:976e9e21321cc4042acd7066b7537c34",
+        "GUID:6e39a72b51380bc489375207f6885f68",
+        "GUID:1427183ff1c84f7d8edb1b9b6f6b543a",
+        "GUID:f7563f82e2714b7aa54cc74125de907d",
+        "GUID:c4a5ed6bd4f84a73a7b28d91a6e03ef2"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

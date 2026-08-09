@@ -1,18 +1,27 @@
-using System.Reflection;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+#if UNITY_6000_3_OR_NEWER
+using UnityEditor.Toolbars;
+#else
+using System.Reflection;
 using UnityEngine.UIElements;
+#endif
 
 /// <summary>
-/// Adds Package Manager and Asset Store shortcuts to the left side of Unity's
-/// main toolbar.
+/// Adds Package Manager and Asset Store shortcuts to the left side of Unity's main toolbar.
 /// </summary>
+#if !UNITY_6000_3_OR_NEWER
 [InitializeOnLoad]
+#endif
 public static class ToolbarStoreButtons
 {
-    const string ContainerName = "Prometheus.Toolbar.StoreButtons";
     const string PackageManagerMenuPath = "Window/Package Manager";
     const string AssetStoreMenuPath = "Window/Asset Store";
+#if UNITY_6000_3_OR_NEWER
+    const string ToolbarElementPath = "Prometheus/Store Shortcuts";
+#else
+    const string ContainerName = "Prometheus.Toolbar.StoreButtons";
 
     static bool buttonsInstalled;
 
@@ -21,7 +30,33 @@ public static class ToolbarStoreButtons
         // The main toolbar may not exist immediately after a domain reload.
         EditorApplication.update += TryInstallButtons;
     }
+#endif
 
+#if UNITY_6000_3_OR_NEWER
+    /// <summary>
+    /// Registers both shortcuts as one left-docked group through Unity 6.3's supported main-toolbar API.
+    /// </summary>
+    /// <returns>The ordered Package Manager and Asset Store button descriptors.</returns>
+    [MainToolbarElement(ToolbarElementPath, defaultDockPosition = MainToolbarDockPosition.Left, defaultDockIndex = 0)]
+    public static IEnumerable<MainToolbarElement> CreateStoreToolbarButtons()
+    {
+        yield return CreateMainToolbarButton("Package Manager", "Package Manager", "打开 Package Manager", PackageManagerMenuPath);
+        yield return CreateMainToolbarButton("Asset Store", "Asset Store", "打开 Asset Store", AssetStoreMenuPath);
+    }
+
+    /// <summary>
+    /// Creates a supported main-toolbar button and falls back to text when the requested editor icon is unavailable.
+    /// </summary>
+    static MainToolbarButton CreateMainToolbarButton(string iconName, string fallbackText, string tooltip, string menuPath)
+    {
+        var icon = EditorGUIUtility.IconContent(iconName).image as Texture2D;
+        var content = icon != null ? new MainToolbarContent(icon, tooltip) : new MainToolbarContent(fallbackText, tooltip);
+        return new MainToolbarButton(content, () => OpenEditorWindow(menuPath));
+    }
+#else
+    /// <summary>
+    /// Installs the shortcut group into the legacy toolbar visual tree after the left alignment zone becomes available.
+    /// </summary>
     static void TryInstallButtons()
     {
         if (buttonsInstalled)
@@ -103,13 +138,21 @@ public static class ToolbarStoreButtons
         button.Add(icon);
         return button;
     }
+#endif
 
+    /// <summary>
+    /// Opens an editor window through its menu command and reports a warning only when Unity rejects that command.
+    /// </summary>
     static void OpenEditorWindow(string menuPath)
     {
         if (!EditorApplication.ExecuteMenuItem(menuPath))
             Debug.LogWarning($"[ToolbarStoreButtons] 无法执行菜单：{menuPath}");
     }
 
+#if !UNITY_6000_3_OR_NEWER
+    /// <summary>
+    /// Retrieves the root visual element from legacy toolbar implementations that expose it through an internal property or field.
+    /// </summary>
     static VisualElement GetToolbarRoot(object toolbar)
     {
         // Unity 2021 exposes the top toolbar only through internal members, so
@@ -135,4 +178,5 @@ public static class ToolbarStoreButtons
 
         return null;
     }
+#endif
 }

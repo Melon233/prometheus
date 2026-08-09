@@ -1,0 +1,20 @@
+{
+    "name": "PromeArchTrial.Editor",
+    "rootNamespace": "PromeArchTrial.Editor",
+    "references": [
+        "GUID:0e9e6c13d6be7034da8f895d0a251380",
+        "GUID:c4a5ed6bd4f84a73a7b28d91a6e03ef2",
+        "GUID:68765d262e2128e4ab49c983f3411946"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

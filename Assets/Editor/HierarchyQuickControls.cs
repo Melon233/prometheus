@@ -31,7 +31,13 @@ internal static class HierarchyQuickControls
 
     private static void DrawHierarchyControls(int instanceId, Rect rowRect)
     {
+#if UNITY_6000_3_OR_NEWER
+        // Unity 6.3 replaces the obsolete instance-ID lookup with EntityId while preserving the existing Hierarchy callback signature.
+        var gameObject = EditorUtility.EntityIdToObject(instanceId) as GameObject;
+#else
+        // Older Unity versions do not expose EntityIdToObject, so retain their supported instance-ID lookup path.
         var gameObject = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+#endif
         if (gameObject == null || Event.current.type == EventType.Layout)
         {
             return;

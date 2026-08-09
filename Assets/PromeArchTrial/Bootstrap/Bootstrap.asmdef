@@ -1,0 +1,20 @@
+{
+    "name": "PromeArchTrial.Bootstrap",
+    "rootNamespace": "PromeArchTrial.Bootstrap",
+    "references": [
+        "GUID:0e300274294f8654ca2b21138a24fdbb",
+        "GUID:976e9e21321cc4042acd7066b7537c34",
+        "GUID:6e39a72b51380bc489375207f6885f68",
+        "GUID:681ac19205dc73849b1d4cbcd28be06b",
+        "GUID:c4a5ed6bd4f84a73a7b28d91a6e03ef2"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

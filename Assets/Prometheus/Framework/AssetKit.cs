@@ -131,7 +131,7 @@ namespace Xuan.Prometheus.Asset
             try
             {
                 if (!YooAssets.IsInitialized)
-                    YooAssets.Initialize();
+                    YooAssets.Initialize(new AssetKitYooLogger());
 
                 if (!YooAssets.TryGetPackage(packageName, out ResourcePackage package))
                     package = YooAssets.CreatePackage(packageName);
@@ -518,6 +518,54 @@ namespace Xuan.Prometheus.Asset
         {
             if (isDisposed)
                 throw new ObjectDisposedException(nameof(AssetKit));
+        }
+    }
+
+    /// <summary>
+    /// 将 YooAsset 日志转发到 Unity Console，并过滤 YooAsset 3.0.5 在正常关闭常驻下载调度器时产生的误导性警告。
+    /// 仅忽略 DownloadSchedulerOperation 自身的退出通知，任何实际下载操作的中止、错误和异常仍会正常输出。
+    /// </summary>
+    internal sealed class AssetKitYooLogger : YooAsset.ILogger
+    {
+        private const string ExpectedSchedulerShutdownWarning = "Async operation 'DownloadSchedulerOperation' has been aborted.";
+
+        /// <summary>
+        /// 将 YooAsset 普通日志原样转发到 Unity Console。
+        /// </summary>
+        /// <param name="message">YooAsset 生成的日志内容。</param>
+        public void Log(string message)
+        {
+            Debug.Log(message);
+        }
+
+        /// <summary>
+        /// 忽略常驻下载调度器的正常关闭通知，并将其余警告原样转发到 Unity Console。
+        /// </summary>
+        /// <param name="message">YooAsset 生成的警告内容。</param>
+        public void LogWarning(string message)
+        {
+            if (string.Equals(message, ExpectedSchedulerShutdownWarning, StringComparison.Ordinal))
+                return;
+
+            Debug.LogWarning(message);
+        }
+
+        /// <summary>
+        /// 将 YooAsset 错误原样转发到 Unity Console。
+        /// </summary>
+        /// <param name="message">YooAsset 生成的错误内容。</param>
+        public void LogError(string message)
+        {
+            Debug.LogError(message);
+        }
+
+        /// <summary>
+        /// 将 YooAsset 异常连同堆栈原样转发到 Unity Console。
+        /// </summary>
+        /// <param name="exception">YooAsset 捕获的异常。</param>
+        public void LogException(Exception exception)
+        {
+            Debug.LogException(exception);
         }
     }
 }

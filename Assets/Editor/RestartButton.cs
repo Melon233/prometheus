@@ -1,21 +1,35 @@
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
+#if UNITY_6000_3_OR_NEWER
+using UnityEditor.Toolbars;
+#else
+using System.Reflection;
 using UnityEngine.UIElements;
+#endif
 
+/// <summary>
+/// Provides a toolbar action that exits Play Mode, recompiles project scripts, and starts Play Mode again when compilation succeeds.
+/// </summary>
 [InitializeOnLoad]
 public static class RestartButton
 {
     const string PendingKey = "PlayModeRestart.Pending";
     const string CompileSeenKey = "PlayModeRestart.CompileSeen";
     const string CompileErrorKey = "PlayModeRestart.CompileError";
+#if UNITY_6000_3_OR_NEWER
+    const string ToolbarElementPath = "Prometheus/Restart Play Mode";
+#else
 
     static bool buttonInstalled;
+#endif
 
     static RestartButton()
     {
+#if !UNITY_6000_3_OR_NEWER
+        // Unity versions before 6.3 do not provide the supported MainToolbar registration API, so they retain the legacy visual-tree integration.
         EditorApplication.update += InstallToolbarButton;
+#endif
         CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompilationFinished;
 
         // 编译会导致 Domain Reload；重新加载后继续等待并启动游戏。
@@ -26,6 +40,20 @@ public static class RestartButton
         }
     }
 
+#if UNITY_6000_3_OR_NEWER
+    /// <summary>
+    /// Registers the restart action in the middle section through Unity 6.3's supported main-toolbar API.
+    /// </summary>
+    /// <returns>The button descriptor Unity uses to build and refresh the toolbar element.</returns>
+    [MainToolbarElement(ToolbarElementPath, defaultDockPosition = MainToolbarDockPosition.Middle, defaultDockIndex = 0)]
+    public static MainToolbarElement CreateRestartToolbarButton()
+    {
+        return new MainToolbarButton(new MainToolbarContent("↻", "停止游戏、重新编译并启动"), Restart);
+    }
+#else
+    /// <summary>
+    /// Installs the restart button into the legacy toolbar visual tree after that tree becomes available.
+    /// </summary>
     static void InstallToolbarButton()
     {
         if (buttonInstalled) return;
@@ -124,7 +152,11 @@ public static class RestartButton
 
         return null;
     }
+#endif
 
+    /// <summary>
+    /// Records the pending restart request and either exits Play Mode first or immediately requests compilation.
+    /// </summary>
     static void Restart()
     {
         SessionState.SetBool(PendingKey, true);
@@ -143,6 +175,9 @@ public static class RestartButton
         }
     }
 
+    /// <summary>
+    /// Continues the restart workflow after Unity has fully returned to Edit Mode.
+    /// </summary>
     static void OnPlayModeStateChanged(PlayModeStateChange state)
     {
         if (state != PlayModeStateChange.EnteredEditMode) return;
@@ -151,6 +186,9 @@ public static class RestartButton
         RequestCompile();
     }
 
+    /// <summary>
+    /// Requests script compilation and starts polling for its completion across a possible domain reload.
+    /// </summary>
     static void RequestCompile()
     {
         EditorApplication.update -= WaitForCompilation;
@@ -160,6 +198,9 @@ public static class RestartButton
         CompilationPipeline.RequestScriptCompilation();
     }
 
+    /// <summary>
+    /// Remembers whether any compiled assembly reported an error during the pending restart operation.
+    /// </summary>
     static void OnAssemblyCompilationFinished(string _, CompilerMessage[] messages)
     {
         foreach (var message in messages)
@@ -172,6 +213,9 @@ public static class RestartButton
         }
     }
 
+    /// <summary>
+    /// Waits until compilation has actually started and finished, then resumes Play Mode only when compilation succeeded.
+    /// </summary>
     static void WaitForCompilation()
     {
         if (!SessionState.GetBool(PendingKey, false))

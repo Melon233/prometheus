@@ -1,0 +1,16 @@
+{
+    "name": "PromeArchTrial.Core.Native",
+    "rootNamespace": "PromeArchTrial.Core",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Google.Protobuf.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
