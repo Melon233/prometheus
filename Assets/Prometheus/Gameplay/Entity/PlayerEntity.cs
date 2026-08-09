@@ -19,6 +19,7 @@ namespace Xuan.Prometheus.Logic
             AddComp<DodgeComponent>();
             AddComp(bindGo.GetComponent<EffectComponent>());
             AddComp(bindGo.GetComponent<SpineComponent>());
+            AddComp(bindGo.GetComponent<VfxComponent>());
             AddComp(bindGo.GetComponent<MotionComponent>());
             AddComp(bindGo.GetComponent<AttackComponent>());
             AddComp(bindGo.GetComponent<PropertyComponent>());

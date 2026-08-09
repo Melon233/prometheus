@@ -34,6 +34,7 @@ namespace Xuan.Prometheus
 
         public override void OnDisable()
         {
+            spineComp.Stop(AnimationOwner.GroundMove);
             Entity.UnBlockLogic<PatrolLogic>();
         }
 
@@ -45,7 +46,7 @@ namespace Xuan.Prometheus
         {
             Entity.BlockLogic<PatrolLogic>(); // Block the PatrolLogic
             eIdleComp.Interrupt();
-            spineComp.animationLib.groundMoveExecutor.Execute();
+            spineComp.TryPlay(spineComp.animationLib.groundMoveExecutor.GetSemantic(MoveMode.Run), AnimationOwner.GroundMove, AnimationPriority.Locomotion, true);
         }
 
         public override void OnUpdate(float dt)

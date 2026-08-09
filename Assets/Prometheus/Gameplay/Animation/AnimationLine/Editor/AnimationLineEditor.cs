@@ -26,6 +26,7 @@ namespace Xuan.Prometheus.Editor
         private static readonly Color SourceEventColor = new Color(0.35f, 0.9f, 0.45f, 1f);
         private static readonly Color CustomEventColor = new Color(0.25f, 0.8f, 1f, 1f);
 
+        private SerializedProperty semanticProperty;
         private SerializedProperty animationReferenceAssetProperty;
         private SerializedProperty eventsProperty;
         private UnityEditor.Editor spinePreviewEditor;
@@ -48,6 +49,7 @@ namespace Xuan.Prometheus.Editor
         /// </summary>
         private void OnEnable()
         {
+            semanticProperty = serializedObject.FindProperty("semantic");
             animationReferenceAssetProperty = serializedObject.FindProperty("animationReferenceAsset");
             eventsProperty = serializedObject.FindProperty("events");
             EditorApplication.update -= HandlePreviewUpdate;
@@ -70,6 +72,7 @@ namespace Xuan.Prometheus.Editor
         {
             AnimationLine animationLine = (AnimationLine)target;
             serializedObject.Update();
+            EditorGUILayout.PropertyField(semanticProperty, new GUIContent("Animation Semantic"));
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(animationReferenceAssetProperty, new GUIContent("Animation Reference"));
             if (EditorGUI.EndChangeCheck())

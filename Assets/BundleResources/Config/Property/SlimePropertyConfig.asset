@@ -23,6 +23,6 @@ MonoBehaviour:
   sprintSpeed: 0
   airMoveSpeed: 0
   jumpSpeed: 0
-  gravity: 0
+  gravity: 9.8
   coreEnergyLimit: 0
   ultEnergyLimit: 0

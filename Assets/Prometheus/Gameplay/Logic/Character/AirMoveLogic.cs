@@ -1,41 +1,34 @@
-using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    public class AirMoveLogic : Logic
+    /// <summary>负责空中速度与下落循环动画；落地时主动释放空中动画所有权。</summary>
+    public sealed class AirMoveLogic : Logic
     {
-        private SpineComponent spineComp;
-        private InputComponent inputComp;
-        private MotionComponent motionComp;
-        /// <summary>
-        /// 提供经过 modifier 计算后的空中移动速度和重力。
-        /// </summary>
-        private PropertyComponent propComp;
-        private TrackEntry trackEntry;
-        AirMoveExecutor airMoveExecutor;
+        private SpineComponent spineComponent;
+        private InputComponent inputComponent;
+        private MotionComponent motionComponent;
+        private PropertyComponent propertyComponent;
+
         public override void AfterNew()
         {
             OrderTag = OrderTag.Gameplay;
             ControlRequirement = LogicControlRequirement.None;
-            Entity.TryGetComp(out spineComp);
-            Entity.TryGetComp(out inputComp);
-            Entity.TryGetComp(out motionComp);
-            Entity.TryGetComp(out propComp);
-            airMoveExecutor = spineComp.animationLib.airMoveExecutor;
+            Entity.TryGetComp(out spineComponent);
+            Entity.TryGetComp(out inputComponent);
+            Entity.TryGetComp(out motionComponent);
+            Entity.TryGetComp(out propertyComponent);
         }
 
         public override bool CanEnable()
         {
-            if (!motionComp.cc.isGrounded) return true;
-            if (motionComp.cc.isGrounded && motionComp.curVelo.y > 0.1f) return true;
-            return false;
+            return !motionComponent.cc.isGrounded || motionComponent.curVelo.y > 0.1f;
         }
 
         public override bool CanDisable()
         {
-            return motionComp.cc.isGrounded;
+            return motionComponent.cc.isGrounded;
         }
 
         public override void OnEnable()
@@ -47,6 +40,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnDisable()
         {
+            spineComponent.Stop(AnimationOwner.AirMove);
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<TalentLogic>();
             Entity.UnBlockLogic<DodgeLogic>();
@@ -54,19 +48,23 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
-            motionComp.curVelo.y -= propComp.Gravity * dt;
-            if (propComp.CanAct && motionComp.curVelo.y < 0f) trackEntry = airMoveExecutor.Execute(AirMoveState.Fall);
-            if (propComp.CanMove && inputComp.moveDir != Vector2.zero)
+            motionComponent.curVelo.y -= propertyComponent.Gravity * dt;
+            if (propertyComponent.CanAct && motionComponent.curVelo.y < 0f)
             {
-                motionComp.curVelo = new Vector3(inputComp.moveDir.x * propComp.AirMoveSpeed, motionComp.curVelo.y, inputComp.moveDir.y * propComp.AirMoveSpeed);
+                AirMoveExecutor configuration = spineComponent.animationLib.airMoveExecutor;
+                spineComponent.TryPlay(configuration.FallSemantic, AnimationOwner.AirMove, AnimationPriority.Airborne, true);
+            }
+            if (propertyComponent.CanMove && inputComponent.moveDir != Vector2.zero)
+            {
+                motionComponent.curVelo = new Vector3(inputComponent.moveDir.x * propertyComponent.AirMoveSpeed, motionComponent.curVelo.y, inputComponent.moveDir.y * propertyComponent.AirMoveSpeed);
             }
             else
             {
-                motionComp.curVelo.x = 0f;
-                motionComp.curVelo.z = 0f;
+                motionComponent.curVelo.x = 0f;
+                motionComponent.curVelo.z = 0f;
             }
-
         }
+
         public override void OnDispose()
         {
         }

@@ -1,27 +1,28 @@
 using System;
-using Spine;
-using Spine.Unity;
+using System.Collections.Generic;
 using UnityEngine;
-using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus
 {
+    /// <summary>保存前向和后向闪避 AnimationLine 配置，不管理闪避状态。</summary>
     [Serializable]
-    public class DodgeExecutor : AnimationExecutor
+    public sealed class DodgeExecutor
     {
-        [SerializeField] AnimationReferenceAsset dodgeFrontAnimation;
-        [SerializeField] AnimationReferenceAsset dodgeBackAnimation;
+        [SerializeField] private AnimationLine dodgeFrontLine;
+        [SerializeField] private AnimationLine dodgeBackLine;
 
-        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        /// <summary>根据角色是否正在移动返回闪避动画语义。</summary>
+        public AnimationSemantic GetSemantic(bool isMoving)
         {
-            base.Init(lib, spineComp, vfxComp);
+            AnimationLine selectedLine = isMoving ? dodgeFrontLine : dodgeBackLine;
+            return selectedLine == null ? AnimationSemantic.None : selectedLine.Semantic;
         }
-        public TrackEntry Execute(bool isMoving)
+
+        /// <summary>收集全部闪避 AnimationLine，供 AnimationLibrary 建立语义索引。</summary>
+        internal void CollectLines(List<AnimationLine> destination)
         {
-            if (isMoving)
-                return spineComp.Play(dodgeFrontAnimation);
-            else
-                return spineComp.Play(dodgeBackAnimation);
+            if (dodgeFrontLine != null) destination.Add(dodgeFrontLine);
+            if (dodgeBackLine != null) destination.Add(dodgeBackLine);
         }
     }
 }

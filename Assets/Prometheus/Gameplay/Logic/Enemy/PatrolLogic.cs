@@ -9,8 +9,6 @@ namespace Xuan.Prometheus
         SpineComponent spineComp;
         PatrolComponent patrolComp;
         EnmityComponent enmityComp;
-        IdleExecutor idleExecutor;
-        GroundMoveExecutor groundMoveExecutor;
         EventComponent evtComp;
         EIdleComponent eIdleComp;
         public override void AfterNew()
@@ -24,8 +22,6 @@ namespace Xuan.Prometheus
             // evtComp.AddListener<StunStartEvent>(OnStunStart);
             // evtComp.AddListener<StunEndEvent>(OnStunEnd);
 
-            idleExecutor = spineComp.animationLib.idleExecutor;
-            groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
             patrolComp.spawnPoint = patrolComp.transform.position;
             // patrolComp.patrolTimer = new(patrolComp.patrolConfig.moveInterval);
             GizmosKit.Ins.DrawWireCircle(patrolComp.spawnPoint, Vector3.up, patrolComp.patrolConfig.patrolRadius, Color.green, duration: 999f);
@@ -43,7 +39,7 @@ namespace Xuan.Prometheus
 
         public override void OnDisable()
         {
-
+            spineComp.Stop(AnimationOwner.GroundMove);
         }
 
         public override void OnDispose()
@@ -54,7 +50,7 @@ namespace Xuan.Prometheus
         public override void OnEnable()
         {
             patrolComp.Execute();
-            spineComp.animationLib.groundMoveExecutor.Execute();
+            spineComp.TryPlay(spineComp.animationLib.groundMoveExecutor.GetSemantic(MoveMode.Run), AnimationOwner.GroundMove, AnimationPriority.Locomotion, true);
         }
 
         public override void OnUpdate(float dt)

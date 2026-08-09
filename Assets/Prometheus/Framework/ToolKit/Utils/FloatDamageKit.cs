@@ -1,121 +1,81 @@
 using UnityEngine;
 using Xuan.Prometheus.Asset;
-using YooAsset;
 
 namespace Xuan.Prometheus
 {
     /// <summary>
-    /// 将世界坐标中的伤害转换到屏幕 UI，并创建飘字实例。
+    /// 通过 UIKit 世界 UI 对象池生成伤害飘字，并把具体文本和动画参数交给飘字组件初始化。
     /// </summary>
     public class FloatTextKit : MonoSingleton<FloatTextKit>
     {
         private const string ConfigPath = "DmgConf";
+        private const string WorldUIAssetAddress = "UI_Dmg";
 
         private FloatDamageConfig config;
-        private Canvas canvas;
 
+        /// <summary>
+        /// 单例创建时加载伤害飘字配置；UIKit 及其世界空间 Canvas 由 GameCore 独立管理，无需在此缓存场景 Canvas。
+        /// </summary>
         protected override void OnAwake()
         {
             LoadConfig();
-            ResolveCanvas();
         }
 
+        /// <summary>
+        /// 在指定世界坐标生成一次伤害或治疗飘字，并通过句柄取得池实例上的 FloatDmgComponent 完成表现初始化。
+        /// </summary>
+        /// <param name="number">需要显示的伤害或治疗数值。</param>
+        /// <param name="worldPosition">伤害目标提供的基础世界坐标。</param>
+        /// <param name="isHeal">为 true 时使用治疗文本颜色，否则恢复 Prefab 配置的默认伤害颜色。</param>
         public void CastNumberText(float number, Vector3 worldPosition, bool isHeal = false)
         {
             if (!EnsureReady())
                 return;
 
-            var worldCamera = Camera.main;
-            if (worldCamera == null)
+            Vector2 randomPoint = Random.insideUnitCircle * Mathf.Max(0f, config.radius);
+            Vector3 spawnWorldPosition = worldPosition + new Vector3(randomPoint.x, config.startHeight, randomPoint.y);
+            WorldUIHandle handle = Core.UIKit.SpawnWorldUI(WorldUIAssetAddress, spawnWorldPosition, config.lifeTime);
+            FloatDmgComponent damageComponent = handle.GetComponent<FloatDmgComponent>();
+            if (damageComponent == null)
             {
-                Debug.LogError("[FloatDamageKit] 场景中没有标记为 MainCamera 的相机。");
+                Debug.LogError($"[FloatDamageKit] World UI asset '{WorldUIAssetAddress}' does not contain FloatDmgComponent on its root object.", handle.Root);
+                handle.Release();
                 return;
             }
 
-            var canvasRect = canvas.transform as RectTransform;
-            if (canvasRect == null)
-            {
-                Debug.LogError("[FloatDamageKit] Canvas 缺少 RectTransform。");
-                return;
-            }
-
-            var instance = Instantiate(config.dmgComp, canvasRect, false);
-            instance.gameObject.SetActive(true);
-            instance.Initialize(number, worldPosition, worldCamera, canvas, config, isHeal);
+            damageComponent.Initialize(number, spawnWorldPosition, handle, config, isHeal);
         }
 
+        /// <summary>
+        /// 确保配置与当前 GameCore 的 UIKit 均可用；资源实例、相机、Canvas 和回收状态全部由 UIKit 统一处理。
+        /// </summary>
+        /// <returns>当前可以安全生成伤害飘字时返回 true。</returns>
         private bool EnsureReady()
         {
             if (config == null)
                 LoadConfig();
 
-            if (canvas == null || !canvas.isActiveAndEnabled)
-                ResolveCanvas();
-
             if (config == null)
             {
-                Debug.LogError(
-                    $"[FloatDamageKit] 无法加载 Resources/{ConfigPath}.asset。");
+                Debug.LogError($"[FloatDamageKit] 无法通过 AssetKit 加载配置 '{ConfigPath}'。");
                 return false;
             }
 
-            if (config.dmgComp == null)
+            if (Core.UIKit == null)
             {
-                Debug.LogError("[FloatDamageKit] DmgConf 没有配置飘字预制体。");
-                return false;
-            }
-
-            if (canvas == null)
-            {
-                Debug.LogError("[FloatDamageKit] 当前场景中没有可用的屏幕空间 Canvas。");
+                Debug.LogError("[FloatDamageKit] UIKit 尚未创建，无法生成世界空间伤害飘字。");
                 return false;
             }
 
             return true;
         }
 
+        /// <summary>
+        /// 通过 AssetKit 地址加载伤害飘字动画配置，配置中不再承担 Prefab 实例化职责。
+        /// </summary>
         private void LoadConfig()
         {
             config = AssetKit.Ins.LoadAssetSync<FloatDamageConfig>(ConfigPath);
-        }
-
-        private void ResolveCanvas()
-        {
-            canvas = null;
-            Canvas screenSpaceCameraCanvas = null;
-
-            foreach (var candidate in FindObjectsOfType<Canvas>())
-            {
-                if (!candidate.isActiveAndEnabled || !candidate.isRootCanvas)
-                    continue;
-
-                if (candidate.renderMode == RenderMode.ScreenSpaceOverlay)
-                {
-                    canvas = candidate;
-                    break;
-                }
-
-                if (candidate.renderMode == RenderMode.ScreenSpaceCamera &&
-                    screenSpaceCameraCanvas == null)
-                {
-                    screenSpaceCameraCanvas = candidate;
-                }
-            }
-
-            if (canvas == null)
-                canvas = screenSpaceCameraCanvas;
-
-            // 兼容旧场景：旧实现需要在 Canvas 下放一个 Dmg 模板。
-            // 新实现直接从配置中的 prefab 创建，因此将旧模板隐藏。
-            if (canvas != null)
-            {
-                var legacyTemplate = canvas.transform.Find("Dmg");
-                if (legacyTemplate != null &&
-                    legacyTemplate.TryGetComponent<FloatDmgComponent>(out _))
-                {
-                    legacyTemplate.gameObject.SetActive(false);
-                }
-            }
         }
     }
 }

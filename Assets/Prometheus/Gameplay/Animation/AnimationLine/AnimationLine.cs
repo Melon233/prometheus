@@ -72,10 +72,14 @@ namespace Xuan.Prometheus
     [CreateAssetMenu(menuName = "Prometheus/Animation/Animation Line", fileName = "AnimationLine")]
     public sealed class AnimationLine : ScriptableObject
     {
+        [SerializeField] private AnimationSemantic semantic;
         [SerializeField] private AnimationReferenceAsset animationReferenceAsset;
         [SerializeField] private List<AnimationLineEvent> events = new List<AnimationLineEvent>();
 
         [NonSerialized] private Spine.Animation runtimeAnimation;
+
+        /// <summary>获取该 AnimationLine 对外暴露的稳定动画语义。</summary>
+        public AnimationSemantic Semantic => semantic;
 
         /// <summary>
         /// Gets the wrapped Spine animation reference.
@@ -168,6 +172,21 @@ namespace Xuan.Prometheus
         public static implicit operator Spine.Animation(AnimationLine animationLine)
         {
             return animationLine == null ? null : animationLine.GetRuntimeAnimation();
+        }
+
+        /// <summary>
+        /// Assigns the imported Spine animation wrapped by this asset; editor migration tools use this entry instead of writing private serialized state through reflection.
+        /// </summary>
+        public void SetAnimationReference(AnimationReferenceAsset sourceAnimation)
+        {
+            animationReferenceAsset = sourceAnimation;
+            NormalizeEvents();
+        }
+
+        /// <summary>设置稳定动画语义；编辑器迁移工具使用该入口，运行时只读取结果。</summary>
+        public void SetSemantic(AnimationSemantic value)
+        {
+            semantic = value;
         }
 
         /// <summary>

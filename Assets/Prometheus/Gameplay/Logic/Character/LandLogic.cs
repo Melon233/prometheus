@@ -3,55 +3,52 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    public class LandLogic : Logic
+    /// <summary>消费单帧落地标记并请求落地动画；待机优先级更低无法打断，移动优先级更高可以立即抢占。</summary>
+    public sealed class LandLogic : Logic
     {
-        private SpineComponent spineComp;
-        private InputComponent inputComp;
-        MotionComponent motionComp;
-        AirMoveExecutor airMoveExecutor;
+        private SpineComponent spineComponent;
+        private InputComponent inputComponent;
+        private MotionComponent motionComponent;
+        private AnimationPlayback playback;
 
         public override void AfterNew()
         {
-            OrderTag = OrderTag.Buff;
-            Entity.TryGetComp(out spineComp);
-            Entity.TryGetComp(out inputComp);
-            Entity.TryGetComp(out motionComp);
-            airMoveExecutor = spineComp.animationLib.airMoveExecutor;
+            OrderTag = OrderTag.Gameplay;
+            ControlRequirement = LogicControlRequirement.Move;
+            Entity.TryGetComp(out spineComponent);
+            Entity.TryGetComp(out inputComponent);
+            Entity.TryGetComp(out motionComponent);
         }
 
         public override bool CanEnable()
         {
-            return motionComp.landThisFrame && inputComp.moveDir == Vector2.zero;
+            return motionComponent.landThisFrame && inputComponent.moveDir == Vector2.zero;
         }
 
         public override bool CanDisable()
         {
-            return true;
+            return playback == null || !playback.IsActive;
         }
 
         public override void OnEnable()
         {
-            var entry = airMoveExecutor.Execute(AirMoveState.Land);
-            entry.Event += (entry, e) =>
-            {
-                if (e.Data.Name == spineComp.animationLib.hitEnd)
-                {
-                    motionComp.landThisFrame = false;
-                }
-            };
+            motionComponent.landThisFrame = false;
+            AirMoveExecutor configuration = spineComponent.animationLib.airMoveExecutor;
+            playback = spineComponent.TryPlay(configuration.LandSemantic, AnimationOwner.Landing, AnimationPriority.Landing, false);
         }
 
         public override void OnDisable()
         {
+            playback = null;
         }
 
         public override void OnUpdate(float dt)
         {
         }
 
-
         public override void OnDispose()
         {
+            playback = null;
         }
     }
 }

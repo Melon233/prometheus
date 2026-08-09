@@ -1,4 +1,3 @@
-using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 
@@ -9,7 +8,7 @@ namespace Xuan.Prometheus
         public EnemyAttackConfig eAttackConfig;
         public Timer recoveryTimer;
         public PropertyComponent targetPropertyComp;
-        public TrackEntry trackEntry;
+        [System.NonSerialized] public AnimationPlayback animationPlayback;
         public bool isAttacking = false;
         public bool isRecovery = false;
         public float attackRecoveryTime = 2f;

@@ -1,0 +1,22 @@
+{
+    "name": "Prometheus.Animation.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.Animation.Tests",
+    "references": [
+        "Runtime",
+        "GUID:68765d262e2128e4ab49c983f3411946"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

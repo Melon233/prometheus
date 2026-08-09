@@ -2,30 +2,27 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    public class JumpLogic : Logic
+    /// <summary>负责消费跳跃输入、施加竖直速度并请求起跳到上升循环的 AnimationLine 序列。</summary>
+    public sealed class JumpLogic : Logic
     {
-        private SpineComponent spineComp;
-        private InputComponent inputComp;
-        private MotionComponent motionComp;
-        /// <summary>
-        /// 提供经过 modifier 计算后的跳跃速度。
-        /// </summary>
-        private PropertyComponent propComp;
-        AirMoveExecutor airMoveExecutor;
+        private SpineComponent spineComponent;
+        private InputComponent inputComponent;
+        private MotionComponent motionComponent;
+        private PropertyComponent propertyComponent;
+
         public override void AfterNew()
         {
             OrderTag = OrderTag.Gameplay;
             ControlRequirement = LogicControlRequirement.Move;
-            Entity.TryGetComp(out spineComp);
-            Entity.TryGetComp(out inputComp);
-            Entity.TryGetComp(out motionComp);
-            Entity.TryGetComp(out propComp);
-            airMoveExecutor = spineComp.animationLib.airMoveExecutor;
+            Entity.TryGetComp(out spineComponent);
+            Entity.TryGetComp(out inputComponent);
+            Entity.TryGetComp(out motionComponent);
+            Entity.TryGetComp(out propertyComponent);
         }
 
         public override bool CanEnable()
         {
-            return motionComp.cc.isGrounded && inputComp.wasJumpPressedThisFrame;
+            return motionComponent.cc.isGrounded && inputComponent.wasJumpPressedThisFrame;
         }
 
         public override bool CanDisable()
@@ -38,8 +35,9 @@ namespace Xuan.Prometheus.Logic
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<TalentLogic>();
             Entity.BlockLogic<DodgeLogic>();
-            airMoveExecutor.Execute(AirMoveState.Jump);
-            motionComp.curVelo.y = propComp.JumpSpeed;
+            AirMoveExecutor configuration = spineComponent.animationLib.airMoveExecutor;
+            spineComponent.TryPlaySequence(configuration.JumpSemantic, configuration.RiseSemantic, AnimationOwner.AirMove, AnimationPriority.Airborne, true);
+            motionComponent.curVelo.y = propertyComponent.JumpSpeed;
         }
 
         public override void OnDisable()
@@ -52,7 +50,6 @@ namespace Xuan.Prometheus.Logic
         public override void OnUpdate(float dt)
         {
         }
-
 
         public override void OnDispose()
         {

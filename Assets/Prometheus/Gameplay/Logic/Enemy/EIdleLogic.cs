@@ -71,7 +71,7 @@ namespace Xuan.Prometheus
         public override void OnEnable()
         {
             Entity.BlockLogic<PatrolLogic>();
-            spineComp.animationLib.idleExecutor.Execute();
+            spineComp.TryPlay(AnimationSemantic.Idle, AnimationOwner.Idle, AnimationPriority.Idle, true);
         }
 
         public override void OnUpdate(float dt)

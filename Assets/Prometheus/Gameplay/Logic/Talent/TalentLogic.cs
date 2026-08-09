@@ -1,3 +1,4 @@
+using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
@@ -5,190 +6,266 @@ using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus.Logic
 {
-    public class TalentLogic : Logic, ITriggerHandler
+    /// <summary>负责玩家攻击输入仲裁、玩法阻塞、命中盒和动画事件；SpineComponent 仅负责 AnimationLine 播放控制。</summary>
+    public sealed class TalentLogic : Logic, ITriggerHandler
     {
-        InputComponent inputComp;
-        SpineComponent spineComp;
-        SpineComponent motionComp;
-        AttackComponent atkComp;
-        SpecialAttackComponent specialAtkComp;
-        SkillComponent skillComp;
-        UltimateComponent ultComp;
-        CoreTalentComponent coreTalentComp;
-        AttackExecutor atkExecutor;
-        GroundMoveExecutor groundMoveExecutor;
-        UltimateExecutor ultimateExecutor;
-        SkillExecutor skillExecutor;
-        SpecialAttackExecutor specialAttackExecutor;
-        PropertyComponent propComp;
-        EventComponent evtComp;
-        EffectComponent effectComp;
+        private InputComponent inputComponent;
+        private SpineComponent spineComponent;
+        private AttackComponent attackComponent;
+        private SpecialAttackComponent specialAttackComponent;
+        private SkillComponent skillComponent;
+        private UltimateComponent ultimateComponent;
+        private PropertyComponent propertyComponent;
+        private EventComponent eventComponent;
+        private EffectComponent effectComponent;
+        private VfxComponent vfxComponent;
+        private AnimationPlayback activePlayback;
+        private ColliderProxy activeCollider;
+        private AudioClip activeAudio;
+        private YefaVfx activeVfx;
+        private bool activeHasVfx;
+        private bool activeAllowsCombo;
 
-        /// <summary>
-        /// 将玩家命中转换为带完整数值和语义标签的信号，由已注册规则组合即时伤害、燃烧和眩晕。
-        /// </summary>
+        /// <summary>将攻击碰撞命中转换为效果系统信号，动画系统不直接处理伤害数值。</summary>
         public void OnTriggerEnter(Collider other)
         {
-            if (!Entity.IsActive || other == null) return;
-            if (other.CompareTag("Enemy"))
+            if (!Entity.IsActive || other == null || !other.CompareTag("Enemy")) return;
+            PropertyComponent targetProperty = other.GetComponent<PropertyComponent>();
+            if (targetProperty == null || targetProperty.Entity == null || targetProperty.IsDead || !targetProperty.Entity.IsActive)
             {
-                PropertyComponent targetProperty = other.GetComponent<PropertyComponent>();
-                if (targetProperty == null || targetProperty.Entity == null || targetProperty.IsDead || !targetProperty.Entity.IsActive)
-                {
-                    Debug.LogWarning($"无法获取敌人 PropertyComponent 或实体绑定：{other.name}");
-                    return;
-                }
-                float requestedDamage = propComp.GetCalculatedDamage();
-                EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire | EffectTag.Control, "Player.NormalAttack", position: other.transform.position);
-                effectComp.Runtime.Publish(signal);
+                Debug.LogWarning($"无法获取敌人 PropertyComponent 或实体绑定：{other.name}");
+                return;
             }
+            float requestedDamage = propertyComponent.GetCalculatedDamage();
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire | EffectTag.Control, "Player.NormalAttack", position: other.transform.position);
+            effectComponent.Runtime.Publish(signal);
         }
 
+        /// <summary>缓存全部玩法组件并建立 ColliderProxy 与实体事件关系。</summary>
         public override void AfterNew()
         {
             OrderTag = OrderTag.Gameplay;
-            Entity.TryGetComp(out inputComp);
-            Entity.TryGetComp(out spineComp);
-            Entity.TryGetComp(out atkComp);
-            Entity.TryGetComp(out motionComp);
-            Entity.TryGetComp(out propComp);
-            Entity.TryGetComp(out evtComp);
-            Entity.TryGetComp(out specialAtkComp);
-            Entity.TryGetComp(out skillComp);
-            Entity.TryGetComp(out ultComp);
-            Entity.TryGetComp(out coreTalentComp);
-            Entity.TryGetComp(out effectComp);
-            atkExecutor = spineComp.animationLib.atkExecutor;
-            groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
-            ultimateExecutor = spineComp.animationLib.ultimateExecutor;
-            skillExecutor = spineComp.animationLib.skillExecutor;
-            specialAttackExecutor = spineComp.animationLib.specialAttackExecutor;
-            evtComp.AddListener<MotionBlockerStartEvent>(OnMotionBlockerStart);
-            evtComp.AddListener<MotionBlockerEndEvent>(OnMotionBlockerEnd);
-            atkComp.atkCollider.handler = this;
-            skillComp.colliderProxy.handler = this;
-            ultComp.colliderProxy.handler = this;
-            specialAtkComp.colliderProxy.handler = this;
-            effectComp.RegisterCombatFlowTriggers(Entity);
+            Entity.TryGetComp(out inputComponent);
+            Entity.TryGetComp(out spineComponent);
+            Entity.TryGetComp(out attackComponent);
+            Entity.TryGetComp(out propertyComponent);
+            Entity.TryGetComp(out eventComponent);
+            Entity.TryGetComp(out specialAttackComponent);
+            Entity.TryGetComp(out skillComponent);
+            Entity.TryGetComp(out ultimateComponent);
+            Entity.TryGetComp(out effectComponent);
+            Entity.TryGetComp(out vfxComponent);
+            eventComponent.AddListener<MotionBlockerStartEvent>(OnMotionBlockerStart);
+            eventComponent.AddListener<MotionBlockerEndEvent>(OnMotionBlockerEnd);
+            attackComponent.atkCollider.handler = this;
+            skillComponent.colliderProxy.handler = this;
+            ultimateComponent.colliderProxy.handler = this;
+            specialAttackComponent.colliderProxy.handler = this;
+            effectComponent.RegisterCombatFlowTriggers(Entity);
+            DisableAttackColliders();
         }
 
-        private void OnMotionBlockerStart(MotionBlockerStartEvent @event)
+        /// <summary>在玩家动作期间阻塞移动相关 Logic，阻塞计数由一次性 AnimationPlayback 对称释放。</summary>
+        private void OnMotionBlockerStart(MotionBlockerStartEvent evt)
         {
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<JumpLogic>();
             Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<RotateLogic>();
             Entity.BlockLogic<DodgeLogic>();
-            atkComp.isBlocking = true;
+            attackComponent.isBlocking = true;
         }
-        private void OnMotionBlockerEnd(MotionBlockerEndEvent @event)
+
+        /// <summary>在玩家动作完成或中断后释放移动相关 Logic。</summary>
+        private void OnMotionBlockerEnd(MotionBlockerEndEvent evt)
         {
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<MotionLogic>();
             Entity.UnBlockLogic<RotateLogic>();
             Entity.UnBlockLogic<JumpLogic>();
             Entity.UnBlockLogic<DodgeLogic>();
-            atkComp.isBlocking = false;
+            attackComponent.isBlocking = false;
         }
-
 
         public override bool CanEnable()
         {
             return true;
-            // return inputComp.wasAtkPressedThisFrame || inputComp.wasSkillPressedThisFrame || inputComp.wasUltPressedThisFrame;
         }
 
         public override bool CanDisable()
         {
             return false;
-            // if (atkComp.curTrackEntry?.Animation == null) return true;
-            // return atkComp.curTrackEntry.NormalizedTime() >= 1f;
-        }
-
-        public override void OnUpdate(float dt)
-        {
-            if ((atkComp.elapsedComboTime += dt) > atkComp.maxComboInterval)
-                atkComp.nextComboIndex = 0;
-
-            if (inputComp.wasAtkPressed && specialAtkComp.canSpecial)
-            {
-                specialAtkComp.specialTimer.OnUpdate(dt);
-                if (specialAtkComp.specialTimer.IsTimeOut)
-                {
-                    specialAtkComp.specialTimer.Reset();
-                    specialAtkComp.canSpecial = false;
-                    evtComp.Invoke<MotionBlockerStartEvent>(new());
-                    atkComp.curTrackEntry = specialAttackExecutor.Execute();
-                    atkComp.curTrackEntry.OnStop(() => evtComp.Invoke<MotionBlockerEndEvent>(new()));
-                }
-            }
-            if (!inputComp.wasAtkPressed)
-            {
-                specialAtkComp.canSpecial = true;
-                specialAtkComp.specialTimer.Reset();
-            }
-            if (inputComp.wasAtkPressedThisFrame && atkComp.canCombo)
-            {
-                spineComp.SetFaceDir(inputComp.moveDir);
-                evtComp.Invoke<MotionBlockerStartEvent>(new());
-                atkComp.curTrackEntry = atkExecutor.Execute(atkComp.nextComboIndex, inputComp.moveDir != Vector2.zero, propComp.AtkSpeed);
-                atkComp.curTrackEntry.OnStop(() => evtComp.Invoke<MotionBlockerEndEvent>(new()));
-                atkComp.nextComboIndex++;
-                if (atkComp.nextComboIndex > atkComp.maxComboIndex) atkComp.nextComboIndex = 0;
-                atkComp.elapsedComboTime = 0;
-            }
-
-            if (propComp.CanUseActiveSkill && inputComp.wasSkillPressedThisFrame)
-            {
-                evtComp.Invoke<MotionBlockerStartEvent>(new());
-                atkComp.curTrackEntry = skillExecutor.Execute();
-                atkComp.curTrackEntry.OnStop(() => evtComp.Invoke<MotionBlockerEndEvent>(new()));
-            }
-            if (propComp.CanUseActiveSkill && inputComp.wasUltPressedThisFrame)
-            {
-                evtComp.Invoke<MotionBlockerStartEvent>(new());
-                atkComp.curTrackEntry = ultimateExecutor.Execute();
-                atkComp.curTrackEntry.OnStop(() => evtComp.Invoke<MotionBlockerEndEvent>(new()));
-            }
-        }
-
-
-        /// <summary>回收时关闭全部命中盒、解绑 ColliderProxy 并对称注销事件，阻止死亡动画期间继续造成伤害。</summary>
-        public override void OnDispose()
-        {
-            DisableAttackColliders();
-            if (atkComp != null && atkComp.atkCollider != null && ReferenceEquals(atkComp.atkCollider.handler, this)) atkComp.atkCollider.handler = null;
-            if (specialAtkComp != null && specialAtkComp.colliderProxy != null && ReferenceEquals(specialAtkComp.colliderProxy.handler, this)) specialAtkComp.colliderProxy.handler = null;
-            if (skillComp != null && skillComp.colliderProxy != null && ReferenceEquals(skillComp.colliderProxy.handler, this)) skillComp.colliderProxy.handler = null;
-            if (ultComp != null && ultComp.colliderProxy != null && ReferenceEquals(ultComp.colliderProxy.handler, this)) ultComp.colliderProxy.handler = null;
-            if (evtComp != null) evtComp.RemoveListener<MotionBlockerStartEvent>(OnMotionBlockerStart);
-            if (evtComp != null) evtComp.RemoveListener<MotionBlockerEndEvent>(OnMotionBlockerEnd);
-            effectComp = null;
         }
 
         public override void OnEnable()
         {
-
         }
 
-        /// <summary>中断普通控制状态下的攻击表现；死亡回收只关闭命中盒，不覆盖已经开始播放的死亡动画。</summary>
+        /// <summary>按唯一优先顺序消费同帧输入，防止多个独立 if 在同一帧重复覆盖主动画轨道。</summary>
+        public override void OnUpdate(float dt)
+        {
+            if ((attackComponent.elapsedComboTime += dt) > attackComponent.maxComboInterval) attackComponent.nextComboIndex = 0;
+            bool specialReady = UpdateSpecialAttackCharge(dt);
+            if (propertyComponent.CanUseActiveSkill && inputComponent.wasUltPressedThisFrame)
+            {
+                TryStartUltimate();
+                return;
+            }
+            if (propertyComponent.CanUseActiveSkill && inputComponent.wasSkillPressedThisFrame)
+            {
+                TryStartSkill();
+                return;
+            }
+            if (specialReady)
+            {
+                TryStartSpecialAttack();
+                return;
+            }
+            if (inputComponent.wasAtkPressedThisFrame && attackComponent.canCombo) TryStartNormalAttack();
+        }
+
+        /// <summary>更新长按攻击计时并返回本帧是否应尝试启动特殊攻击。</summary>
+        private bool UpdateSpecialAttackCharge(float dt)
+        {
+            if (!inputComponent.wasAtkPressed)
+            {
+                specialAttackComponent.canSpecial = true;
+                specialAttackComponent.specialTimer.Reset();
+                return false;
+            }
+            if (!specialAttackComponent.canSpecial) return false;
+            specialAttackComponent.specialTimer.OnUpdate(dt);
+            if (!specialAttackComponent.specialTimer.IsTimeOut) return false;
+            specialAttackComponent.specialTimer.Reset();
+            specialAttackComponent.canSpecial = false;
+            return true;
+        }
+
+        /// <summary>解析当前连段并尝试启动普通攻击；配置无效或被更高优先级动画占用时保持现有状态。</summary>
+        private void TryStartNormalAttack()
+        {
+            AttackExecutor configuration = spineComponent.animationLib.atkExecutor;
+            bool moving = inputComponent.moveDir != Vector2.zero;
+            if (!configuration.TryGetSelection(attackComponent.nextComboIndex, moving, out AttackAnimationSelection selection)) return;
+            spineComponent.SetFaceDir(inputComponent.moveDir);
+            AnimationPlayback playback = spineComponent.TryPlay(selection.Semantic, AnimationOwner.PlayerAction, AnimationPriority.Attack, false, propertyComponent.AtkSpeed, true);
+            if (!BeginAction(playback, attackComponent.atkCollider, selection.AudioClip, selection.HasVfx, selection.Vfx, true)) return;
+            attackComponent.nextComboIndex++;
+            int configuredMaxIndex = Mathf.Min(attackComponent.maxComboIndex, Mathf.Max(0, configuration.Count - 1));
+            if (attackComponent.nextComboIndex > configuredMaxIndex) attackComponent.nextComboIndex = 0;
+            attackComponent.elapsedComboTime = 0f;
+        }
+
+        /// <summary>尝试启动特殊攻击，高于普通攻击但低于闪避和主动技能。</summary>
+        private void TryStartSpecialAttack()
+        {
+            SpecialAttackExecutor configuration = spineComponent.animationLib.specialAttackExecutor;
+            AnimationPlayback playback = spineComponent.TryPlay(configuration.Semantic, AnimationOwner.PlayerAction, AnimationPriority.SpecialAttack, false, 1f, true);
+            BeginAction(playback, specialAttackComponent.colliderProxy, configuration.AudioClip, true, configuration.Vfx, false);
+        }
+
+        /// <summary>尝试启动技能起手到主体的 AnimationLine 序列。</summary>
+        private void TryStartSkill()
+        {
+            SkillExecutor configuration = spineComponent.animationLib.skillExecutor;
+            AnimationPlayback playback = spineComponent.TryPlaySequence(configuration.StartSemantic, configuration.Semantic, AnimationOwner.PlayerAction, AnimationPriority.Skill, false, 1f, true);
+            BeginAction(playback, skillComponent.colliderProxy, configuration.AudioClip, true, configuration.Vfx, false);
+        }
+
+        /// <summary>尝试启动最高玩家主动动作优先级的终结技。</summary>
+        private void TryStartUltimate()
+        {
+            UltimateExecutor configuration = spineComponent.animationLib.ultimateExecutor;
+            AnimationPlayback playback = spineComponent.TryPlay(configuration.Semantic, AnimationOwner.PlayerAction, AnimationPriority.Ultimate, false, 1f, true);
+            BeginAction(playback, ultimateComponent.colliderProxy, configuration.AudioClip, true, configuration.Vfx, false);
+        }
+
+        /// <summary>绑定一次成功播放的玩法上下文并发布一层移动阻塞；被拒绝的播放不会改变任何玩法状态。</summary>
+        private bool BeginAction(AnimationPlayback playback, ColliderProxy colliderProxy, AudioClip audioClip, bool hasVfx, YefaVfx vfx, bool allowsCombo)
+        {
+            if (playback == null) return false;
+            activePlayback = playback;
+            activeCollider = colliderProxy;
+            activeAudio = audioClip;
+            activeHasVfx = hasVfx;
+            activeVfx = vfx;
+            activeAllowsCombo = allowsCombo;
+            attackComponent.currentAnimation = playback;
+            if (allowsCombo) attackComponent.canCombo = false;
+            playback.EventReceived += OnAnimationEvent;
+            playback.Finished += OnAnimationFinished;
+            eventComponent.Invoke(new MotionBlockerStartEvent());
+            return true;
+        }
+
+        /// <summary>由当前 Logic 解释命中窗口事件，并在窗口开始时触发对应音效和特效。</summary>
+        private void OnAnimationEvent(AnimationPlayback source, Spine.Event animationEvent)
+        {
+            if (!ReferenceEquals(source, activePlayback)) return;
+            if (animationEvent.Data.Name == spineComponent.animationLib.hitStart)
+            {
+                SetColliderEnabled(activeCollider, true);
+                if (activeHasVfx) vfxComponent.Play(activeVfx);
+                if (activeAudio != null) AudioKit.Ins.Play(activeAudio);
+            }
+            else if (animationEvent.Data.Name == spineComponent.animationLib.hitEnd)
+            {
+                SetColliderEnabled(activeCollider, false);
+                if (activeAllowsCombo) attackComponent.canCombo = true;
+            }
+        }
+
+        /// <summary>自然完成和任意优先级抢占共享同一个幂等清理入口。</summary>
+        private void OnAnimationFinished(AnimationPlayback source, AnimationEndReason reason)
+        {
+            if (!ReferenceEquals(source, activePlayback)) return;
+            SetColliderEnabled(activeCollider, false);
+            activePlayback = null;
+            activeCollider = null;
+            activeAudio = null;
+            activeHasVfx = false;
+            activeAllowsCombo = false;
+            attackComponent.currentAnimation = null;
+            attackComponent.canCombo = true;
+            if (attackComponent.isBlocking) eventComponent.Invoke(new MotionBlockerEndEvent());
+        }
+
+        /// <summary>控制状态禁用 TalentLogic 时主动停止自己的动画并立即关闭全部攻击碰撞体。</summary>
         public override void OnDisable()
         {
+            spineComponent.Stop(AnimationOwner.PlayerAction);
             DisableAttackColliders();
-            if (!propComp.IsDead && atkComp.curTrackEntry != null && !atkComp.curTrackEntry.IsComplete) spineComp.Stop(0, 0f);
-            atkComp.curTrackEntry = null;
-            if (atkComp.isBlocking) evtComp.Invoke(new MotionBlockerEndEvent());
+            attackComponent.currentAnimation = null;
+            if (attackComponent.isBlocking) eventComponent.Invoke(new MotionBlockerEndEvent());
         }
 
-        /// <summary>
-        /// 在 Stun 中断攻击或技能时立即关闭全部命中盒，防止动画已停止但碰撞体继续造成伤害。
-        /// </summary>
+        /// <summary>回收时关闭碰撞体、解绑代理并对称注销实体事件。</summary>
+        public override void OnDispose()
+        {
+            DisableAttackColliders();
+            if (attackComponent != null && attackComponent.atkCollider != null && ReferenceEquals(attackComponent.atkCollider.handler, this)) attackComponent.atkCollider.handler = null;
+            if (specialAttackComponent != null && specialAttackComponent.colliderProxy != null && ReferenceEquals(specialAttackComponent.colliderProxy.handler, this)) specialAttackComponent.colliderProxy.handler = null;
+            if (skillComponent != null && skillComponent.colliderProxy != null && ReferenceEquals(skillComponent.colliderProxy.handler, this)) skillComponent.colliderProxy.handler = null;
+            if (ultimateComponent != null && ultimateComponent.colliderProxy != null && ReferenceEquals(ultimateComponent.colliderProxy.handler, this)) ultimateComponent.colliderProxy.handler = null;
+            if (eventComponent != null) eventComponent.RemoveListener<MotionBlockerStartEvent>(OnMotionBlockerStart);
+            if (eventComponent != null) eventComponent.RemoveListener<MotionBlockerEndEvent>(OnMotionBlockerEnd);
+            activePlayback = null;
+            effectComponent = null;
+        }
+
+        /// <summary>关闭玩家全部攻击命中盒，兼容部分预制体尚未初始化 ColliderProxy.cod 的构造阶段。</summary>
         private void DisableAttackColliders()
         {
-            if (atkComp != null && atkComp.atkCollider != null && atkComp.atkCollider.cod != null) atkComp.atkCollider.cod.enabled = false;
-            if (specialAtkComp != null && specialAtkComp.colliderProxy != null && specialAtkComp.colliderProxy.cod != null) specialAtkComp.colliderProxy.cod.enabled = false;
-            if (skillComp != null && skillComp.colliderProxy != null && skillComp.colliderProxy.cod != null) skillComp.colliderProxy.cod.enabled = false;
-            if (ultComp != null && ultComp.colliderProxy != null && ultComp.colliderProxy.cod != null) ultComp.colliderProxy.cod.enabled = false;
+            SetColliderEnabled(attackComponent == null ? null : attackComponent.atkCollider, false);
+            SetColliderEnabled(specialAttackComponent == null ? null : specialAttackComponent.colliderProxy, false);
+            SetColliderEnabled(skillComponent == null ? null : skillComponent.colliderProxy, false);
+            SetColliderEnabled(ultimateComponent == null ? null : ultimateComponent.colliderProxy, false);
+        }
+
+        /// <summary>安全切换 ColliderProxy 内部碰撞体。</summary>
+        private static void SetColliderEnabled(ColliderProxy colliderProxy, bool enabled)
+        {
+            if (colliderProxy != null && colliderProxy.cod != null) colliderProxy.cod.enabled = enabled;
         }
     }
 }

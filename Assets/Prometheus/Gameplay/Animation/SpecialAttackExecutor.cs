@@ -1,39 +1,25 @@
 using System;
-using Spine;
-using Spine.Unity;
+using System.Collections.Generic;
 using UnityEngine;
-using Xuan.Prometheus.Component;
-using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus
 {
+    /// <summary>保存特殊攻击 AnimationLine、音效和特效配置，不持有 SpecialAttackComponent。</summary>
     [Serializable]
-    public class SpecialAttackExecutor : AnimationExecutor
+    public sealed class SpecialAttackExecutor
     {
-        [SerializeField] AnimationReferenceAsset specialAttackAni;
-        [SerializeField] AudioClip specialAttackAudio;
-        [SerializeField] YefaVfx specialAttackVfx;
-        SpecialAttackComponent specialAttackComp;
-        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        [SerializeField] private AnimationLine specialAttackLine;
+        [SerializeField] private AudioClip specialAttackAudio;
+        [SerializeField] private YefaVfx specialAttackVfx;
+
+        public AnimationSemantic Semantic => specialAttackLine == null ? AnimationSemantic.None : specialAttackLine.Semantic;
+        public AudioClip AudioClip => specialAttackAudio;
+        public YefaVfx Vfx => specialAttackVfx;
+
+        /// <summary>收集特殊攻击 AnimationLine，供 AnimationLibrary 建立语义索引。</summary>
+        internal void CollectLines(List<AnimationLine> destination)
         {
-            base.Init(lib, spineComp, vfxComp);
-            spineComp.Entity.TryGetComp(out specialAttackComp);
-        }
-        public TrackEntry Execute()
-        {
-            var entry = spineComp.Play(specialAttackAni);
-            entry.Event += (entry, evt) =>
-            {
-                if (evt.Data.Name == lib.hitStart)
-                {
-                    vfxComp.Play(specialAttackVfx);
-                    AudioKit.Ins.Play(specialAttackAudio);
-                    specialAttackComp.colliderProxy.cod.enabled = true;
-                }
-                else if (evt.Data.Name == lib.hitEnd)
-                    specialAttackComp.colliderProxy.cod.enabled = false;
-            };
-            return entry;
+            if (specialAttackLine != null) destination.Add(specialAttackLine);
         }
     }
 }

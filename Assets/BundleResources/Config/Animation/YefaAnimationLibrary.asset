@@ -16,56 +16,58 @@ MonoBehaviour:
   hitStart: hit_start
   hitEnd: hit_end
   atkExecutor:
-    atkAnis:
-    - {fileID: 11400000, guid: 708e47660af050345ac8b098e9093954, type: 2}
-    - {fileID: 11400000, guid: 4c18896d9064d8c48ad312470b151750, type: 2}
-    - {fileID: 11400000, guid: 9ff5df920cbf59445b67a29db6679d49, type: 2}
-    - {fileID: 11400000, guid: ca684cfb85afd904b98d4f722cdda892, type: 2}
-    atkMoveAnis:
-    - {fileID: 11400000, guid: 913af5bde6decd545bc1c52615d5ed85, type: 2}
-    - {fileID: 11400000, guid: b97afd70750830547b64fab1c464e02e, type: 2}
-    - {fileID: 11400000, guid: 9ff5df920cbf59445b67a29db6679d49, type: 2}
-    - {fileID: 11400000, guid: c9f67865f04ee194bb2752a96ccdb81b, type: 2}
-    - {fileID: 11400000, guid: 913af5bde6decd545bc1c52615d5ed85, type: 2}
-    hasVfx: 1
-    atkVfx: 00000000010000000200000003000000
-    atkSfx:
-    - {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
-    - {fileID: 8300000, guid: 96dce5d38fb6e7f41aab6604e84c7d0b, type: 3}
-    - {fileID: 8300000, guid: dc0cb85044ee16d43a0e161da49bc36f, type: 3}
-    - {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
+    attacks:
+    - animationLine: {fileID: 11400000, guid: bee0321c4b2daa84d89e45679dca3070, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: e6362ab83d35c8f499f3edbd91dc8e46, type: 2}
+      audioClip: {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
+      hasVfx: 1
+      vfx: 0
+    - animationLine: {fileID: 11400000, guid: 7b1109ded0e75b84db7ddfa861c55d11, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: c8f9afbbd22799b40a48113262a4e29a, type: 2}
+      audioClip: {fileID: 8300000, guid: 96dce5d38fb6e7f41aab6604e84c7d0b, type: 3}
+      hasVfx: 1
+      vfx: 1
+    - animationLine: {fileID: 11400000, guid: 82cfe09e6bbd60641b29941b79829817, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: 82cfe09e6bbd60641b29941b79829817, type: 2}
+      audioClip: {fileID: 8300000, guid: dc0cb85044ee16d43a0e161da49bc36f, type: 3}
+      hasVfx: 1
+      vfx: 2
+    - animationLine: {fileID: 11400000, guid: d3ed737415a29b547b845479d5f3286b, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: e6454cad3dcd64b48be2d4bd79b0c737, type: 2}
+      audioClip: {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
+      hasVfx: 1
+      vfx: 3
   idleExecutor:
-    idleAnimation: {fileID: 11400000, guid: 005083d14ae8de842ac8e16f5994e4dd, type: 2}
+    idleLine: {fileID: 11400000, guid: 905143f26cb7ebb48b4b858d322b11f9, type: 2}
   groundMoveExecutor:
-    walkAnimation: {fileID: 11400000, guid: 998230832714d8d409e55d1ac7c2eda7, type: 2}
-    runAnimaiton: {fileID: 11400000, guid: 357b629127e2ccd41abb8a46e7e78a81, type: 2}
-    sprintAnimation: {fileID: 11400000, guid: 97ac898503acedb4ebeb1f22423efd9e, type: 2}
+    walkLine: {fileID: 11400000, guid: e9d6d74f8761fc345aec7b2c1046a685, type: 2}
+    runLine: {fileID: 11400000, guid: c753ebbe87a1b3a4e86b1f852bd247b1, type: 2}
+    sprintLine: {fileID: 11400000, guid: 2e54b24c4f94dd647815c9cfb73439c9, type: 2}
   dodgeExecutor:
-    dodgeFrontAnimation: {fileID: 11400000, guid: 94be6b6fe3d9e2c4385ac364ada87696, type: 2}
-    dodgeBackAnimation: {fileID: 11400000, guid: 16af4230689df8943a57dcd698a67317, type: 2}
+    dodgeFrontLine: {fileID: 11400000, guid: 198bff8158ede814dbc53eece78189ee, type: 2}
+    dodgeBackLine: {fileID: 11400000, guid: 41194dc298429894e9d59713e0606e65, type: 2}
   airMoveExecutor:
-    jumpAni: {fileID: 11400000, guid: 0652071da607aa047bd08cfbade1f823, type: 2}
-    riseAni: {fileID: 11400000, guid: e265f9c0960db4341ac84b712c2074a5, type: 2}
-    fallAni: {fileID: 11400000, guid: b0e6b03641ffbbd4397e7b3a50a4f200, type: 2}
-    landAni: {fileID: 11400000, guid: 156d1ee6111613a41a01018569d329ec, type: 2}
+    jumpLine: {fileID: 11400000, guid: 67aad9e4c096c5342b1b06d21f8432a5, type: 2}
+    riseLine: {fileID: 11400000, guid: c2b9d9ffee9624447be3fd5f2c565c3a, type: 2}
+    fallLine: {fileID: 11400000, guid: 78d25b5b3ad43e948b118f7412b411a5, type: 2}
+    landLine: {fileID: 11400000, guid: 8f9fbdc76ae9eb840ac74d4f19fd674b, type: 2}
   hasTalent: 1
   ultimateExecutor:
-    ultimateAni: {fileID: 11400000, guid: 08aa1b470a795c64da25e7f952468c09, type: 2}
+    ultimateLine: {fileID: 11400000, guid: 2d4acdcf5a9a2e74bb3c88f491107ac6, type: 2}
     ultimateAudio: {fileID: 8300000, guid: 329278a9a60ea7641a22379c6bccbaba, type: 3}
     ultVfx: 5
   skillExecutor:
-    skillStartAni: {fileID: 11400000, guid: 27d5caf5854274c45987588bcd0de504, type: 2}
-    skillAni: {fileID: 11400000, guid: ee8e39e3041033f48a4a822cc5d3d3eb, type: 2}
+    skillStartLine: {fileID: 11400000, guid: f8616e2cb1adc254394074be73ada172, type: 2}
+    skillLine: {fileID: 11400000, guid: 6bb08bddb9060e94aa0f253e585d1767, type: 2}
     skillAudio: {fileID: 8300000, guid: 4e529cc69e89e1f4dbed8cb0097f44c1, type: 3}
     skillVfx: 4
   specialAttackExecutor:
-    specialAttackAni: {fileID: 11400000, guid: 0c85288e288d93d43b2bae14d04345ec, type: 2}
+    specialAttackLine: {fileID: 11400000, guid: 431f08b4fb8730142b7edf5957144b13, type: 2}
     specialAttackAudio: {fileID: 8300000, guid: 0c86a0382d2e756409d4052d5eb7113a, type: 3}
     specialAttackVfx: 4
   attackedExecutor:
-    attackedAni: {fileID: 11400000, guid: 498bf3a45bf1b6e42b5f899ba35769af, type: 2}
+    attackedLine: {fileID: 11400000, guid: cfe0f9b87d29c444c9394c88450de009, type: 2}
     attackedSfx: {fileID: 8300000, guid: 74d1ee2c4cf2c45479bd1aceec8ccb3e, type: 3}
-    hasNextAni: 1
-    nextAttackedAni: {fileID: 11400000, guid: 56f8b36f7b7fd71458676a8886b81107, type: 2}
+    nextAttackedLine: {fileID: 11400000, guid: 93c73fae537e36843a3be069ad754e30, type: 2}
   dieExecutor:
-    dieAnimation: {fileID: 11400000, guid: e7545d291581cab4a882cd5f34dd7aaa, type: 2}
+    dieLine: {fileID: 11400000, guid: 46ab8f8d29c8368428d5285d7d3ccc29, type: 2}

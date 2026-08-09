@@ -41,7 +41,7 @@ MonoBehaviour:
       - CollectPath: Assets/BundleResources/Config
         CollectorGUID: 5b94cc6e73be574479ec43ed7fee35d4
         CollectorType: 0
-        AddressRuleName: AddressByFolderAndFileName
+        AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 

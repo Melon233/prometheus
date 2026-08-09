@@ -1,40 +1,25 @@
 using System;
-using Spine;
-using Spine.Unity;
+using System.Collections.Generic;
 using UnityEngine;
-using Xuan.Prometheus.Component;
-using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus
 {
+    /// <summary>保存终结技 AnimationLine、音效和特效配置，不持有 UltimateComponent。</summary>
     [Serializable]
-    public class UltimateExecutor : AnimationExecutor
+    public sealed class UltimateExecutor
     {
-        [SerializeField] AnimationReferenceAsset ultimateAni;
-        [SerializeField] AudioClip ultimateAudio;
-        [SerializeField] YefaVfx ultVfx;
-        UltimateComponent ultimateComp;
-        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
-        {
-            base.Init(lib, spineComp, vfxComp);
-            spineComp.Entity.TryGetComp(out ultimateComp);
-        }
+        [SerializeField] private AnimationLine ultimateLine;
+        [SerializeField] private AudioClip ultimateAudio;
+        [SerializeField] private YefaVfx ultVfx;
 
-        public TrackEntry Execute()
+        public AnimationSemantic Semantic => ultimateLine == null ? AnimationSemantic.None : ultimateLine.Semantic;
+        public AudioClip AudioClip => ultimateAudio;
+        public YefaVfx Vfx => ultVfx;
+
+        /// <summary>收集终结技 AnimationLine，供 AnimationLibrary 建立语义索引。</summary>
+        internal void CollectLines(List<AnimationLine> destination)
         {
-            var entry = spineComp.Play(ultimateAni);
-            entry.Event += (entry, evt) =>
-            {
-                if (evt.Data.Name == lib.hitStart)
-                {
-                    vfxComp.Play(ultVfx);
-                    AudioKit.Ins.Play(ultimateAudio);
-                    ultimateComp.colliderProxy.cod.enabled = true; // Reset collider proxy after ultimate execution
-                }
-                else if (evt.Data.Name == lib.hitEnd)
-                    ultimateComp.colliderProxy.cod.enabled = false; // Reset collider proxy after ultimate execution
-            };
-            return entry;
+            if (ultimateLine != null) destination.Add(ultimateLine);
         }
     }
 }

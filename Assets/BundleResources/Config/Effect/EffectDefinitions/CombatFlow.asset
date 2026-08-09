@@ -15,11 +15,11 @@ MonoBehaviour:
   effectId: Example.CombatFlow
   tags: 1280
   durationType: 1
-  duration: 3
+  duration: 5
   tickInterval: 0
   stackPolicy: 4
   stackKeyPolicy: 0
-  maxStacks: 5
+  maxStacks: 10
   phase: 500
   priority: 10
   onApplyOperations:
@@ -44,7 +44,7 @@ MonoBehaviour:
         valuePerStack:
           source: 0
           multiplier: 0
-          offset: 0.1
+          offset: 0.2
     - rid: 1348142047778570249
       type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
@@ -55,7 +55,7 @@ MonoBehaviour:
         valuePerStack:
           source: 0
           multiplier: 0
-          offset: 0.05
+          offset: 0.2
     - rid: 1348142047778570250
       type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
@@ -66,7 +66,7 @@ MonoBehaviour:
         valuePerStack:
           source: 0
           multiplier: 0
-          offset: 0.1
+          offset: 0.2
     - rid: 1348142047778570251
       type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
@@ -77,4 +77,4 @@ MonoBehaviour:
         valuePerStack:
           source: 0
           multiplier: 0
-          offset: 0.05
+          offset: 0.2

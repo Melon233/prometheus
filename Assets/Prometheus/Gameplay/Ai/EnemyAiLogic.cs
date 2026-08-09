@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
@@ -19,10 +18,12 @@ namespace Xuan.Prometheus.Ai
         private PropertyComponent propertyComponent;
         private AttackComponent attackComponent;
         private SpineComponent spineComponent;
+        private MotionComponent motionComponent;
+        private VfxComponent vfxComponent;
         private EffectComponent effectComponent;
         private EventComponent eventComponent;
         private EnemyAiBrain brain;
-        private TrackEntry attackEntry;
+        private AnimationPlayback attackPlayback;
         private Action<bool> attackFinished;
         private bool logicEnabled;
         private bool attackedSuspended;
@@ -51,10 +52,14 @@ namespace Xuan.Prometheus.Ai
             RequireComponent(out propertyComponent);
             RequireComponent(out attackComponent);
             RequireComponent(out spineComponent);
+            RequireComponent(out motionComponent);
+            RequireComponent(out vfxComponent);
             RequireComponent(out effectComponent);
             RequireComponent(out eventComponent);
             if (aiComponent.Definition == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not reference an EnemyAiDefinition.");
             if (aiComponent.CharacterController == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not contain a CharacterController for Enemy AI movement.");
+            if (motionComponent.cc == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' MotionComponent does not reference a CharacterController.");
+            if (!ReferenceEquals(motionComponent.cc, aiComponent.CharacterController)) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' must use the same CharacterController in MotionComponent and EnemyAiComponent.");
             if (attackComponent.atkCollider == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not contain an attack ColliderProxy.");
             attackComponent.atkCollider.handler = this;
             if (attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = false;
@@ -110,6 +115,7 @@ namespace Xuan.Prometheus.Ai
             brain?.Dispose();
             brain = null;
             brainRunning = false;
+            StopHorizontalMotion();
             DisableAttackCollider();
         }
 
@@ -147,13 +153,20 @@ namespace Xuan.Prometheus.Ai
         /// <inheritdoc />
         public void Move(Vector3 worldDirection, float speed, float deltaTime)
         {
-            if (!CanMove || deltaTime <= 0f || speed <= 0f) return;
-            aiComponent.CharacterController.Move(worldDirection * speed * deltaTime);
+            if (!CanMove || deltaTime <= 0f || speed <= 0f)
+            {
+                StopHorizontalMotion();
+                return;
+            }
+            motionComponent.curVelo.x = worldDirection.x * speed;
+            motionComponent.curVelo.z = worldDirection.z * speed;
         }
 
         /// <inheritdoc />
         public void StopMovement()
         {
+            StopHorizontalMotion();
+            if (spineComponent != null) spineComponent.Stop(AnimationOwner.GroundMove);
         }
 
         /// <inheritdoc />
@@ -165,28 +178,29 @@ namespace Xuan.Prometheus.Ai
         /// <inheritdoc />
         public void PlayIdle()
         {
-            if (dead || spineComponent.animationLib == null || spineComponent.animationLib.idleExecutor == null) return;
-            spineComponent.animationLib.idleExecutor.Execute();
+            if (dead || spineComponent.animationLib == null) return;
+            spineComponent.TryPlay(AnimationSemantic.Idle, AnimationOwner.Idle, AnimationPriority.Idle, true);
         }
 
         /// <inheritdoc />
         public void PlayMove()
         {
             if (dead || spineComponent.animationLib == null || spineComponent.animationLib.groundMoveExecutor == null) return;
-            spineComponent.animationLib.groundMoveExecutor.Execute(MoveMode.Run);
+            spineComponent.TryPlay(spineComponent.animationLib.groundMoveExecutor.GetSemantic(MoveMode.Run), AnimationOwner.GroundMove, AnimationPriority.Locomotion, true);
         }
 
         /// <inheritdoc />
         public bool TryStartAttack(Action<bool> onFinished)
         {
-            if (!CanAct || attackEntry != null || spineComponent.animationLib == null || spineComponent.animationLib.atkExecutor == null) return false;
-            TrackEntry newEntry = spineComponent.animationLib.atkExecutor.Execute();
-            if (newEntry == null) return false;
-            attackEntry = newEntry;
+            if (!CanAct || attackPlayback != null || spineComponent.animationLib == null || spineComponent.animationLib.atkExecutor == null) return false;
+            if (!spineComponent.animationLib.atkExecutor.TryGetSelection(0, false, out AttackAnimationSelection selection)) return false;
+            AnimationPlayback newPlayback = spineComponent.TryPlay(selection.Semantic, AnimationOwner.EnemyAction, AnimationPriority.Attack, false, 1f, true);
+            if (newPlayback == null) return false;
+            attackPlayback = newPlayback;
             attackFinished = onFinished;
             hitTargets.Clear();
-            newEntry.Complete += OnAttackComplete;
-            newEntry.Interrupt += OnAttackInterrupted;
+            newPlayback.EventReceived += OnAttackAnimationEvent;
+            newPlayback.Finished += OnAttackFinished;
             return true;
         }
 
@@ -194,22 +208,13 @@ namespace Xuan.Prometheus.Ai
         public void CancelAttack()
         {
             DisableAttackCollider();
-            if (attackEntry == null)
+            if (attackPlayback == null)
             {
                 attackFinished = null;
                 hitTargets.Clear();
                 return;
             }
-
-            Action<bool> callback = attackFinished;
-            TrackEntry entryToStop = attackEntry;
-            attackEntry = null;
-            attackFinished = null;
-            hitTargets.Clear();
-            entryToStop.Complete -= OnAttackComplete;
-            entryToStop.Interrupt -= OnAttackInterrupted;
-            spineComponent.Stop(0, 0f);
-            callback?.Invoke(false);
+            spineComponent.Stop(AnimationOwner.EnemyAction);
         }
 
         /// <summary>
@@ -217,7 +222,7 @@ namespace Xuan.Prometheus.Ai
         /// </summary>
         public void OnTriggerEnter(Collider other)
         {
-            if (!Entity.IsActive || dead || attackEntry == null || other == null) return;
+            if (!Entity.IsActive || dead || attackPlayback == null || other == null) return;
             PropertyComponent targetProperty = other.GetComponentInParent<PropertyComponent>();
             if (!IsPropertyTargetValid(targetProperty, aiComponent.Definition.TargetTag)) return;
             int targetId = targetProperty.GetInstanceID();
@@ -245,6 +250,7 @@ namespace Xuan.Prometheus.Ai
         private void OnDie(DieEvent evt)
         {
             dead = true;
+            StopHorizontalMotion();
             RefreshBrainRunningState();
         }
 
@@ -261,28 +267,32 @@ namespace Xuan.Prometheus.Ai
             else brain.Suspend();
         }
 
-        /// <summary>攻击动画自然完成时结束本次攻击并开始冷却。</summary>
-        private void OnAttackComplete(TrackEntry entry)
+        /// <summary>解释敌人攻击 AnimationLine 事件，命中窗口与音效特效都由当前 Logic 控制。</summary>
+        private void OnAttackAnimationEvent(AnimationPlayback source, Spine.Event animationEvent)
         {
-            FinishAttack(entry, true);
+            if (!ReferenceEquals(source, attackPlayback)) return;
+            if (animationEvent.Data.Name == spineComponent.animationLib.hitStart)
+            {
+                if (attackComponent.atkCollider != null && attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = true;
+                if (spineComponent.animationLib.atkExecutor.TryGetSelection(0, false, out AttackAnimationSelection selection))
+                {
+                    if (selection.HasVfx) vfxComponent.Play(selection.Vfx);
+                    if (selection.AudioClip != null) AudioKit.Ins.Play(selection.AudioClip);
+                }
+            }
+            else if (animationEvent.Data.Name == spineComponent.animationLib.hitEnd)
+            {
+                DisableAttackCollider();
+            }
         }
 
-        /// <summary>攻击动画被其他表现替换时结束本次攻击但不消耗完整冷却。</summary>
-        private void OnAttackInterrupted(TrackEntry entry)
+        /// <summary>保证敌人攻击结束回调恰好执行一次，并只在自然完成后恢复待机表现。</summary>
+        private void OnAttackFinished(AnimationPlayback source, AnimationEndReason reason)
         {
-            FinishAttack(entry, false);
-        }
-
-        /// <summary>
-        /// 保证攻击结束回调恰好执行一次，并在自然完成后恢复待机表现。
-        /// </summary>
-        private void FinishAttack(TrackEntry entry, bool completed)
-        {
-            if (!ReferenceEquals(entry, attackEntry)) return;
+            if (!ReferenceEquals(source, attackPlayback)) return;
+            bool completed = reason == AnimationEndReason.Completed;
             Action<bool> callback = attackFinished;
-            attackEntry.Complete -= OnAttackComplete;
-            attackEntry.Interrupt -= OnAttackInterrupted;
-            attackEntry = null;
+            attackPlayback = null;
             attackFinished = null;
             hitTargets.Clear();
             DisableAttackCollider();
@@ -294,6 +304,14 @@ namespace Xuan.Prometheus.Ai
         private void DisableAttackCollider()
         {
             if (attackComponent != null && attackComponent.atkCollider != null && attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = false;
+        }
+
+        /// <summary>仅清除 AI 管理的水平速度，保留 EnemyAirMoveLogic 持有的竖直重力速度。</summary>
+        private void StopHorizontalMotion()
+        {
+            if (motionComponent == null) return;
+            motionComponent.curVelo.x = 0f;
+            motionComponent.curVelo.z = 0f;
         }
 
         /// <summary>

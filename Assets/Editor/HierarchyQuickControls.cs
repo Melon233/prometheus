@@ -31,7 +31,8 @@ internal static class HierarchyQuickControls
 
     private static void DrawHierarchyControls(int instanceId, Rect rowRect)
     {
-        var gameObject = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+        // Unity 6.3 implicitly converts the hierarchy callback's integer identifier to EntityId, allowing the supported editor lookup to preserve disk-loading behavior.
+        var gameObject = EditorUtility.EntityIdToObject(instanceId) as GameObject;
         if (gameObject == null || Event.current.type == EventType.Layout)
         {
             return;

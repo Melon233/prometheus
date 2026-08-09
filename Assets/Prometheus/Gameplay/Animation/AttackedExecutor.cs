@@ -1,34 +1,27 @@
 using System;
-using Sirenix.OdinInspector;
-using Spine;
-using Spine.Unity;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Xuan.Prometheus
 {
+    /// <summary>保存单段或双段受击 AnimationLine 与受击音效，不负责受击状态切换。</summary>
     [Serializable]
-    public class AttackedExecutor : AnimationExecutor
+    public sealed class AttackedExecutor
     {
-        [SerializeField] public AnimationReferenceAsset attackedAni;
-        [SerializeField] AudioClip attackedSfx;
-        [SerializeField] bool hasNextAni;
-        [SerializeField][ShowIf("hasNextAni")] AnimationReferenceAsset nextAttackedAni;
-        public TrackEntry Execute()
+        [SerializeField] private AnimationLine attackedLine;
+        [SerializeField] private AudioClip attackedSfx;
+        [SerializeField] private AnimationLine nextAttackedLine;
+
+        public AnimationSemantic Semantic => attackedLine == null ? AnimationSemantic.None : attackedLine.Semantic;
+        public bool HasRecoveryAnimation => nextAttackedLine != null;
+        public AnimationSemantic RecoverySemantic => nextAttackedLine == null ? AnimationSemantic.None : nextAttackedLine.Semantic;
+        public AudioClip AudioClip => attackedSfx;
+
+        /// <summary>收集受击主体与可选恢复 AnimationLine，供 AnimationLibrary 建立语义索引。</summary>
+        internal void CollectLines(List<AnimationLine> destination)
         {
-            AudioKit.Ins.Play(attackedSfx);
-            if (hasNextAni)
-            {
-                spineComp.Play(attackedAni);
-                var entry = spineComp.Play(nextAttackedAni);
-                entry.Complete += (entry) => lib.idleExecutor.Execute();
-                return entry;
-            }
-            else
-            {
-                var entry = spineComp.Play(attackedAni);
-                entry.Complete += (entry) => lib.idleExecutor.Execute();
-                return entry;
-            }
+            if (attackedLine != null) destination.Add(attackedLine);
+            if (nextAttackedLine != null) destination.Add(nextAttackedLine);
         }
     }
 }

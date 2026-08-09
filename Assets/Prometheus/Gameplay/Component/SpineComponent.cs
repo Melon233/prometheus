@@ -1,188 +1,193 @@
 using System;
-using System.Collections.Generic;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
-using static Spine.AnimationState;
-using AnimationState = Spine.AnimationState;
 
 namespace Xuan.Prometheus.Component
 {
-    public enum AnimationName
-    {
-        none,
-        idle1_1,
-        base_walk,
-        run,
-        run2,
-        jump_atk_start,
-        jump_atk_loop,
-        jump_atk_end,
-        city_jump_loop,
-        ON_AIR,
-        LAND,
-        atk1,
-        atk2,
-        atk3,
-        atk4,
-        dodge_front_move,
-        dodge_back_move
-    }
+    /// <summary>定义角色朝向，Spine 骨架缩放与三维特效根节点旋转会保持一致。</summary>
     public enum FaceDir
     {
         Left,
         Right
     }
-    [DefaultExecutionOrder(-100)]
+
+    /// <summary>作为角色唯一的 Spine 动画播放组件，负责 AnimationLine 解析、优先级仲裁、序列播放和会话清理。</summary>
+    // [DefaultExecutionOrder(-100)]
     [RequireComponent(typeof(SkeletonAnimation))]
-    [RequireComponent(typeof(VfxComponent))]
-    public class SpineComponent : MonoComponent
+    public sealed class SpineComponent : MonoComponent
     {
-        AnimationState aniState;
+        /// <summary>定义所有主轨动画之间统一使用的过渡时间，避免各 Logic 产生不一致的混合观感。</summary>
+        public const float TransitionDuration = 0.2f;
+
+        private AnimationPlayback currentPlayback;
+        private int nextPlaybackVersion;
 
         [NonSerialized] public SkeletonAnimation spineAnimator;
-        public AnimationLibrary animationLib;
-        public Transform rotateRoot;
-        public List<AnimationExecutor> executors;
+        [SerializeField] public AnimationLibrary animationLib;
+        [SerializeField] public Transform rotateRoot;
+
+        /// <summary>获取当前仍然拥有主轨道的动画会话；没有活动会话时返回空。</summary>
+        public AnimationPlayback CurrentPlayback => currentPlayback;
+
+        /// <summary>获取或设置角色朝向，并同步 Spine 水平缩放与特效旋转根节点。</summary>
         public FaceDir CurFaceDir
         {
             get
             {
-                if (spineAnimator.skeleton.ScaleX > 0)
-                    return FaceDir.Right;
-                return FaceDir.Left;
+                return spineAnimator != null && spineAnimator.skeleton.ScaleX > 0f ? FaceDir.Right : FaceDir.Left;
             }
-
             set
             {
-                if (value == FaceDir.Right)
-                {
-                    spineAnimator.skeleton.ScaleX = 1;
-                    rotateRoot.rotation = Quaternion.Euler(Vector3.zero);
-                }
-                else
-                {
-                    spineAnimator.skeleton.ScaleX = -1;
-                    rotateRoot.rotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
-                }
+                if (spineAnimator == null || spineAnimator.skeleton == null) return;
+                bool faceRight = value == FaceDir.Right;
+                spineAnimator.skeleton.ScaleX = faceRight ? 1f : -1f;
+                if (rotateRoot != null) rotateRoot.rotation = Quaternion.Euler(faceRight ? Vector3.zero : new Vector3(0f, 180f, 0f));
             }
         }
+
+        /// <summary>根据二维移动方向更新朝向，横向输入为零时保持当前朝向。</summary>
         public void SetFaceDir(Vector2 moveDir)
         {
-            if (moveDir.x > 0)
-                CurFaceDir = FaceDir.Right;
-            else if (moveDir.x < 0)
-                CurFaceDir = FaceDir.Left;
-        }
-        public void SetFaceDir(float x)
-        {
-            if (x > 0)
-                CurFaceDir = FaceDir.Right;
-            else if (x < 0)
-                CurFaceDir = FaceDir.Left;
+            SetFaceDir(moveDir.x);
         }
 
+        /// <summary>根据横向输入更新朝向，输入为零时保持当前朝向。</summary>
+        public void SetFaceDir(float horizontal)
+        {
+            if (horizontal > 0f) CurFaceDir = FaceDir.Right;
+            else if (horizontal < 0f) CurFaceDir = FaceDir.Left;
+        }
+
+        /// <summary>缓存 Spine 组件并尽早校验共享动画配置；AnimationLibrary 保持纯配置且不再按实体克隆。</summary>
         private void Awake()
         {
             spineAnimator = GetComponent<SkeletonAnimation>();
-            animationLib = Instantiate(animationLib);
-        }
-        void Start()
-        {
-            aniState = spineAnimator.state;
-            animationLib.Init(this, GetComponent<VfxComponent>());
+            if (spineAnimator != null && spineAnimator.AnimationState != null) spineAnimator.AnimationState.Data.DefaultMix = TransitionDuration;
+            if (animationLib == null) Debug.LogError($"角色 '{name}' 未配置 AnimationLibrary。", this);
         }
 
-        // public TrackEntry Play(string aniName, bool loop = false, float mixDuration = 0.2f, int track = 0)
-        // {
-        //     Debug.Log("播放动画" + aniName);
-        //     var trackEntry = spineAnimator.AnimationState.SetAnimation(track, aniName, loop);
-        //     trackEntry.MixDuration = mixDuration;
-        //     return trackEntry;
-        // }
-        // public TrackEntry Play(AnimationReferenceAsset animation,
-        //                        bool loop = false,
-        //                        int track = 0,
-        //                        float mixDuration = 0.2f,
-        //                        bool canRefresh = false,
-        //                        AnimationReferenceAsset nextAni = null,
-        //                        bool nextLoop = false,
-        //                        TrackEntryEventDelegate onEvent = null)
-        // {
-        //     var curTrack = aniState.GetCurrent(track);
-        //     if (!canRefresh && animation.Animation == curTrack?.Animation) return curTrack;
-        //     var entry = aniState.SetAnimation(track, animation, loop);
-        //     // Debug.Log("播放动画" + animation.name);
-        //     entry.MixDuration = mixDuration;
+        /// <summary>组件销毁时结束当前动画会话并通知其持有 Logic。</summary>
+        private void OnDestroy()
+        {
+            AnimationPlayback playback = currentPlayback;
+            currentPlayback = null;
+            playback?.Finish(AnimationEndReason.Disposed);
+        }
 
-        //     if (nextAni)
-        //     {
-        //         var nextEntry = aniState.AddAnimation(track, nextAni, nextLoop, 0f);
-        //         if (onEvent != null) { nextEntry.Event += onEvent; }
-        //         return nextEntry;
-        //     }
-        //     else if (onEvent != null) { entry.Event += onEvent; }
-        //     if (track != 0) aniState.AddEmptyAnimation(track, 0.2f, 0f);
-        //     return entry;
-        // }
+        /// <summary>通过动画语义解析角色专属 AnimationLine 并尝试播放；低优先级请求会被拒绝，同所有者同语义默认复用当前会话。</summary>
+        public AnimationPlayback TryPlay(AnimationSemantic semantic, AnimationOwner owner, AnimationPriority priority, bool loop = false, float speed = 1f, bool restart = false, int trackIndex = 0)
+        {
+            if (animationLib == null || !animationLib.TryGetLine(semantic, out AnimationLine line)) return null;
+            return TryPlayResolvedSequence(line, null, owner, priority, loop, speed, restart, trackIndex);
+        }
 
+        /// <summary>通过两个动画语义播放 AnimationLine 序列；片段间使用统一过渡，整个序列共享同一优先级和结束生命周期。</summary>
+        public AnimationPlayback TryPlaySequence(AnimationSemantic firstSemantic, AnimationSemantic finalSemantic, AnimationOwner owner, AnimationPriority priority, bool finalLoop = false, float speed = 1f, bool restart = false, int trackIndex = 0)
+        {
+            if (animationLib == null || !animationLib.TryGetLine(firstSemantic, out AnimationLine firstLine) || !animationLib.TryGetLine(finalSemantic, out AnimationLine finalLine)) return null;
+            return TryPlayResolvedSequence(firstLine, finalLine, owner, priority, finalLoop, speed, restart, trackIndex);
+        }
 
+        /// <summary>仅当当前动画属于指定所有者时以统一时长淡出到 Setup Pose，避免硬清轨残留未被后续动画关键帧覆盖的骨骼姿势。</summary>
+        public bool Stop(AnimationOwner owner, AnimationEndReason reason = AnimationEndReason.Stopped, int trackIndex = 0)
+        {
+            AnimationPlayback playback = currentPlayback;
+            if (playback == null || playback.Owner != owner || playback.TrackIndex != trackIndex) return false;
+            playback.DetachTrackCallbacks();
+            currentPlayback = null;
+            spineAnimator.AnimationState.SetEmptyAnimation(trackIndex, TransitionDuration);
+            playback.Finish(reason);
+            return true;
+        }
 
-        public TrackEntry Play(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f)
+        /// <summary>无条件清理指定轨道、恢复 Setup Pose 并结束其会话，仅供死亡、回收和基础设施级流程使用。</summary>
+        public void ClearTrack(int trackIndex = 0, AnimationEndReason reason = AnimationEndReason.Stopped)
         {
-            var entry = spineAnimator.AnimationState.SetAnimation(track, animation, loop);
-            entry.MixDuration = mixDuration;
-            return entry;
+            AnimationPlayback playback = currentPlayback;
+            if (playback != null && playback.TrackIndex == trackIndex)
+            {
+                playback.DetachTrackCallbacks();
+                currentPlayback = null;
+            }
+            spineAnimator.AnimationState.ClearTrack(trackIndex);
+            if (spineAnimator.Skeleton != null) spineAnimator.Skeleton.SetToSetupPose();
+            playback?.Finish(reason);
         }
-        public TrackEntry Add(AnimationReferenceAsset animation, bool loop = false, int track = 0, float mixDuration = 0.2f)
-        {
-            var entry = spineAnimator.AnimationState.AddAnimation(track, animation, loop, 0f);
-            entry.MixDuration = mixDuration;
-            return entry;
-        }
-        public void Stop(int track = 0, float mixDuration = 0.2f)
-        {
-            if (mixDuration == 0f)
-                spineAnimator.AnimationState.ClearTrack(track);
-            else
-                spineAnimator.AnimationState.SetEmptyAnimation(track, mixDuration);
-        }
-        public void SetSpeed(int track = 0, float speed = 1f)
-        {
-            spineAnimator.AnimationState.GetCurrent(track).TimeScale = speed;
-        }
-        public string GetCurrentAnimation(int track = 0)
-        {
-            return spineAnimator.AnimationState.GetCurrent(track)?.Animation?.Name;
-        }
-        public bool IsEmpty(int track = 0)
-        {
-            var entry = spineAnimator.AnimationState.GetCurrent(track);
-            if (entry.Animation == null || entry.IsComplete)
-                return true;
-            return false;
-        }
-        public bool IsPlaying(AnimationReferenceAsset animation, int track = 0)
-        {
-            var entry = spineAnimator.AnimationState.GetCurrent(track);
-            return entry?.Animation?.Name == animation.Animation.Name && (entry.Loop || !entry.IsComplete);
-        }
-        public void ClearTrack(int track = 0)
-        {
-            spineAnimator.AnimationState.ClearTrack(track);
-        }
-    }
 
-    public static class SpineExtensions
-    {
-        public static float NormalizedTime(this TrackEntry trackEntry)
+        /// <summary>调整当前指定轨道的播放速度；轨道为空时保持安全并返回失败。</summary>
+        public bool SetSpeed(float speed = 1f, int trackIndex = 0)
         {
-            return trackEntry.AnimationTime / trackEntry.Animation.Duration;
+            TrackEntry entry = spineAnimator.AnimationState.GetCurrent(trackIndex);
+            if (entry == null) return false;
+            entry.TimeScale = speed;
+            return true;
         }
-        public static void OnStop(this TrackEntry trackEntry, Action callback)
+
+        /// <summary>获取 Spine 当前轨道上的动画名称；轨道为空时返回空。</summary>
+        public string GetCurrentAnimation(int trackIndex = 0)
         {
-            trackEntry.Complete += entry => callback?.Invoke();
-            trackEntry.Interrupt += entry => callback?.Invoke();
+            return spineAnimator.AnimationState.GetCurrent(trackIndex)?.Animation?.Name;
+        }
+
+        /// <summary>判断指定轨道是否已经没有受控会话，或非循环动画已经自然完成。</summary>
+        public bool IsEmpty(int trackIndex = 0)
+        {
+            if (currentPlayback != null && currentPlayback.TrackIndex == trackIndex && currentPlayback.IsActive) return false;
+            TrackEntry entry = spineAnimator.AnimationState.GetCurrent(trackIndex);
+            return entry == null || entry.Animation == null || entry.IsComplete;
+        }
+
+        /// <summary>判断给定会话是否仍是组件当前会话，AnimationPlayback 使用该入口排除旧 TrackEntry 回调。</summary>
+        internal bool IsPlaybackActive(AnimationPlayback playback)
+        {
+            return playback != null && ReferenceEquals(currentPlayback, playback) && currentPlayback.Version == playback.Version;
+        }
+
+        /// <summary>接收最终 TrackEntry 的自然完成通知，先释放轨道优先级所有权再通知 Logic。</summary>
+        internal void CompletePlayback(AnimationPlayback playback)
+        {
+            if (!IsPlaybackActive(playback)) return;
+            currentPlayback = null;
+            playback.Finish(AnimationEndReason.Completed);
+        }
+
+        /// <summary>执行已经解析完成的单段或双段序列，并以原子顺序完成旧会话替换和新会话发布。</summary>
+        private AnimationPlayback TryPlayResolvedSequence(AnimationLine firstLine, AnimationLine finalLine, AnimationOwner owner, AnimationPriority priority, bool finalLoop, float speed, bool restart, int trackIndex)
+        {
+            if (spineAnimator == null || firstLine == null) return null;
+            Spine.Animation firstAnimation = firstLine.GetRuntimeAnimation();
+            Spine.Animation finalAnimation = finalLine == null ? firstAnimation : finalLine.GetRuntimeAnimation();
+            if (firstAnimation == null || finalAnimation == null) return null;
+            AnimationSemantic requestedSemantic = finalLine == null ? firstLine.Semantic : finalLine.Semantic;
+            AnimationPlayback previousPlayback = currentPlayback;
+            if (previousPlayback != null && previousPlayback.TrackIndex == trackIndex)
+            {
+                if ((int)priority < (int)previousPlayback.Priority) return null;
+                bool sameRequest = previousPlayback.Owner == owner && previousPlayback.Priority == priority && previousPlayback.Semantic == requestedSemantic;
+                if (sameRequest && !restart) return previousPlayback;
+                previousPlayback.DetachTrackCallbacks();
+            }
+            TrackEntry firstEntry = spineAnimator.AnimationState.SetAnimation(trackIndex, firstAnimation, finalLine == null && finalLoop);
+            firstEntry.MixDuration = TransitionDuration;
+            firstEntry.MixBlend = MixBlend.Replace;
+            firstEntry.TimeScale = Mathf.Max(0f, speed);
+            TrackEntry resolvedFinalEntry = firstEntry;
+            if (finalLine != null)
+            {
+                resolvedFinalEntry = spineAnimator.AnimationState.AddAnimation(trackIndex, finalAnimation, finalLoop, 0f);
+                resolvedFinalEntry.Delay = Mathf.Max(0f, firstEntry.AnimationEnd - firstEntry.AnimationStart - TransitionDuration * firstEntry.TimeScale);
+                resolvedFinalEntry.MixDuration = TransitionDuration;
+                resolvedFinalEntry.MixBlend = MixBlend.Replace;
+                resolvedFinalEntry.TimeScale = Mathf.Max(0f, speed);
+            }
+            AnimationPlayback playback = new AnimationPlayback(this, requestedSemantic, owner, priority, trackIndex, ++nextPlaybackVersion);
+            playback.AddEntry(firstEntry);
+            if (!ReferenceEquals(firstEntry, resolvedFinalEntry)) playback.AddEntry(resolvedFinalEntry);
+            playback.Seal(resolvedFinalEntry, finalLoop);
+            currentPlayback = playback;
+            previousPlayback?.Finish(AnimationEndReason.Interrupted);
+            return playback;
         }
     }
 }

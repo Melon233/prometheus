@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Spine;
-using Spine.Unity;
 
 namespace Xuan.Prometheus.Component
 {
@@ -13,7 +10,7 @@ namespace Xuan.Prometheus.Component
         public float maxComboInterval = 2f;
         public int nextComboIndex;
         public ColliderProxy atkCollider;
-        public TrackEntry curTrackEntry;
+        [NonSerialized] public AnimationPlayback currentAnimation;
         public bool isBlocking;
     }
 }

@@ -1,105 +1,91 @@
-using Spine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus
 {
-    /// <summary>负责受击动画的开始与结束通知，并保证完成、打断和回收路径只结束同一次受击表现。</summary>
+    /// <summary>负责受击 AnimationLine 会话与受击开始/结束事件，连续受击和高优先级打断均保持成对通知。</summary>
     public sealed class AttackedLogic : Logic.Logic
     {
         private EventComponent eventComponent;
         private SpineComponent spineComponent;
-        private AttackedExecutor attackedExecutor;
-        private TrackEntry trackEntry;
-        private bool presentationActive;
+        private AnimationPlayback playback;
+        private bool replacingPlayback;
+        private bool reactionActive;
 
-        /// <summary>缓存受击表现依赖并订阅实体局部受击事件。</summary>
         public override void AfterNew()
         {
             ControlRequirement = LogicControlRequirement.None;
             Entity.TryGetComp(out eventComponent);
             Entity.TryGetComp(out spineComponent);
-            attackedExecutor = spineComponent.animationLib.attackedExecutor;
             eventComponent.AddListener<AttackedEvent>(OnAttacked);
         }
 
-        /// <summary>开始新的受击表现前先断开旧 TrackEntry 回调，避免连续受击累积匿名委托。</summary>
+        /// <summary>以高于玩家动作的优先级播放单段或双段受击序列，双段动画通过 AddAnimation 正确排队。</summary>
         private void OnAttacked(AttackedEvent evt)
         {
-            DetachTrackCallbacks();
-            if (presentationActive) eventComponent.Invoke(new AttackedEndEvent());
-            eventComponent.Invoke(new AttackedStartEvent());
-            presentationActive = true;
-            trackEntry = attackedExecutor.Execute();
-            if (trackEntry == null)
+            AttackedExecutor configuration = spineComponent.animationLib.attackedExecutor;
+            replacingPlayback = playback != null;
+            AnimationPlayback newPlayback;
+            try
             {
-                FinishPresentation(null);
-                return;
+                newPlayback = configuration.HasRecoveryAnimation ? spineComponent.TryPlaySequence(configuration.Semantic, configuration.RecoverySemantic, AnimationOwner.HitReaction, AnimationPriority.HitReaction, false, 1f, true) : spineComponent.TryPlay(configuration.Semantic, AnimationOwner.HitReaction, AnimationPriority.HitReaction, false, 1f, true);
             }
-            trackEntry.Complete += OnTrackFinished;
-            trackEntry.Interrupt += OnTrackFinished;
+            finally
+            {
+                replacingPlayback = false;
+            }
+            if (newPlayback == null) return;
+            playback = newPlayback;
+            playback.Finished += OnAnimationFinished;
+            if (!reactionActive)
+            {
+                reactionActive = true;
+                eventComponent.Invoke(new AttackedStartEvent());
+            }
+            if (configuration.AudioClip != null) AudioKit.Ins.Play(configuration.AudioClip);
         }
 
-        /// <summary>完成和打断共享同一个幂等结束入口，忽略已经被后续受击替换的旧动画回调。</summary>
-        private void OnTrackFinished(TrackEntry entry)
+        /// <summary>连续受击替换只更新播放会话，最后一次自然完成或外部高优先级抢占时才发布受击结束事件。</summary>
+        private void OnAnimationFinished(AnimationPlayback source, AnimationEndReason reason)
         {
-            FinishPresentation(entry);
-        }
-
-        /// <summary>结束当前受击表现并恰好发布一次 AttackedEndEvent。</summary>
-        private void FinishPresentation(TrackEntry completedEntry)
-        {
-            if (completedEntry != null && !ReferenceEquals(completedEntry, trackEntry)) return;
-            DetachTrackCallbacks();
-            trackEntry = null;
-            if (!presentationActive) return;
-            presentationActive = false;
+            if (!ReferenceEquals(source, playback)) return;
+            playback = null;
+            if (replacingPlayback && reason == AnimationEndReason.Interrupted) return;
+            if (!reactionActive) return;
+            reactionActive = false;
             eventComponent.Invoke(new AttackedEndEvent());
         }
 
-        /// <summary>从当前 Spine TrackEntry 对称移除具名回调，使死亡和回收后不会触发失效 EventComponent。</summary>
-        private void DetachTrackCallbacks()
-        {
-            if (trackEntry == null) return;
-            trackEntry.Complete -= OnTrackFinished;
-            trackEntry.Interrupt -= OnTrackFinished;
-        }
-
-        /// <inheritdoc />
         public override bool CanDisable()
         {
             return false;
         }
 
-        /// <inheritdoc />
         public override bool CanEnable()
         {
             return true;
         }
 
-        /// <inheritdoc />
         public override void OnDisable()
         {
         }
 
-        /// <summary>对称注销受击监听和 Spine 回调，不在 Entity 回收阶段重新发布受击结束事件。</summary>
+        /// <summary>回收时注销实体事件和会话回调，不在实体释放阶段再次发布受击结束事件。</summary>
         public override void OnDispose()
         {
             if (eventComponent != null) eventComponent.RemoveListener<AttackedEvent>(OnAttacked);
-            DetachTrackCallbacks();
-            trackEntry = null;
-            presentationActive = false;
+            if (playback != null) playback.Finished -= OnAnimationFinished;
+            playback = null;
+            replacingPlayback = false;
+            reactionActive = false;
             eventComponent = null;
             spineComponent = null;
-            attackedExecutor = null;
         }
 
-        /// <inheritdoc />
         public override void OnEnable()
         {
         }
 
-        /// <inheritdoc />
         public override void OnUpdate(float dt)
         {
         }

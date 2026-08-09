@@ -35,7 +35,7 @@ MonoBehaviour:
       type: {class: DamageOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
         amount:
-          source: 6
-          multiplier: 0.2
-          offset: 0
+          source: 0
+          multiplier: 0
+          offset: 20
         additionalTags: 56

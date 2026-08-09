@@ -57,6 +57,7 @@ namespace Xuan.Prometheus
             core = new GameCore();
             GameplayStartupOptions options = new GameplayStartupOptions(packageName, transform, effectLibrary, playerAddress, enemyAddress, enemySpawnPoints, enemySpawnLimit);
             yield return core.Initialize(options);
+            core.GetKit<IUIKit>().OpenPanel<HudPanel>();
         }
 
         /// <summary>

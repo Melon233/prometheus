@@ -1,56 +1,28 @@
 using System;
-using Spine;
-using Spine.Unity;
+using System.Collections.Generic;
 using UnityEngine;
-using Xuan.Prometheus.Component;
-using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus
 {
-    // [Serializable]
-    // public class AnimationBinding
-    // {
-    //     [LabelText("动画")]
-    //     [TableColumnWidth(180, true)]
-    //     public AnimationReferenceAsset ani;
-    //     [LabelText("特效")]
-    //     [TableColumnWidth(180, true)]
-    //     public VfxExecutor vfxExecutor;
-    //     [LabelText("音效")]
-    //     [TableColumnWidth(180, true)]
-    //     public AudioClip audio;
-    // }
+    /// <summary>保存技能起手、主体 AnimationLine、音效和特效配置，不持有 SkillComponent。</summary>
     [Serializable]
-    public class SkillExecutor : AnimationExecutor
+    public sealed class SkillExecutor
     {
-        // [TableList(AlwaysExpanded = true, ShowIndexLabels = true, DrawScrollView = true)]
-        // public List<AnimationBinding> binds;
-        [SerializeField] AnimationReferenceAsset skillStartAni;
-        [SerializeField] AnimationReferenceAsset skillAni;
-        [SerializeField] AudioClip skillAudio;
-        [SerializeField] YefaVfx skillVfx;
-        SkillComponent skillComp;
-        public override void Init(AnimationLibrary lib, SpineComponent spineComp, VfxComponent vfxComp)
+        [SerializeField] private AnimationLine skillStartLine;
+        [SerializeField] private AnimationLine skillLine;
+        [SerializeField] private AudioClip skillAudio;
+        [SerializeField] private YefaVfx skillVfx;
+
+        public AnimationSemantic StartSemantic => skillStartLine == null ? AnimationSemantic.None : skillStartLine.Semantic;
+        public AnimationSemantic Semantic => skillLine == null ? AnimationSemantic.None : skillLine.Semantic;
+        public AudioClip AudioClip => skillAudio;
+        public YefaVfx Vfx => skillVfx;
+
+        /// <summary>收集技能起手与主体 AnimationLine，供 AnimationLibrary 建立语义索引。</summary>
+        internal void CollectLines(List<AnimationLine> destination)
         {
-            base.Init(lib, spineComp, vfxComp);
-            spineComp.Entity.TryGetComp(out skillComp);
-        }
-        public TrackEntry Execute()
-        {
-            spineComp.Play(skillStartAni);
-            var entry = spineComp.Add(skillAni);
-            entry.Event += (entry, evt) =>
-            {
-                if (evt.Data.Name == lib.hitStart)
-                {
-                    vfxComp.Play(skillVfx);
-                    AudioKit.Ins.Play(skillAudio);
-                    skillComp.colliderProxy.cod.enabled = true;
-                }
-                else if (evt.Data.Name == lib.hitEnd)
-                    skillComp.colliderProxy.cod.enabled = false;
-            };
-            return entry;
+            if (skillStartLine != null) destination.Add(skillStartLine);
+            if (skillLine != null) destination.Add(skillLine);
         }
     }
 }

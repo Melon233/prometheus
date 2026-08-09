@@ -17,14 +17,16 @@ namespace Xuan.Prometheus
         private bool isDisposed;
 
         /// <summary>
-        /// 创建并注册当前正式启动流程需要的 AssetKit 和 GameplayKit。
-        /// AssetKit 先注册，保证初始化和释放时的依赖顺序稳定。
+        /// 创建并注册当前正式启动流程需要的 AssetKit、UIKit 和 GameplayKit。
+        /// 依赖项先注册，保证初始化时资源先于 UI 和玩法就绪，释放时玩法和 UI 先于资源销毁。
         /// </summary>
         public GameCore()
         {
             AssetKit assetKit = new AssetKit();
+            UIKit uiKit = new UIKit(assetKit);
             GameplayKit gameplayKit = new GameplayKit(assetKit);
             RegisterKit<IAssetKit>(assetKit);
+            RegisterKit<IUIKit>(uiKit);
             RegisterKit<IGameplayKit>(gameplayKit);
         }
 

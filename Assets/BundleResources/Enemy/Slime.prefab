@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 491497129945753441}
   - component: {fileID: 491497129945753470}
   - component: {fileID: 491497129945753471}
+  - component: {fileID: 7346509812746509812}
   - component: {fileID: 491497129945753465}
   - component: {fileID: 491497129945753467}
   - component: {fileID: 491497129945753466}
@@ -161,6 +162,25 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &7346509812746509812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491497129945753440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec688383a2b64e949cbd57317db6f8db, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  cc: {fileID: 491497129945753471}
+  curVelo: {x: 0, y: 0, z: 0}
+  wasGroundedLastFrame: 0
+  landThisFrame: 0
+  moveMode: 1
+  curMoveSpeed: 0
+  propertyConfig: {fileID: 11400000, guid: a2a39929b7d7ce54c998359d38c04f34, type: 2}
 --- !u!114 &491497129945753465
 MonoBehaviour:
   m_ObjectHideFlags: 0

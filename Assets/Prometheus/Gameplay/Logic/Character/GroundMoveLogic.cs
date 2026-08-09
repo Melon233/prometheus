@@ -1,42 +1,38 @@
-using System;
-using Spine;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    public class GroundMoveLogic : Logic
+    /// <summary>负责地面移动数值与移动动画请求；移动动画优先级高于落地动画，因此输入可以即时打断落地表现。</summary>
+    public sealed class GroundMoveLogic : Logic
     {
-        SpineComponent spineComp;
-        InputComponent inputComp;
-        MotionComponent motionComp;
-        GroundMoveExecutor groundMoveExecutor;
-        IdleExecutor idleExecutor;
-        EventComponent evtComp;
-        PropertyComponent propComp;
+        private SpineComponent spineComponent;
+        private InputComponent inputComponent;
+        private MotionComponent motionComponent;
+        private EventComponent eventComponent;
+        private PropertyComponent propertyComponent;
+
         public override void AfterNew()
         {
             OrderTag = OrderTag.Gameplay;
             ControlRequirement = LogicControlRequirement.Move;
-            Entity.TryGetComp(out spineComp);
-            Entity.TryGetComp(out inputComp);
-            Entity.TryGetComp(out motionComp);
-            Entity.TryGetComp(out evtComp);
-            Entity.TryGetComp(out propComp);
+            Entity.TryGetComp(out spineComponent);
+            Entity.TryGetComp(out inputComponent);
+            Entity.TryGetComp(out motionComponent);
+            Entity.TryGetComp(out eventComponent);
+            Entity.TryGetComp(out propertyComponent);
             SetMoveMode(MoveMode.Run);
-            groundMoveExecutor = spineComp.animationLib.groundMoveExecutor;
-            idleExecutor = spineComp.animationLib.idleExecutor;
-            evtComp.AddListener<AttackedStartEvent>(OnAttackedStart);
-            evtComp.AddListener<AttackedEndEvent>(OnAttackedEnd);
+            eventComponent.AddListener<AttackedStartEvent>(OnAttackedStart);
+            eventComponent.AddListener<AttackedEndEvent>(OnAttackedEnd);
         }
 
-        private void OnAttackedEnd(AttackedEndEvent @event)
+        private void OnAttackedEnd(AttackedEndEvent evt)
         {
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<JumpLogic>();
         }
 
-        private void OnAttackedStart(AttackedStartEvent @event)
+        private void OnAttackedStart(AttackedStartEvent evt)
         {
             Entity.BlockLogic<GroundMoveLogic>();
             Entity.BlockLogic<JumpLogic>();
@@ -44,7 +40,7 @@ namespace Xuan.Prometheus.Logic
 
         public override bool CanEnable()
         {
-            return motionComp.cc.isGrounded && inputComp.moveDir != Vector2.zero;
+            return motionComponent.cc.isGrounded && inputComponent.moveDir != Vector2.zero;
         }
 
         public override bool CanDisable()
@@ -54,50 +50,53 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnEnable()
         {
-            motionComp.curVelo.y = -2f;
+            motionComponent.curVelo.y = -2f;
         }
 
+        /// <summary>停止本 Logic 的循环移动动画，使较低优先级待机在松开输入后能够接管轨道。</summary>
         public override void OnDisable()
         {
-            motionComp.curVelo.x = 0f;
-            motionComp.curVelo.z = 0f;
-            groundMoveExecutor.Stop();
+            motionComponent.curVelo.x = 0f;
+            motionComponent.curVelo.z = 0f;
+            spineComponent.Stop(AnimationOwner.GroundMove);
         }
 
         public override void OnUpdate(float dt)
         {
-            var curMoveMode = motionComp.moveMode;
-            if (inputComp.wasToggleSprintPressedThisFrame)
-                if (curMoveMode != MoveMode.Sprint) SetMoveMode(MoveMode.Sprint);
-                else SetMoveMode(MoveMode.Run);
-            else if (inputComp.wasToggleWalkPressedThisFrame)
-                if (curMoveMode != MoveMode.Walk) SetMoveMode(MoveMode.Walk);
-                else SetMoveMode(MoveMode.Run);
-            motionComp.curVelo = new Vector3(inputComp.moveDir.x, -2f, inputComp.moveDir.y) * propComp.MoveSpeed;
-            motionComp.entry = groundMoveExecutor.Execute(motionComp.moveMode);
+            MoveMode currentMoveMode = motionComponent.moveMode;
+            if (inputComponent.wasToggleSprintPressedThisFrame)
+            {
+                SetMoveMode(currentMoveMode == MoveMode.Sprint ? MoveMode.Run : MoveMode.Sprint);
+            }
+            else if (inputComponent.wasToggleWalkPressedThisFrame)
+            {
+                SetMoveMode(currentMoveMode == MoveMode.Walk ? MoveMode.Run : MoveMode.Walk);
+            }
+            motionComponent.curVelo = new Vector3(inputComponent.moveDir.x, -2f, inputComponent.moveDir.y) * propertyComponent.MoveSpeed;
+            GroundMoveExecutor configuration = spineComponent.animationLib.groundMoveExecutor;
+            spineComponent.TryPlay(configuration.GetSemantic(motionComponent.moveMode), AnimationOwner.GroundMove, AnimationPriority.Locomotion, true);
         }
-
 
         public override void OnDispose()
         {
-            evtComp.RemoveListener<AttackedStartEvent>(OnAttackedStart);
-            evtComp.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
+            eventComponent.RemoveListener<AttackedStartEvent>(OnAttackedStart);
+            eventComponent.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
         }
+
+        /// <summary>更新移动模式及其基础速度，最终速度仍由 PropertyComponent modifier 聚合。</summary>
         public void SetMoveMode(MoveMode mode)
         {
+            motionComponent.moveMode = mode;
             switch (mode)
             {
                 case MoveMode.Walk:
-                    motionComp.moveMode = MoveMode.Walk;
-                    propComp.SetBaseValue(PropertyType.MoveSpeed, motionComp.propertyConfig.walkSpeed);
-                    break;
-                case MoveMode.Run:
-                    motionComp.moveMode = MoveMode.Run;
-                    propComp.SetBaseValue(PropertyType.MoveSpeed, motionComp.propertyConfig.runSpeed);
+                    propertyComponent.SetBaseValue(PropertyType.MoveSpeed, motionComponent.propertyConfig.walkSpeed);
                     break;
                 case MoveMode.Sprint:
-                    motionComp.moveMode = MoveMode.Sprint;
-                    propComp.SetBaseValue(PropertyType.MoveSpeed, motionComp.propertyConfig.sprintSpeed);
+                    propertyComponent.SetBaseValue(PropertyType.MoveSpeed, motionComponent.propertyConfig.sprintSpeed);
+                    break;
+                default:
+                    propertyComponent.SetBaseValue(PropertyType.MoveSpeed, motionComponent.propertyConfig.runSpeed);
                     break;
             }
         }

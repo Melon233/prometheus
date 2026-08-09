@@ -45,9 +45,9 @@ namespace Xuan.Prometheus
         /// <summary>结束攻击状态并释放互斥 Logic；死亡回收时不覆盖已经开始播放的死亡动画。</summary>
         public override void OnDisable()
         {
-            if (!propComp.IsDead && eAttackComp.isAttacking) spineComp.Stop(0, 0f);
+            if (!propComp.IsDead && eAttackComp.isAttacking) spineComp.Stop(AnimationOwner.EnemyAction);
             if (atkComp.atkCollider != null && atkComp.atkCollider.cod != null) atkComp.atkCollider.cod.enabled = false;
-            eAttackComp.trackEntry = null;
+            eAttackComp.animationPlayback = null;
             eAttackComp.isAttacking = false;
             Entity.UnBlockLogic<EnmityLogic>();
             Entity.UnBlockLogic<PatrolLogic>();
@@ -57,6 +57,11 @@ namespace Xuan.Prometheus
         /// <summary>回收旧敌人攻击 Logic 时关闭命中盒并解绑代理，防止保留死亡动画期间继续转发碰撞。</summary>
         public override void OnDispose()
         {
+            if (eAttackComp != null && eAttackComp.animationPlayback != null)
+            {
+                eAttackComp.animationPlayback.EventReceived -= OnAttackAnimationEvent;
+                eAttackComp.animationPlayback.Finished -= OnAttackAnimationFinished;
+            }
             if (atkComp != null && atkComp.atkCollider != null && atkComp.atkCollider.cod != null) atkComp.atkCollider.cod.enabled = false;
             if (atkComp != null && atkComp.atkCollider != null && ReferenceEquals(atkComp.atkCollider.handler, this)) atkComp.atkCollider.handler = null;
             effectComp = null;
@@ -67,9 +72,6 @@ namespace Xuan.Prometheus
             Entity.BlockLogic<EnmityLogic>();
             Entity.BlockLogic<PatrolLogic>();
             eAttackComp.recoveryTimer.TimeOut();
-            // eAttackComp.trackEntry.Complete += (entry) => spineComp.animationLib.idleExecutor.Execute();
-            // eAttackComp.trackEntry.Interrupt += (entry) => entry = null;
-            // enemyAttackComp.atkTimer.SetActive(true);
         }
 
         public void OnTriggerEnter(Collider other)
@@ -104,21 +106,42 @@ namespace Xuan.Prometheus
                 eAttackComp.isRecovery = false;
                 if (eAttackComp.targetPropertyComp != null)
                 {
+                    if (!spineComp.animationLib.atkExecutor.TryGetSelection(0, false, out AttackAnimationSelection selection)) return;
+                    AnimationPlayback playback = spineComp.TryPlay(selection.Semantic, AnimationOwner.EnemyAction, AnimationPriority.Attack, false, 1f, true);
+                    if (playback == null) return;
                     eAttackComp.isAttacking = true;
-                    eAttackComp.trackEntry = spineComp.animationLib.atkExecutor.Execute();
-                    eAttackComp.trackEntry.Complete += (entry) =>
-                    {
-                        spineComp.animationLib.idleExecutor.Execute();
-                        eAttackComp.recoveryTimer.Reset();
-                        eAttackComp.isAttacking = false;
-                        eAttackComp.isRecovery = true;
-                    };
-                    eAttackComp.trackEntry.Interrupt += (entry) =>
-                    {
-                        eAttackComp.isAttacking = false;
-                    };
+                    eAttackComp.animationPlayback = playback;
+                    playback.EventReceived += OnAttackAnimationEvent;
+                    playback.Finished += OnAttackAnimationFinished;
                 }
             }
+        }
+
+        /// <summary>由旧敌人攻击 Logic 解释命中窗口事件，保持与新优先级播放系统兼容。</summary>
+        private void OnAttackAnimationEvent(AnimationPlayback source, Spine.Event animationEvent)
+        {
+            if (!ReferenceEquals(source, eAttackComp.animationPlayback)) return;
+            if (animationEvent.Data.Name == spineComp.animationLib.hitStart)
+            {
+                if (atkComp.atkCollider != null && atkComp.atkCollider.cod != null) atkComp.atkCollider.cod.enabled = true;
+                if (spineComp.animationLib.atkExecutor.TryGetSelection(0, false, out AttackAnimationSelection selection) && selection.AudioClip != null) AudioKit.Ins.Play(selection.AudioClip);
+            }
+            else if (animationEvent.Data.Name == spineComp.animationLib.hitEnd && atkComp.atkCollider != null && atkComp.atkCollider.cod != null)
+            {
+                atkComp.atkCollider.cod.enabled = false;
+            }
+        }
+
+        /// <summary>在自然完成时进入恢复阶段，被抢占时仅结束当前攻击状态。</summary>
+        private void OnAttackAnimationFinished(AnimationPlayback source, AnimationEndReason reason)
+        {
+            if (!ReferenceEquals(source, eAttackComp.animationPlayback)) return;
+            eAttackComp.animationPlayback = null;
+            eAttackComp.isAttacking = false;
+            if (reason != AnimationEndReason.Completed) return;
+            spineComp.TryPlay(AnimationSemantic.Idle, AnimationOwner.Idle, AnimationPriority.Idle, true);
+            eAttackComp.recoveryTimer.Reset();
+            eAttackComp.isRecovery = true;
         }
     }
 }

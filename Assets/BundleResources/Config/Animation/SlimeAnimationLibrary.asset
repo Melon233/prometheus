@@ -16,42 +16,43 @@ MonoBehaviour:
   hitStart: hit_start
   hitEnd: hit_end
   atkExecutor:
-    atkAnis:
-    - {fileID: 11400000, guid: d2f4764a9d2bd3e449e861f3fd83f33a, type: 2}
-    atkMoveAnis: []
-    hasVfx: 0
-    atkVfx: 
-    atkSfx:
-    - {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
+    attacks:
+    - animationLine: {fileID: 11400000, guid: c72be6ae45e1c034db00df66daeb2339, type: 2}
+      movingAnimationLine: {fileID: 0}
+      audioClip: {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
+      hasVfx: 0
+      vfx: 0
   idleExecutor:
-    idleAnimation: {fileID: 11400000, guid: a86b54a740df8214691388a916f29ad5, type: 2}
+    idleLine: {fileID: 11400000, guid: d12c9aa51f79b9541aed9f8a08b25c55, type: 2}
   groundMoveExecutor:
-    walkAnimation: {fileID: 11400000, guid: a0c8ea86a374fb2469a8a25569916065, type: 2}
-    runAnimaiton: {fileID: 11400000, guid: c9c01d19a231ee04fb1ef46651b8138c, type: 2}
-    sprintAnimation: {fileID: 0}
+    walkLine: {fileID: 11400000, guid: a5395d740df662446844010c067c2e9f, type: 2}
+    runLine: {fileID: 11400000, guid: bf743edf2614cf543a54c18f9285cf8f, type: 2}
+    sprintLine: {fileID: 0}
   dodgeExecutor:
-    dodgeFrontAnimation: {fileID: 0}
-    dodgeBackAnimation: {fileID: 0}
+    dodgeFrontLine: {fileID: 0}
+    dodgeBackLine: {fileID: 0}
   airMoveExecutor:
-    jumpAni: {fileID: 11400000, guid: 0652071da607aa047bd08cfbade1f823, type: 2}
-    riseAni: {fileID: 11400000, guid: e265f9c0960db4341ac84b712c2074a5, type: 2}
-    fallAni: {fileID: 11400000, guid: b0e6b03641ffbbd4397e7b3a50a4f200, type: 2}
-    landAni: {fileID: 11400000, guid: 156d1ee6111613a41a01018569d329ec, type: 2}
+    jumpLine: {fileID: 11400000, guid: 67aad9e4c096c5342b1b06d21f8432a5, type: 2}
+    riseLine: {fileID: 11400000, guid: c2b9d9ffee9624447be3fd5f2c565c3a, type: 2}
+    fallLine: {fileID: 11400000, guid: 78d25b5b3ad43e948b118f7412b411a5, type: 2}
+    landLine: {fileID: 11400000, guid: 8f9fbdc76ae9eb840ac74d4f19fd674b, type: 2}
+  hasTalent: 0
   ultimateExecutor:
-    ultimateAni: {fileID: 11400000, guid: 08aa1b470a795c64da25e7f952468c09, type: 2}
+    ultimateLine: {fileID: 11400000, guid: 2d4acdcf5a9a2e74bb3c88f491107ac6, type: 2}
     ultimateAudio: {fileID: 8300000, guid: 329278a9a60ea7641a22379c6bccbaba, type: 3}
     ultVfx: 5
   skillExecutor:
-    skillStartAni: {fileID: 11400000, guid: 27d5caf5854274c45987588bcd0de504, type: 2}
-    skillAni: {fileID: 11400000, guid: ee8e39e3041033f48a4a822cc5d3d3eb, type: 2}
+    skillStartLine: {fileID: 11400000, guid: f8616e2cb1adc254394074be73ada172, type: 2}
+    skillLine: {fileID: 11400000, guid: 6bb08bddb9060e94aa0f253e585d1767, type: 2}
     skillAudio: {fileID: 8300000, guid: 4e529cc69e89e1f4dbed8cb0097f44c1, type: 3}
     skillVfx: 4
   specialAttackExecutor:
-    specialAttackAni: {fileID: 11400000, guid: 0c85288e288d93d43b2bae14d04345ec, type: 2}
+    specialAttackLine: {fileID: 11400000, guid: 431f08b4fb8730142b7edf5957144b13, type: 2}
+    specialAttackAudio: {fileID: 0}
+    specialAttackVfx: 0
   attackedExecutor:
-    attackedAni: {fileID: 11400000, guid: c5140a6703675424b9d4d0e809b2b599, type: 2}
+    attackedLine: {fileID: 11400000, guid: bd73b05db86848e4497a769ad1d06c09, type: 2}
     attackedSfx: {fileID: 8300000, guid: 74d1ee2c4cf2c45479bd1aceec8ccb3e, type: 3}
-    hasNextAni: 0
-    nextAttackedAni: {fileID: 0}
+    nextAttackedLine: {fileID: 11400000, guid: 4c6757a27c5f49d0a8713f92ff9d9e5b, type: 2}
   dieExecutor:
-    dieAnimation: {fileID: 11400000, guid: f44d21863553c41409b9e5ba4d457b9c, type: 2}
+    dieLine: {fileID: 11400000, guid: dc1e74643dbf1434f98eb2b4ee85e130, type: 2}

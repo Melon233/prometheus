@@ -17,10 +17,15 @@ namespace Xuan.Prometheus.Logic
             AddComp(bindGo.GetComponent<PropertyComponent>());
             AddComp(bindGo.GetComponent<AttackComponent>());
             AddComp(bindGo.GetComponent<SpineComponent>());
+            AddComp(bindGo.GetComponent<VfxComponent>());
+            AddComp(bindGo.GetComponent<MotionComponent>());
             AddComp(bindGo.GetComponent<EnemyAiComponent>());
             AddComp<EventComponent>();
             AddComp(bindGo.GetComponent<EffectComponent>());
             AddLogic<EnemyAiLogic>();
+            AddLogic<EnemyAirMoveLogic>();
+            AddLogic<EnemyStunIdleLogic>();
+            AddLogic<MotionLogic>();
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();
