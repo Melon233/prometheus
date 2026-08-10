@@ -16,9 +16,10 @@ namespace Xuan.Prometheus.Logic
         private SkillComponent skillComponent;
         private UltimateComponent ultimateComponent;
         private PropertyComponent propertyComponent;
-        private EventComponent eventComponent;
         private EffectComponent effectComponent;
         private VfxComponent vfxComponent;
+        /// <summary>记录当前玩家动作贡献的 Root 状态句柄，保证叠加来源能够按身份精确释放。</summary>
+        private ControlStateModifier movementLockModifier;
         private AnimationPlayback activePlayback;
         private ColliderProxy activeCollider;
         private AudioClip activeAudio;
@@ -37,7 +38,7 @@ namespace Xuan.Prometheus.Logic
                 return;
             }
             float requestedDamage = propertyComponent.GetCalculatedDamage();
-            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire | EffectTag.Control, "Player.NormalAttack", position: other.transform.position);
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire, "Player.NormalAttack", position: other.transform.position);
             effectComponent.Runtime.Publish(signal);
         }
 
@@ -49,42 +50,17 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out spineComponent);
             Entity.TryGetComp(out attackComponent);
             Entity.TryGetComp(out propertyComponent);
-            Entity.TryGetComp(out eventComponent);
             Entity.TryGetComp(out specialAttackComponent);
             Entity.TryGetComp(out skillComponent);
             Entity.TryGetComp(out ultimateComponent);
             Entity.TryGetComp(out effectComponent);
             Entity.TryGetComp(out vfxComponent);
-            eventComponent.AddListener<MotionBlockerStartEvent>(OnMotionBlockerStart);
-            eventComponent.AddListener<MotionBlockerEndEvent>(OnMotionBlockerEnd);
             attackComponent.atkCollider.handler = this;
             skillComponent.colliderProxy.handler = this;
             ultimateComponent.colliderProxy.handler = this;
             specialAttackComponent.colliderProxy.handler = this;
             effectComponent.RegisterCombatFlowTriggers(Entity);
             DisableAttackColliders();
-        }
-
-        /// <summary>在玩家动作期间阻塞移动相关 Logic，阻塞计数由一次性 AnimationPlayback 对称释放。</summary>
-        private void OnMotionBlockerStart(MotionBlockerStartEvent evt)
-        {
-            Entity.BlockLogic<GroundMoveLogic>();
-            Entity.BlockLogic<JumpLogic>();
-            Entity.BlockLogic<MotionLogic>();
-            Entity.BlockLogic<RotateLogic>();
-            Entity.BlockLogic<DodgeLogic>();
-            attackComponent.isBlocking = true;
-        }
-
-        /// <summary>在玩家动作完成或中断后释放移动相关 Logic。</summary>
-        private void OnMotionBlockerEnd(MotionBlockerEndEvent evt)
-        {
-            Entity.UnBlockLogic<GroundMoveLogic>();
-            Entity.UnBlockLogic<MotionLogic>();
-            Entity.UnBlockLogic<RotateLogic>();
-            Entity.UnBlockLogic<JumpLogic>();
-            Entity.UnBlockLogic<DodgeLogic>();
-            attackComponent.isBlocking = false;
         }
 
         public override bool CanEnable()
@@ -180,7 +156,7 @@ namespace Xuan.Prometheus.Logic
             BeginAction(playback, ultimateComponent.colliderProxy, configuration.AudioClip, true, configuration.Vfx, false);
         }
 
-        /// <summary>绑定一次成功播放的玩法上下文并发布一层移动阻塞；被拒绝的播放不会改变任何玩法状态。</summary>
+        /// <summary>绑定一次成功播放的玩法上下文并通过来源句柄贡献 Root 状态；被拒绝的播放不会改变任何玩法状态。</summary>
         private bool BeginAction(AnimationPlayback playback, ColliderProxy colliderProxy, AudioClip audioClip, bool hasVfx, YefaVfx vfx, bool allowsCombo)
         {
             if (playback == null) return false;
@@ -194,7 +170,7 @@ namespace Xuan.Prometheus.Logic
             if (allowsCombo) attackComponent.canCombo = false;
             playback.EventReceived += OnAnimationEvent;
             playback.Finished += OnAnimationFinished;
-            eventComponent.Invoke(new MotionBlockerStartEvent());
+            AcquireMovementLock();
             return true;
         }
 
@@ -227,7 +203,7 @@ namespace Xuan.Prometheus.Logic
             activeAllowsCombo = false;
             attackComponent.currentAnimation = null;
             attackComponent.canCombo = true;
-            if (attackComponent.isBlocking) eventComponent.Invoke(new MotionBlockerEndEvent());
+            ReleaseMovementLock();
         }
 
         /// <summary>控制状态禁用 TalentLogic 时主动停止自己的动画并立即关闭全部攻击碰撞体。</summary>
@@ -236,10 +212,10 @@ namespace Xuan.Prometheus.Logic
             spineComponent.Stop(AnimationOwner.PlayerAction);
             DisableAttackColliders();
             attackComponent.currentAnimation = null;
-            if (attackComponent.isBlocking) eventComponent.Invoke(new MotionBlockerEndEvent());
+            ReleaseMovementLock();
         }
 
-        /// <summary>回收时关闭碰撞体、解绑代理并对称注销实体事件。</summary>
+        /// <summary>回收时关闭碰撞体、解绑代理并精确释放当前动作持有的 Root 状态。</summary>
         public override void OnDispose()
         {
             DisableAttackColliders();
@@ -247,10 +223,23 @@ namespace Xuan.Prometheus.Logic
             if (specialAttackComponent != null && specialAttackComponent.colliderProxy != null && ReferenceEquals(specialAttackComponent.colliderProxy.handler, this)) specialAttackComponent.colliderProxy.handler = null;
             if (skillComponent != null && skillComponent.colliderProxy != null && ReferenceEquals(skillComponent.colliderProxy.handler, this)) skillComponent.colliderProxy.handler = null;
             if (ultimateComponent != null && ultimateComponent.colliderProxy != null && ReferenceEquals(ultimateComponent.colliderProxy.handler, this)) ultimateComponent.colliderProxy.handler = null;
-            if (eventComponent != null) eventComponent.RemoveListener<MotionBlockerStartEvent>(OnMotionBlockerStart);
-            if (eventComponent != null) eventComponent.RemoveListener<MotionBlockerEndEvent>(OnMotionBlockerEnd);
+            ReleaseMovementLock();
             activePlayback = null;
             effectComponent = null;
+        }
+
+        /// <summary>首次进入玩家动作时添加一份来源明确的 Root 状态，连续动作替换复用同一份状态贡献。</summary>
+        private void AcquireMovementLock()
+        {
+            if (movementLockModifier == null) movementLockModifier = propertyComponent.AddControlStateModifier(ControlState.Root);
+        }
+
+        /// <summary>动作自然完成、被 Stun 打断或实体回收时精确移除当前动作持有的 Root 状态。</summary>
+        private void ReleaseMovementLock()
+        {
+            if (movementLockModifier == null) return;
+            propertyComponent.RemoveControlStateModifier(movementLockModifier);
+            movementLockModifier = null;
         }
 
         /// <summary>关闭玩家全部攻击命中盒，兼容部分预制体尚未初始化 ColliderProxy.cod 的构造阶段。</summary>

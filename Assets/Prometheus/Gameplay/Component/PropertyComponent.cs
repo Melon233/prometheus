@@ -17,7 +17,9 @@ namespace Xuan.Prometheus.Component
         /// <summary>禁锢只禁止位移相关行为，仍允许普通攻击和主动技能。</summary>
         Root = 1 << 1,
         /// <summary>沉默只禁止主动技能，仍允许移动和普通攻击。</summary>
-        Silence = 1 << 2
+        Silence = 1 << 2,
+        /// <summary>受击状态严格跟随受击动画会话，期间禁止主动行为和移动，但不停止重力、Effect 或死亡流程。</summary>
+        Attacked = 1 << 3
     }
 
     /// <summary>
@@ -51,7 +53,9 @@ namespace Xuan.Prometheus.Component
         JumpSpeed,
         Gravity,
         CoreEnergyLimit,
-        UltEnergyLimit
+        UltEnergyLimit,
+        /// <summary>标识抵抗伤害打断的韧性属性；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
+        Toughness
     }
 
     /// <summary>
@@ -197,6 +201,11 @@ namespace Xuan.Prometheus.Component
         private readonly ModifiableProperty def = new ModifiableProperty();
 
         /// <summary>
+        /// 保存韧性的基础值、Boost、Offset 和最终值。
+        /// </summary>
+        private readonly ModifiableProperty toughness = new ModifiableProperty();
+
+        /// <summary>
         /// 保存当前移动模式速度的基础值、Boost、Offset 和最终值。
         /// </summary>
         private readonly ModifiableProperty moveSpeed = new ModifiableProperty();
@@ -255,6 +264,11 @@ namespace Xuan.Prometheus.Component
         /// 获取已经应用 Boost 和 Offset 的防御力。
         /// </summary>
         public float Def => def.Value;
+
+        /// <summary>
+        /// 获取已经应用 Boost 和 Offset 的韧性。
+        /// </summary>
+        public float Toughness => toughness.Value;
 
         /// <summary>
         /// 获取已经应用 Boost 和 Offset 的当前移动速度。
@@ -322,8 +336,11 @@ namespace Xuan.Prometheus.Component
         /// <summary>获取全部 ControlStateModifier 合并后的当前控制状态。</summary>
         public ControlState ActiveControlStates { get; private set; }
 
-        /// <summary>获取实体是否可以执行普通攻击、转向和 AI 决策等主动行为。</summary>
-        public bool CanAct => !isDead && !HasAnyControlState(ControlState.Stun);
+        /// <summary>获取实体是否可以执行普通攻击、转向和 AI 决策等主动行为；Stun 或受击动画存续时均不可行动。</summary>
+        public bool CanAct => !isDead && !HasAnyControlState(ControlState.Stun | ControlState.Attacked);
+
+        /// <summary>获取实体当前是否处于由受击动画生命周期持有的受击状态。</summary>
+        public bool IsAttacked => HasAnyControlState(ControlState.Attacked);
 
         /// <summary>获取实体是否可以执行地面移动、空中横移、跳跃、闪避、巡逻或追击。</summary>
         public bool CanMove => CanAct && !HasAnyControlState(ControlState.Root);
@@ -475,6 +492,7 @@ namespace Xuan.Prometheus.Component
                 case PropertyType.Gravity: return gravity;
                 case PropertyType.CoreEnergyLimit: return coreEnergyLimit;
                 case PropertyType.UltEnergyLimit: return ultEnergyLimit;
+                case PropertyType.Toughness: return toughness;
                 default: throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported property type.");
             }
         }
@@ -499,6 +517,7 @@ namespace Xuan.Prometheus.Component
         {
             atk.SetBaseValue(propConfig == null ? 0f : propConfig.atk);
             def.SetBaseValue(propConfig == null ? 0f : propConfig.def);
+            toughness.SetBaseValue(propConfig == null ? 0f : propConfig.toughness);
             moveSpeed.SetBaseValue(propConfig == null ? 0f : propConfig.runSpeed);
             atkSpeed.SetBaseValue(propConfig == null ? 1f : propConfig.atkSpeed);
             critRate.SetBaseValue(propConfig == null ? 0f : propConfig.critRate);

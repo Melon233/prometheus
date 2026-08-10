@@ -49,7 +49,7 @@ namespace Xuan.Prometheus.Effects
             ConfigureBurning(burning);
             ConfigureCombatFlow(combatFlow);
             ConfigureStun(stun);
-            ConfigureAttackTriggers(attackTriggers, directDamage, burning, stun);
+            ConfigureAttackTriggers(attackTriggers, directDamage, burning);
             ConfigureCombatFlowTriggers(combatFlowTriggers, combatFlow);
             ConfigureLibrary(library, directDamage, burning, combatFlow, stun, attackTriggers, combatFlowTriggers);
         }
@@ -74,7 +74,7 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private static void ConfigureDirectDamage(EffectDefinition definition)
         {
-            List<EffectOperation> applyOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack) };
+            List<EffectOperation> applyOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack, EffectValueFormula.Constant(2f)) };
             definition.ConfigureForTests(DirectDamageId, EffectTag.Attack, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, applyOperations, null, null, null);
         }
 
@@ -83,7 +83,7 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private static void ConfigureBurning(EffectDefinition definition)
         {
-            List<EffectOperation> tickOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Fire | EffectTag.Dot | EffectTag.Periodic) };
+            List<EffectOperation> tickOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Fire | EffectTag.Dot | EffectTag.Periodic, EffectValueFormula.Constant(0f)) };
             definition.ConfigureForTests(BurningId, EffectTag.Fire | EffectTag.Dot | EffectTag.Debuff, EffectDurationType.Duration, 10f, 1f, EffectStackPolicy.RefreshDuration, EffectStackKeyPolicy.DefinitionAndCaster, 1, EffectExecutionPhase.Apply, 20, null, null, tickOperations, null);
         }
 
@@ -115,17 +115,15 @@ namespace Xuan.Prometheus.Effects
         }
 
         /// <summary>
-        /// 配置命中伤害，以及由 Fire 和 Control 标签分别附加燃烧与眩晕的三条规则。
+        /// 配置命中伤害与 Fire 附加燃烧；伤害打断事件由 DamageOperation 在严格超过目标韧性时直接发布。
         /// </summary>
-        private static void ConfigureAttackTriggers(EffectTriggerSet triggerSet, EffectDefinition directDamage, EffectDefinition burning, EffectDefinition stun)
+        private static void ConfigureAttackTriggers(EffectTriggerSet triggerSet, EffectDefinition directDamage, EffectDefinition burning)
         {
             EffectTriggerDefinition damageTrigger = new EffectTriggerDefinition();
             damageTrigger.ConfigureForTests("Example.OnAttackHit.Damage", EffectSignalType.HitConfirmed, EffectListenScope.Source, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Attack) }, new[] { directDamage });
             EffectTriggerDefinition burningTrigger = new EffectTriggerDefinition();
             burningTrigger.ConfigureForTests("Example.OnFireHit.Burning", EffectSignalType.HitConfirmed, EffectListenScope.Source, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Fire) }, new[] { burning });
-            EffectTriggerDefinition stunTrigger = new EffectTriggerDefinition();
-            stunTrigger.ConfigureForTests("Example.OnControlHit.Stun", EffectSignalType.HitConfirmed, EffectListenScope.Source, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Control) }, new[] { stun });
-            triggerSet.ConfigureForTests(new[] { damageTrigger, burningTrigger, stunTrigger });
+            triggerSet.ConfigureForTests(new[] { damageTrigger, burningTrigger });
         }
 
         /// <summary>

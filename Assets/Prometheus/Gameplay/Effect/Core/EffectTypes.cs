@@ -181,6 +181,12 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取最终实际数值。</summary>
         public float Value { get; }
 
+        /// <summary>获取伤害配置提供的打断能力；零表示该伤害不能触发韧性打断。</summary>
+        public float InterruptPower { get; }
+
+        /// <summary>获取本次伤害是否首次把目标从存活推进到死亡。</summary>
+        public bool WasFatal { get; }
+
         /// <summary>获取信号标签。</summary>
         public EffectTag Tags { get; }
 
@@ -196,7 +202,7 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建一条战斗信号；SignalChainId 为零时由 EffectRuntime 在因果链开始时自动分配。
         /// </summary>
-        public EffectSignal(EffectSignalType type, Entity source, Entity target, Entity caster, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, long signalChainId = 0L, int chainDepth = 0)
+        public EffectSignal(EffectSignalType type, Entity source, Entity target, Entity caster, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, long signalChainId = 0L, int chainDepth = 0, float interruptPower = 0f, bool wasFatal = false)
         {
             Type = type;
             Source = source;
@@ -204,6 +210,8 @@ namespace Xuan.Prometheus.Effects
             Caster = caster;
             RequestedValue = requestedValue;
             Value = value;
+            InterruptPower = Mathf.Max(0f, interruptPower);
+            WasFatal = wasFatal;
             Tags = tags;
             AbilityId = abilityId ?? string.Empty;
             OriginEffectInstanceId = originEffectInstanceId;
@@ -225,9 +233,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 基于当前信号创建同一事务中的子信号，并自动增加触发链深度。
         /// </summary>
-        public EffectSignal CreateChild(EffectSignalType type, Entity source, Entity target, Entity caster, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default)
+        public EffectSignal CreateChild(EffectSignalType type, Entity source, Entity target, Entity caster, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, float? interruptPower = null, bool? wasFatal = null)
         {
-            return new EffectSignal(type, source, target, caster, requestedValue, value, tags, abilityId, originEffectInstanceId, position, SignalChainId, ChainDepth + 1);
+            return new EffectSignal(type, source, target, caster, requestedValue, value, tags, abilityId, originEffectInstanceId, position, SignalChainId, ChainDepth + 1, interruptPower ?? InterruptPower, wasFatal ?? WasFatal);
         }
     }
 

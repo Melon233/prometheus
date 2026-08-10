@@ -119,7 +119,7 @@ namespace Xuan.Prometheus.Ai.Tests
 
         /// <summary>验证项目正式 Slime 资产图有效、预制体已经绑定新 AI，并且不再携带旧 AI MonoComponent。</summary>
         [Test]
-        public void SlimeContent_UsesValidatedDefinitionAndNoLegacyAiComponents()
+        public void SlimeContent_UsesValidatedDefinitionAndExcludesRetiredAiComponents()
         {
             EnemyAiDefinition definition = AssetDatabase.LoadAssetAtPath<EnemyAiDefinition>("Assets/BundleResources/Config/Ai/SlimeEnemyAi.asset");
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/BundleResources/Enemy/Slime.prefab");

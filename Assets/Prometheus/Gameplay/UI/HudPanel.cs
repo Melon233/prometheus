@@ -8,6 +8,16 @@ namespace Xuan.Prometheus
     [UIPanelConfig("Prefabs_HudPanel", UIPanelLayer.Normal, UIPanelClosePolicy.Cache)]
     public sealed class HudPanel : HudPanelBase
     {
+        /// <summary>保存当前 HUD 实际订阅的事件总线实例，确保最终解绑时移除同一条监听。</summary>
+        private IEventKit eventKit;
+
+        /// <summary>组件绑定完成后订阅当前玩家生命值变化事件，使缓存中的 HUD 也能持续同步最新数值。</summary>
+        protected override void OnBind()
+        {
+            eventKit = Core.Event ?? throw new System.InvalidOperationException($"{nameof(HudPanel)} requires EventKit before binding.");
+            eventKit.AddListener<SelfHpChangedEvent>(Event.SelfHpChanged, OnSelfHpChanged);
+        }
+
         /// <summary>
         /// 首次创建控制器时验证生成字段已经成功绑定。
         /// </summary>
@@ -22,6 +32,21 @@ namespace Xuan.Prometheus
         protected override void OnOpen()
         {
             Debug.Log($"[UIKit] {nameof(HudPanel)} opened.", Root);
+        }
+
+        /// <summary>收到当前玩家受伤事件后同步血条填充长度与生命值文本。</summary>
+        private void OnSelfHpChanged(SelfHpChangedEvent eventData)
+        {
+            HpBar.fillAmount = eventData.MaxHp > 0f ? Mathf.Clamp01(eventData.CurrentHp / eventData.MaxHp) : 0f;
+            Hp.text = $"{eventData.CurrentHp:0.##} / {eventData.MaxHp:0.##}";
+        }
+
+        /// <summary>HUD 最终释放前移除全局生命值监听，避免事件总线继续持有失效控制器。</summary>
+        protected override void OnUnbind()
+        {
+            if (eventKit == null) return;
+            eventKit.RemoveListener<SelfHpChangedEvent>(Event.SelfHpChanged, OnSelfHpChanged);
+            eventKit = null;
         }
 
         /// <summary>
@@ -112,6 +137,5 @@ namespace Xuan.Prometheus
         {
             throw new System.NotImplementedException();
         }
-
     }
 }

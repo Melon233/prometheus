@@ -268,7 +268,7 @@ namespace Xuan.Prometheus.Editor
                 }
 
                 editingBindingName = editedBindingName;
-                if (Event.current.rawType == UnityEngine.EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
+                if (UnityEngine.Event.current.rawType == UnityEngine.EventType.KeyDown && (UnityEngine.Event.current.keyCode == KeyCode.Return || UnityEngine.Event.current.keyCode == KeyCode.KeypadEnter))
                     CommitEditingBindingName(true);
             }
             else if (wasEditingCurrentName)
@@ -278,7 +278,7 @@ namespace Xuan.Prometheus.Editor
             bool shouldRemove = GUI.Button(removeRect, new GUIContent("×", $"Remove binding currently displayed at index {displayIndex}."), EditorStyles.miniButton);
             EditorGUIUtility.AddCursorRect(dragHandleRect, MouseCursor.Pan);
             GUI.Box(dragHandleRect, new GUIContent("≡", "Drag this binding to reorder the list."), EditorStyles.miniButton);
-            Event currentEvent = Event.current;
+            UnityEngine.Event currentEvent = UnityEngine.Event.current;
             if (currentEvent.type == UnityEngine.EventType.MouseDown && currentEvent.button == 0 && dragHandleRect.Contains(currentEvent.mousePosition))
                 BeginBindingDrag(rowRect, listRect, rowPitch, rowIndex, dragControlId);
 
@@ -290,7 +290,7 @@ namespace Xuan.Prometheus.Editor
         /// </summary>
         private void BeginBindingDrag(Rect rowRect, Rect listRect, float rowPitch, int rowIndex, int dragControlId)
         {
-            Event currentEvent = Event.current;
+            UnityEngine.Event currentEvent = UnityEngine.Event.current;
             CommitEditingBindingName(true);
             draggedBindingIndex = rowIndex;
             dragInsertionIndex = rowIndex;
@@ -311,7 +311,7 @@ namespace Xuan.Prometheus.Editor
         /// </summary>
         private void UpdateBindingDragTarget(Rect listRect, float rowPitch, int bindingCount, int dragControlId)
         {
-            Event currentEvent = Event.current;
+            UnityEngine.Event currentEvent = UnityEngine.Event.current;
             if (currentEvent.type != UnityEngine.EventType.MouseDrag || !IsBindingDragActive(dragControlId))
                 return;
 
@@ -357,7 +357,7 @@ namespace Xuan.Prometheus.Editor
         /// </summary>
         private float GetDragAnimationDeltaTime()
         {
-            if (Event.current.type != UnityEngine.EventType.Repaint || draggedBindingIndex < 0)
+            if (UnityEngine.Event.current.type != UnityEngine.EventType.Repaint || draggedBindingIndex < 0)
                 return 0f;
 
             double currentTime = EditorApplication.timeSinceStartup;
@@ -498,7 +498,7 @@ namespace Xuan.Prometheus.Editor
             if (!IsBindingDragActive(dragControlId))
                 return;
 
-            Event currentEvent = Event.current;
+            UnityEngine.Event currentEvent = UnityEngine.Event.current;
             if (currentEvent.type == UnityEngine.EventType.KeyDown && currentEvent.keyCode == KeyCode.Escape)
             {
                 CancelBindingDrag();

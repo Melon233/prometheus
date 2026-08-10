@@ -10,11 +10,11 @@ namespace Xuan.Prometheus.Logic
     {
         /// <summary>该 Logic 属于输入采样、物理、受击、死亡或 Effect 生命周期等基础设施，不受控制状态暂停。</summary>
         None = 0,
-        /// <summary>该 Logic 需要普通行动能力；Stun 存在时不可执行。</summary>
+        /// <summary>该 Logic 需要普通行动能力；Stun 或受击动画状态存在时不可执行。</summary>
         Act = 1 << 0,
-        /// <summary>该 Logic 需要移动能力；Stun 或 Root 存在时不可执行。</summary>
+        /// <summary>该 Logic 需要移动能力；Stun、受击动画状态或 Root 存在时不可执行。</summary>
         Move = 1 << 1,
-        /// <summary>该 Logic 需要主动技能能力；Stun 或 Silence 存在时不可执行。</summary>
+        /// <summary>该 Logic 需要主动技能能力；Stun、受击动画状态或 Silence 存在时不可执行。</summary>
         ActiveSkill = 1 << 2
     }
 

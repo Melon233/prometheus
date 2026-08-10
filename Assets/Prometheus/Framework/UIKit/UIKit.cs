@@ -40,7 +40,7 @@ namespace Xuan.Prometheus
         bool IsPanelOpen<TPanel>() where TPanel : UIPanel;
 
         /// <summary>
-        /// 获取当前正在显示和更新的世界空间 UI 实例数量。
+        /// 获取当前正在显示和更新的世界锚点 UI 实例数量。
         /// </summary>
         int ActiveWorldUICount { get; }
 
@@ -53,6 +53,9 @@ namespace Xuan.Prometheus
         /// 在固定世界坐标生成一个世界空间 UI，适合伤害飘字和一次性提示。
         /// </summary>
         WorldUIHandle SpawnWorldUI(string assetAddress, Vector3 worldPosition, float lifetime = 0f);
+
+        /// <summary>在固定世界坐标生成一个投影到屏幕空间 Overlay Canvas 的 UI，适合必须显示在场景模型之上的伤害飘字。</summary>
+        WorldUIHandle SpawnScreenSpaceWorldUI(string assetAddress, Vector3 worldPosition, float lifetime = 0f);
 
         /// <summary>
         /// 主动回收一个世界空间 UI 租约；已经失效或属于其他 UIKit 的句柄会被安全忽略。
@@ -73,8 +76,14 @@ namespace Xuan.Prometheus
     {
         private const string RootName = "[UIKit]";
         private const string WorldRootName = "[UIKit.World]";
+        /// <summary>屏幕空间世界锚点 Canvas 的运行时根节点名称。</summary>
+        private const string WorldOverlayRootName = "[UIKit.WorldOverlay]";
         private const int WorldUIPoolCapacityPerAsset = 32;
+        /// <summary>使世界锚点飘字位于场景模型之上但低于普通 UIKit 面板。</summary>
+        private const int WorldOverlaySortingOrder = -1;
         private const float WorldCanvasScale = 0.01f;
+        /// <summary>相机不可用或世界锚点位于相机背后时使用的屏幕外隐藏坐标。</summary>
+        private static readonly Vector2 HiddenScreenPosition = new Vector2(-100000f, -100000f);
         private readonly IAssetKit assetKit;
         private readonly Dictionary<Type, UIPanelRecord> panelRecords = new Dictionary<Type, UIPanelRecord>();
         private readonly Dictionary<UIPanelLayer, RectTransform> layerRoots = new Dictionary<UIPanelLayer, RectTransform>();
@@ -87,6 +96,10 @@ namespace Xuan.Prometheus
         private RectTransform worldCanvasRoot;
         private RectTransform worldCacheRoot;
         private Canvas worldCanvas;
+        /// <summary>持有独立屏幕空间世界锚点 Canvas 的跨场景根对象。</summary>
+        private GameObject worldOverlayRootObject;
+        /// <summary>接收世界坐标投影结果和屏幕动画偏移的 Overlay Canvas 根变换。</summary>
+        private RectTransform worldOverlayCanvasRoot;
         private Camera worldUICamera;
         private bool isInitialized;
         private bool isDisposed;
@@ -98,7 +111,7 @@ namespace Xuan.Prometheus
         public UIKit(IAssetKit assetKit)
         {
             this.assetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
-            Core.UIKit = this;
+            Core.UI = this;
         }
 
         /// <summary>
@@ -114,6 +127,7 @@ namespace Xuan.Prometheus
             UIPanelTypeRegistry.Rebuild();
             CreateRoot();
             CreateWorldRoot();
+            CreateWorldOverlayRoot();
             isInitialized = true;
         }
 
@@ -177,7 +191,7 @@ namespace Xuan.Prometheus
             if (followTarget == null)
                 throw new ArgumentNullException(nameof(followTarget));
 
-            return SpawnWorldUIInternal(assetAddress, followTarget, followTarget.position, worldOffset, lifetime, true);
+            return SpawnWorldUIInternal(assetAddress, followTarget, followTarget.position, worldOffset, lifetime, true, WorldUIRenderSpace.WorldSpace);
         }
 
         /// <summary>
@@ -185,7 +199,13 @@ namespace Xuan.Prometheus
         /// </summary>
         public WorldUIHandle SpawnWorldUI(string assetAddress, Vector3 worldPosition, float lifetime = 0f)
         {
-            return SpawnWorldUIInternal(assetAddress, null, worldPosition, Vector3.zero, lifetime, false);
+            return SpawnWorldUIInternal(assetAddress, null, worldPosition, Vector3.zero, lifetime, false, WorldUIRenderSpace.WorldSpace);
+        }
+
+        /// <summary>在固定世界坐标生成一个屏幕空间 Overlay UI，并保留世界坐标更新、生命周期和对象池能力。</summary>
+        public WorldUIHandle SpawnScreenSpaceWorldUI(string assetAddress, Vector3 worldPosition, float lifetime = 0f)
+        {
+            return SpawnWorldUIInternal(assetAddress, null, worldPosition, Vector3.zero, lifetime, false, WorldUIRenderSpace.ScreenSpaceOverlay);
         }
 
         /// <summary>
@@ -252,12 +272,15 @@ namespace Xuan.Prometheus
             DestroyAllWorldUI();
             DestroyUnityObject(rootObject);
             DestroyUnityObject(worldRootObject);
+            DestroyUnityObject(worldOverlayRootObject);
             rootObject = null;
             cacheRoot = null;
             worldRootObject = null;
             worldCanvasRoot = null;
             worldCacheRoot = null;
             worldCanvas = null;
+            worldOverlayRootObject = null;
+            worldOverlayCanvasRoot = null;
             worldUICamera = null;
             isInitialized = false;
             isDisposed = true;
@@ -340,6 +363,16 @@ namespace Xuan.Prometheus
             ApplyWorldUITransform(record);
         }
 
+        /// <summary>更新屏幕空间世界锚点 UI 的投影后像素偏移，并立即刷新其 Canvas 坐标。</summary>
+        internal void ConfigureWorldUIScreenOffset(WorldUIHandle handle, Vector2 screenOffset)
+        {
+            if (!IsWorldUIHandleValid(handle)) throw new InvalidOperationException("Cannot configure an invalid world UI handle.");
+            WorldUIRecord record = handle.Record;
+            if (record.RenderSpace != WorldUIRenderSpace.ScreenSpaceOverlay) throw new InvalidOperationException("Screen offset can only be configured for a screen-space world UI handle.");
+            record.ScreenOffset = screenOffset;
+            ApplyWorldUITransform(record);
+        }
+
         /// <summary>
         /// 更新有效世界 UI 的自动回收时间，零表示持续显示直到主动回收或跟随目标销毁。
         /// </summary>
@@ -355,7 +388,7 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 从指定资源地址的对象池获取或创建实例，并建立一份新的世界 UI 租约。
         /// </summary>
-        private WorldUIHandle SpawnWorldUIInternal(string assetAddress, Transform followTarget, Vector3 worldPosition, Vector3 worldOffset, float lifetime, bool isFollowing)
+        private WorldUIHandle SpawnWorldUIInternal(string assetAddress, Transform followTarget, Vector3 worldPosition, Vector3 worldOffset, float lifetime, bool isFollowing, WorldUIRenderSpace renderSpace)
         {
             EnsureReady();
             ValidateWorldUIAssetAddress(assetAddress);
@@ -365,15 +398,23 @@ namespace Xuan.Prometheus
             record.FollowTarget = followTarget;
             record.FixedWorldPosition = worldPosition;
             record.WorldOffset = worldOffset;
+            record.ScreenOffset = Vector2.zero;
             record.RemainingLifetime = lifetime;
             record.IsFollowing = isFollowing;
             record.IsActive = true;
+            record.RenderSpace = renderSpace;
             WorldUIHandle handle = new WorldUIHandle(this, record, record.Version);
             record.Handle = handle;
             Transform instanceTransform = record.Instance.transform;
-            instanceTransform.SetParent(worldCanvasRoot, false);
+            instanceTransform.SetParent(ResolveWorldUIParent(renderSpace), false);
             instanceTransform.localScale = Vector3.one;
             instanceTransform.localRotation = Quaternion.identity;
+            if (renderSpace == WorldUIRenderSpace.ScreenSpaceOverlay && instanceTransform is RectTransform screenRectTransform)
+            {
+                screenRectTransform.anchorMin = Vector2.one * 0.5f;
+                screenRectTransform.anchorMax = Vector2.one * 0.5f;
+                screenRectTransform.anchoredPosition3D = Vector3.zero;
+            }
             instanceTransform.SetAsLastSibling();
             ApplyWorldUITransform(record);
             activeWorldUIRecords.Add(record);
@@ -411,7 +452,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 每帧更新世界 Canvas 朝向、所有跟随实例位置和有限生命周期实例的回收计时。
+        /// 每帧更新世界 Canvas 朝向、世界锚点投影、所有跟随实例位置和有限生命周期实例的回收计时。
         /// </summary>
         private void UpdateWorldUI(float dt)
         {
@@ -447,7 +488,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 根据跟随或固定模式设置实例世界坐标，并使实例平面与世界 Canvas 相机朝向一致。
+        /// 根据跟随或固定模式解析世界坐标，并按记录的渲染空间应用世界变换或屏幕投影。
         /// </summary>
         private void ApplyWorldUITransform(WorldUIRecord record)
         {
@@ -455,11 +496,46 @@ namespace Xuan.Prometheus
                 return;
 
             Vector3 worldPosition = record.IsFollowing && record.FollowTarget != null ? record.FollowTarget.position + record.WorldOffset : record.FixedWorldPosition + record.WorldOffset;
+            if (record.RenderSpace == WorldUIRenderSpace.ScreenSpaceOverlay)
+            {
+                ApplyScreenSpaceWorldUITransform(record, worldPosition);
+                return;
+            }
+
             Transform instanceTransform = record.Instance.transform;
             instanceTransform.position = worldPosition;
 
             if (worldCanvasRoot != null)
                 instanceTransform.rotation = worldCanvasRoot.rotation;
+        }
+
+        /// <summary>把世界坐标投影到独立 Overlay Canvas，并在目标位于相机背后时移动到不可见区域。</summary>
+        private void ApplyScreenSpaceWorldUITransform(WorldUIRecord record, Vector3 worldPosition)
+        {
+            if (!(record.Instance.transform is RectTransform rectTransform)) return;
+            if (worldUICamera == null || worldOverlayCanvasRoot == null)
+            {
+                rectTransform.anchoredPosition = HiddenScreenPosition;
+                return;
+            }
+
+            Vector3 screenPosition = worldUICamera.WorldToScreenPoint(worldPosition);
+            if (screenPosition.z <= 0f || !RectTransformUtility.ScreenPointToLocalPointInRectangle(worldOverlayCanvasRoot, screenPosition, null, out Vector2 canvasPosition))
+            {
+                rectTransform.anchoredPosition = HiddenScreenPosition;
+                return;
+            }
+
+            rectTransform.anchoredPosition = canvasPosition + record.ScreenOffset;
+            rectTransform.localRotation = Quaternion.identity;
+        }
+
+        /// <summary>根据渲染空间返回实例应该挂接的 World Space 或 Screen Space Overlay Canvas 根节点。</summary>
+        private RectTransform ResolveWorldUIParent(WorldUIRenderSpace renderSpace)
+        {
+            RectTransform parent = renderSpace == WorldUIRenderSpace.ScreenSpaceOverlay ? worldOverlayCanvasRoot : worldCanvasRoot;
+            if (parent == null) throw new InvalidOperationException($"World UI render root '{renderSpace}' has not been created.");
+            return parent;
         }
 
         /// <summary>
@@ -486,6 +562,7 @@ namespace Xuan.Prometheus
             record.IsActive = false;
             record.FollowTarget = null;
             record.IsFollowing = false;
+            record.ScreenOffset = Vector2.zero;
             record.RemainingLifetime = 0f;
             WorldUIHandle handle = record.Handle;
             record.Handle = null;
@@ -689,6 +766,24 @@ namespace Xuan.Prometheus
             worldCacheRoot.SetParent(worldCanvasRoot, false);
             StretchToParent(worldCacheRoot);
             cacheObject.SetActive(false);
+        }
+
+        /// <summary>创建独立于静态面板和世界空间血条的 Screen Space Overlay Canvas，专门承载由世界坐标投影的伤害飘字。</summary>
+        private void CreateWorldOverlayRoot()
+        {
+            worldOverlayRootObject = new GameObject(WorldOverlayRootName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+            UnityEngine.Object.DontDestroyOnLoad(worldOverlayRootObject);
+            int uiLayer = LayerMask.NameToLayer("UI");
+            worldOverlayRootObject.layer = uiLayer >= 0 ? uiLayer : 0;
+            worldOverlayCanvasRoot = worldOverlayRootObject.GetComponent<RectTransform>();
+            Canvas overlayCanvas = worldOverlayRootObject.GetComponent<Canvas>();
+            overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            overlayCanvas.sortingOrder = WorldOverlaySortingOrder;
+            CanvasScaler scaler = worldOverlayRootObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
         }
 
         /// <summary>

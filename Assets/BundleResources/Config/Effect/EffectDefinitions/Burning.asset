@@ -38,4 +38,8 @@ MonoBehaviour:
           source: 0
           multiplier: 0
           offset: 20
+        interruptPower:
+          source: 0
+          multiplier: 0
+          offset: 0
         additionalTags: 56

@@ -18,13 +18,24 @@ namespace Xuan.Prometheus.Editor
         private const float DefaultPreviewFrameRate = 30f;
         private const float MinimumPreviewFrameRate = 1f;
         private const float MaximumPreviewFrameRate = 240f;
-        private const float TimelineHeight = 96f;
+        // Timeline lane heights are named configuration fields so the ruler and both event lanes can be tuned independently.
+        private const float TimelineRulerHeight = 20f;
+        private const float SourceEventLaneHeight = 60f;
+        private const float CustomEventLaneHeight = 60f;
+        private const float TimelineDividerHeight = 1f;
+        private const float TimelineHeight = TimelineRulerHeight + SourceEventLaneHeight + TimelineDividerHeight + CustomEventLaneHeight;
         private const float MarkerWidth = 5f;
+        // Event labels use fixed dimensions so overlap detection matches the rectangles drawn by IMGUI.
+        private const float EventLabelOffsetX = 4f;
+        private const float EventLabelWidth = 100f;
+        private const float EventLabelHeight = 18f;
         private const int RulerSegmentCount = 4;
         private const BindingFlags PreviewMemberFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         private static readonly int TimelineControlHash = "AnimationLineTimelineControl".GetHashCode();
         private static readonly Color SourceEventColor = new Color(0.35f, 0.9f, 0.45f, 1f);
         private static readonly Color CustomEventColor = new Color(0.25f, 0.8f, 1f, 1f);
+        // The cached flipped style removes right padding without modifying Unity's shared mini-label style.
+        private static GUIStyle flippedEventLabelStyle;
 
         private SerializedProperty semanticProperty;
         private SerializedProperty animationReferenceAssetProperty;
@@ -333,8 +344,9 @@ namespace Xuan.Prometheus.Editor
         private static void DrawSourceEventMarkers(List<Spine.Event> sourceEvents, Rect timelineRect, float duration)
         {
             if (duration <= 0f) return;
-            float laneTop = timelineRect.yMin + 20f;
-            float laneHeight = (timelineRect.height - 20f) * 0.5f;
+            float laneTop = timelineRect.yMin + TimelineRulerHeight;
+            float laneHeight = SourceEventLaneHeight;
+            List<Rect> occupiedLabelRects = new List<Rect>(sourceEvents.Count);
             EditorGUI.DrawRect(new Rect(timelineRect.xMin, laneTop + laneHeight, timelineRect.width, 1f), new Color(1f, 1f, 1f, 0.12f));
             for (int i = 0; i < sourceEvents.Count; i++)
             {
@@ -342,7 +354,9 @@ namespace Xuan.Prometheus.Editor
                 float normalizedTime = Mathf.Clamp01(sourceEvent.Time / duration);
                 float x = Mathf.Lerp(timelineRect.xMin, timelineRect.xMax, normalizedTime);
                 EditorGUI.DrawRect(new Rect(x - MarkerWidth * 0.5f, laneTop, MarkerWidth, laneHeight), SourceEventColor);
-                GUI.Label(new Rect(x + 4f, laneTop, 100f, 18f), sourceEvent.Data.Name, EditorStyles.miniLabel);
+                Rect labelRect = GetEventLabelRect(x, laneTop, timelineRect.xMax, occupiedLabelRects);
+                GUI.Label(labelRect, sourceEvent.Data.Name, labelRect.xMax <= x ? FlippedEventLabelStyle : EditorStyles.miniLabel);
+                occupiedLabelRects.Add(labelRect);
             }
         }
 
@@ -352,16 +366,56 @@ namespace Xuan.Prometheus.Editor
         private static void DrawCustomEventMarkers(AnimationLine animationLine, Rect timelineRect, float duration)
         {
             if (duration <= 0f) return;
-            float laneTop = timelineRect.yMin + 20f + (timelineRect.height - 20f) * 0.5f + 1f;
-            float laneHeight = timelineRect.yMax - laneTop;
+            float laneTop = timelineRect.yMin + TimelineRulerHeight + SourceEventLaneHeight + TimelineDividerHeight;
+            float laneHeight = CustomEventLaneHeight;
+            List<Rect> occupiedLabelRects = new List<Rect>(animationLine.Events.Count);
             for (int i = 0; i < animationLine.Events.Count; i++)
             {
                 AnimationLineEvent marker = animationLine.Events[i];
                 float normalizedTime = Mathf.Clamp01(marker.Time / duration);
                 float x = Mathf.Lerp(timelineRect.xMin, timelineRect.xMax, normalizedTime);
                 EditorGUI.DrawRect(new Rect(x - MarkerWidth * 0.5f, laneTop, MarkerWidth, laneHeight), CustomEventColor);
-                GUI.Label(new Rect(x + 4f, laneTop, 100f, 18f), marker.EventName, EditorStyles.miniLabel);
+                Rect labelRect = GetEventLabelRect(x, laneTop, timelineRect.xMax, occupiedLabelRects);
+                GUI.Label(labelRect, marker.EventName, labelRect.xMax <= x ? FlippedEventLabelStyle : EditorStyles.miniLabel);
+                occupiedLabelRects.Add(labelRect);
             }
+        }
+
+        /// <summary>
+        /// Returns a right-aligned mini-label style whose text edge stays adjacent to a marker after the label rectangle flips left.
+        /// </summary>
+        private static GUIStyle FlippedEventLabelStyle
+        {
+            get
+            {
+                if (flippedEventLabelStyle != null) return flippedEventLabelStyle;
+                flippedEventLabelStyle = new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.MiddleRight };
+                flippedEventLabelStyle.padding.right = 0;
+                return flippedEventLabelStyle;
+            }
+        }
+
+        /// <summary>
+        /// Places a label to the marker's left near the timeline boundary and moves it down repeatedly until it no longer overlaps any earlier label in the same lane.
+        /// </summary>
+        private static Rect GetEventLabelRect(float markerX, float laneTop, float timelineRight, IReadOnlyList<Rect> occupiedLabelRects)
+        {
+            Rect labelRect = new Rect(markerX + EventLabelOffsetX, laneTop, EventLabelWidth, EventLabelHeight);
+            if (labelRect.xMax > timelineRight) labelRect.x = markerX - EventLabelOffsetX - EventLabelWidth;
+            while (DoesEventLabelOverlap(labelRect, occupiedLabelRects)) labelRect.y += labelRect.height;
+            return labelRect;
+        }
+
+        /// <summary>
+        /// Reports whether a candidate label intersects any row already occupied by an earlier event in the same lane.
+        /// </summary>
+        private static bool DoesEventLabelOverlap(Rect labelRect, IReadOnlyList<Rect> occupiedLabelRects)
+        {
+            for (int i = 0; i < occupiedLabelRects.Count; i++)
+            {
+                if (labelRect.Overlaps(occupiedLabelRects[i])) return true;
+            }
+            return false;
         }
 
         /// <summary>

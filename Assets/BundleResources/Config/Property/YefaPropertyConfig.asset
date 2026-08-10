@@ -17,6 +17,7 @@ MonoBehaviour:
   critDmg: 1
   critRate: 0.5
   def: 10
+  toughness: 1
   hp: 3000
   walkSpeed: 2
   runSpeed: 3

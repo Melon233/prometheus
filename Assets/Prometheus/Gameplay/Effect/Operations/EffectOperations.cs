@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Serialization;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -63,12 +64,14 @@ namespace Xuan.Prometheus.Effects
     }
 
     /// <summary>
-    /// DamageOperation 计算请求伤害、修改目标生命值并发布携带实际伤害的 DamageApplied 信号。
+    /// DamageOperation 计算请求伤害、修改目标生命值、发布 DamageApplied，并在打断能力严格超过韧性时发布受击事实。
     /// </summary>
     [Serializable]
     public sealed class DamageOperation : EffectOperation
     {
         [SerializeField] private EffectValueFormula amount = new EffectValueFormula();
+        /// <summary>配置本次伤害用于对比目标韧性的打断能力；零表示只扣血而不打断。</summary>
+        [SerializeField] private EffectValueFormula interruptPower = new EffectValueFormula();
         [SerializeField] private EffectTag additionalTags = EffectTag.Attack;
 
         /// <summary>
@@ -79,12 +82,13 @@ namespace Xuan.Prometheus.Effects
         }
 
         /// <summary>
-        /// 创建使用指定数值公式和标签的伤害操作。
+        /// 创建使用指定伤害公式、标签和打断能力公式的伤害操作。
         /// </summary>
-        public DamageOperation(EffectValueFormula damageAmount, EffectTag tags)
+        public DamageOperation(EffectValueFormula damageAmount, EffectTag tags, EffectValueFormula damageInterruptPower = null)
         {
             amount = damageAmount ?? EffectValueFormula.Constant(0f);
             additionalTags = tags;
+            interruptPower = damageInterruptPower ?? EffectValueFormula.Constant(0f);
         }
 
         /// <summary>
@@ -95,25 +99,35 @@ namespace Xuan.Prometheus.Effects
             if (context.Target == null) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
             float requestedDamage = Mathf.Max(0f, amount.Evaluate(context));
+            float resolvedInterruptPower = Mathf.Max(0f, interruptPower.Evaluate(context));
             float oldHp = property.Hp;
             float actualDamage = property.OnTakeDamage(requestedDamage, out bool wasFatal);
-            PublishLegacyEvents(context, property, oldHp, actualDamage, wasFatal);
+            PublishHealthEvents(context, property, oldHp, actualDamage, wasFatal);
+            PublishStaggeredEvent(context, property, actualDamage, resolvedInterruptPower, wasFatal);
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
-            EffectSignal damageSignal = context.Signal.CreateChild(EffectSignalType.DamageApplied, context.Source, context.Target, context.Caster, requestedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position);
+            EffectSignal damageSignal = context.Signal.CreateChild(EffectSignalType.DamageApplied, context.Source, context.Target, context.Caster, requestedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, wasFatal);
             context.Runtime.EnqueueSignal(damageSignal);
-            if (wasFatal) context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Killed, context.Source, context.Target, context.Caster, requestedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
+            if (wasFatal) context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Killed, context.Source, context.Target, context.Caster, requestedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, true));
         }
 
         /// <summary>
-        /// 同步发送旧玩法系统仍在监听的受击、生命变化和死亡事件，保证迁移期间表现逻辑继续工作。
+        /// 同步发送生命变化和死亡事实事件；受击控制与表现统一由 Stun Effect 和 ControlState 驱动。
         /// </summary>
-        private static void PublishLegacyEvents(EffectOperationContext context, PropertyComponent property, float oldHp, float actualDamage, bool wasFatal)
+        private static void PublishHealthEvents(EffectOperationContext context, PropertyComponent property, float oldHp, float actualDamage, bool wasFatal)
         {
             if (actualDamage <= 0f) return;
+            bool hasEntityEvents = context.Target.TryGetComp(out EventComponent eventComponent);
+            if (hasEntityEvents) eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
+            if (context.Target is PlayerEntity && Core.Event != null) Core.Event.Invoke(Event.SelfHpChanged, new SelfHpChangedEvent(oldHp, property.Hp, property.MaxHp));
+            if (wasFatal && hasEntityEvents) eventComponent.Invoke(new DieEvent());
+        }
+
+        /// <summary>仅在非致死实际伤害的打断能力严格大于目标韧性时发布受击事实，受击状态与结束时机交给动画会话维护。</summary>
+        private static void PublishStaggeredEvent(EffectOperationContext context, PropertyComponent property, float actualDamage, float resolvedInterruptPower, bool wasFatal)
+        {
+            if (actualDamage <= 0f || wasFatal || resolvedInterruptPower <= property.Toughness) return;
             if (!context.Target.TryGetComp(out EventComponent eventComponent)) return;
-            eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
-            if (wasFatal) eventComponent.Invoke(new DieEvent());
-            else eventComponent.Invoke(new AttackedEvent());
+            eventComponent.Invoke(new StaggeredEvent(actualDamage, resolvedInterruptPower, property.Toughness));
         }
     }
 
@@ -152,15 +166,15 @@ namespace Xuan.Prometheus.Effects
             float requestedHeal = Mathf.Max(0f, amount.Evaluate(context));
             float oldHp = property.Hp;
             float actualHeal = property.OnRecoverHp(requestedHeal);
-            PublishLegacyHpChangedEvent(context, property, oldHp);
+            PublishHpChangedEvent(context, property, oldHp);
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
             context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Healed, context.Source, context.Target, context.Caster, requestedHeal, actualHeal, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
         }
 
         /// <summary>
-        /// 同步发送旧界面仍在监听的生命变化事件，迁移期间不重复承担飘字表现职责。
+        /// 同步发送治疗产生的生命变化事实事件，不重复承担飘字表现职责。
         /// </summary>
-        private static void PublishLegacyHpChangedEvent(EffectOperationContext context, PropertyComponent property, float oldHp)
+        private static void PublishHpChangedEvent(EffectOperationContext context, PropertyComponent property, float oldHp)
         {
             if (!context.Target.TryGetComp(out EventComponent eventComponent)) return;
             eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
@@ -188,13 +202,14 @@ namespace Xuan.Prometheus.Effects
         }
 
         /// <summary>
-        /// 为持续效果目标创建状态 Modifier；即时效果没有可负责回滚的 EffectInstance，因此不会施加永久控制。
+        /// 为持续效果目标创建状态 Modifier；Attacked 专属于动画生命周期会被排除，即时效果也不会施加永久控制。
         /// </summary>
         public override void Execute(EffectOperationContext context)
         {
-            if (context.Instance == null || context.Target == null || states == ControlState.None) return;
+            ControlState effectOwnedStates = states & ~ControlState.Attacked;
+            if (context.Instance == null || context.Target == null || effectOwnedStates == ControlState.None) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
-            context.Instance.SetResource(BuildAutomaticKey(states), new EffectControlStateModifierHandle(property, states));
+            context.Instance.SetResource(BuildAutomaticKey(effectOwnedStates), new EffectControlStateModifierHandle(property, effectOwnedStates));
         }
 
         /// <summary>根据状态组合生成同一 EffectInstance 内稳定且可读的资源键。</summary>

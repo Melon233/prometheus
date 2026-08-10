@@ -9,7 +9,7 @@ using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus.Animation.Tests
 {
-    /// <summary>使用正式史莱姆预制体与动画库验证待机抢占恢复、语义解析和连续受击会话生命周期。</summary>
+    /// <summary>使用正式史莱姆预制体与动画库验证待机抢占恢复、语义解析以及由动画会话驱动的受击状态生命周期。</summary>
     public sealed class SlimeAnimationRegressionTests
     {
         private const string SlimePrefabPath = "Assets/BundleResources/Enemy/Slime.prefab";
@@ -25,7 +25,7 @@ namespace Xuan.Prometheus.Animation.Tests
         private PropertyComponent propertyComponent;
         private EventComponent eventComponent;
 
-        /// <summary>为每个测试实例化正式史莱姆资源，并构造只包含动画受击链路的最小 Entity 环境。</summary>
+        /// <summary>为每个测试实例化正式史莱姆资源，并构造包含真实 EnemyAiLogic 的最小 Entity 环境。</summary>
         [SetUp]
         public void SetUp()
         {
@@ -145,62 +145,77 @@ namespace Xuan.Prometheus.Animation.Tests
             Assert.That(slimeInstance.transform.position.y, Is.LessThan(startPosition.y), "MotionLogic 必须把重力速度提交给 CharacterController。");
         }
 
-        /// <summary>验证连续受击只产生一次开始与最终一次结束，并在最后一段完成后恢复可播放待机的状态。</summary>
+        /// <summary>验证连续 StaggeredEvent 会重启受击表现，同时保持唯一受击状态直到最终动画自然完成。</summary>
         [Test]
-        public void ConsecutiveHits_KeepOneReactionSessionAndRecoverAfterFinalHit()
+        public void RepeatedStaggeredEvents_KeepAttackedStateUntilFinalAnimationCompletes()
         {
-            int attackedStartCount = 0;
-            int attackedEndCount = 0;
-            eventComponent.AddListener<AttackedStartEvent>(_ => attackedStartCount++);
-            eventComponent.AddListener<AttackedEndEvent>(_ => attackedEndCount++);
-            eventComponent.Invoke(new AttackedEvent());
+            int stateChangeCount = 0;
+            eventComponent.AddListener<ControlStateChangedEvent>(_ => stateChangeCount++);
+            eventComponent.Invoke(new StaggeredEvent(10f, 2f, 1f));
             AnimationPlayback firstPlayback = spineComponent.CurrentPlayback;
-            Assert.That(firstPlayback, Is.Not.Null, "第一次受击必须创建播放会话。");
+            Assert.That(firstPlayback, Is.Not.Null, "首次达标伤害必须创建受击播放会话。");
             Assert.That(firstPlayback.Semantic, Is.EqualTo(AnimationSemantic.HitRecovery), "双段受击会话应以最终恢复段作为会话语义。");
-            Assert.That(attackedStartCount, Is.EqualTo(1));
-            Assert.That(attackedEndCount, Is.Zero);
-            eventComponent.Invoke(new AttackedEvent());
+            Assert.That(propertyComponent.IsAttacked, Is.True, "受击动画播放期间必须持有 Attacked 状态。");
+            Assert.That(propertyComponent.CanAct, Is.False);
+            Assert.That(stateChangeCount, Is.EqualTo(1));
+            eventComponent.Invoke(new StaggeredEvent(10f, 2f, 1f));
             AnimationPlayback secondPlayback = spineComponent.CurrentPlayback;
-            Assert.That(secondPlayback, Is.Not.Null, "连续受击必须创建替换播放会话。");
-            Assert.That(secondPlayback, Is.Not.SameAs(firstPlayback));
-            Assert.That(secondPlayback.Semantic, Is.EqualTo(AnimationSemantic.HitRecovery));
-            Assert.That(attackedStartCount, Is.EqualTo(1), "替换受击动画时不得重复发布 AttackedStartEvent。");
-            Assert.That(attackedEndCount, Is.Zero, "替换受击动画时不得提前发布 AttackedEndEvent。");
+            Assert.That(secondPlayback, Is.Not.Null, "连续达标伤害必须创建新的受击播放会话。");
+            Assert.That(secondPlayback, Is.Not.SameAs(firstPlayback), "聚合状态未变化时，新的 StaggeredEvent 仍必须重启受击动画。");
+            Assert.That(propertyComponent.IsAttacked, Is.True, "替换受击会话时不得瞬时退出 Attacked 状态。");
+            Assert.That(stateChangeCount, Is.EqualTo(1), "连续受击替换动画时不得重复添加或移除 Attacked 状态。");
             Assert.That(runtimeLibrary.attackedExecutor.HasRecoveryAnimation, Is.True, "史莱姆 AttackedExecutor 必须自动识别恢复动画。");
             Assert.That(runtimeLibrary.TryGetLine(AnimationSemantic.Hit, out AnimationLine hitLine), Is.True);
             Assert.That(runtimeLibrary.TryGetLine(AnimationSemantic.HitRecovery, out AnimationLine recoveryLine), Is.True);
             Assert.That(AssetDatabase.GetAssetPath(recoveryLine.AnimationReferenceAsset), Is.EqualTo(SlimeHitRecoveryReferencePath), "恢复语义必须使用史莱姆专属 leg_hitted2idle 资源。");
             AdvanceAnimation(hitLine.Duration + recoveryLine.Duration + SpineComponent.TransitionDuration + 1f);
-            Assert.That(spineComponent.CurrentPlayback, Is.Null, "最后一次受击自然完成后必须释放主轨所有权。");
-            Assert.That(attackedStartCount, Is.EqualTo(1));
-            Assert.That(attackedEndCount, Is.EqualTo(1), "连续受击结束后必须且只能发布一次 AttackedEndEvent。");
-            Assert.That(spineComponent.TryPlay(AnimationSemantic.Idle, AnimationOwner.Idle, AnimationPriority.Idle, true), Is.Not.Null, "受击最终恢复后必须能够播放 Idle。");
+            Assert.That(spineComponent.CurrentPlayback, Is.Null, "最终受击动画自然完成后必须释放主轨会话。");
+            Assert.That(propertyComponent.IsAttacked, Is.False, "最终受击动画完成后必须立即退出 Attacked 状态。");
+            Assert.That(propertyComponent.CanAct, Is.True);
+            Assert.That(stateChangeCount, Is.EqualTo(2));
         }
 
-        /// <summary>验证 Stun 不会抢占受击动画，但会在双段受击完成后持续请求并接管 Idle。</summary>
+        /// <summary>验证受击动画期间 Attacked 状态会停用 EnemyAiLogic，同时保留重力和 Motion 基础设施。</summary>
         [Test]
-        public void StunDuringHit_ReplaysIdleAfterReactionCompletes()
+        public void AttackedState_BlocksEnemyAiButKeepsGravityUntilAnimationCompletes()
         {
-            ControlStateModifier stunModifier = propertyComponent.AddControlStateModifier(ControlState.Stun);
+            animationEntity.OnUpdate(0f);
+            Assert.That(animationEntity.TryGetLogic(out EnemyAiLogic enemyAiLogic), Is.True);
+            Assert.That(enemyAiLogic.Enable, Is.True, "测试开始前 EnemyAiLogic 必须已经启用。");
             motionComponent.cc.enabled = false;
             slimeInstance.transform.position = new Vector3(0f, 20f, 0f);
             motionComponent.cc.enabled = true;
             motionComponent.curVelo = new Vector3(3f, -2f, 4f);
-            eventComponent.Invoke(new AttackedEvent());
+            eventComponent.Invoke(new StaggeredEvent(10f, 2f, 1f));
             animationEntity.OnUpdate(0.02f);
-            Assert.That(spineComponent.CurrentPlayback, Is.Not.Null, "Stun 期间仍必须先播放受击动画。");
+            Assert.That(spineComponent.CurrentPlayback, Is.Not.Null, "Attacked 状态期间必须播放受击动画。");
             Assert.That(spineComponent.CurrentPlayback.Semantic, Is.EqualTo(AnimationSemantic.HitRecovery), "低优先级 Idle 不能打断双段受击会话。");
-            Assert.That(motionComponent.curVelo.x, Is.Zero, "Stun 必须清除水平 X 速度。");
-            Assert.That(motionComponent.curVelo.z, Is.Zero, "Stun 必须清除水平 Z 速度。");
-            Assert.That(motionComponent.curVelo.y, Is.LessThan(-2f), "Stun 不能暂停竖直重力速度。");
+            Assert.That(propertyComponent.IsAttacked, Is.True);
+            Assert.That(enemyAiLogic.Enable, Is.False, "Attacked 状态必须通过行动能力门禁停用 EnemyAiLogic。");
+            Assert.That(enemyAiLogic.Brain.IsRunning, Is.False, "EnemyAiLogic 停用时必须挂起 Brain。");
+            Assert.That(motionComponent.curVelo.x, Is.Zero, "受击时必须清除水平 X 速度。");
+            Assert.That(motionComponent.curVelo.z, Is.Zero, "受击时必须清除水平 Z 速度。");
+            Assert.That(motionComponent.curVelo.y, Is.LessThan(-2f), "受击状态不能暂停竖直重力速度。");
             Assert.That(runtimeLibrary.TryGetLine(AnimationSemantic.Hit, out AnimationLine hitLine), Is.True);
             Assert.That(runtimeLibrary.TryGetLine(AnimationSemantic.HitRecovery, out AnimationLine recoveryLine), Is.True);
             AdvanceAnimation(hitLine.Duration + recoveryLine.Duration + SpineComponent.TransitionDuration + 1f);
-            Assert.That(spineComponent.CurrentPlayback, Is.Null, "受击完成时应先释放 HitReaction 会话。");
+            Assert.That(spineComponent.CurrentPlayback, Is.Null, "受击动画完成时必须释放 HitReaction 会话。");
+            Assert.That(propertyComponent.IsAttacked, Is.False);
             animationEntity.OnUpdate(0.02f);
-            Assert.That(spineComponent.CurrentPlayback, Is.Not.Null, "Stun 表现 Logic 必须在受击结束后重新请求 Idle。");
-            Assert.That(spineComponent.CurrentPlayback.Semantic, Is.EqualTo(AnimationSemantic.Idle));
-            Assert.That(propertyComponent.RemoveControlStateModifier(stunModifier), Is.True);
+            Assert.That(enemyAiLogic.Enable, Is.True, "受击动画完成后 EnemyAiLogic 必须由行动能力门禁重新启用。");
+            Assert.That(enemyAiLogic.Brain.IsRunning, Is.True);
+        }
+
+        /// <summary>验证受击动画被更高优先级会话打断时会立即释放 Attacked 状态，避免 Logic 门禁泄漏。</summary>
+        [Test]
+        public void HigherPriorityAnimation_InterruptsHitReactionAndReleasesAttackedState()
+        {
+            eventComponent.Invoke(new StaggeredEvent(10f, 2f, 1f));
+            Assert.That(propertyComponent.IsAttacked, Is.True);
+            AnimationPlayback deathPlayback = spineComponent.TryPlay(AnimationSemantic.Death, AnimationOwner.Death, AnimationPriority.Death, false, 1f, true);
+            Assert.That(deathPlayback, Is.Not.Null);
+            Assert.That(propertyComponent.IsAttacked, Is.False, "更高优先级动画打断受击会话时必须同步退出 Attacked 状态。");
+            Assert.That(propertyComponent.CanAct, Is.True);
         }
 
         /// <summary>以接近运行时帧更新的固定步长推进 Spine 状态，使排队动画能够依次切换并发布完成事件。</summary>
@@ -217,21 +232,25 @@ namespace Xuan.Prometheus.Animation.Tests
             }
         }
 
-        /// <summary>提供受击与空中运动所需的最小 Logic-Component 组合，测试不引入伤害或完整 AI 决策流程。</summary>
+        /// <summary>提供受击表现与空中运动所需的真实 EnemyAiLogic 和通用 AttackedLogic 组合，避免测试专用替代链路。</summary>
         private sealed class AnimationTestEntity : Entity
         {
-            /// <summary>注册正式动画、运动、属性组件以及重力、位移和受击 Logic。</summary>
+            /// <summary>注册正式史莱姆 AI 所需组件以及重力、位移和通用受击 Logic。</summary>
             public AnimationTestEntity(GameObject bindGameObject, SpineComponent animationComponent, MotionComponent motion, PropertyComponent property)
             {
                 bindGo = bindGameObject;
                 AddComp(animationComponent);
                 AddComp(motion);
                 AddComp(property);
+                AddComp(bindGameObject.GetComponent<AttackComponent>());
+                AddComp(bindGameObject.GetComponent<VfxComponent>());
+                AddComp(bindGameObject.GetComponent<EnemyAiComponent>());
                 AddComp<EventComponent>();
+                AddComp(bindGameObject.GetComponent<EffectComponent>());
+                AddLogic<EnemyAiLogic>();
                 AddLogic<EnemyAirMoveLogic>();
                 AddLogic<MotionLogic>();
                 AddLogic<AttackedLogic>();
-                AddLogic<EnemyStunIdleLogic>();
             }
         }
     }

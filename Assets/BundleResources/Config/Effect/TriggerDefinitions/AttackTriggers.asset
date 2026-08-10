@@ -13,23 +13,6 @@ MonoBehaviour:
   m_Name: AttackTriggers
   m_EditorClassIdentifier: 
   triggers:
-  - triggerId: Example.OnControlHit.Stun
-    signalType: 1
-    listenScope: 0
-    targetSelector: 1
-    chance: 1
-    cooldown: 0
-    oncePerSignalChain: 1
-    priority: 0
-    conditions:
-    - type: 2
-      tags: 0
-      threshold: 0
-    - type: 5
-      tags: 2048
-      threshold: 0
-    effects:
-    - {fileID: 11400000, guid: 55696f8d904e90140a11852e12c003cb, type: 2}
   - triggerId: Example.OnAttackHit.Damage
     signalType: 1
     listenScope: 0

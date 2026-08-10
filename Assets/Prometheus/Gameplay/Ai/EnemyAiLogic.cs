@@ -26,7 +26,6 @@ namespace Xuan.Prometheus.Ai
         private AnimationPlayback attackPlayback;
         private Action<bool> attackFinished;
         private bool logicEnabled;
-        private bool attackedSuspended;
         private bool brainRunning;
         private bool dead;
 
@@ -43,7 +42,7 @@ namespace Xuan.Prometheus.Ai
         public bool CanMove => Entity != null && Entity.IsActive && propertyComponent != null && propertyComponent.CanMove && !propertyComponent.IsDead && !dead;
 
         /// <summary>
-        /// 缓存全部运行时适配器、创建独立 Brain，并订阅受击和死亡生命周期事件。
+        /// 缓存全部运行时适配器、创建独立 Brain，并订阅死亡生命周期事件；受击暂停由 Entity 行动能力门禁统一处理。
         /// </summary>
         public override void AfterNew()
         {
@@ -63,22 +62,20 @@ namespace Xuan.Prometheus.Ai
             if (attackComponent.atkCollider == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not contain an attack ColliderProxy.");
             attackComponent.atkCollider.handler = this;
             if (attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = false;
-            eventComponent.AddListener<AttackedStartEvent>(OnAttackedStart);
-            eventComponent.AddListener<AttackedEndEvent>(OnAttackedEnd);
             eventComponent.AddListener<DieEvent>(OnDie);
             brain = new EnemyAiBrain(aiComponent.Definition, this, Entity.bindGo.GetInstanceID());
         }
 
-        /// <summary>只要实体未死亡就允许 Entity 调度器重新启用 AI。</summary>
+        /// <summary>只要实体未死亡且行动能力门禁允许，就允许 Entity 调度器启用 AI 宿主。</summary>
         public override bool CanEnable()
         {
             return !dead;
         }
 
-        /// <summary>AI 不主动退出，由控制状态、受击或死亡生命周期负责挂起。</summary>
+        /// <summary>死亡后主动退出 AI 宿主；Stun 和 Attacked 由 Entity 的行动能力门禁停用当前 Logic。</summary>
         public override bool CanDisable()
         {
-            return false;
+            return dead;
         }
 
         /// <summary>记录 Entity 调度器已经允许 AI 运行，并统一刷新挂起状态。</summary>
@@ -88,14 +85,14 @@ namespace Xuan.Prometheus.Ai
             RefreshBrainRunningState();
         }
 
-        /// <summary>在 Stun 等控制状态禁用 Logic 时暂停 Brain 并取消攻击窗口。</summary>
+        /// <summary>宿主退出时暂停 Brain 并取消攻击窗口。</summary>
         public override void OnDisable()
         {
             logicEnabled = false;
             RefreshBrainRunningState();
         }
 
-        /// <summary>将 Unity 帧时间交给独立 Brain。</summary>
+        /// <summary>Logic 通过行动能力门禁后才把 Unity 帧时间交给独立 Brain。</summary>
         public override void OnUpdate(float dt)
         {
             brain?.Tick(dt);
@@ -106,8 +103,6 @@ namespace Xuan.Prometheus.Ai
         {
             if (eventComponent != null)
             {
-                eventComponent.RemoveListener<AttackedStartEvent>(OnAttackedStart);
-                eventComponent.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
                 eventComponent.RemoveListener<DieEvent>(OnDie);
             }
 
@@ -232,20 +227,6 @@ namespace Xuan.Prometheus.Ai
             effectComponent.Runtime.Publish(signal);
         }
 
-        /// <summary>受击表现开始时暂停 Brain，防止移动和攻击动画覆盖受击动画。</summary>
-        private void OnAttackedStart(AttackedStartEvent evt)
-        {
-            attackedSuspended = true;
-            RefreshBrainRunningState();
-        }
-
-        /// <summary>受击表现结束后按照控制状态决定是否恢复 Brain。</summary>
-        private void OnAttackedEnd(AttackedEndEvent evt)
-        {
-            attackedSuspended = false;
-            RefreshBrainRunningState();
-        }
-
         /// <summary>死亡事实发生时永久停止 Brain，确保死亡动画不再被 AI 表现覆盖。</summary>
         private void OnDie(DieEvent evt)
         {
@@ -255,12 +236,12 @@ namespace Xuan.Prometheus.Ai
         }
 
         /// <summary>
-        /// 汇总 Entity 控制状态、受击和死亡来源，只在最终运行状态变化时调用 Brain 生命周期。
+        /// 汇总 Entity 调度器与死亡状态，只在最终运行状态变化时调用 Brain 生命周期。
         /// </summary>
         private void RefreshBrainRunningState()
         {
             if (brain == null) return;
-            bool shouldRun = logicEnabled && !attackedSuspended && !dead;
+            bool shouldRun = logicEnabled && !dead;
             if (shouldRun == brainRunning) return;
             brainRunning = shouldRun;
             if (shouldRun) brain.Resume();

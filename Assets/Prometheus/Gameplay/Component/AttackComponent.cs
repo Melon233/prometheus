@@ -11,6 +11,5 @@ namespace Xuan.Prometheus.Component
         public int nextComboIndex;
         public ColliderProxy atkCollider;
         [NonSerialized] public AnimationPlayback currentAnimation;
-        public bool isBlocking;
     }
 }

@@ -4,7 +4,7 @@ using Xuan.Prometheus.Asset;
 namespace Xuan.Prometheus
 {
     /// <summary>
-    /// 通过 UIKit 世界 UI 对象池生成伤害飘字，并把具体文本和动画参数交给飘字组件初始化。
+    /// 通过 UIKit 屏幕空间世界锚点对象池生成伤害飘字，并把具体文本和动画参数交给飘字组件初始化。
     /// </summary>
     public class FloatTextKit : MonoSingleton<FloatTextKit>
     {
@@ -14,7 +14,7 @@ namespace Xuan.Prometheus
         private FloatDamageConfig config;
 
         /// <summary>
-        /// 单例创建时加载伤害飘字配置；UIKit 及其世界空间 Canvas 由 GameCore 独立管理，无需在此缓存场景 Canvas。
+        /// 单例创建时加载伤害飘字配置；UIKit 及其屏幕空间世界锚点 Canvas 由 GameCore 独立管理，无需在此缓存场景 Canvas。
         /// </summary>
         protected override void OnAwake()
         {
@@ -34,16 +34,16 @@ namespace Xuan.Prometheus
 
             Vector2 randomPoint = Random.insideUnitCircle * Mathf.Max(0f, config.radius);
             Vector3 spawnWorldPosition = worldPosition + new Vector3(randomPoint.x, config.startHeight, randomPoint.y);
-            WorldUIHandle handle = Core.UIKit.SpawnWorldUI(WorldUIAssetAddress, spawnWorldPosition, config.lifeTime);
+            WorldUIHandle handle = Core.UI.SpawnScreenSpaceWorldUI(WorldUIAssetAddress, spawnWorldPosition, config.lifeTime);
             FloatDmgComponent damageComponent = handle.GetComponent<FloatDmgComponent>();
             if (damageComponent == null)
             {
-                Debug.LogError($"[FloatDamageKit] World UI asset '{WorldUIAssetAddress}' does not contain FloatDmgComponent on its root object.", handle.Root);
+                Debug.LogError($"[FloatDamageKit] Screen-space world UI asset '{WorldUIAssetAddress}' does not contain FloatDmgComponent on its root object.", handle.Root);
                 handle.Release();
                 return;
             }
 
-            damageComponent.Initialize(number, spawnWorldPosition, handle, config, isHeal);
+            damageComponent.Initialize(number, handle, config, isHeal);
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace Xuan.Prometheus
                 return false;
             }
 
-            if (Core.UIKit == null)
+            if (Core.UI == null)
             {
-                Debug.LogError("[FloatDamageKit] UIKit 尚未创建，无法生成世界空间伤害飘字。");
+                Debug.LogError("[FloatDamageKit] UIKit 尚未创建，无法生成屏幕空间伤害飘字。");
                 return false;
             }
 

@@ -39,8 +39,10 @@ namespace Xuan.Prometheus.Effects.Tests
             sourceConfig.atk = 20f;
             sourceConfig.def = 10f;
             sourceConfig.runSpeed = 3f;
+            sourceConfig.toughness = 1f;
             sourceConfig.hp = 100f;
             targetConfig.atk = 5f;
+            targetConfig.toughness = 1f;
             targetConfig.hp = 100f;
             sourceProperty = sourceObject.AddComponent<PropertyComponent>();
             targetProperty = targetObject.AddComponent<PropertyComponent>();
@@ -79,14 +81,17 @@ namespace Xuan.Prometheus.Effects.Tests
             registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
             targetEntity.TryGetComp(out EventComponent targetEvents);
             HpChangedEvent observedHpChange = null;
+            int staggeredCount = 0;
             targetEvents.AddListener<HpChangedEvent>(change => observedHpChange = change);
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
             runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 37f, 37f, EffectTag.Attack | EffectTag.NormalAttack));
             Assert.That(targetProperty.Hp, Is.EqualTo(63f).Within(0.0001f));
             Assert.That(observedHpChange, Is.Not.Null);
             Assert.That(observedHpChange.oldHp, Is.EqualTo(100f).Within(0.0001f));
             Assert.That(observedHpChange.newHp, Is.EqualTo(63f).Within(0.0001f));
             Assert.That(observedHpChange.maxHp, Is.EqualTo(100f).Within(0.0001f));
-            Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty);
+            Assert.That(staggeredCount, Is.EqualTo(1), "正式默认直接伤害的打断能力 2 严格超过韧性 1，因此必须触发受击事件。");
+            Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty, "即时伤害和受击事件都不得留下持续 Effect 实例。");
         }
 
         /// <summary>验证首次致死伤害只发布一次 DieEvent 和 Killed Signal，后续命中与治疗都不能让尸体再次结算死亡。</summary>
@@ -97,8 +102,10 @@ namespace Xuan.Prometheus.Effects.Tests
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int deathCount = 0;
             int hpChangedCount = 0;
+            int staggeredCount = 0;
             targetEvents.AddListener<DieEvent>(_ => deathCount++);
             targetEvents.AddListener<HpChangedEvent>(_ => hpChangedCount++);
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
             CountingOperation killedCounter = new CountingOperation();
             EffectDefinition killedCounterEffect = ScriptableObject.CreateInstance<EffectDefinition>();
             killedCounterEffect.name = "Tests.KilledCounterEffect";
@@ -118,7 +125,9 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(targetProperty.IsDead, Is.True);
                 Assert.That(deathCount, Is.EqualTo(1));
                 Assert.That(hpChangedCount, Is.EqualTo(1));
+                Assert.That(staggeredCount, Is.Zero, "致死伤害不得发布受击表现事件。");
                 Assert.That(killedCounter.ExecutionCount, Is.EqualTo(1));
+                Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty, "致死伤害不得创建受击或控制 Effect。");
                 Assert.That(targetProperty.OnRecoverHp(50f), Is.EqualTo(0f));
                 Assert.That(targetProperty.Hp, Is.EqualTo(0f));
             }
@@ -131,35 +140,71 @@ namespace Xuan.Prometheus.Effects.Tests
         }
 
         /// <summary>
-        /// 验证 Control 命中应用眩晕、重复命中只刷新持续时间，并在最终移除时恢复全部能力。
+        /// 验证严格超过韧性的实际伤害只发布受击事件，重复伤害重复发布，并且不会创建 Stun Effect。
         /// </summary>
         [Test]
-        public void Stun_ControlHitRefreshesDurationAndRestoresCapabilitiesOnRemoval()
+        public void HitReaction_QualifyingDamagePublishesEveryTimeWithoutStunEffect()
         {
+            targetProperty.SetBaseValue(PropertyType.Toughness, 1f);
             registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int stateChangeCount = 0;
+            int staggeredCount = 0;
             targetEvents.AddListener<ControlStateChangedEvent>(_ => stateChangeCount++);
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.Control));
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.EqualTo(1));
-            Assert.That(targetProperty.ActiveControlStates, Is.EqualTo(ControlState.Stun));
-            Assert.That(targetProperty.CanAct, Is.False);
-            Assert.That(targetProperty.CanMove, Is.False);
-            Assert.That(targetProperty.CanUseActiveSkill, Is.False);
-            Assert.That(stateChangeCount, Is.EqualTo(1));
-            runtime.Tick(2f);
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.Control));
-            runtime.Tick(2f);
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.EqualTo(1));
-            Assert.That(targetProperty.ActiveControlStates, Is.EqualTo(ControlState.Stun));
-            Assert.That(stateChangeCount, Is.EqualTo(1));
-            runtime.Tick(1.01f);
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.EqualTo(0));
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.NormalAttack));
+            Assert.That(staggeredCount, Is.EqualTo(1));
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.NormalAttack));
+            Assert.That(staggeredCount, Is.EqualTo(2), "每次严格超过韧性的实际伤害都必须独立发布受击事件。");
+            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.Zero);
+            Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty);
             Assert.That(targetProperty.ActiveControlStates, Is.EqualTo(ControlState.None));
             Assert.That(targetProperty.CanAct, Is.True);
             Assert.That(targetProperty.CanMove, Is.True);
             Assert.That(targetProperty.CanUseActiveSkill, Is.True);
-            Assert.That(stateChangeCount, Is.EqualTo(2));
+            Assert.That(stateChangeCount, Is.Zero, "没有 AttackedLogic 的纯 Effect 测试实体只接收事实事件，不应由伤害系统写入控制状态。");
+        }
+
+        /// <summary>验证打断能力低于、等于和高于韧性的三个边界，只有严格高于时才发布受击事件。</summary>
+        [TestCase(2.01f, false)]
+        [TestCase(2f, false)]
+        [TestCase(1.5f, true)]
+        public void HitReaction_InterruptPowerMustStrictlyExceedTargetToughness(float toughness, bool shouldReact)
+        {
+            targetProperty.SetBaseValue(PropertyType.Toughness, toughness);
+            registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
+            targetEntity.TryGetComp(out EventComponent targetEvents);
+            int staggeredCount = 0;
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack));
+            Assert.That(staggeredCount > 0, Is.EqualTo(shouldReact));
+            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.Zero);
+        }
+
+        /// <summary>验证配置了打断能力但实际伤害为零时不发布受击事件。</summary>
+        [Test]
+        public void HitReaction_ZeroActualDamageDoesNotReact()
+        {
+            registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
+            targetEntity.TryGetComp(out EventComponent targetEvents);
+            int staggeredCount = 0;
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 0f, 0f, EffectTag.Attack | EffectTag.NormalAttack));
+            Assert.That(staggeredCount, Is.Zero);
+        }
+
+        /// <summary>验证打断能力为零的 DOT 即使造成实际伤害也不会发布受击事件。</summary>
+        [Test]
+        public void HitReaction_DotWithZeroInterruptPowerDoesNotReact()
+        {
+            registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
+            targetEntity.TryGetComp(out EventComponent targetEvents);
+            int staggeredCount = 0;
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            runtime.ApplyEffect(examples.Burning, sourceEntity, targetEntity, sourceEntity);
+            runtime.Tick(1.01f);
+            Assert.That(targetProperty.Hp, Is.EqualTo(90f).Within(0.0001f));
+            Assert.That(staggeredCount, Is.Zero);
         }
 
         /// <summary>
@@ -175,7 +220,7 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(targetProperty.Hp, Is.EqualTo(70f).Within(0.0001f));
             examples.Library.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
             Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.BurningId), Is.EqualTo(1));
-            Assert.That(runtime.GetActiveEffects(targetEntity).Count, Is.EqualTo(1));
+            Assert.That(runtime.GetActiveEffects(targetEntity).Count, Is.EqualTo(1), "目标只应持有刷新后的 Burning，受击不再创建持续 Effect。");
         }
 
         /// <summary>
@@ -207,6 +252,12 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(sourceProperty.MoveSpeed, Is.EqualTo(5.5f).Within(0.0001f));
             Assert.That(sourceProperty.RemoveModifier(moveSpeedBoost), Is.True);
             Assert.That(sourceProperty.RemoveModifier(moveSpeedOffset), Is.True);
+            PropertyModifier toughnessBoost = targetProperty.AddModifier(PropertyType.Toughness, PropertyModifierMode.Boost, 0.5f);
+            PropertyModifier toughnessOffset = targetProperty.AddModifier(PropertyType.Toughness, PropertyModifierMode.Offset, 1f);
+            Assert.That(targetProperty.Toughness, Is.EqualTo(2.5f).Within(0.0001f));
+            Assert.That(targetProperty.RemoveModifier(toughnessBoost), Is.True);
+            Assert.That(targetProperty.RemoveModifier(toughnessOffset), Is.True);
+            Assert.That(targetProperty.Toughness, Is.EqualTo(1f).Within(0.0001f));
         }
 
         /// <summary>
@@ -241,7 +292,7 @@ namespace Xuan.Prometheus.Effects.Tests
         }
 
         /// <summary>
-        /// 验证 Entity 依据 Logic 的能力需求统一启停行为，同时保证 Root 与 Silence 只影响各自职责。
+        /// 验证 Entity 依据 Logic 的能力需求统一启停行为，同时保证 Root、Silence 与 Attacked 只影响各自职责。
         /// </summary>
         [Test]
         public void Entity_ControlRequirementsGateOnlyMatchingLogic()
@@ -273,17 +324,25 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(actLogic.UpdateCount, Is.EqualTo(3));
                 Assert.That(skillLogic.DisableCount, Is.EqualTo(1));
                 Assert.That(skillLogic.UpdateCount, Is.EqualTo(2));
-                ControlStateModifier stun = targetProperty.AddControlStateModifier(ControlState.Stun);
-                targetEntity.OnUpdate(0.1f);
-                Assert.That(actLogic.DisableCount, Is.EqualTo(1));
-                Assert.That(actLogic.UpdateCount, Is.EqualTo(3));
-                targetProperty.RemoveControlStateModifier(stun);
                 targetProperty.RemoveControlStateModifier(root);
                 targetProperty.RemoveControlStateModifier(silence);
                 targetEntity.OnUpdate(0.1f);
                 Assert.That(actLogic.UpdateCount, Is.EqualTo(4));
                 Assert.That(moveLogic.UpdateCount, Is.EqualTo(2));
                 Assert.That(skillLogic.UpdateCount, Is.EqualTo(3));
+                ControlStateModifier attacked = targetProperty.AddControlStateModifier(ControlState.Attacked);
+                targetEntity.OnUpdate(0.1f);
+                Assert.That(actLogic.DisableCount, Is.EqualTo(1));
+                Assert.That(moveLogic.DisableCount, Is.EqualTo(2));
+                Assert.That(skillLogic.DisableCount, Is.EqualTo(2));
+                Assert.That(actLogic.UpdateCount, Is.EqualTo(4));
+                Assert.That(moveLogic.UpdateCount, Is.EqualTo(2));
+                Assert.That(skillLogic.UpdateCount, Is.EqualTo(3));
+                targetProperty.RemoveControlStateModifier(attacked);
+                targetEntity.OnUpdate(0.1f);
+                Assert.That(actLogic.UpdateCount, Is.EqualTo(5));
+                Assert.That(moveLogic.UpdateCount, Is.EqualTo(3));
+                Assert.That(skillLogic.UpdateCount, Is.EqualTo(4));
             }
             finally
             {
@@ -320,7 +379,7 @@ namespace Xuan.Prometheus.Effects.Tests
         }
 
         /// <summary>
-        /// 验证编辑器生成的持久化资产能重新加载全部 ScriptableObject 引用和 SerializeReference 操作。
+        /// 验证编辑器生成的持久化资产能重新加载全部 ScriptableObject 引用和 SerializeReference 操作，并按照资产当前数值执行。
         /// </summary>
         [Test]
         public void GeneratedExampleAssets_LoadAndExecuteAfterSerialization()
@@ -332,18 +391,36 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(persistentLibrary.Burning, Is.Not.Null);
             Assert.That(persistentLibrary.CombatFlow, Is.Not.Null);
             Assert.That(persistentLibrary.Stun, Is.Not.Null);
+            targetProperty.SetBaseValue(PropertyType.Toughness, 1f);
+            targetEntity.TryGetComp(out EventComponent targetEvents);
+            int staggeredCount = 0;
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            float sourceAttackBeforeEffect = sourceProperty.Atk;
+            float sourceAttackSpeedBeforeEffect = sourceProperty.AtkSpeed;
+            float targetHpBeforeEffect = targetProperty.Hp;
+            EffectSignal fireAttackSignal = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, sourceAttackBeforeEffect, sourceAttackBeforeEffect, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire, "Example.FireAttack");
+            float configuredDamage = ReadConfiguredDamage(persistentLibrary.DirectDamage, fireAttackSignal);
+            float expectedActualDamage = Mathf.Min(targetHpBeforeEffect, Mathf.Max(0f, configuredDamage));
+            EffectSignal damageAppliedSignal = fireAttackSignal.CreateChild(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, configuredDamage, expectedActualDamage, fireAttackSignal.Tags | persistentLibrary.DirectDamage.Tags);
+            int expectedCombatFlowStacks = expectedActualDamage > 0f ? 1 : 0;
+            float expectedAttack = expectedCombatFlowStacks == 0 ? sourceAttackBeforeEffect : CalculateConfiguredPropertyValue(persistentLibrary.CombatFlow, PropertyType.Atk, sourceAttackBeforeEffect, damageAppliedSignal);
+            float expectedAttackSpeed = expectedCombatFlowStacks == 0 ? sourceAttackSpeedBeforeEffect : CalculateConfiguredPropertyValue(persistentLibrary.CombatFlow, PropertyType.AtkSpeed, sourceAttackSpeedBeforeEffect, damageAppliedSignal);
             registrations = persistentLibrary.RegisterAllForTests(runtime, sourceEntity);
             persistentLibrary.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
-            Assert.That(targetProperty.Hp, Is.EqualTo(80f).Within(0.0001f));
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.BurningId), Is.EqualTo(1));
-            Assert.That(runtime.GetStackCount(sourceEntity, EffectExampleFactory.CombatFlowId), Is.EqualTo(1));
-            Assert.That(sourceProperty.Atk, Is.EqualTo(22f).Within(0.0001f));
-            Assert.That(sourceProperty.AtkSpeed, Is.EqualTo(1.05f).Within(0.0001f));
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.Control));
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.EqualTo(1));
+            Assert.That(targetProperty.Hp, Is.EqualTo(targetHpBeforeEffect - expectedActualDamage).Within(0.0001f));
+            Assert.That(runtime.GetStackCount(targetEntity, persistentLibrary.Burning.EffectId), Is.EqualTo(1));
+            Assert.That(runtime.GetStackCount(sourceEntity, persistentLibrary.CombatFlow.EffectId), Is.EqualTo(expectedCombatFlowStacks));
+            Assert.That(sourceProperty.Atk, Is.EqualTo(expectedAttack).Within(0.0001f));
+            Assert.That(sourceProperty.AtkSpeed, Is.EqualTo(expectedAttackSpeed).Within(0.0001f));
+            Assert.That(staggeredCount, Is.EqualTo(1), "持久化直接伤害配置的打断能力必须在严格超过韧性时发布受击事件。");
+            Assert.That(runtime.GetStackCount(targetEntity, persistentLibrary.Stun.EffectId), Is.Zero, "伤害受击链不得自动创建 Stun Effect。");
+            Assert.That(targetProperty.ActiveControlStates, Is.EqualTo(ControlState.None));
+            runtime.ApplyEffect(persistentLibrary.Stun, sourceEntity, targetEntity, sourceEntity);
+            Assert.That(runtime.GetStackCount(targetEntity, persistentLibrary.Stun.EffectId), Is.EqualTo(1), "Stun 仍可作为独立控制效果被显式应用。");
             Assert.That(targetProperty.ActiveControlStates, Is.EqualTo(ControlState.Stun));
-            runtime.Tick(3.01f);
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.EqualTo(0));
+            Assert.That(persistentLibrary.Stun.DurationType, Is.EqualTo(EffectDurationType.Duration));
+            runtime.Tick(persistentLibrary.Stun.Duration + 0.01f);
+            Assert.That(runtime.GetStackCount(targetEntity, persistentLibrary.Stun.EffectId), Is.EqualTo(0));
             Assert.That(targetProperty.ActiveControlStates, Is.EqualTo(ControlState.None));
         }
 
@@ -475,6 +552,85 @@ namespace Xuan.Prometheus.Effects.Tests
 
             foreach (FieldInfo field in fields)
                 Assert.That(typeof(IComponent).IsAssignableFrom(field.FieldType), Is.True, $"EffectLogic field '{field.Name}' must implement IComponent, but its type is '{field.FieldType.FullName}'.");
+        }
+
+        /// <summary>
+        /// 从持久化 EffectDefinition 的伤害操作读取数值公式，并使用本次测试信号计算配置伤害。
+        /// </summary>
+        private static float ReadConfiguredDamage(EffectDefinition definition, EffectSignal signal)
+        {
+            SerializedObject serializedDefinition = new SerializedObject(definition);
+            SerializedProperty operations = serializedDefinition.FindProperty("onApplyOperations");
+            int damageOperationCount = 0;
+            float configuredDamage = 0f;
+            for (int index = 0; index < operations.arraySize; index++)
+            {
+                SerializedProperty operation = operations.GetArrayElementAtIndex(index);
+                if (!(operation.managedReferenceValue is DamageOperation)) continue;
+                damageOperationCount++;
+                configuredDamage += Mathf.Max(0f, EvaluateConfiguredFormula(operation.FindPropertyRelative("amount"), signal));
+            }
+            Assert.That(damageOperationCount, Is.EqualTo(1), $"Persistent effect '{definition.EffectId}' must contain exactly one DamageOperation in onApplyOperations.");
+            return configuredDamage;
+        }
+
+        /// <summary>
+        /// 从持久化 EffectDefinition 的属性修改操作累计指定属性的 Boost 与 Offset，并计算该资产当前配置对应的最终值。
+        /// </summary>
+        private static float CalculateConfiguredPropertyValue(EffectDefinition definition, PropertyType propertyType, float baseValue, EffectSignal signal)
+        {
+            SerializedObject serializedDefinition = new SerializedObject(definition);
+            SerializedProperty operations = serializedDefinition.FindProperty("onApplyOperations");
+            int propertyOperationCount = 0;
+            float boost = 1f;
+            float offset = 0f;
+            for (int index = 0; index < operations.arraySize; index++)
+            {
+                SerializedProperty operation = operations.GetArrayElementAtIndex(index);
+                if (!(operation.managedReferenceValue is PropertyModifierOperation)) continue;
+                if ((PropertyType)operation.FindPropertyRelative("propertyType").enumValueIndex != propertyType) continue;
+                propertyOperationCount++;
+                float configuredValue = EvaluateConfiguredFormula(operation.FindPropertyRelative("valuePerStack"), signal);
+                PropertyModifierMode modifierMode = (PropertyModifierMode)operation.FindPropertyRelative("modifierMode").enumValueIndex;
+                if (modifierMode == PropertyModifierMode.Boost) boost += configuredValue;
+                else offset += configuredValue;
+            }
+            Assert.That(propertyOperationCount, Is.GreaterThan(0), $"Persistent effect '{definition.EffectId}' must contain a PropertyModifierOperation for '{propertyType}' in onApplyOperations.");
+            return baseValue * boost + offset;
+        }
+
+        /// <summary>
+        /// 按 EffectValueFormula 的序列化 source、multiplier 和 offset 计算期望值，使测试数值始终来源于当前资产配置。
+        /// </summary>
+        private static float EvaluateConfiguredFormula(SerializedProperty formula, EffectSignal signal)
+        {
+            Assert.That(formula, Is.Not.Null);
+            EffectValueSource source = (EffectValueSource)formula.FindPropertyRelative("source").enumValueIndex;
+            float baseValue;
+            switch (source)
+            {
+                case EffectValueSource.Constant: baseValue = 1f; break;
+                case EffectValueSource.SignalValue: baseValue = signal.Value; break;
+                case EffectValueSource.SignalRequestedValue: baseValue = signal.RequestedValue; break;
+                case EffectValueSource.SourceAttack: baseValue = ReadConfiguredProperty(signal.Source, property => property.Atk); break;
+                case EffectValueSource.TargetAttack: baseValue = ReadConfiguredProperty(signal.Target, property => property.Atk); break;
+                case EffectValueSource.SourceMaxHp: baseValue = ReadConfiguredProperty(signal.Source, property => property.MaxHp); break;
+                case EffectValueSource.TargetMaxHp: baseValue = ReadConfiguredProperty(signal.Target, property => property.MaxHp); break;
+                default: baseValue = 0f; break;
+            }
+            float multiplier = formula.FindPropertyRelative("multiplier").floatValue;
+            float offset = formula.FindPropertyRelative("offset").floatValue;
+            return baseValue * multiplier + offset;
+        }
+
+        /// <summary>
+        /// 从公式引用的测试实体读取属性组件，保持期望值计算与 EffectValueFormula 的实体来源语义一致。
+        /// </summary>
+        private static float ReadConfiguredProperty(Entity entity, Func<PropertyComponent, float> reader)
+        {
+            if (entity == null) return 0f;
+            if (!entity.TryGetComp(out PropertyComponent property)) return 0f;
+            return reader(property);
         }
 
         /// <summary>

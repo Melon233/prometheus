@@ -3,8 +3,18 @@ using UnityEngine;
 
 namespace Xuan.Prometheus
 {
+    /// <summary>指定世界锚点 UI 最终在三维世界 Canvas 还是屏幕空间 Overlay Canvas 中渲染。</summary>
+    internal enum WorldUIRenderSpace
+    {
+        /// <summary>在 World Space Canvas 中渲染并参与场景深度测试。</summary>
+        WorldSpace,
+
+        /// <summary>把世界坐标投影到 Screen Space Overlay Canvas，并始终显示在场景模型之上。</summary>
+        ScreenSpaceOverlay
+    }
+
     /// <summary>
-    /// 表示一次世界空间 UI 租约，为业务层提供根对象、Binder、跟随目标、位置和主动回收能力。
+    /// 表示一次世界锚点 UI 租约，为业务层提供根对象、Binder、跟随目标、位置和主动回收能力。
     /// 句柄回收后会立即失效，即使底层实例随后被对象池复用，旧句柄也无法操作新的显示内容。
     /// </summary>
     public sealed class WorldUIHandle
@@ -48,6 +58,9 @@ namespace Xuan.Prometheus
         /// </summary>
         public Transform FollowTarget => IsValid && record.IsFollowing ? record.FollowTarget : null;
 
+        /// <summary>获取当前实例是否通过屏幕空间 Overlay Canvas 显示。</summary>
+        public bool IsScreenSpaceOverlay => IsValid && record.RenderSpace == WorldUIRenderSpace.ScreenSpaceOverlay;
+
         /// <summary>
         /// 从有效世界 UI 根节点获取指定组件，适合不使用 Binder、直接由 MonoBehaviour 驱动的动态 UI Prefab。
         /// </summary>
@@ -85,6 +98,13 @@ namespace Xuan.Prometheus
         public void SetWorldPosition(Vector3 worldPosition)
         {
             GetOwnerOrThrow().ConfigureWorldUIPosition(this, worldPosition);
+        }
+
+        /// <summary>设置屏幕空间世界锚点 UI 在投影位置上叠加的像素偏移。</summary>
+        /// <param name="screenOffset">以 Overlay Canvas 参考分辨率为基准的二维偏移。</param>
+        public void SetScreenOffset(Vector2 screenOffset)
+        {
+            GetOwnerOrThrow().ConfigureWorldUIScreenOffset(this, screenOffset);
         }
 
         /// <summary>
@@ -161,9 +181,13 @@ namespace Xuan.Prometheus
         internal Transform FollowTarget { get; set; }
         internal Vector3 FixedWorldPosition { get; set; }
         internal Vector3 WorldOffset { get; set; }
+        /// <summary>获取或设置投影到 Overlay Canvas 后附加的二维动画偏移。</summary>
+        internal Vector2 ScreenOffset { get; set; }
         internal float RemainingLifetime { get; set; }
         internal bool IsFollowing { get; set; }
         internal bool IsActive { get; set; }
+        /// <summary>获取或设置当前租约使用的最终渲染空间。</summary>
+        internal WorldUIRenderSpace RenderSpace { get; set; }
         internal uint Version { get; set; }
         internal WorldUIHandle Handle { get; set; }
     }

@@ -129,7 +129,7 @@ namespace Xuan.Prometheus.Effects.Editor
         /// </summary>
         private void HandlePropertyModifierContextClick(Rect operationRect, string propertyName, int index, object operation)
         {
-            Event currentEvent = Event.current;
+            UnityEngine.Event currentEvent = UnityEngine.Event.current;
             if (!(operation is PropertyModifierOperation) || currentEvent.type != UnityEngine.EventType.ContextClick || !operationRect.Contains(currentEvent.mousePosition)) return;
             GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent("Copy Configuration"), false, () => CopyPropertyModifierConfiguration(propertyName, index));

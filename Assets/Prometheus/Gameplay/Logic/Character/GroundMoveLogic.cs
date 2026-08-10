@@ -9,7 +9,6 @@ namespace Xuan.Prometheus.Logic
         private SpineComponent spineComponent;
         private InputComponent inputComponent;
         private MotionComponent motionComponent;
-        private EventComponent eventComponent;
         private PropertyComponent propertyComponent;
 
         public override void AfterNew()
@@ -19,23 +18,8 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out spineComponent);
             Entity.TryGetComp(out inputComponent);
             Entity.TryGetComp(out motionComponent);
-            Entity.TryGetComp(out eventComponent);
             Entity.TryGetComp(out propertyComponent);
             SetMoveMode(MoveMode.Run);
-            eventComponent.AddListener<AttackedStartEvent>(OnAttackedStart);
-            eventComponent.AddListener<AttackedEndEvent>(OnAttackedEnd);
-        }
-
-        private void OnAttackedEnd(AttackedEndEvent evt)
-        {
-            Entity.UnBlockLogic<GroundMoveLogic>();
-            Entity.UnBlockLogic<JumpLogic>();
-        }
-
-        private void OnAttackedStart(AttackedStartEvent evt)
-        {
-            Entity.BlockLogic<GroundMoveLogic>();
-            Entity.BlockLogic<JumpLogic>();
         }
 
         public override bool CanEnable()
@@ -79,8 +63,6 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnDispose()
         {
-            eventComponent.RemoveListener<AttackedStartEvent>(OnAttackedStart);
-            eventComponent.RemoveListener<AttackedEndEvent>(OnAttackedEnd);
         }
 
         /// <summary>更新移动模式及其基础速度，最终速度仍由 PropertyComponent modifier 聚合。</summary>

@@ -24,11 +24,11 @@ namespace Xuan.Prometheus.Logic
             AddComp(bindGo.GetComponent<EffectComponent>());
             AddLogic<EnemyAiLogic>();
             AddLogic<EnemyAirMoveLogic>();
-            AddLogic<EnemyStunIdleLogic>();
             AddLogic<MotionLogic>();
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();
+            AddLogic<WorldHpBarLogic>();
         }
     }
 }

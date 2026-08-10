@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Xuan.Prometheus
 {
     /// <summary>
-    /// 驱动一个由 UIKit 世界 UI 对象池管理的伤害飘字实例，仅负责文本、颜色、缩放和上浮表现。
-    /// 世界坐标、相机朝向、生命周期与实例回收均由 WorldUIHandle 及 UIKit 负责，本组件不会自行实例化或销毁 GameObject。
+    /// 驱动一个由 UIKit 屏幕空间世界锚点对象池管理的伤害飘字实例，仅负责文本、颜色、缩放和上浮表现。
+    /// 世界坐标投影、生命周期与实例回收均由 WorldUIHandle 及 UIKit 负责，本组件不会自行实例化或销毁 GameObject。
     /// </summary>
     [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(TextMeshProUGUI))]
@@ -16,7 +16,6 @@ namespace Xuan.Prometheus
         private RectTransform rectTransform;
         private FloatDamageConfig config;
         private WorldUIHandle handle;
-        private Vector3 spawnWorldPosition;
         private Color defaultTextColor;
         private float elapsedTime;
         private bool initialized;
@@ -42,14 +41,13 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 使用本次世界 UI 租约初始化数值与动画状态，后续位置变化通过句柄同步回 UIKit 的固定坐标记录。
+        /// 使用本次屏幕空间世界 UI 租约初始化数值与动画状态，后续上浮通过句柄同步为投影后的屏幕偏移。
         /// </summary>
         /// <param name="damage">需要显示的伤害或治疗数值。</param>
-        /// <param name="originWorldPosition">包含随机半径与起始高度的实际生成世界坐标。</param>
         /// <param name="worldUIHandle">UIKit 为当前池实例建立的有效租约。</param>
         /// <param name="damageConfig">定义上浮、缩放和持续时间的伤害飘字配置。</param>
         /// <param name="isHeal">为 true 时显示绿色治疗文本，否则使用 Prefab 默认文本颜色。</param>
-        public void Initialize(float damage, Vector3 originWorldPosition, WorldUIHandle worldUIHandle, FloatDamageConfig damageConfig, bool isHeal = false)
+        public void Initialize(float damage, WorldUIHandle worldUIHandle, FloatDamageConfig damageConfig, bool isHeal = false)
         {
             ResolveReferences();
             if (worldUIHandle == null || !worldUIHandle.IsValid)
@@ -58,12 +56,14 @@ namespace Xuan.Prometheus
             if (worldUIHandle.Root != gameObject)
                 throw new System.ArgumentException("The supplied WorldUIHandle does not own this FloatDmgComponent instance.", nameof(worldUIHandle));
 
+            if (!worldUIHandle.IsScreenSpaceOverlay)
+                throw new System.ArgumentException("Float damage text requires a screen-space world UI handle.", nameof(worldUIHandle));
+
             if (damageConfig == null)
                 throw new System.ArgumentNullException(nameof(damageConfig));
 
             config = damageConfig;
             handle = worldUIHandle;
-            spawnWorldPosition = originWorldPosition;
             elapsedTime = 0f;
             initialized = true;
             text.text = damage.ToString("0.#");
@@ -93,7 +93,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 计算当前曲线采样值，将本地 UI 高度转换成世界 Canvas 的世界向量，并通过句柄更新实例位置。
+        /// 计算当前曲线采样值，并把上浮高度作为 Overlay Canvas 中的屏幕偏移写回句柄。
         /// </summary>
         /// <param name="normalizedTime">范围为零到一的动画归一化时间。</param>
         private void ApplyAnimation(float normalizedTime)
@@ -101,10 +101,7 @@ namespace Xuan.Prometheus
             float verticalProgress = config.yCurve == null ? normalizedTime : config.yCurve.Evaluate(normalizedTime);
             float scale = config.scaleCurve == null ? 1f : Mathf.Max(0f, config.scaleCurve.Evaluate(normalizedTime));
             rectTransform.localScale = Vector3.one * scale;
-            Transform worldUIRoot = rectTransform.parent;
-            Vector3 localAnimationOffset = Vector3.up * (config.height * verticalProgress);
-            Vector3 worldAnimationOffset = worldUIRoot != null ? worldUIRoot.TransformVector(localAnimationOffset) : localAnimationOffset;
-            handle.SetWorldPosition(spawnWorldPosition + worldAnimationOffset);
+            handle.SetScreenOffset(Vector2.up * (config.height * verticalProgress));
         }
 
         /// <summary>

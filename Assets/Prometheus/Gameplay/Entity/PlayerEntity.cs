@@ -40,6 +40,7 @@ namespace Xuan.Prometheus.Logic
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();
+            AddLogic<WorldHpBarLogic>();
         }
     }
 }

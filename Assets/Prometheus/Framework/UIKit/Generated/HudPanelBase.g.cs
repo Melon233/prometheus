@@ -92,6 +92,11 @@ namespace Xuan.Prometheus
         protected global::TMPro.TextMeshProUGUI Hp { get; private set; }
 
         /// <summary>
+        /// 获取 Binder 中名为 HpBar 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Image HpBar { get; private set; }
+
+        /// <summary>
         /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
         /// </summary>
         protected abstract void OnLotteryButtonClick();
@@ -193,6 +198,7 @@ namespace Xuan.Prometheus
             CharacterButton = binder.Get<global::UnityEngine.UI.Button>(14, "CharacterButton");
             BagButton = binder.Get<global::UnityEngine.UI.Button>(15, "BagButton");
             Hp = binder.Get<global::TMPro.TextMeshProUGUI>(16, "Hp");
+            HpBar = binder.Get<global::UnityEngine.UI.Image>(17, "HpBar");
 
             LotteryButton.onClick.AddListener(OnLotteryButtonClick);
             StickButton.onClick.AddListener(OnStickButtonClick);
@@ -251,6 +257,7 @@ namespace Xuan.Prometheus
             CharacterButton = null;
             BagButton = null;
             Hp = null;
+            HpBar = null;
         }
     }
 }
