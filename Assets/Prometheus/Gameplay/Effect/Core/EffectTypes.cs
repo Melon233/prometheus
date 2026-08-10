@@ -19,7 +19,8 @@ namespace Xuan.Prometheus.Effects
         EffectApplied,
         EffectStacked,
         EffectRemoved,
-        PeriodicTick
+        PeriodicTick,
+        CoreEnergyGain,
     }
 
     /// <summary>
@@ -40,7 +41,9 @@ namespace Xuan.Prometheus.Effects
         Buff = 1 << 8,
         Debuff = 1 << 9,
         Attribute = 1 << 10,
-        Control = 1 << 11
+        Control = 1 << 11,
+        CoreEnergyGain = 1 << 12,
+        UltEnergyGain = 1 << 13,
     }
 
     /// <summary>
@@ -133,7 +136,8 @@ namespace Xuan.Prometheus.Effects
         SourceAttack,
         TargetAttack,
         SourceMaxHp,
-        TargetMaxHp
+        TargetMaxHp,
+        SourceCoreEnergy,
     }
 
     /// <summary>
@@ -304,6 +308,7 @@ namespace Xuan.Prometheus.Effects
                 case EffectValueSource.TargetAttack: return ReadProperty(context.Target, property => property.Atk);
                 case EffectValueSource.SourceMaxHp: return ReadProperty(context.Source, property => property.MaxHp);
                 case EffectValueSource.TargetMaxHp: return ReadProperty(context.Target, property => property.MaxHp);
+                case EffectValueSource.SourceCoreEnergy: return ReadProperty(context.Source, property => property.CoreEnergyLimit);
                 default: return 0f;
             }
         }

@@ -319,7 +319,8 @@ namespace Xuan.Prometheus.Component
         /// 获取已经应用 Boost 和 Offset 的终结技能量上限。
         /// </summary>
         public float UltEnergyLimit => ultEnergyLimit.Value;
-
+        public float CoreEnergy { get; private set; }
+        public float UltEnergy { get; private set; }
         /// <summary>
         /// 获取实体当前生命值；生命变化只能通过伤害、治疗或初始化入口执行。
         /// </summary>
@@ -464,7 +465,14 @@ namespace Xuan.Prometheus.Component
             if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(actualRecover, transform.position, true);
             return actualRecover;
         }
-
+        public float OnGainCoreEnergy(float energy)
+        {
+            if (isDead) return 0f;
+            float safeEnergy = Mathf.Max(0f, energy);
+            var oldCoreEnergy = CoreEnergy;
+            CoreEnergy = Mathf.Min(CoreEnergyLimit, CoreEnergy + safeEnergy);
+            return CoreEnergy - oldCoreEnergy;
+        }
         /// <summary>
         /// 基于缓存的 Atk、CritRate 和 CritDmg 生成一次攻击伤害。
         /// </summary>

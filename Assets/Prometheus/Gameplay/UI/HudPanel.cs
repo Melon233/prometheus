@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Xuan.Prometheus
@@ -16,7 +17,14 @@ namespace Xuan.Prometheus
         {
             eventKit = Core.Event ?? throw new System.InvalidOperationException($"{nameof(HudPanel)} requires EventKit before binding.");
             eventKit.AddListener<SelfHpChangedEvent>(Event.SelfHpChanged, OnSelfHpChanged);
+            eventKit.AddListener<SelfCoreEnergyChangedEvent>(Event.SelfCoreEnergyChanged, OnSelfCoreEnergyChanged);
         }
+
+        private void OnSelfCoreEnergyChanged(SelfCoreEnergyChangedEvent eventData)
+        {
+            EnergyImg.fillAmount = eventData.Max > 0f ? Mathf.Clamp01(eventData.Current / eventData.Max) : 0f;
+        }
+
 
         /// <summary>
         /// 首次创建控制器时验证生成字段已经成功绑定。
@@ -46,6 +54,8 @@ namespace Xuan.Prometheus
         {
             if (eventKit == null) return;
             eventKit.RemoveListener<SelfHpChangedEvent>(Event.SelfHpChanged, OnSelfHpChanged);
+            eventKit.RemoveListener<SelfCoreEnergyChangedEvent>(Event.SelfCoreEnergyChanged, OnSelfCoreEnergyChanged);
+
             eventKit = null;
         }
 

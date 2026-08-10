@@ -6,10 +6,9 @@ namespace Xuan.Prometheus
     /// <summary>定义由全局 EventKit 路由的事件类型。</summary>
     public enum Event
     {
-        /// <summary>保留用于验证事件总线基础行为的测试事件。</summary>
-        TEST_EVENT,
         /// <summary>表示当前玩家的生命值因受到伤害而发生变化。</summary>
-        SelfHpChanged
+        SelfHpChanged,
+        SelfCoreEnergyChanged,
     }
 
     /// <summary>携带当前玩家一次受伤前后的生命值快照，供全局界面和表现系统只读消费。</summary>
@@ -30,6 +29,26 @@ namespace Xuan.Prometheus
             OldHp = oldHp;
             CurrentHp = currentHp;
             MaxHp = maxHp;
+        }
+    }
+
+    public sealed class SelfCoreEnergyChangedEvent : IEvent
+    {
+        /// <summary>获取受到本次伤害前的生命值。</summary>
+        public float Old { get; }
+
+        /// <summary>获取结算本次伤害后的当前生命值。</summary>
+        public float Current { get; }
+
+        /// <summary>获取结算本次伤害时的生命值上限。</summary>
+        public float Max { get; }
+
+        /// <summary>创建一条不可变的当前玩家生命值变化事实。</summary>
+        public SelfCoreEnergyChangedEvent(float old, float current, float max)
+        {
+            Old = old;
+            Current = current;
+            Max = max;
         }
     }
 

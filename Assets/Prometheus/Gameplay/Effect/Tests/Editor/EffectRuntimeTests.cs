@@ -616,6 +616,7 @@ namespace Xuan.Prometheus.Effects.Tests
                 case EffectValueSource.TargetAttack: baseValue = ReadConfiguredProperty(signal.Target, property => property.Atk); break;
                 case EffectValueSource.SourceMaxHp: baseValue = ReadConfiguredProperty(signal.Source, property => property.MaxHp); break;
                 case EffectValueSource.TargetMaxHp: baseValue = ReadConfiguredProperty(signal.Target, property => property.MaxHp); break;
+                case EffectValueSource.SourceCoreEnergy: baseValue = ReadConfiguredProperty(signal.Source, property => property.CoreEnergy); break;
                 default: baseValue = 0f; break;
             }
             float multiplier = formula.FindPropertyRelative("multiplier").floatValue;

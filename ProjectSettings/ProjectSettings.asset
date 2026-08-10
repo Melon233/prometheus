@@ -749,17 +749,17 @@ PlayerSettings:
     EmbeddedLinux: DOTWEEN;TextMeshPro
     GameCoreScarlett: DOTWEEN;TextMeshPro
     GameCoreXboxOne: DOTWEEN;TextMeshPro
-    Kepler: TextMeshPro
+    Kepler: TextMeshPro;DOTWEEN
     LinuxHeadlessSimulation: DOTWEEN;TextMeshPro
     Lumin: DOTWEEN
     Nintendo Switch: DOTWEEN;TextMeshPro
-    Nintendo Switch 2: TextMeshPro
+    Nintendo Switch 2: TextMeshPro;DOTWEEN
     PS4: DOTWEEN;TextMeshPro
     PS5: DOTWEEN;TextMeshPro
-    QNX: TextMeshPro
+    QNX: TextMeshPro;DOTWEEN
     Stadia: DOTWEEN
     Standalone: DOTWEEN;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3;UNITASK_DOTWEEN_SUPPORT;TextMeshPro
-    VisionOS: TextMeshPro
+    VisionOS: TextMeshPro;DOTWEEN
     WebGL: DOTWEEN;TextMeshPro
     Windows Store Apps: DOTWEEN
     XboxOne: DOTWEEN;TextMeshPro

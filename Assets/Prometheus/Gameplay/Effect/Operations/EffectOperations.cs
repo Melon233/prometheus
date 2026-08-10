@@ -458,4 +458,50 @@ namespace Xuan.Prometheus.Effects
             property.RemoveControlStateModifier(modifier);
         }
     }
+    [Serializable]
+    public sealed class CoreEnergyGainOperation : EffectOperation
+    {
+        [SerializeField] private EffectValueFormula amount = new EffectValueFormula();
+        [SerializeField] private EffectTag additionalTags = EffectTag.CoreEnergyGain;
+
+        /// <summary>
+        /// 创建默认治疗操作，供 Unity 序列化器使用。
+        /// </summary>
+        public CoreEnergyGainOperation()
+        {
+        }
+
+        /// <summary>
+        /// 创建使用指定数值公式和标签的治疗操作。
+        /// </summary>
+        public CoreEnergyGainOperation(EffectValueFormula gainAmount, EffectTag tags)
+        {
+            amount = gainAmount ?? EffectValueFormula.Constant(0f);
+            additionalTags = tags;
+        }
+
+        /// <summary>
+        /// 对目标结算治疗，并将实际生命变化作为后续触发依据。
+        /// </summary>
+        public override void Execute(EffectOperationContext context)
+        {
+            if (context.Target == null) return;
+            if (!context.Target.TryGetComp(out PropertyComponent property)) return;
+            float requestedGain = Mathf.Max(0f, amount.Evaluate(context));
+            float old = property.CoreEnergy;
+            property.OnGainCoreEnergy(requestedGain);
+            PublishCoreEnergyChangedEvent(context, property, old);
+            // EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
+            // context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Healed, context.Source, context.Target, context.Caster, requestedGain, actualHeal, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
+        }
+
+        /// <summary>
+        /// 同步发送治疗产生的生命变化事实事件，不重复承担飘字表现职责。
+        /// </summary>
+        private static void PublishCoreEnergyChangedEvent(EffectOperationContext context, PropertyComponent property, float oldEnergy)
+        {
+            Core.Event.Invoke(Event.SelfCoreEnergyChanged, new SelfCoreEnergyChangedEvent(oldEnergy, property.CoreEnergy, property.CoreEnergyLimit));
+        }
+
+    }
 }

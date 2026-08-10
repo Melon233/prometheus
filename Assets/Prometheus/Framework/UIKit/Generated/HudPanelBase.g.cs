@@ -97,6 +97,16 @@ namespace Xuan.Prometheus
         protected global::UnityEngine.UI.Image HpBar { get; private set; }
 
         /// <summary>
+        /// 获取 Binder 中名为 EnergyFrame 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Image EnergyFrame { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 EnergyImg 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Image EnergyImg { get; private set; }
+
+        /// <summary>
         /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
         /// </summary>
         protected abstract void OnLotteryButtonClick();
@@ -199,6 +209,8 @@ namespace Xuan.Prometheus
             BagButton = binder.Get<global::UnityEngine.UI.Button>(15, "BagButton");
             Hp = binder.Get<global::TMPro.TextMeshProUGUI>(16, "Hp");
             HpBar = binder.Get<global::UnityEngine.UI.Image>(17, "HpBar");
+            EnergyFrame = binder.Get<global::UnityEngine.UI.Image>(18, "EnergyFrame");
+            EnergyImg = binder.Get<global::UnityEngine.UI.Image>(19, "EnergyImg");
 
             LotteryButton.onClick.AddListener(OnLotteryButtonClick);
             StickButton.onClick.AddListener(OnStickButtonClick);
@@ -258,6 +270,8 @@ namespace Xuan.Prometheus
             BagButton = null;
             Hp = null;
             HpBar = null;
+            EnergyFrame = null;
+            EnergyImg = null;
         }
     }
 }

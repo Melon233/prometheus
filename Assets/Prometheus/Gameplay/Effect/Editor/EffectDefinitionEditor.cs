@@ -101,6 +101,7 @@ namespace Xuan.Prometheus.Effects.Editor
             menu.AddItem(new GUIContent("Control State Modifier"), false, () => AddOperation(propertyName, new ControlStateModifierOperation()));
             menu.AddItem(new GUIContent("Apply Effect"), false, () => AddOperation(propertyName, new ApplyEffectOperation()));
             menu.AddItem(new GUIContent("Emit Signal"), false, () => AddOperation(propertyName, new EmitSignalOperation()));
+            menu.AddItem(new GUIContent("Gain Core Energy"), false, () => AddOperation(propertyName, new CoreEnergyGainOperation()));
             menu.ShowAsContext();
         }
 

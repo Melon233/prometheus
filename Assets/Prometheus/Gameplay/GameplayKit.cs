@@ -184,7 +184,7 @@ namespace Xuan.Prometheus
             }
 
             AddSystem(new InputSystem(new UnityLegacyInputSource()));
-            AddSystem(new EffectSystem(library: options.EffectLibrary));
+            AddSystem(new EffectSystem(library: options.EffectLibrary, traceEnabled: true));
             startupOptions = options;
         }
 
