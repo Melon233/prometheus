@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus
@@ -140,6 +141,7 @@ namespace Xuan.Prometheus
         private readonly Dictionary<int, float> pendingEntityRemovals = new Dictionary<int, float>();
         private readonly List<int> pendingEntityRemovalBuffer = new List<int>();
         private GameplayStartupOptions startupOptions;
+        private ControlLease playerInputLease;
         private int nextEntityId = 1;
         private bool isDisposing;
         private bool isDisposed;
@@ -181,6 +183,7 @@ namespace Xuan.Prometheus
                 throw new InvalidOperationException("GameplayKit can only be configured once.");
             }
 
+            AddSystem(new InputSystem(new UnityLegacyInputSource()));
             AddSystem(new EffectSystem(library: options.EffectLibrary));
             startupOptions = options;
         }
@@ -220,7 +223,11 @@ namespace Xuan.Prometheus
 
             pendingEntityRemovals.Remove(entityId);
             entities.Remove(entityId);
-            if (ReferenceEquals(Player, entity)) Player = null;
+            if (ReferenceEquals(Player, entity))
+            {
+                ReleasePlayerInput();
+                Player = null;
+            }
             entity.MarkDespawnRequested(0f);
             entity.DisposeImmediately();
             return true;
@@ -311,6 +318,7 @@ namespace Xuan.Prometheus
 
             CreatePlayer();
             CreateEnemies();
+            BindDefaultPlayerInput();
             IsReady = true;
         }
 
@@ -323,6 +331,11 @@ namespace Xuan.Prometheus
             if (isDisposed) return;
             DrainPendingEntityRemovals();
             if (!IsReady) return;
+
+            foreach (XSystem system in systemInitializationOrder)
+                system.BeforeEntityUpdate(dt);
+
+            DrainPendingEntityRemovals();
 
             isUpdatingEntities = true;
             try
@@ -352,6 +365,7 @@ namespace Xuan.Prometheus
 
             isDisposing = true;
             IsReady = false;
+            ReleasePlayerInput();
             try
             {
                 foreach (Entity entity in entities)
@@ -455,10 +469,30 @@ namespace Xuan.Prometheus
                 pendingEntityRemovals.Remove(entityId);
                 if (!entities.TryGet(entityId, out Entity entity)) continue;
                 entities.Remove(entityId);
-                if (ReferenceEquals(Player, entity)) Player = null;
+                if (ReferenceEquals(Player, entity))
+                {
+                    ReleasePlayerInput();
+                    Player = null;
+                }
                 entity.DisposeImmediately();
             }
             pendingEntityRemovalBuffer.Clear();
+        }
+
+        /// <summary>为默认本地输入源建立玩家全部玩法动作的最低优先级控制绑定。</summary>
+        private void BindDefaultPlayerInput()
+        {
+            ReleasePlayerInput();
+            if (Player == null) return;
+            InputSystem inputSystem = GetSystem<InputSystem>();
+            playerInputLease = inputSystem.AcquireEntityControl(Player.EntityId, InputActionMask.Gameplay, InputContexts.Gameplay);
+        }
+
+        /// <summary>幂等释放默认玩家输入绑定，使控制权切换和 Entity 回收都不会遗留输入状态。</summary>
+        private void ReleasePlayerInput()
+        {
+            playerInputLease?.Dispose();
+            playerInputLease = null;
         }
 
         /// <summary>

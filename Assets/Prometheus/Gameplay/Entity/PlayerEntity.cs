@@ -35,7 +35,6 @@ namespace Xuan.Prometheus.Logic
             AddLogic<JumpLogic>();
             AddLogic<RotateLogic>();
             AddLogic<LandLogic>();
-            AddLogic<InputLogic>();
             AddLogic<DodgeLogic>();
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();

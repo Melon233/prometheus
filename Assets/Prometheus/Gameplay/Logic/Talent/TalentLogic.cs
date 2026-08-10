@@ -20,6 +20,8 @@ namespace Xuan.Prometheus.Logic
         private VfxComponent vfxComponent;
         /// <summary>记录当前玩家动作贡献的 Root 状态句柄，保证叠加来源能够按身份精确释放。</summary>
         private ControlStateModifier movementLockModifier;
+        /// <summary>记录当前玩家动作是否已经为 RotateLogic 增加一层阻塞，保证清理时只释放自身贡献。</summary>
+        private bool isRotationLocked;
         private AnimationPlayback activePlayback;
         private ColliderProxy activeCollider;
         private AudioClip activeAudio;
@@ -117,15 +119,15 @@ namespace Xuan.Prometheus.Logic
             return true;
         }
 
-        /// <summary>解析当前连段并尝试启动普通攻击；配置无效或被更高优先级动画占用时保持现有状态。</summary>
+        /// <summary>解析当前连段并尝试启动普通攻击；只有播放成功后才采样一次输入方向，技能拒绝普攻时不会产生额外转向。</summary>
         private void TryStartNormalAttack()
         {
             AttackExecutor configuration = spineComponent.animationLib.atkExecutor;
             bool moving = inputComponent.moveDir != Vector2.zero;
             if (!configuration.TryGetSelection(attackComponent.nextComboIndex, moving, out AttackAnimationSelection selection)) return;
-            spineComponent.SetFaceDir(inputComponent.moveDir);
             AnimationPlayback playback = spineComponent.TryPlay(selection.Semantic, AnimationOwner.PlayerAction, AnimationPriority.Attack, false, propertyComponent.AtkSpeed, true);
             if (!BeginAction(playback, attackComponent.atkCollider, selection.AudioClip, selection.HasVfx, selection.Vfx, true)) return;
+            spineComponent.SetFaceDir(inputComponent.moveDir);
             attackComponent.nextComboIndex++;
             int configuredMaxIndex = Mathf.Min(attackComponent.maxComboIndex, Mathf.Max(0, configuration.Count - 1));
             if (attackComponent.nextComboIndex > configuredMaxIndex) attackComponent.nextComboIndex = 0;
@@ -156,7 +158,7 @@ namespace Xuan.Prometheus.Logic
             BeginAction(playback, ultimateComponent.colliderProxy, configuration.AudioClip, true, configuration.Vfx, false);
         }
 
-        /// <summary>绑定一次成功播放的玩法上下文并通过来源句柄贡献 Root 状态；被拒绝的播放不会改变任何玩法状态。</summary>
+        /// <summary>绑定一次成功播放的玩法上下文，同时锁定移动和持续转向；被拒绝的播放不会改变任何玩法状态。</summary>
         private bool BeginAction(AnimationPlayback playback, ColliderProxy colliderProxy, AudioClip audioClip, bool hasVfx, YefaVfx vfx, bool allowsCombo)
         {
             if (playback == null) return false;
@@ -171,6 +173,7 @@ namespace Xuan.Prometheus.Logic
             playback.EventReceived += OnAnimationEvent;
             playback.Finished += OnAnimationFinished;
             AcquireMovementLock();
+            AcquireRotationLock();
             return true;
         }
 
@@ -204,6 +207,7 @@ namespace Xuan.Prometheus.Logic
             attackComponent.currentAnimation = null;
             attackComponent.canCombo = true;
             ReleaseMovementLock();
+            ReleaseRotationLock();
         }
 
         /// <summary>控制状态禁用 TalentLogic 时主动停止自己的动画并立即关闭全部攻击碰撞体。</summary>
@@ -213,6 +217,7 @@ namespace Xuan.Prometheus.Logic
             DisableAttackColliders();
             attackComponent.currentAnimation = null;
             ReleaseMovementLock();
+            ReleaseRotationLock();
         }
 
         /// <summary>回收时关闭碰撞体、解绑代理并精确释放当前动作持有的 Root 状态。</summary>
@@ -224,6 +229,7 @@ namespace Xuan.Prometheus.Logic
             if (skillComponent != null && skillComponent.colliderProxy != null && ReferenceEquals(skillComponent.colliderProxy.handler, this)) skillComponent.colliderProxy.handler = null;
             if (ultimateComponent != null && ultimateComponent.colliderProxy != null && ReferenceEquals(ultimateComponent.colliderProxy.handler, this)) ultimateComponent.colliderProxy.handler = null;
             ReleaseMovementLock();
+            ReleaseRotationLock();
             activePlayback = null;
             effectComponent = null;
         }
@@ -240,6 +246,22 @@ namespace Xuan.Prometheus.Logic
             if (movementLockModifier == null) return;
             propertyComponent.RemoveControlStateModifier(movementLockModifier);
             movementLockModifier = null;
+        }
+
+        /// <summary>动作成功开始时为 RotateLogic 增加一层来源明确的阻塞，使当前普通攻击段或技能期间不能持续转向。</summary>
+        private void AcquireRotationLock()
+        {
+            if (isRotationLocked) return;
+            Entity.BlockLogic<RotateLogic>();
+            isRotationLocked = true;
+        }
+
+        /// <summary>动作完成、被抢占、TalentLogic 禁用或实体回收时只释放当前 Logic 添加的转向阻塞。</summary>
+        private void ReleaseRotationLock()
+        {
+            if (!isRotationLocked) return;
+            Entity.UnBlockLogic<RotateLogic>();
+            isRotationLocked = false;
         }
 
         /// <summary>关闭玩家全部攻击命中盒，兼容部分预制体尚未初始化 ColliderProxy.cod 的构造阶段。</summary>
