@@ -9,10 +9,16 @@ namespace Xuan.Prometheus.Logic
     public sealed class WorldHpBarLogic : Logic
     {
         /// <summary>共享世界血条 Prefab 在 AssetKit 中的资源地址。</summary>
-        private const string WorldHpBarAssetAddress = "UI_WorldHpBar";
+        private const string WorldHpBarAssetAddress = "Prefabs_WorldHpBar";
 
         /// <summary>当前实体持有的世界血条租约。</summary>
         private WorldUIHandle worldHpBarHandle;
+
+        /// <summary>缓存当前血条表现组件，使最终释放能够显式解绑而临时隐藏仍保留目标属性。</summary>
+        private HpBar hpBar;
+
+        /// <summary>保存可选的小队成员状态，用于让后备成员的独立世界血条随角色一同隐藏。</summary>
+        private TeamMemberComponent teamMemberComponent;
 
         /// <summary>
         /// 血条属于不受受击、眩晕或技能封锁影响的表现基础设施，并在其他 Gameplay Logic 之后完成绑定。
@@ -34,10 +40,15 @@ namespace Xuan.Prometheus.Logic
             if (anchor == null) throw new InvalidOperationException($"Entity prefab '{Entity.bindGo.name}' requires WorldHpBarAnchor after its embedded HP bar is removed.");
             if (Core.UI == null) throw new InvalidOperationException("UIKit must be initialized before world HP bars are spawned.");
             worldHpBarHandle = Core.UI.SpawnWorldUI(WorldHpBarAssetAddress, anchor.FollowTarget, anchor.WorldOffset);
-            HpBar hpBar = worldHpBarHandle.GetComponent<HpBar>();
+            hpBar = worldHpBarHandle.GetComponent<HpBar>();
             if (hpBar != null)
             {
                 hpBar.Initialize(propertyComponent, anchor.HpColor, anchor.ChaserColor);
+                if (Entity.TryGetComp(out teamMemberComponent))
+                {
+                    teamMemberComponent.OnFieldStateChanged += OnFieldStateChanged;
+                    OnFieldStateChanged(teamMemberComponent.IsOnField);
+                }
                 return;
             }
             worldHpBarHandle.Release();
@@ -76,8 +87,20 @@ namespace Xuan.Prometheus.Logic
         /// <summary>实体最终释放时主动归还血条实例，并让旧租约立即失效。</summary>
         public override void OnDispose()
         {
+            if (teamMemberComponent != null) teamMemberComponent.OnFieldStateChanged -= OnFieldStateChanged;
+            teamMemberComponent = null;
+            hpBar?.Uninitialize();
+            hpBar = null;
             worldHpBarHandle?.Release();
             worldHpBarHandle = null;
+        }
+
+        /// <summary>同步切换当前世界血条根对象显隐，租约与数值监听在离场期间保持有效。</summary>
+        private void OnFieldStateChanged(bool isOnField)
+        {
+            if (worldHpBarHandle == null || worldHpBarHandle.Root == null) return;
+            if (isOnField) worldHpBarHandle.RefreshTransform();
+            worldHpBarHandle.Root.SetActive(isOnField);
         }
     }
 }

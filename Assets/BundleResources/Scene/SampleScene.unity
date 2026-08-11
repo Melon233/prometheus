@@ -625,6 +625,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   packageName: Prometheus
   playerAddress: Character_Yefa
+  secondPlayerAddress: Character_Yefa
+  thirdPlayerAddress: Character_Yefa
   enemyAddress: Enemy_Slime
   effectLibrary: {fileID: 11400000, guid: 4fb5c92a988435849815061125bdaabc, type: 2}
   enemySpawnPoints:

@@ -9,6 +9,8 @@ namespace Xuan.Prometheus
         private EventComponent eventComponent;
         private PropertyComponent propertyComponent;
         private SpineComponent spineComponent;
+        /// <summary>保存可选的小队成员状态，使后台成员继续结算伤害与 Effect 时不会启动无法推进的受击动画。</summary>
+        private TeamMemberComponent teamMemberComponent;
         /// <summary>保存当前受击动画会话，连续受击只替换会话而不提前退出受击状态。</summary>
         private AnimationPlayback playback;
         /// <summary>保存当前受击动画贡献的状态句柄，保证完成、中断、死亡和回收时精确释放。</summary>
@@ -28,6 +30,7 @@ namespace Xuan.Prometheus
             Entity.TryGetComp(out eventComponent);
             Entity.TryGetComp(out propertyComponent);
             Entity.TryGetComp(out spineComponent);
+            Entity.TryGetComp(out teamMemberComponent);
             eventComponent.AddListener<StaggeredEvent>(OnStaggered);
             eventComponent.AddListener<DieEvent>(OnDie);
         }
@@ -35,7 +38,7 @@ namespace Xuan.Prometheus
         /// <summary>每次打断能力严格超过韧性的伤害都重播受击表现，受击状态由成功创建的播放会话决定。</summary>
         private void OnStaggered(StaggeredEvent evt)
         {
-            if (dead) return;
+            if (dead || (teamMemberComponent != null && !teamMemberComponent.IsOnField)) return;
             PlayHitReaction();
         }
 
@@ -118,6 +121,7 @@ namespace Xuan.Prometheus
             eventComponent = null;
             propertyComponent = null;
             spineComponent = null;
+            teamMemberComponent = null;
             dead = false;
         }
 

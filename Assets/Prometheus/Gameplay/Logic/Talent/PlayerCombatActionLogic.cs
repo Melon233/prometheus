@@ -55,6 +55,7 @@ namespace Xuan.Prometheus.Logic
         private AudioClip activeAudio;
         private YefaVfx activeVfx;
         private bool activeHasVfx;
+        private bool isHitWindowOpen;
         private bool isRotationLocked;
 
         /// <summary>获取玩家输入组件，供具体动作 Logic 消费自己的输入。</summary>
@@ -139,7 +140,7 @@ namespace Xuan.Prometheus.Logic
         /// <summary>验证回调来源就是当前命中窗口的碰撞体，再把逐段伤害倍率和命中语义发布为 HitConfirmed。</summary>
         public void OnTriggerEnter(ColliderProxy source, Collider other)
         {
-            if (!Entity.IsActive || activePlayback == null || source == null || other == null || !ReferenceEquals(source, activeHitContext.ColliderProxy)) return;
+            if (!Entity.IsActive || activePlayback == null || !isHitWindowOpen || source == null || other == null || !ReferenceEquals(source, activeHitContext.ColliderProxy)) return;
             if (source.cod != null && !source.cod.enabled) return;
             PropertyComponent targetProperty = other.GetComponentInParent<PropertyComponent>();
             if (targetProperty == null || targetProperty.Entity == null || targetProperty.IsDead || !targetProperty.Entity.IsActive || !targetProperty.CompareTag("Enemy")) return;
@@ -162,6 +163,7 @@ namespace Xuan.Prometheus.Logic
         protected bool BeginAction(AnimationPlayback playback, PlayerCombatHitContext hitContext, AudioClip audioClip, bool hasVfx, YefaVfx vfx)
         {
             if (playback == null) return false;
+            CloseAllBoundHitboxes();
             activePlayback = playback;
             activeHitContext = hitContext;
             activeAudio = audioClip;
@@ -204,13 +206,15 @@ namespace Xuan.Prometheus.Logic
             if (!ReferenceEquals(source, activePlayback) || animationEvent == null || animationEvent.Data == null) return;
             if (animationEvent.Data.Name == SpineComponent.animationLib.hitStart)
             {
+                CloseAllBoundHitboxes();
                 SetHitboxEnabled(activeHitContext.ColliderProxy, true);
+                isHitWindowOpen = true;
                 if (activeHasVfx) VfxComponent.Play(activeVfx);
                 if (activeAudio != null) AudioKit.Ins.Play(activeAudio);
             }
             else if (animationEvent.Data.Name == SpineComponent.animationLib.hitEnd)
             {
-                SetHitboxEnabled(activeHitContext.ColliderProxy, false);
+                CloseAllBoundHitboxes();
                 OnHitWindowClosed();
             }
         }
@@ -228,6 +232,7 @@ namespace Xuan.Prometheus.Logic
             AnimationPlayback playback = activePlayback;
             if (playback == null)
             {
+                CloseAllBoundHitboxes();
                 ReleaseMovementLock();
                 ReleaseRotationLock();
                 return;
@@ -240,7 +245,8 @@ namespace Xuan.Prometheus.Logic
         private void FinishActiveAction(AnimationPlayback playback, AnimationEndReason reason)
         {
             if (!ReferenceEquals(playback, activePlayback)) return;
-            SetHitboxEnabled(activeHitContext.ColliderProxy, false);
+            CloseAllBoundHitboxes();
+            if (reason != AnimationEndReason.Completed && activeHasVfx && VfxComponent != null) VfxComponent.Stop(activeVfx);
             playback.EventReceived -= OnAnimationEvent;
             playback.Finished -= OnAnimationFinished;
             activePlayback = null;
@@ -286,7 +292,16 @@ namespace Xuan.Prometheus.Logic
         /// <summary>安全切换 ColliderProxy 内部碰撞体，兼容 Awake 尚未运行的编辑器检查阶段。</summary>
         private static void SetHitboxEnabled(ColliderProxy hitbox, bool enabled)
         {
-            if (hitbox != null && hitbox.cod != null) hitbox.cod.enabled = enabled;
+            if (hitbox == null) return;
+            if (hitbox.cod == null) hitbox.cod = hitbox.GetComponent<Collider>();
+            if (hitbox.cod != null) hitbox.cod.enabled = enabled;
+        }
+
+        /// <summary>关闭本 Logic 绑定的全部碰撞盒并收紧命中门禁，确保切段、打断或漏事件都不会遗留上一段攻击判定。</summary>
+        private void CloseAllBoundHitboxes()
+        {
+            foreach (ColliderProxy hitbox in boundHitboxes) SetHitboxEnabled(hitbox, false);
+            isHitWindowOpen = false;
         }
 
         /// <summary>从 Entity 获取具体组件，并在玩家预制体缺少依赖时抛出可定位的配置错误。</summary>

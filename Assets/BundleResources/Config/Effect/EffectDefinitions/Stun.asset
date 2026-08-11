@@ -15,6 +15,7 @@ MonoBehaviour:
   effectId: Example.Stun
   tags: 2560
   durationType: 1
+  buffIcon: {fileID: 21300000, guid: a89d99f08cf8a3c488eb3824bc05c961, type: 3}
   duration: 3
   tickInterval: 0
   stackPolicy: 2
@@ -25,6 +26,7 @@ MonoBehaviour:
   onApplyOperations:
   - rid: 1348142047778570253
   onStackOperations: []
+  onRefreshOperations: []
   onTickOperations: []
   onRemoveOperations: []
   grantedTriggers: []

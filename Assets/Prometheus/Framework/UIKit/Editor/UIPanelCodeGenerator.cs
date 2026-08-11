@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -14,8 +15,10 @@ namespace Xuan.Prometheus.Editor
     /// </summary>
     public static class UIPanelCodeGenerator
     {
+        internal const int GeneratedBindingSnapshotVersion = 1;
         private const string GeneratedBaseDirectory = "Assets/Prometheus/Framework/UIKit/Generated";
         private const string PanelScriptDirectory = "Assets/Prometheus/Gameplay/UI";
+        private const string GeneratedBindingLookupPattern = "binder\\.Get<[^>\\r\\n]+>\\((\\d+), \"((?:\\\\.|[^\"\\\\])*)\"\\);";
 
         /// <summary>
         /// 从 Project 视图当前选中的 UI Prefab 生成面板代码。
@@ -48,6 +51,7 @@ namespace Xuan.Prometheus.Editor
             string panelName = ToTypeIdentifier(Path.GetFileNameWithoutExtension(prefabPath));
             string basePath = $"{GeneratedBaseDirectory}/{panelName}Base.g.cs";
             string panelPath = $"{PanelScriptDirectory}/{panelName}.cs";
+            SavePrefabStageContents(binder, prefabPath);
             Directory.CreateDirectory(GeneratedBaseDirectory);
             Directory.CreateDirectory(PanelScriptDirectory);
             File.WriteAllText(basePath, BuildPanelBaseSource(panelName, binder.Bindings), new UTF8Encoding(false));
@@ -55,10 +59,182 @@ namespace Xuan.Prometheus.Editor
             if (!File.Exists(panelPath))
                 File.WriteAllText(panelPath, BuildPanelSource(panelName, binder.Bindings), new UTF8Encoding(false));
 
+            RecordGeneratedBindingSnapshot(binder);
+            SavePrefabStageContents(binder, prefabPath);
             AssetDatabase.ImportAsset(basePath, ImportAssetOptions.ForceUpdate);
             AssetDatabase.ImportAsset(panelPath, ImportAssetOptions.ForceUpdate);
-            AssetDatabase.Refresh();
             Debug.Log($"[UIKit Generator] Generated '{basePath}' and preserved or created '{panelPath}'.", binder);
+        }
+
+        /// <summary>
+        /// 在全部源码文件成功写入后、脚本导入前记录完整 Bind 表，使 Inspector 能识别新增组合、引用替换、改名、删除和重排。
+        /// </summary>
+        /// <param name="binder">刚刚成功完成代码生成的组件绑定器。</param>
+        private static void RecordGeneratedBindingSnapshot(UIComponentBinder binder)
+        {
+            SerializedObject serializedBinder = new SerializedObject(binder);
+            SerializedProperty bindingsProperty = serializedBinder.FindProperty("bindings");
+            SerializedProperty generatedBindingsProperty = serializedBinder.FindProperty("generatedBindings");
+            generatedBindingsProperty.arraySize = bindingsProperty.arraySize;
+            for (int index = 0; index < bindingsProperty.arraySize; index++)
+            {
+                SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(index);
+                SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
+                generatedBindingProperty.FindPropertyRelative("name").stringValue = bindingProperty.FindPropertyRelative("name").stringValue;
+                generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue = bindingProperty.FindPropertyRelative("component").objectReferenceValue;
+            }
+
+            serializedBinder.FindProperty("generatedBindingSnapshotVersion").intValue = GeneratedBindingSnapshotVersion;
+            serializedBinder.ApplyModifiedPropertiesWithoutUndo();
+            PersistGeneratedBindingSnapshot(binder);
+        }
+
+        /// <summary>
+        /// 尝试从既有 PanelBase 源码中的 binder.Get 调用恢复旧 Prefab 的生成绑定表，使功能升级后无需先重新生成即可显示准确提示。
+        /// </summary>
+        /// <param name="binder">尚未保存生成索引快照的组件绑定器。</param>
+        /// <returns>找到对应的已生成 PanelBase 并完成快照迁移时返回 true。</returns>
+        internal static bool TryRestoreGeneratedBindingSnapshot(UIComponentBinder binder)
+        {
+            if (binder == null)
+                return false;
+
+            PrefabStage prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (IsInsidePrefabStage(binder, prefabStage))
+                return false;
+
+            try
+            {
+                string prefabPath = ResolvePrefabPath(binder);
+                string panelName = ToTypeIdentifier(Path.GetFileNameWithoutExtension(prefabPath));
+                string generatedBasePath = $"{GeneratedBaseDirectory}/{panelName}Base.g.cs";
+                if (!File.Exists(generatedBasePath))
+                    return false;
+
+                string generatedSource = File.ReadAllText(generatedBasePath);
+                SerializedObject serializedBinder = new SerializedObject(binder);
+                SerializedProperty bindingsProperty = serializedBinder.FindProperty("bindings");
+                SerializedProperty generatedBindingsProperty = serializedBinder.FindProperty("generatedBindings");
+                MatchCollection lookupMatches = Regex.Matches(generatedSource, GeneratedBindingLookupPattern, RegexOptions.CultureInvariant);
+                int generatedBindingCount = 0;
+                foreach (Match lookupMatch in lookupMatches)
+                {
+                    if (int.TryParse(lookupMatch.Groups[1].Value, out int parsedIndex))
+                        generatedBindingCount = Math.Max(generatedBindingCount, parsedIndex + 1);
+                }
+
+                generatedBindingsProperty.arraySize = generatedBindingCount;
+                for (int index = 0; index < generatedBindingsProperty.arraySize; index++)
+                {
+                    SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
+                    generatedBindingProperty.FindPropertyRelative("name").stringValue = string.Empty;
+                    generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue = null;
+                }
+
+                foreach (Match lookupMatch in lookupMatches)
+                {
+                    if (!int.TryParse(lookupMatch.Groups[1].Value, out int generatedIndex) || generatedIndex < 0 || generatedIndex >= generatedBindingsProperty.arraySize)
+                        continue;
+
+                    string generatedBindingName = UnescapeGeneratedString(lookupMatch.Groups[2].Value);
+                    SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(generatedIndex);
+                    generatedBindingProperty.FindPropertyRelative("name").stringValue = generatedBindingName;
+                    generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue = FindCurrentBindingComponent(bindingsProperty, generatedBindingName);
+                }
+
+                serializedBinder.FindProperty("generatedBindingSnapshotVersion").intValue = GeneratedBindingSnapshotVersion;
+                serializedBinder.ApplyModifiedPropertiesWithoutUndo();
+                PersistGeneratedBindingSnapshot(binder);
+                return true;
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException || exception is InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 按名称查找旧生成条目当前仍引用的组件；旧 PanelBase 不保存对象身份，因此首次迁移只能以未改名条目的当前引用作为基准。
+        /// </summary>
+        /// <param name="bindingsProperty">Binder 当前绑定数组。</param>
+        /// <param name="bindingName">从既有 PanelBase 解析出的生成名称。</param>
+        /// <returns>找到同名当前绑定时返回其组件引用，否则返回 null。</returns>
+        private static UnityEngine.Component FindCurrentBindingComponent(SerializedProperty bindingsProperty, string bindingName)
+        {
+            for (int index = 0; index < bindingsProperty.arraySize; index++)
+            {
+                SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(index);
+                if (string.Equals(bindingProperty.FindPropertyRelative("name").stringValue, bindingName, StringComparison.Ordinal))
+                    return bindingProperty.FindPropertyRelative("component").objectReferenceValue as UnityEngine.Component;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 还原代码生成器仅对反斜杠和双引号执行的字符串转义，确保特殊绑定名称能正确迁移回快照。
+        /// </summary>
+        /// <param name="value">正则从 C# 字符串字面量中提取的转义内容。</param>
+        /// <returns>与生成前绑定名称一致的原始文本。</returns>
+        private static string UnescapeGeneratedString(string value)
+        {
+            StringBuilder unescapedValue = new StringBuilder(value.Length);
+            for (int index = 0; index < value.Length; index++)
+            {
+                if (value[index] == '\\' && index + 1 < value.Length)
+                {
+                    unescapedValue.Append(value[index + 1]);
+                    index++;
+                    continue;
+                }
+
+                unescapedValue.Append(value[index]);
+            }
+
+            return unescapedValue.ToString();
+        }
+
+        /// <summary>
+        /// 将隐藏生成绑定快照标记为需要持久化；Prefab Stage 只标记其隔离场景，防止 Inspector 初始化绕过 Stage 保存流程直接改写底层 Prefab 资产。
+        /// </summary>
+        /// <param name="binder">刚刚写入完整生成绑定快照的组件绑定器。</param>
+        private static void PersistGeneratedBindingSnapshot(UIComponentBinder binder)
+        {
+            EditorUtility.SetDirty(binder);
+            PrefabStage prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (IsInsidePrefabStage(binder, prefabStage))
+            {
+                if (binder.gameObject.scene.IsValid())
+                    EditorSceneManager.MarkSceneDirty(binder.gameObject.scene);
+
+                return;
+            }
+
+            PrefabUtility.RecordPrefabInstancePropertyModifications(binder);
+            string binderAssetPath = AssetDatabase.GetAssetPath(binder);
+            if (!string.IsNullOrEmpty(binderAssetPath))
+                AssetDatabase.SaveAssetIfDirty(binder);
+            else if (binder.gameObject.scene.IsValid())
+                EditorSceneManager.MarkSceneDirty(binder.gameObject.scene);
+        }
+
+        /// <summary>
+        /// 在任何生成脚本导入可能触发编译和资源重载之前保存当前 Prefab Stage 的完整内容，并在快照更新后再次保存以保证层级、组件和生成索引属于同一个落盘版本。
+        /// </summary>
+        /// <param name="binder">代码生成所读取的组件绑定器。</param>
+        /// <param name="prefabPath">已经解析并校验过的目标 Prefab 资产路径。</param>
+        private static void SavePrefabStageContents(UIComponentBinder binder, string prefabPath)
+        {
+            PrefabStage prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (!IsInsidePrefabStage(binder, prefabStage))
+                return;
+
+            if (prefabStage.prefabContentsRoot == null || string.IsNullOrWhiteSpace(prefabPath))
+                throw new InvalidOperationException("Cannot save the current Prefab Stage before importing generated UI scripts.");
+
+            GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(prefabStage.prefabContentsRoot, prefabPath);
+            if (savedPrefab == null)
+                throw new InvalidOperationException($"Failed to save Prefab Stage contents to '{prefabPath}' before importing generated UI scripts.");
         }
 
         /// <summary>

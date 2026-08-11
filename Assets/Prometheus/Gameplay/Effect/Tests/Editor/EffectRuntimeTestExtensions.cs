@@ -14,7 +14,7 @@ namespace Xuan.Prometheus.Effects.Tests
         private const BindingFlags PrivateInstanceMethod = BindingFlags.Instance | BindingFlags.NonPublic;
 
         /// <summary>
-        /// 在 EditMode 中写入 PropertyConfig 并显式执行 PropertyComponent.Start，模拟 Unity 进入运行模式时的真实初始化顺序。
+        /// 在 EditMode 中写入 PropertyConfig 并显式重放 PropertyComponent.Awake，模拟 Unity 在后备角色被隐藏前完成属性初始化的真实顺序。
         /// </summary>
         public static void InitializeForTests(this PropertyComponent property, PropertyConfig config)
         {
@@ -25,9 +25,9 @@ namespace Xuan.Prometheus.Effects.Tests
             if (configProperty == null) throw new MissingFieldException(typeof(PropertyComponent).FullName, "propConfig");
             configProperty.objectReferenceValue = config;
             serializedProperty.ApplyModifiedPropertiesWithoutUndo();
-            MethodInfo startMethod = typeof(PropertyComponent).GetMethod("Start", PrivateInstanceMethod);
-            if (startMethod == null) throw new MissingMethodException(typeof(PropertyComponent).FullName, "Start");
-            startMethod.Invoke(property, null);
+            MethodInfo awakeMethod = typeof(PropertyComponent).GetMethod("Awake", PrivateInstanceMethod);
+            if (awakeMethod == null) throw new MissingMethodException(typeof(PropertyComponent).FullName, "Awake");
+            awakeMethod.Invoke(property, null);
         }
 
         /// <summary>

@@ -32,12 +32,15 @@ namespace Xuan.Prometheus.Logic
         /// <summary>播放大招 AnimationLine，并建立角色元素大招命中上下文。</summary>
         private void TryStartUltimate()
         {
+            if (!ultimateComponent.CanRelease(PropertyComponent)) return;
             UltimateExecutor configuration = SpineComponent.animationLib.ultimateExecutor;
             if (configuration == null) return;
             TalentAbilityValues values = ultimateComponent.TalentConfig.Ultimate;
             AnimationPlayback playback = SpineComponent.TryPlay(configuration.Semantic, ActionOwner, AnimationPriority.Ultimate, false, values.AnimationSpeed, true);
             PlayerCombatHitContext hitContext = new PlayerCombatHitContext(ultimateComponent.ColliderProxy, values.DamageMultiplier, values.DamageOffset, EffectTag.Attack | EffectTag.Ultimate, ultimateComponent.AbilityId, DamageActionType.Ultimate);
-            BeginAction(playback, hitContext, configuration.AudioClip, true, configuration.Vfx);
+            if (!BeginAction(playback, hitContext, configuration.AudioClip, true, configuration.Vfx)) return;
+            PropertyComponent.ConsumeAllUltEnergy();
+            ultimateComponent.BeginCooldown();
         }
 
         /// <summary>实体回收时丢弃大招组件引用。</summary>

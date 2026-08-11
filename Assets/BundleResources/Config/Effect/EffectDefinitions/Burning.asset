@@ -15,6 +15,7 @@ MonoBehaviour:
   effectId: Example.Burning
   tags: 528
   durationType: 1
+  buffIcon: {fileID: 21300000, guid: 46b8b33030ff7ce45a6f0e87f1b50170, type: 3}
   duration: 10
   tickInterval: 2
   stackPolicy: 2
@@ -24,6 +25,7 @@ MonoBehaviour:
   priority: 20
   onApplyOperations: []
   onStackOperations: []
+  onRefreshOperations: []
   onTickOperations:
   - rid: 1348142047778570247
   onRemoveOperations: []
@@ -35,11 +37,11 @@ MonoBehaviour:
       type: {class: DamageOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
         amount:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 20
         interruptPower:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 0
         additionalTags: 48

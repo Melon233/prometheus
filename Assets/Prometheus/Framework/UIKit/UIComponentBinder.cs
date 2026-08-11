@@ -5,6 +5,36 @@ using UnityEngine;
 namespace Xuan.Prometheus
 {
     /// <summary>
+    /// 保存一次成功代码生成时的绑定名称与组件引用；所在列表的序号就是生成到 PanelBase 中的稳定索引。
+    /// </summary>
+    [Serializable]
+    internal sealed class UIGeneratedBindingSnapshot
+    {
+        [SerializeField] private string name;
+        [SerializeField] private UnityEngine.Component component;
+
+        /// <summary>
+        /// 获取生成时使用的绑定名称。
+        /// </summary>
+        internal string Name => name;
+
+        /// <summary>
+        /// 获取生成时绑定的准确组件引用。
+        /// </summary>
+        internal UnityEngine.Component Component => component;
+
+        /// <summary>
+        /// 判断当前绑定的名称和组件引用是否与这份生成快照完全一致。
+        /// </summary>
+        /// <param name="binding">需要与生成快照比较的当前绑定。</param>
+        /// <returns>名称和组件引用均一致时返回 true。</returns>
+        internal bool Matches(UIComponentBinding binding)
+        {
+            return binding != null && string.Equals(name, binding.Name, StringComparison.Ordinal) && component == binding.Component;
+        }
+    }
+
+    /// <summary>
     /// 表示一个可由代码生成器转成强类型字段的组件引用。
     /// 绑定名称属于生成代码契约，修改名称后必须重新生成对应 PanelBase。
     /// </summary>
@@ -23,6 +53,7 @@ namespace Xuan.Prometheus
         /// 获取绑定的实际 Unity 组件。
         /// </summary>
         public UnityEngine.Component Component => component;
+
     }
 
     /// <summary>
@@ -33,6 +64,12 @@ namespace Xuan.Prometheus
     public sealed class UIComponentBinder : MonoBehaviour
     {
         [SerializeField] private List<UIComponentBinding> bindings = new List<UIComponentBinding>();
+
+        // 保存完整且独立的上次生成绑定表，使当前 Bind 即使被改名、替换引用、删除或重排后仍能与旧代码准确比较。
+        [SerializeField, HideInInspector] private List<UIGeneratedBindingSnapshot> generatedBindings = new List<UIGeneratedBindingSnapshot>();
+
+        // 版本大于零表示生成绑定表已经建立；旧 Prefab 会由编辑器从现有 PanelBase 源码自动迁移到当前版本。
+        [SerializeField, HideInInspector] private int generatedBindingSnapshotVersion;
 
         /// <summary>
         /// 获取只读组件绑定表，主要供编辑器代码生成器检查和生成字段。
@@ -60,6 +97,9 @@ namespace Xuan.Prometheus
             if (binding == null)
                 throw new InvalidOperationException($"Binder '{name}' contains a null binding at index {index}.");
 
+            if (generatedBindingSnapshotVersion > 0 && !IsBindingGeneratedAtIndex(binding, index, out int generatedIndex))
+                throw new InvalidOperationException(generatedIndex >= 0 ? $"Binder '{name}' binding '{binding.Name}' moved from generated index {generatedIndex} to {index}; regenerate the panel code before opening it." : $"Binder '{name}' binding '{binding.Name}' and its component reference do not exist in the generated binding table; regenerate the panel code before opening it.");
+
             if (!string.Equals(binding.Name, expectedName, StringComparison.Ordinal))
                 throw new InvalidOperationException($"Binder '{name}' binding {index} is named '{binding.Name}', but generated code expects '{expectedName}'; regenerate the panel code.");
 
@@ -70,6 +110,29 @@ namespace Xuan.Prometheus
                 throw new InvalidCastException($"Binder '{name}' binding '{expectedName}' is '{binding.Component.GetType().FullName}', not '{typeof(TComponent).FullName}'.");
 
             return typedComponent;
+        }
+
+        /// <summary>
+        /// 检查当前绑定的名称与引用组合是否仍处于生成时索引，并在发生移动时返回它原本的生成索引。
+        /// </summary>
+        /// <param name="binding">运行时正准备读取的当前绑定。</param>
+        /// <param name="currentIndex">生成代码传入的当前列表索引。</param>
+        /// <param name="generatedIndex">找到相同名称与引用组合时返回其生成索引，否则返回 -1。</param>
+        /// <returns>绑定组合仍位于生成时索引时返回 true。</returns>
+        private bool IsBindingGeneratedAtIndex(UIComponentBinding binding, int currentIndex, out int generatedIndex)
+        {
+            generatedIndex = -1;
+            for (int index = 0; index < generatedBindings.Count; index++)
+            {
+                UIGeneratedBindingSnapshot generatedBinding = generatedBindings[index];
+                if (generatedBinding == null || !generatedBinding.Matches(binding))
+                    continue;
+
+                generatedIndex = index;
+                return index == currentIndex;
+            }
+
+            return false;
         }
     }
 }

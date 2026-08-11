@@ -17,10 +17,13 @@ internal static class HierarchyQuickControls
     // Hierarchy icon, which uses a slightly different right-edge coordinate.
     private const float RightSideBuiltInIconReserve = 10f;
     private const float DisabledIconBrightness = 0.38f;
+    private const float ComponentDragStartDistance = 5f;
     private const double HoverRepaintGracePeriod = 0.15d;
 
     private static readonly GUIContent ActiveToggleContent = new GUIContent("", "激活 / 禁用对象");
     private static double lastIconHoverTime;
+    private static Component pendingDragComponent;
+    private static Vector2 pendingDragStartPosition;
     private static GUIStyle roundedTooltipStyle;
 
     static HierarchyQuickControls()
@@ -104,6 +107,7 @@ internal static class HierarchyQuickControls
         // Do not attach tooltip to the GUIContent: Unity would show its delayed built-in
         // tooltip in addition to the immediate one drawn below.
         GUI.Label(iconRect, new GUIContent(icon));
+        HandleComponentDragGesture(component, iconRect);
         var clicked = GUI.Button(iconRect, GUIContent.none, GUIStyle.none);
         GUI.color = previousColor;
 
@@ -121,6 +125,48 @@ internal static class HierarchyQuickControls
         Undo.RecordObject(component, isEnabled ? "Disable Component" : "Enable Component");
         enabledProperty.SetValue(component, !isEnabled, null);
         EditorUtility.SetDirty(component);
+        EditorApplication.RepaintHierarchyWindow();
+    }
+
+    /// <summary>
+    /// 区分组件图标的单击与拖动手势；移动超过阈值后启动标准 Unity 对象拖放，使 Component 可直接投放到 Binder 的引用字段。
+    /// </summary>
+    /// <param name="component">当前图标代表的准确组件实例。</param>
+    /// <param name="iconRect">当前组件图标在 Hierarchy 窗口中的交互区域。</param>
+    private static void HandleComponentDragGesture(Component component, Rect iconRect)
+    {
+        var currentEvent = Event.current;
+        EditorGUIUtility.AddCursorRect(iconRect, MouseCursor.Link);
+        if (currentEvent.type == EventType.MouseDown && currentEvent.button == 0 && iconRect.Contains(currentEvent.mousePosition))
+        {
+            pendingDragComponent = component;
+            pendingDragStartPosition = currentEvent.mousePosition;
+            return;
+        }
+
+        if (currentEvent.type == EventType.MouseDrag && currentEvent.button == 0 && pendingDragComponent == component && (currentEvent.mousePosition - pendingDragStartPosition).sqrMagnitude >= ComponentDragStartDistance * ComponentDragStartDistance)
+        {
+            BeginComponentDrag(component, currentEvent);
+            return;
+        }
+
+        if ((currentEvent.rawType == EventType.MouseUp || currentEvent.type == EventType.Ignore) && pendingDragComponent == component)
+            pendingDragComponent = null;
+    }
+
+    /// <summary>
+    /// 将组件实例放入 Unity 标准 DragAndDrop 对象引用，并释放图标按钮的热控制权以避免拖动结束时误触发启用状态切换。
+    /// </summary>
+    /// <param name="component">需要开始拖动的组件实例。</param>
+    /// <param name="currentEvent">触发拖动阈值的 Hierarchy 鼠标事件。</param>
+    private static void BeginComponentDrag(Component component, Event currentEvent)
+    {
+        GUIUtility.hotControl = 0;
+        DragAndDrop.PrepareStartDrag();
+        DragAndDrop.objectReferences = new UnityEngine.Object[] { component };
+        DragAndDrop.StartDrag($"{component.gameObject.name} ({component.GetType().Name})");
+        pendingDragComponent = null;
+        currentEvent.Use();
         EditorApplication.RepaintHierarchyWindow();
     }
 

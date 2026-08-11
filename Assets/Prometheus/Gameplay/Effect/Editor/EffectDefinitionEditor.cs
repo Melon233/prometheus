@@ -35,6 +35,7 @@ namespace Xuan.Prometheus.Effects.Editor
             EditorGUILayout.PropertyField(durationType);
             EffectDurationType selectedDurationType = (EffectDurationType)durationType.intValue;
             bool isPersistent = selectedDurationType != EffectDurationType.Instant;
+            if (isPersistent) EditorGUILayout.PropertyField(serializedObject.FindProperty("buffIcon"));
             if (selectedDurationType == EffectDurationType.Duration) EditorGUILayout.PropertyField(serializedObject.FindProperty("duration"));
             SerializedProperty tickInterval = serializedObject.FindProperty("tickInterval");
             SerializedProperty stackPolicy = serializedObject.FindProperty("stackPolicy");
@@ -203,6 +204,7 @@ namespace Xuan.Prometheus.Effects.Editor
             menu.AddItem(new GUIContent("Apply Effect"), false, () => AddOperation(propertyName, new ApplyEffectOperation()));
             menu.AddItem(new GUIContent("Emit Signal"), false, () => AddOperation(propertyName, new EmitSignalOperation()));
             menu.AddItem(new GUIContent("Gain Core Energy"), false, () => AddOperation(propertyName, new CoreEnergyGainOperation()));
+            menu.AddItem(new GUIContent("Gain Ultimate Energy"), false, () => AddOperation(propertyName, new UltEnergyGainOperation()));
             menu.ShowAsContext();
         }
 

@@ -334,7 +334,7 @@ namespace Xuan.Prometheus.Effects
                 case EffectValueSource.TargetAttack: return ReadProperty(context.Target, property => property.Atk);
                 case EffectValueSource.CasterMaxHp: return ReadProperty(context.Caster, property => property.MaxHp);
                 case EffectValueSource.TargetMaxHp: return ReadProperty(context.Target, property => property.MaxHp);
-                case EffectValueSource.CasterCoreEnergy: return ReadProperty(context.Caster, property => property.CoreEnergyLimit);
+                case EffectValueSource.CasterCoreEnergy: return ReadProperty(context.Caster, property => property.CoreEnergy);
                 default: return 0f;
             }
         }

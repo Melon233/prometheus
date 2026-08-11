@@ -19,7 +19,9 @@ namespace Xuan.Prometheus.Component
         /// <summary>沉默只禁止主动技能，仍允许移动和普通攻击。</summary>
         Silence = 1 << 2,
         /// <summary>受击状态严格跟随受击动画会话，期间禁止主动行为和移动，但不停止重力、Effect 或死亡流程。</summary>
-        Attacked = 1 << 3
+        Attacked = 1 << 3,
+        /// <summary>离场状态禁止角色行为、移动和技能，但不停止 Entity、Effect、冷却或数值生命周期。</summary>
+        OffField = 1 << 4
     }
 
     /// <summary>
@@ -105,7 +107,7 @@ namespace Xuan.Prometheus.Component
     /// <summary>
     /// 保存单个属性的基础值、modifier 集合与计算结果，并只在基础值或 modifier 变化时重算。
     /// </summary>
-    internal sealed class ModifiableProperty
+    public sealed class ModifiableProperty
     {
         /// <summary>
         /// 保存当前属性持有的全部 modifier；对象身份保证移除操作不会误删同值 modifier。
@@ -127,15 +129,43 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         private float offset;
 
+        /// <summary>保存当前属性的全部脏回调；只有最终值实际变化时才会通知。</summary>
+        private event Action Dirty;
+
         /// <summary>
         /// 获取按照 BaseValue × Boost + Offset 计算并缓存的最终值。
         /// </summary>
         public float Value { get; private set; }
 
+        /// <summary>监听最终值变化并返回可释放句柄；默认立即回调一次，使 UI 无需额外请求初始化快照。</summary>
+        public ListenHandle Listen(Action onDirty, bool invokeImmediately = true)
+        {
+            if (onDirty == null) throw new ArgumentNullException(nameof(onDirty));
+            Dirty += onDirty;
+            ListenHandle handle = new ListenHandle(() => Dirty -= onDirty);
+            try
+            {
+                if (invokeImmediately) onDirty.Invoke();
+                return handle;
+            }
+            catch
+            {
+                handle.Dispose();
+                throw;
+            }
+        }
+
         /// <summary>
         /// 更新基础值并立即刷新最终值。
         /// </summary>
         public void SetBaseValue(float value)
+        {
+            baseValue = value;
+            Recalculate();
+        }
+
+        /// <summary>直接写入不叠加 Modifier 的运行时数值，适用于生命、能量和冷却等当前状态字段。</summary>
+        internal void SetValue(float value)
         {
             baseValue = value;
             Recalculate();
@@ -165,6 +195,7 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         private void Recalculate()
         {
+            float previousValue = Value;
             boost = 1f;
             offset = 0f;
             foreach (PropertyModifier modifier in modifiers)
@@ -173,6 +204,7 @@ namespace Xuan.Prometheus.Component
                 else offset += modifier.Value;
             }
             Value = baseValue * boost + offset;
+            if (!Mathf.Approximately(previousValue, Value)) Dirty?.Invoke();
         }
     }
 
@@ -279,6 +311,15 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         private readonly ModifiableProperty ultEnergyLimit = new ModifiableProperty();
 
+        /// <summary>保存当前生命值，并通过统一属性脏监听向 UI 暴露变化。</summary>
+        private readonly ModifiableProperty hp = new ModifiableProperty();
+
+        /// <summary>保存当前核心能量，并通过统一属性脏监听向 UI 暴露变化。</summary>
+        private readonly ModifiableProperty coreEnergy = new ModifiableProperty();
+
+        /// <summary>保存当前大招能量，并通过统一属性脏监听向 UI 暴露变化。</summary>
+        private readonly ModifiableProperty ultEnergy = new ModifiableProperty();
+
         /// <summary>
         /// 获取已经应用 Boost 和 Offset 的攻击力。
         /// </summary>
@@ -354,15 +395,33 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         public float UltEnergyLimit => ultEnergyLimit.Value;
 
+        /// <summary>获取当前生命字段的可监听属性对象。</summary>
+        public ModifiableProperty HpProperty => hp;
+
+        /// <summary>获取最大生命字段的可监听属性对象。</summary>
+        public ModifiableProperty MaxHpProperty => maxHp;
+
+        /// <summary>获取当前核心能量字段的可监听属性对象。</summary>
+        public ModifiableProperty CoreEnergyProperty => coreEnergy;
+
+        /// <summary>获取核心能量上限字段的可监听属性对象。</summary>
+        public ModifiableProperty CoreEnergyLimitProperty => coreEnergyLimit;
+
+        /// <summary>获取当前大招能量字段的可监听属性对象。</summary>
+        public ModifiableProperty UltEnergyProperty => ultEnergy;
+
+        /// <summary>获取大招能量上限字段的可监听属性对象。</summary>
+        public ModifiableProperty UltEnergyLimitProperty => ultEnergyLimit;
+
         /// <summary>获取 PropertyConfig 配置的角色基础元素；缺少配置时安全回退为物理。</summary>
         public DamageAttribute ElementAttribute => propConfig == null ? DamageAttribute.Physical : propConfig.elementAttribute;
 
-        public float CoreEnergy { get; private set; }
-        public float UltEnergy { get; private set; }
+        public float CoreEnergy => coreEnergy.Value;
+        public float UltEnergy => ultEnergy.Value;
         /// <summary>
         /// 获取实体当前生命值；生命变化只能通过伤害、治疗或初始化入口执行。
         /// </summary>
-        public float Hp { get; private set; }
+        public float Hp => hp.Value;
 
         /// <summary>
         /// 获取实体是否已经没有生命值。
@@ -372,11 +431,14 @@ namespace Xuan.Prometheus.Component
         /// <summary>获取当前 Entity 生命周期是否已经完成唯一一次存活到死亡跃迁。</summary>
         public bool IsDead => isDead;
 
+        /// <summary>获取当前大招能量是否已经达到正数上限；死亡实体即使保留能量也不能释放大招。</summary>
+        public bool IsUltEnergyFull => !isDead && UltEnergyLimit > 0f && UltEnergy >= UltEnergyLimit;
+
         /// <summary>获取全部 ControlStateModifier 合并后的当前控制状态。</summary>
         public ControlState ActiveControlStates { get; private set; }
 
-        /// <summary>获取实体是否可以执行普通攻击、转向和 AI 决策等主动行为；Stun 或受击动画存续时均不可行动。</summary>
-        public bool CanAct => !isDead && !HasAnyControlState(ControlState.Stun | ControlState.Attacked);
+        /// <summary>获取实体是否可以执行普通攻击、转向和 AI 决策等主动行为；Stun、受击或离场状态存续时均不可行动。</summary>
+        public bool CanAct => !isDead && !HasAnyControlState(ControlState.Stun | ControlState.Attacked | ControlState.OffField);
 
         /// <summary>获取实体当前是否处于由受击动画生命周期持有的受击状态。</summary>
         public bool IsAttacked => HasAnyControlState(ControlState.Attacked);
@@ -388,12 +450,12 @@ namespace Xuan.Prometheus.Component
         public bool CanUseActiveSkill => CanAct && !HasAnyControlState(ControlState.Silence);
 
         /// <summary>
-        /// 在 Unity Start 阶段根据 Inspector 配置建立全部属性缓存，并将当前生命值初始化为 MaxHp。
+        /// 在 Unity Awake 阶段根据 Inspector 配置建立全部属性缓存并初始化生命值，使同帧隐藏的后备成员也拥有完整运行态。
         /// </summary>
-        private void Start()
+        private void Awake()
         {
             RefreshBaseValuesInternal();
-            Hp = MaxHp;
+            hp.SetValue(MaxHp);
             isDead = Hp <= 0f;
         }
 
@@ -403,7 +465,8 @@ namespace Xuan.Prometheus.Component
         public void RefreshBaseValues()
         {
             RefreshBaseValuesInternal();
-            Hp = Mathf.Min(Hp, MaxHp);
+            hp.SetValue(Mathf.Min(Hp, MaxHp));
+            ClampEnergyToLimits();
         }
 
         /// <summary>
@@ -412,7 +475,8 @@ namespace Xuan.Prometheus.Component
         public void SetBaseValue(PropertyType type, float value)
         {
             GetProperty(type).SetBaseValue(value);
-            if (type == PropertyType.MaxHp) Hp = Mathf.Min(Hp, maxHp.Value);
+            if (type == PropertyType.MaxHp) hp.SetValue(Mathf.Min(Hp, maxHp.Value));
+            if (type == PropertyType.CoreEnergyLimit || type == PropertyType.UltEnergyLimit) ClampEnergyToLimits();
         }
 
         /// <summary>
@@ -423,7 +487,8 @@ namespace Xuan.Prometheus.Component
             ModifiableProperty property = GetProperty(type);
             PropertyModifier modifier = new PropertyModifier(type, mode, value);
             property.AddModifier(modifier);
-            if (type == PropertyType.MaxHp) Hp = Mathf.Min(Hp, maxHp.Value);
+            if (type == PropertyType.MaxHp) hp.SetValue(Mathf.Min(Hp, maxHp.Value));
+            if (type == PropertyType.CoreEnergyLimit || type == PropertyType.UltEnergyLimit) ClampEnergyToLimits();
             return modifier;
         }
 
@@ -434,7 +499,8 @@ namespace Xuan.Prometheus.Component
         {
             if (modifier == null) return false;
             bool removed = GetProperty(modifier.Type).RemoveModifier(modifier);
-            if (removed && modifier.Type == PropertyType.MaxHp) Hp = Mathf.Min(Hp, maxHp.Value);
+            if (removed && modifier.Type == PropertyType.MaxHp) hp.SetValue(Mathf.Min(Hp, maxHp.Value));
+            if (removed && (modifier.Type == PropertyType.CoreEnergyLimit || modifier.Type == PropertyType.UltEnergyLimit)) ClampEnergyToLimits();
             return removed;
         }
 
@@ -504,21 +570,21 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 结算一次非负伤害、返回实际扣除生命值，并在运行模式中显示经过安全修正的预计伤害飘字。
+        /// 结算一次非负伤害、返回受剩余生命值截断后的实际扣血量，并在运行模式中显示截断前的预计伤害飘字。
         /// </summary>
         public float OnTakeDamage(float damage)
         {
             return OnTakeDamage(damage, out _);
         }
 
-        /// <summary>将传入伤害按受伤独立乘区 (1 + DamageTakenBonus) 结算一次，显示经过安全修正的预计伤害飘字，并以原子返回值指出本次结算是否首次把目标从存活推进到死亡；返回值仍为受剩余生命值限制的实际扣血量。</summary>
+        /// <summary>将传入伤害按受伤独立乘区 (1 + DamageTakenBonus) 结算一次，显示受剩余生命值截断前的预计伤害飘字，并以原子返回值指出本次结算是否首次把目标从存活推进到死亡；返回值仍为受剩余生命值限制的实际扣血量。</summary>
         public float OnTakeDamage(float damage, out bool wasFatal)
         {
             wasFatal = false;
             if (isDead) return 0f;
             float safeDamage = Mathf.Max(0f, damage * (1f + DamageTakenBonus));
             float oldHp = Hp;
-            Hp = Mathf.Max(0f, oldHp - safeDamage);
+            hp.SetValue(Mathf.Max(0f, oldHp - safeDamage));
             float actualDamage = oldHp - Hp;
             wasFatal = oldHp > 0f && Hp <= 0f;
             if (wasFatal) isDead = true;
@@ -527,25 +593,44 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 结算一次非负治疗、返回实际恢复生命值，并在运行模式中显示实际治疗飘字。
+        /// 结算一次非负治疗、返回受生命上限截断后的实际恢复生命值，并在运行模式中显示截断前的请求治疗量。
         /// </summary>
         public float OnRecoverHp(float recover)
         {
             if (isDead) return 0f;
             float safeRecover = Mathf.Max(0f, recover);
             float oldHp = Hp;
-            Hp = Mathf.Min(MaxHp, oldHp + safeRecover);
+            hp.SetValue(Mathf.Min(MaxHp, oldHp + safeRecover));
             float actualRecover = Hp - oldHp;
-            if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(actualRecover, transform.position, true);
+            if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(safeRecover, transform.position, true);
             return actualRecover;
         }
+        /// <summary>增加非负核心能量并按当前核心能量上限截断，返回本次实际增加量。</summary>
         public float OnGainCoreEnergy(float energy)
         {
             if (isDead) return 0f;
             float safeEnergy = Mathf.Max(0f, energy);
-            var oldCoreEnergy = CoreEnergy;
-            CoreEnergy = Mathf.Min(CoreEnergyLimit, CoreEnergy + safeEnergy);
+            float oldCoreEnergy = CoreEnergy;
+            coreEnergy.SetValue(Mathf.Min(CoreEnergyLimit, CoreEnergy + safeEnergy));
             return CoreEnergy - oldCoreEnergy;
+        }
+
+        /// <summary>增加非负大招能量并按当前大招能量上限截断，返回本次实际增加量。</summary>
+        public float OnGainUltEnergy(float energy)
+        {
+            if (isDead) return 0f;
+            float safeEnergy = Mathf.Max(0f, energy);
+            float oldUltEnergy = UltEnergy;
+            ultEnergy.SetValue(Mathf.Min(UltEnergyLimit, UltEnergy + safeEnergy));
+            return UltEnergy - oldUltEnergy;
+        }
+
+        /// <summary>在大招成功取得动画会话后清空全部大招能量，并返回清空前的能量值供事件快照使用。</summary>
+        public float ConsumeAllUltEnergy()
+        {
+            float consumedEnergy = UltEnergy;
+            ultEnergy.SetValue(0f);
+            return consumedEnergy;
         }
         /// <summary>
         /// 基于缓存的 Atk、CritRate 和 CritDmg 生成一次攻击伤害，并在暴击结算后按出伤独立乘区 (1 + DamageBonus) 乘算一次。
@@ -579,6 +664,13 @@ namespace Xuan.Prometheus.Component
                 case PropertyType.DamageTakenBoost: return damageTakenBoost;
                 default: throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported property type.");
             }
+        }
+
+        /// <summary>属性上限变化后同步约束两种当前能量，保证运行态始终处于零到对应上限之间。</summary>
+        private void ClampEnergyToLimits()
+        {
+            coreEnergy.SetValue(Mathf.Clamp(CoreEnergy, 0f, Mathf.Max(0f, CoreEnergyLimit)));
+            ultEnergy.SetValue(Mathf.Clamp(UltEnergy, 0f, Mathf.Max(0f, UltEnergyLimit)));
         }
 
         /// <summary>

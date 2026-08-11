@@ -10,6 +10,8 @@ namespace Xuan.Prometheus.Logic
         private InputComponent inputComponent;
         private MotionComponent motionComponent;
         private PropertyComponent propertyComponent;
+        /// <summary>保存可选的小队成员状态，使离场玩家停止重力与空中动画而不影响敌人。</summary>
+        private TeamMemberComponent teamMemberComponent;
 
         public override void AfterNew()
         {
@@ -19,16 +21,17 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out inputComponent);
             Entity.TryGetComp(out motionComponent);
             Entity.TryGetComp(out propertyComponent);
+            Entity.TryGetComp(out teamMemberComponent);
         }
 
         public override bool CanEnable()
         {
-            return !motionComponent.cc.isGrounded || motionComponent.curVelo.y > 0.1f;
+            return (teamMemberComponent == null || teamMemberComponent.IsOnField) && (!motionComponent.cc.isGrounded || motionComponent.curVelo.y > 0.1f);
         }
 
         public override bool CanDisable()
         {
-            return motionComponent.cc.isGrounded;
+            return teamMemberComponent != null && !teamMemberComponent.IsOnField || motionComponent.cc.isGrounded;
         }
 
         public override void OnEnable()
@@ -54,6 +57,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnUpdate(float dt)
         {
+            if (teamMemberComponent != null && !teamMemberComponent.IsOnField) return;
             motionComponent.curVelo.y -= propertyComponent.Gravity * dt;
             if (propertyComponent.CanAct && motionComponent.curVelo.y < 0f)
             {
@@ -73,6 +77,7 @@ namespace Xuan.Prometheus.Logic
 
         public override void OnDispose()
         {
+            teamMemberComponent = null;
         }
     }
 }

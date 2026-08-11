@@ -30,20 +30,34 @@ namespace Xuan.Prometheus.Tests
         {
             int firstListenerCalls = 0;
             int secondListenerCalls = 0;
-            SelfHpChangedEvent observedEvent = null;
-            Action<SelfHpChangedEvent> firstListener = eventData => { firstListenerCalls++; observedEvent = eventData; };
-            Action<SelfHpChangedEvent> secondListener = _ => secondListenerCalls++;
-            eventKit.AddListener(Event.SelfHpChanged, firstListener);
-            eventKit.AddListener(Event.SelfHpChanged, secondListener);
-            SelfHpChangedEvent firstEvent = new SelfHpChangedEvent(100f, 75f, 100f);
-            eventKit.Invoke(Event.SelfHpChanged, firstEvent);
+            EntityHpChangedEvent observedEvent = null;
+            Action<EntityHpChangedEvent> firstListener = eventData => { firstListenerCalls++; observedEvent = eventData; };
+            Action<EntityHpChangedEvent> secondListener = _ => secondListenerCalls++;
+            eventKit.AddListener(Event.EntityHpChanged, firstListener);
+            eventKit.AddListener(Event.EntityHpChanged, secondListener);
+            EntityHpChangedEvent firstEvent = new EntityHpChangedEvent(17, 100f, 75f, 100f);
+            eventKit.Invoke(Event.EntityHpChanged, firstEvent);
             Assert.That(firstListenerCalls, Is.EqualTo(1));
             Assert.That(secondListenerCalls, Is.EqualTo(1));
             Assert.That(observedEvent, Is.SameAs(firstEvent));
-            eventKit.RemoveListener(Event.SelfHpChanged, firstListener);
-            eventKit.Invoke(Event.SelfHpChanged, new SelfHpChangedEvent(75f, 50f, 100f));
+            Assert.That(observedEvent.EntityId, Is.EqualTo(17));
+            eventKit.RemoveListener(Event.EntityHpChanged, firstListener);
+            eventKit.Invoke(Event.EntityHpChanged, new EntityHpChangedEvent(17, 75f, 50f, 100f));
             Assert.That(firstListenerCalls, Is.EqualTo(1));
             Assert.That(secondListenerCalls, Is.EqualTo(2));
+        }
+
+        /// <summary>验证 UI 打开事件保留具体 HudPanel 类型，并能通过类型辅助方法执行语义化筛选。</summary>
+        [Test]
+        public void UIPanelOpenedEvent_RoutesConcreteHudPanelType()
+        {
+            UIPanelOpenedEvent observedEvent = null;
+            eventKit.AddListener<UIPanelOpenedEvent>(Event.UIPanelOpened, eventData => observedEvent = eventData);
+            UIPanelOpenedEvent openedEvent = new UIPanelOpenedEvent(typeof(HudPanel));
+            eventKit.Invoke(Event.UIPanelOpened, openedEvent);
+            Assert.That(observedEvent, Is.SameAs(openedEvent));
+            Assert.That(observedEvent.PanelType, Is.EqualTo(typeof(HudPanel)));
+            Assert.That(observedEvent.Is<HudPanel>(), Is.True);
         }
 
         /// <summary>验证 GameCore 可以通过 IEventKit 获取全局事件总线，并在逆序释放时清空 Core.Event。</summary>

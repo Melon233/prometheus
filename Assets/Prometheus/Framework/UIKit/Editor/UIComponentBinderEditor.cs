@@ -11,6 +11,17 @@ namespace Xuan.Prometheus.Editor
     [CustomEditor(typeof(UIComponentBinder))]
     public sealed class UIComponentBinderEditor : UnityEditor.Editor
     {
+        /// <summary>
+        /// 描述一行 Bind 相对上次生成快照的可视状态，枚举顺序不用于决定显示优先级。
+        /// </summary>
+        private enum BindingBackgroundState
+        {
+            None,
+            Ungenerated,
+            GeneratedIndexMismatch,
+            Invalid
+        }
+
         private const float IndexColumnWidth = 42f;
         private const float NameColumnWidth = 160f;
         private const float RemoveButtonWidth = 24f;
@@ -27,8 +38,13 @@ namespace Xuan.Prometheus.Editor
         private static readonly Color DraggedRowDarkBackgroundColor = new Color(0.24f, 0.26f, 0.3f, 0.98f);
         private static readonly Color DraggedRowLightBackgroundColor = new Color(0.82f, 0.86f, 0.92f, 0.98f);
         private static readonly Color DraggedRowShadowColor = new Color(0f, 0f, 0f, 0.28f);
-
+        private static readonly Color UngeneratedBindingBackgroundColor = new Color32(70, 210, 105, 105);
+        private static readonly Color GeneratedIndexMismatchBackgroundColor = new Color32(235, 184, 45, 115);
+        private static readonly Color InvalidBindingBackgroundColor = new Color32(225, 65, 65, 120);
+        private static readonly Color RestoreButtonColor = new Color32(255, 205, 70, 255);
         private SerializedProperty bindingsProperty;
+        private SerializedProperty generatedBindingsProperty;
+        private SerializedProperty generatedBindingSnapshotVersionProperty;
         private int draggedBindingIndex = -1;
         private int dragInsertionIndex = -1;
         private Vector2 dragPointerPosition;
@@ -40,11 +56,16 @@ namespace Xuan.Prometheus.Editor
         private GUIStyle bindingInsertionGapStyle;
         private GUIStyle draggedRowBackgroundStyle;
         private GUIStyle draggedRowShadowStyle;
+        private GUIStyle ungeneratedBindingBackgroundStyle;
+        private GUIStyle generatedIndexMismatchBackgroundStyle;
+        private GUIStyle invalidBindingBackgroundStyle;
         private Texture2D bindingInsertionGapTexture;
         private Texture2D draggedRowBackgroundTexture;
         private Texture2D draggedRowShadowTexture;
+        private Texture2D ungeneratedBindingBackgroundTexture;
+        private Texture2D generatedIndexMismatchBackgroundTexture;
+        private Texture2D invalidBindingBackgroundTexture;
         private bool dragPreviewStylesUseProSkin;
-
         /// <summary>
         /// Inspector 首次绑定目标时缓存组件表属性，后续所有行都由自定义表格直接绘制，因此不再依赖数组和元素的折叠状态。
         /// </summary>
@@ -52,6 +73,15 @@ namespace Xuan.Prometheus.Editor
         {
             serializedObject.Update();
             bindingsProperty = serializedObject.FindProperty("bindings");
+            generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
+            generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+            if (generatedBindingSnapshotVersionProperty != null && generatedBindingSnapshotVersionProperty.intValue < UIPanelCodeGenerator.GeneratedBindingSnapshotVersion && UIPanelCodeGenerator.TryRestoreGeneratedBindingSnapshot((UIComponentBinder)target))
+            {
+                serializedObject.Update();
+                bindingsProperty = serializedObject.FindProperty("bindings");
+                generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
+                generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+            }
         }
 
         /// <summary>
@@ -61,6 +91,9 @@ namespace Xuan.Prometheus.Editor
         {
             CancelBindingDrag();
             DestroyDragPreviewResources();
+            DestroyUngeneratedBindingResources();
+            DestroyGeneratedIndexMismatchResources();
+            DestroyInvalidBindingResources();
         }
 
         /// <summary>
@@ -73,6 +106,12 @@ namespace Xuan.Prometheus.Editor
             if (bindingsProperty == null)
                 bindingsProperty = serializedObject.FindProperty("bindings");
 
+            if (generatedBindingsProperty == null)
+                generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
+
+            if (generatedBindingSnapshotVersionProperty == null)
+                generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+
             DrawBindingTable();
             serializedObject.ApplyModifiedProperties();
             UIComponentBinder binder = (UIComponentBinder)target;
@@ -81,11 +120,29 @@ namespace Xuan.Prometheus.Editor
             DrawValidationMessages(binder);
             GUILayout.Space(8f);
 
-            if (GUILayout.Button("Generate Panel Code", GUILayout.Height(28f)))
+            if (DrawGeneratePanelCodeButton())
             {
                 CommitEditingBindingName(true);
                 serializedObject.ApplyModifiedProperties();
                 UIPanelCodeGenerator.Generate(binder);
+            }
+        }
+
+        /// <summary>
+        /// 使用与注册入口一致的舒适绿色绘制代码生成按钮，并在绘制结束后恢复全局 GUI 背景色以免影响后续控件。
+        /// </summary>
+        /// <returns>用户点击生成按钮时返回 true。</returns>
+        private static bool DrawGeneratePanelCodeButton()
+        {
+            Color previousBackgroundColor = GUI.backgroundColor;
+            try
+            {
+                GUI.backgroundColor = RegisterButtonColor;
+                return GUILayout.Button("Generate Panel Code", GUILayout.Height(28f));
+            }
+            finally
+            {
+                GUI.backgroundColor = previousBackgroundColor;
             }
         }
 
@@ -237,6 +294,79 @@ namespace Xuan.Prometheus.Editor
         }
 
         /// <summary>
+        /// 按红色无效项、绿色未生成组合、黄色索引失配的优先级绘制 Bind 状态背景，拖动预览期间使用即将落下的实时索引比较。
+        /// </summary>
+        /// <param name="rowRect">当前 Bind 行经过拖动让位动画计算后的绘制区域。</param>
+        /// <param name="bindingName">当前输入框内实际显示的名称，包括尚未失去焦点的名称草稿。</param>
+        /// <param name="component">当前 Bind 行引用的组件。</param>
+        /// <param name="currentIndex">当前显示索引；拖动时为预期落点索引，静止时为真实数组索引。</param>
+        private void DrawBindingStatusBackground(Rect rowRect, string bindingName, UnityEngine.Component component, int currentIndex)
+        {
+            BindingBackgroundState backgroundState = GetBindingBackgroundState(bindingName, component, currentIndex);
+            switch (backgroundState)
+            {
+                case BindingBackgroundState.Invalid:
+                    EnsureInvalidBindingStyle();
+                    GUI.Box(rowRect, GUIContent.none, invalidBindingBackgroundStyle);
+                    break;
+                case BindingBackgroundState.Ungenerated:
+                    EnsureUngeneratedBindingStyle();
+                    GUI.Box(rowRect, GUIContent.none, ungeneratedBindingBackgroundStyle);
+                    break;
+                case BindingBackgroundState.GeneratedIndexMismatch:
+                    EnsureGeneratedIndexMismatchStyle();
+                    GUI.Box(rowRect, GUIContent.none, generatedIndexMismatchBackgroundStyle);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 根据当前名称、组件引用和显示索引计算 Bind 相对生成快照的唯一背景状态。
+        /// </summary>
+        /// <param name="bindingName">当前 Bind 名称。</param>
+        /// <param name="component">当前 Bind 组件引用。</param>
+        /// <param name="currentIndex">当前或拖动预览中的显示索引。</param>
+        /// <returns>按无效、未生成、索引失配或无变化分类后的背景状态。</returns>
+        private BindingBackgroundState GetBindingBackgroundState(string bindingName, UnityEngine.Component component, int currentIndex)
+        {
+            if (string.IsNullOrWhiteSpace(bindingName) || component == null)
+                return BindingBackgroundState.Invalid;
+
+            if (!TryGetGeneratedBindingIndex(bindingName, component, out int generatedIndex))
+                return BindingBackgroundState.Ungenerated;
+
+            return generatedIndex == currentIndex ? BindingBackgroundState.None : BindingBackgroundState.GeneratedIndexMismatch;
+        }
+
+        /// <summary>
+        /// 在持久化生成快照中按名称与组件引用组合查找稳定索引，单独改名或替换引用都会被视为未生成组合。
+        /// </summary>
+        /// <param name="bindingName">当前 Bind 名称。</param>
+        /// <param name="component">当前 Bind 组件引用。</param>
+        /// <param name="generatedIndex">组合存在时返回上次生成索引，否则返回 -1。</param>
+        /// <returns>名称与组件引用组合存在于生成快照时返回 true。</returns>
+        private bool TryGetGeneratedBindingIndex(string bindingName, UnityEngine.Component component, out int generatedIndex)
+        {
+            generatedIndex = -1;
+            if (generatedBindingsProperty == null || generatedBindingSnapshotVersionProperty == null || generatedBindingSnapshotVersionProperty.intValue < UIPanelCodeGenerator.GeneratedBindingSnapshotVersion)
+                return false;
+
+            for (int index = 0; index < generatedBindingsProperty.arraySize; index++)
+            {
+                SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
+                string generatedName = generatedBindingProperty.FindPropertyRelative("name").stringValue;
+                UnityEngine.Component generatedComponent = generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue as UnityEngine.Component;
+                if (!string.Equals(generatedName, bindingName, StringComparison.Ordinal) || generatedComponent != component)
+                    continue;
+
+                generatedIndex = index;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 绘制一条可交互绑定行，包括实时预览索引、可强制提交的名称草稿、组件引用、移除按钮和位于最右侧的拖动柄。
         /// </summary>
         /// <param name="rowRect">当前绑定行经过拖动动画计算后的绘制区域。</param>
@@ -251,11 +381,13 @@ namespace Xuan.Prometheus.Editor
             SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(rowIndex);
             SerializedProperty nameProperty = bindingProperty.FindPropertyRelative("name");
             SerializedProperty componentProperty = bindingProperty.FindPropertyRelative("component");
+            UnityEngine.Component boundComponent = componentProperty.objectReferenceValue as UnityEngine.Component;
             GetBindingColumnRects(rowRect, out Rect indexRect, out Rect nameRect, out Rect componentRect, out Rect removeRect, out Rect dragHandleRect);
-            GUI.Label(indexRect, displayIndex.ToString(), EditorStyles.miniLabel);
             string nameControlName = GetBindingNameControlName(rowIndex);
             bool wasEditingCurrentName = editingBindingNameIndex == rowIndex;
             string displayedBindingName = wasEditingCurrentName ? editingBindingName : nameProperty.stringValue;
+            DrawBindingStatusBackground(rowRect, displayedBindingName, boundComponent, displayIndex);
+            GUI.Label(indexRect, displayIndex.ToString(), EditorStyles.miniLabel);
             GUI.SetNextControlName(nameControlName);
             string editedBindingName = EditorGUI.TextField(nameRect, GUIContent.none, displayedBindingName);
             bool currentNameHasFocus = string.Equals(GUI.GetNameOfFocusedControl(), nameControlName, StringComparison.Ordinal);
@@ -275,6 +407,7 @@ namespace Xuan.Prometheus.Editor
                 CommitEditingBindingName(false);
 
             EditorGUI.PropertyField(componentRect, componentProperty, GUIContent.none);
+
             bool shouldRemove = GUI.Button(removeRect, new GUIContent("×", $"Remove binding currently displayed at index {displayIndex}."), EditorStyles.miniButton);
             EditorGUIUtility.AddCursorRect(dragHandleRect, MouseCursor.Pan);
             GUI.Box(dragHandleRect, new GUIContent("≡", "Drag this binding to reorder the list."), EditorStyles.miniButton);
@@ -393,6 +526,7 @@ namespace Xuan.Prometheus.Editor
             SerializedProperty nameProperty = bindingProperty.FindPropertyRelative("name");
             SerializedProperty componentProperty = bindingProperty.FindPropertyRelative("component");
             UnityEngine.Component component = componentProperty.objectReferenceValue as UnityEngine.Component;
+            DrawBindingStatusBackground(floatingRect, nameProperty.stringValue, component, dragInsertionIndex);
             GetBindingColumnRects(floatingRect, out Rect indexRect, out Rect nameRect, out Rect componentRect, out Rect removeRect, out Rect dragHandleRect);
             GUI.Label(indexRect, dragInsertionIndex.ToString(), EditorStyles.miniLabel);
             GUI.Label(nameRect, nameProperty.stringValue, EditorStyles.textField);
@@ -419,6 +553,42 @@ namespace Xuan.Prometheus.Editor
             bindingInsertionGapStyle = CreateRoundedPreviewStyle(bindingInsertionGapTexture);
             draggedRowBackgroundStyle = CreateRoundedPreviewStyle(draggedRowBackgroundTexture);
             draggedRowShadowStyle = CreateRoundedPreviewStyle(draggedRowShadowTexture);
+        }
+
+        /// <summary>
+        /// 延迟创建未出现在生成快照中的名称与组件组合所使用的圆角绿色背景样式。
+        /// </summary>
+        private void EnsureUngeneratedBindingStyle()
+        {
+            if (ungeneratedBindingBackgroundStyle != null)
+                return;
+
+            ungeneratedBindingBackgroundTexture = CreateRoundedPreviewTexture("UIKit Ungenerated Binding Background", UngeneratedBindingBackgroundColor);
+            ungeneratedBindingBackgroundStyle = CreateRoundedPreviewStyle(ungeneratedBindingBackgroundTexture);
+        }
+
+        /// <summary>
+        /// 延迟创建生成索引失配行使用的圆角黄色背景样式，只有真正出现索引差异时才分配临时纹理。
+        /// </summary>
+        private void EnsureGeneratedIndexMismatchStyle()
+        {
+            if (generatedIndexMismatchBackgroundStyle != null)
+                return;
+
+            generatedIndexMismatchBackgroundTexture = CreateRoundedPreviewTexture("UIKit Generated Index Mismatch Background", GeneratedIndexMismatchBackgroundColor);
+            generatedIndexMismatchBackgroundStyle = CreateRoundedPreviewStyle(generatedIndexMismatchBackgroundTexture);
+        }
+
+        /// <summary>
+        /// 延迟创建名称为空或组件引用为空的无效 Bind 所使用的圆角红色背景样式。
+        /// </summary>
+        private void EnsureInvalidBindingStyle()
+        {
+            if (invalidBindingBackgroundStyle != null)
+                return;
+
+            invalidBindingBackgroundTexture = CreateRoundedPreviewTexture("UIKit Invalid Binding Background", InvalidBindingBackgroundColor);
+            invalidBindingBackgroundStyle = CreateRoundedPreviewStyle(invalidBindingBackgroundTexture);
         }
 
         /// <summary>
@@ -491,6 +661,42 @@ namespace Xuan.Prometheus.Editor
         }
 
         /// <summary>
+        /// 销毁未生成 Bind 行圆角绿色背景使用的隐藏临时纹理并清空样式引用，避免关闭 Inspector 后遗留编辑器资源。
+        /// </summary>
+        private void DestroyUngeneratedBindingResources()
+        {
+            if (ungeneratedBindingBackgroundTexture != null)
+                UnityEngine.Object.DestroyImmediate(ungeneratedBindingBackgroundTexture);
+
+            ungeneratedBindingBackgroundTexture = null;
+            ungeneratedBindingBackgroundStyle = null;
+        }
+
+        /// <summary>
+        /// 销毁生成索引失配提示使用的隐藏临时纹理并清空样式引用，避免关闭 Inspector 后遗留编辑器资源。
+        /// </summary>
+        private void DestroyGeneratedIndexMismatchResources()
+        {
+            if (generatedIndexMismatchBackgroundTexture != null)
+                UnityEngine.Object.DestroyImmediate(generatedIndexMismatchBackgroundTexture);
+
+            generatedIndexMismatchBackgroundTexture = null;
+            generatedIndexMismatchBackgroundStyle = null;
+        }
+
+        /// <summary>
+        /// 销毁无效 Bind 行圆角红色背景使用的隐藏临时纹理并清空样式引用，避免关闭 Inspector 后遗留编辑器资源。
+        /// </summary>
+        private void DestroyInvalidBindingResources()
+        {
+            if (invalidBindingBackgroundTexture != null)
+                UnityEngine.Object.DestroyImmediate(invalidBindingBackgroundTexture);
+
+            invalidBindingBackgroundTexture = null;
+            invalidBindingBackgroundStyle = null;
+        }
+
+        /// <summary>
         /// 鼠标松开时一次性提交数组移动，按下 Escape 时取消预览；两种路径都会清理热控制权和动画缓存。
         /// </summary>
         private void CompleteBindingDrag(int dragControlId)
@@ -560,36 +766,236 @@ namespace Xuan.Prometheus.Editor
         }
 
         /// <summary>
-        /// 使用柔和绿色绘制批量注册按钮，并在点击后注册 Binder 层级内所有受支持的 Button 与 Text 组件。
+        /// 使用柔和绿色绘制批量注册按钮，并在点击后注册 Binder 层级内所有受支持的 Button、Text 与约定 MonoBehaviour 组件。
         /// </summary>
         /// <param name="binder">当前 Inspector 正在编辑的 Binder。</param>
         private void DrawRegisterAllButton(UIComponentBinder binder)
         {
+            bool registerButtonClicked;
             Color previousBackgroundColor = GUI.backgroundColor;
             try
             {
                 GUI.backgroundColor = RegisterButtonColor;
-                if (!GUILayout.Button(new GUIContent("Register All Buttons And Texts", "Register every Button, TextMeshProUGUI and supported custom XButton under this Binder without creating duplicates."), GUILayout.Height(30f)))
-                    return;
+                registerButtonClicked = GUILayout.Button(new GUIContent("Register All Components", "Register every Button, TextMeshProUGUI, supported custom XButton and MonoBehaviour whose type name ends with Mono under this Binder without creating duplicates."), GUILayout.Height(30f));
             }
             finally
             {
                 GUI.backgroundColor = previousBackgroundColor;
             }
 
-            int addedCount = RegisterAllButtonsAndTexts(binder);
-            serializedObject.Update();
-            bindingsProperty = serializedObject.FindProperty("bindings");
-            Repaint();
-            Debug.Log(addedCount > 0 ? $"[UIKit Binder] Registered {addedCount} Button/Text component(s) in '{binder.name}'." : $"[UIKit Binder] Every supported Button/Text component in '{binder.name}' is already registered.", binder);
+            if (registerButtonClicked)
+            {
+                int addedCount = RegisterAllSupportedComponents(binder);
+                serializedObject.Update();
+                bindingsProperty = serializedObject.FindProperty("bindings");
+                generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
+                generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+                Repaint();
+                Debug.Log(addedCount > 0 ? $"[UIKit Binder] Registered {addedCount} supported component(s) in '{binder.name}'." : $"[UIKit Binder] Every supported component in '{binder.name}' is already registered.", binder);
+            }
+
+            List<string> bindingChangeDescriptions = BuildBindingChangeDescriptions();
+            if (bindingChangeDescriptions.Count > 0)
+                DrawBindingChangeWarning(binder, bindingChangeDescriptions);
         }
 
         /// <summary>
-        /// 按层级遍历顺序注册全部 Button、TextMeshProUGUI 及未来的自定义 XButton，已有组件引用会被跳过且现有绑定不会被重排。
+        /// 构建相对最后生成快照的逐 Bind 变更说明，能够区分新增组合、改名、替换引用、索引移动和删除。
+        /// </summary>
+        /// <returns>每个需要重新生成代码的具体 Bind 变更说明。</returns>
+        private List<string> BuildBindingChangeDescriptions()
+        {
+            List<string> changeDescriptions = new List<string>();
+            if (bindingsProperty == null)
+                return changeDescriptions;
+
+            int generatedBindingCount = CanRestoreGeneratedBindingSnapshot() ? generatedBindingsProperty.arraySize : 0;
+            bool[] matchedGeneratedBindings = new bool[generatedBindingCount];
+            bool[] replacedGeneratedBindings = new bool[generatedBindingCount];
+
+            for (int index = 0; index < bindingsProperty.arraySize; index++)
+            {
+                SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(index);
+                string bindingName = editingBindingNameIndex == index ? editingBindingName : bindingProperty.FindPropertyRelative("name").stringValue;
+                UnityEngine.Component component = bindingProperty.FindPropertyRelative("component").objectReferenceValue as UnityEngine.Component;
+                int displayIndex = GetBindingDisplayIndex(index);
+                if (string.IsNullOrWhiteSpace(bindingName) || component == null)
+                {
+                    if (displayIndex >= 0 && displayIndex < generatedBindingCount)
+                    {
+                        replacedGeneratedBindings[displayIndex] = true;
+                        changeDescriptions.Add(BuildReplacedBindingDescription(displayIndex, bindingName, component));
+                    }
+
+                    continue;
+                }
+
+                if (TryGetGeneratedBindingIndex(bindingName, component, out int generatedIndex))
+                {
+                    if (generatedIndex >= 0 && generatedIndex < matchedGeneratedBindings.Length)
+                        matchedGeneratedBindings[generatedIndex] = true;
+
+                    if (generatedIndex != displayIndex)
+                        changeDescriptions.Add($"Bind \"{bindingName}\"：Index {generatedIndex} → {displayIndex}");
+
+                    continue;
+                }
+
+                if (displayIndex >= 0 && displayIndex < generatedBindingCount)
+                {
+                    replacedGeneratedBindings[displayIndex] = true;
+                    changeDescriptions.Add(BuildReplacedBindingDescription(displayIndex, bindingName, component));
+                }
+                else
+                    changeDescriptions.Add($"Bind \"{bindingName}\"（Index {displayIndex}）：新增，未包含在最后生成配置中");
+            }
+
+            for (int generatedIndex = 0; generatedIndex < generatedBindingCount; generatedIndex++)
+            {
+                if (matchedGeneratedBindings[generatedIndex] || replacedGeneratedBindings[generatedIndex])
+                    continue;
+
+                SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(generatedIndex);
+                string generatedName = generatedBindingProperty.FindPropertyRelative("name").stringValue;
+                changeDescriptions.Add($"Bind \"{generatedName}\"（生成 Index {generatedIndex}）：已从当前列表删除");
+            }
+
+            return changeDescriptions;
+        }
+
+        /// <summary>
+        /// 返回真实数组行在当前拖动预览中的显示索引，使警告内容与黄色背景上的实时 Index 保持一致。
+        /// </summary>
+        /// <param name="bindingIndex">Bind 在尚未提交移动的真实序列化数组中的索引。</param>
+        /// <returns>静止时返回真实索引，拖动时返回该行预计落下的索引。</returns>
+        private int GetBindingDisplayIndex(int bindingIndex)
+        {
+            if (draggedBindingIndex < 0 || dragInsertionIndex < 0)
+                return bindingIndex;
+
+            return bindingIndex == draggedBindingIndex ? dragInsertionIndex : GetBindingPreviewSlot(bindingIndex);
+        }
+
+        /// <summary>
+        /// 说明一个绿色 Bind 相对同索引生成条目的具体字段变化，名称和组件均改变时会同时列出。
+        /// </summary>
+        /// <param name="bindingIndex">绿色 Bind 当前占用的索引。</param>
+        /// <param name="bindingName">绿色 Bind 当前名称。</param>
+        /// <param name="component">绿色 Bind 当前组件引用。</param>
+        /// <returns>包含旧值和新值的可读变更说明。</returns>
+        private string BuildReplacedBindingDescription(int bindingIndex, string bindingName, UnityEngine.Component component)
+        {
+            SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(bindingIndex);
+            string generatedName = generatedBindingProperty.FindPropertyRelative("name").stringValue;
+            UnityEngine.Component generatedComponent = generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue as UnityEngine.Component;
+            bool nameChanged = !string.Equals(generatedName, bindingName, StringComparison.Ordinal);
+            bool componentChanged = generatedComponent != component;
+            if (nameChanged && componentChanged)
+                return $"Bind Index {bindingIndex}：Name \"{generatedName}\" → \"{bindingName}\"，Component \"{GetBindingComponentDescription(generatedComponent)}\" → \"{GetBindingComponentDescription(component)}\"";
+
+            if (nameChanged)
+                return $"Bind Index {bindingIndex}：Name \"{generatedName}\" → \"{bindingName}\"";
+
+            return $"Bind \"{bindingName}\"（Index {bindingIndex}）：Component \"{GetBindingComponentDescription(generatedComponent)}\" → \"{GetBindingComponentDescription(component)}\"";
+        }
+
+        /// <summary>
+        /// 生成同时包含 GameObject 名称和组件类型的引用说明，使同一对象上的多个组件也能在警告中被准确区分。
+        /// </summary>
+        /// <param name="component">需要显示的组件引用。</param>
+        /// <returns>空引用返回 None，否则返回 GameObject 名称与组件类型。</returns>
+        private static string GetBindingComponentDescription(UnityEngine.Component component)
+        {
+            return component == null ? "None" : $"{component.gameObject.name} ({component.GetType().Name})";
+        }
+
+        /// <summary>
+        /// 在注册按钮下方绘制包含逐 Bind 明细的警告框，并在右侧提供黄色的完整配置还原按钮。
+        /// </summary>
+        /// <param name="binder">当前 Inspector 正在编辑的 Binder。</param>
+        /// <param name="changeDescriptions">需要展示的逐 Bind 变更说明。</param>
+        private void DrawBindingChangeWarning(UIComponentBinder binder, List<string> changeDescriptions)
+        {
+            string warningMessage = "以下 Bind 发生变动，需要重新生成 Panel 代码：\n• " + string.Join("\n• ", changeDescriptions);
+            bool canRestore = CanRestoreGeneratedBindingSnapshot();
+            bool restoreButtonClicked = false;
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
+            Color previousBackgroundColor = GUI.backgroundColor;
+            try
+            {
+                GUI.backgroundColor = RestoreButtonColor;
+                EditorGUI.BeginDisabledGroup(!canRestore);
+                restoreButtonClicked = GUILayout.Button(new GUIContent("还原", canRestore ? "恢复最后一次成功生成 PanelBase 时保存的完整 Bind 配置。" : "当前面板还没有可以还原的生成配置。"), GUILayout.Width(56f), GUILayout.ExpandHeight(true));
+                EditorGUI.EndDisabledGroup();
+            }
+            finally
+            {
+                GUI.backgroundColor = previousBackgroundColor;
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (restoreButtonClicked && EditorUtility.DisplayDialog("还原 Bind 配置", "确定要恢复最后一次成功生成 PanelBase 时保存的完整 Bind 配置吗？当前 Bind 的名称、引用、数量和顺序将被覆盖，但仍可通过 Undo 撤销。", "确认还原", "取消"))
+                RestoreGeneratedBindingSnapshot(binder);
+        }
+
+        /// <summary>
+        /// 判断当前 Binder 是否已经保存可用于还原的完整生成绑定快照；空快照同样有效，可用于还原到零 Bind。
+        /// </summary>
+        /// <returns>快照版本和序列化列表均有效时返回 true。</returns>
+        private bool CanRestoreGeneratedBindingSnapshot()
+        {
+            return generatedBindingsProperty != null && generatedBindingSnapshotVersionProperty != null && generatedBindingSnapshotVersionProperty.intValue >= UIPanelCodeGenerator.GeneratedBindingSnapshotVersion;
+        }
+
+        /// <summary>
+        /// 使用 Undo 支持的一次操作将当前 Bind 表完整恢复为最后生成快照，包括名称、组件引用、数量和顺序。
+        /// </summary>
+        /// <param name="binder">需要恢复生成配置的 Binder。</param>
+        private void RestoreGeneratedBindingSnapshot(UIComponentBinder binder)
+        {
+            if (!CanRestoreGeneratedBindingSnapshot())
+                return;
+
+            int generatedBindingCount = generatedBindingsProperty.arraySize;
+            string[] generatedNames = new string[generatedBindingCount];
+            UnityEngine.Component[] generatedComponents = new UnityEngine.Component[generatedBindingCount];
+            for (int index = 0; index < generatedBindingCount; index++)
+            {
+                SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
+                generatedNames[index] = generatedBindingProperty.FindPropertyRelative("name").stringValue;
+                generatedComponents[index] = generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue as UnityEngine.Component;
+            }
+
+            CancelBindingDrag();
+            ClearBindingNameEditingState();
+            GUI.FocusControl(null);
+            Undo.RecordObject(binder, "Restore Generated UI Bindings");
+            serializedObject.Update();
+            bindingsProperty = serializedObject.FindProperty("bindings");
+            bindingsProperty.arraySize = generatedBindingCount;
+            for (int index = 0; index < generatedBindingCount; index++)
+            {
+                SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(index);
+                bindingProperty.FindPropertyRelative("name").stringValue = generatedNames[index];
+                bindingProperty.FindPropertyRelative("component").objectReferenceValue = generatedComponents[index];
+            }
+
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(binder);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(binder);
+            serializedObject.Update();
+            generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
+            generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+            Repaint();
+        }
+
+        /// <summary>
+        /// 按层级遍历顺序注册全部 Button、TextMeshProUGUI、自定义 XButton 以及类型名以 Mono 结尾的 MonoBehaviour，已有组件引用会被跳过且现有绑定不会被重排。
         /// </summary>
         /// <param name="binder">需要批量扫描的 Binder 根节点。</param>
         /// <returns>本次实际新增的绑定数量。</returns>
-        private static int RegisterAllButtonsAndTexts(UIComponentBinder binder)
+        private static int RegisterAllSupportedComponents(UIComponentBinder binder)
         {
             SerializedObject serializedBinder = new SerializedObject(binder);
             SerializedProperty serializedBindings = serializedBinder.FindProperty("bindings");
@@ -609,7 +1015,7 @@ namespace Xuan.Prometheus.Editor
 
             UnityEngine.Component[] hierarchyComponents = binder.GetComponentsInChildren<UnityEngine.Component>(true);
             int addedCount = 0;
-            Undo.RecordObject(binder, "Register All UI Buttons And Texts");
+            Undo.RecordObject(binder, "Register All Supported UI Components");
             for (int index = 0; index < hierarchyComponents.Length; index++)
             {
                 UnityEngine.Component component = hierarchyComponents[index];
@@ -636,7 +1042,7 @@ namespace Xuan.Prometheus.Editor
         }
 
         /// <summary>
-        /// 判断组件是否属于自动注册范围；标准 Button 和 TextMeshProUGUI 直接按类型识别，自定义 XButton 则按约定类型名称兼容其非 Button 继承实现。
+        /// 判断组件是否属于自动注册范围；除 Button、TextMeshProUGUI 和 XButton 外，所有实际类型名以 Mono 结尾的 MonoBehaviour 也会按项目约定注册。
         /// </summary>
         /// <param name="component">层级扫描得到的候选组件。</param>
         /// <returns>组件应被自动加入 Binder 时返回 true。</returns>
@@ -646,7 +1052,7 @@ namespace Xuan.Prometheus.Editor
                 return false;
 
             Type componentType = component.GetType();
-            return component is UnityEngine.UI.Button || IsTypeOrSubclassOf(componentType, "TMPro.TextMeshProUGUI") || string.Equals(componentType.Name, "XButton", StringComparison.Ordinal);
+            return component is UnityEngine.UI.Button || IsTypeOrSubclassOf(componentType, "TMPro.TextMeshProUGUI") || string.Equals(componentType.Name, "XButton", StringComparison.Ordinal) || component is MonoBehaviour && componentType.Name.EndsWith("Mono", StringComparison.Ordinal);
         }
 
         /// <summary>

@@ -15,6 +15,57 @@ MonoBehaviour:
   skeletonDataAsset: {fileID: 11400000, guid: 27d40a5c4b3cf944688c0b183e56f327, type: 2}
   hitStart: hit_start
   hitEnd: hit_end
+  mixDurationMatrix:
+    defaultDuration: 0.2
+    overrides:
+    - from: 10
+      to: 100
+      duration: 0
+    - from: 10
+      to: 101
+      duration: 0
+    - from: 10
+      to: 102
+      duration: 0
+    - from: 10
+      to: 103
+      duration: 0
+    - from: 10
+      to: 104
+      duration: 0
+    - from: 10
+      to: 105
+      duration: 0
+    - from: 10
+      to: 106
+      duration: 0
+    - from: 10
+      to: 107
+      duration: 0
+    - from: 20
+      to: 100
+      duration: 0
+    - from: 20
+      to: 101
+      duration: 0
+    - from: 20
+      to: 102
+      duration: 0
+    - from: 20
+      to: 103
+      duration: 0
+    - from: 20
+      to: 104
+      duration: 0
+    - from: 20
+      to: 105
+      duration: 0
+    - from: 20
+      to: 106
+      duration: 0
+    - from: 20
+      to: 107
+      duration: 0
   atkExecutor:
     attacks:
     - animationLine: {fileID: 11400000, guid: bee0321c4b2daa84d89e45679dca3070, type: 2}

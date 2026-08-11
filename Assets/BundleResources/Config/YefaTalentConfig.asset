@@ -18,7 +18,7 @@ MonoBehaviour:
     - damageMultiplier: 0.5
       damageOffset: 0
       additionalTags: 0
-    - damageMultiplier: 0
+    - damageMultiplier: 1
       damageOffset: 0
       additionalTags: 0
     - damageMultiplier: 1
@@ -37,7 +37,9 @@ MonoBehaviour:
     damageMultiplier: 1
     damageOffset: 0
     animationSpeed: 1
+  skillCooldown: 5
   ultimate:
     damageMultiplier: 1
     damageOffset: 0
     animationSpeed: 1
+  ultimateCooldown: 10

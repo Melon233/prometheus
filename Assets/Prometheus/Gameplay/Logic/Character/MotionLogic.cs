@@ -7,6 +7,8 @@ namespace Xuan.Prometheus.Logic
     public sealed class MotionLogic : Logic
     {
         private MotionComponent motionComp;
+        /// <summary>保存可选的小队成员状态；敌人等非小队实体保持为空。</summary>
+        private TeamMemberComponent teamMemberComponent;
 
         /// <summary>在全部玩法速度计算之后运行，确保玩家与敌人每帧只通过该逻辑提交合成位移。</summary>
         public override void AfterNew()
@@ -15,18 +17,19 @@ namespace Xuan.Prometheus.Logic
             ControlRequirement = LogicControlRequirement.None;
             if (!Entity.TryGetComp(out motionComp) || motionComp == null) throw new InvalidOperationException($"Entity '{Entity.bindGo.name}' requires MotionComponent for motion integration.");
             if (motionComp.cc == null) throw new InvalidOperationException($"Entity '{Entity.bindGo.name}' MotionComponent requires CharacterController.");
+            Entity.TryGetComp(out teamMemberComponent);
         }
 
         /// <summary>实体存活期间始终允许基础位移积分。</summary>
         public override bool CanEnable()
         {
-            return true;
+            return teamMemberComponent == null || teamMemberComponent.IsOnField;
         }
 
         /// <summary>基础位移不会因主动玩法 Logic 的状态变化而停用。</summary>
         public override bool CanDisable()
         {
-            return false;
+            return teamMemberComponent != null && !teamMemberComponent.IsOnField;
         }
 
         /// <summary>启用时无需额外状态切换。</summary>
@@ -37,6 +40,9 @@ namespace Xuan.Prometheus.Logic
         /// <summary>基础位移逻辑不会通过普通调度路径禁用。</summary>
         public override void OnDisable()
         {
+            motionComp.curVelo = UnityEngine.Vector3.zero;
+            motionComp.landThisFrame = false;
+            motionComp.wasGroundedLastFrame = false;
         }
 
         /// <summary>提交合成速度并在移动后生成当前帧落地标记。</summary>
@@ -52,6 +58,7 @@ namespace Xuan.Prometheus.Logic
         public override void OnDispose()
         {
             motionComp = null;
+            teamMemberComponent = null;
         }
     }
 }

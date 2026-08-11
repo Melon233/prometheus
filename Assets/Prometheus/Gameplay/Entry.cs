@@ -14,7 +14,12 @@ namespace Xuan.Prometheus
     public sealed class Entry : MonoBehaviour
     {
         [SerializeField] private string packageName = AssetKit.DefaultPackageName;
+        /// <summary>第一个固定小队槽位使用的角色资源地址，同时保留旧场景中的 playerAddress 序列化数据。</summary>
         [SerializeField] private string playerAddress = "Character_Yefa";
+        /// <summary>第二个固定小队槽位使用的角色资源地址。</summary>
+        [SerializeField] private string secondPlayerAddress = "Character_Yefa";
+        /// <summary>第三个固定小队槽位使用的角色资源地址。</summary>
+        [SerializeField] private string thirdPlayerAddress = "Character_Yefa";
         [SerializeField] private string enemyAddress = "Enemy_Slime";
         /// <summary>
         /// 正式玩法使用的持久化 Effect 配置库；修改其引用的 Effect 资产后，下次启动玩法即可生效。
@@ -55,7 +60,8 @@ namespace Xuan.Prometheus
                 yield break;
 
             core = new GameCore();
-            GameplayStartupOptions options = new GameplayStartupOptions(packageName, transform, effectLibrary, playerAddress, enemyAddress, enemySpawnPoints, enemySpawnLimit);
+            string[] teamMemberAddresses = { playerAddress, secondPlayerAddress, thirdPlayerAddress };
+            GameplayStartupOptions options = new GameplayStartupOptions(packageName, transform, effectLibrary, teamMemberAddresses, enemyAddress, enemySpawnPoints, enemySpawnLimit);
             yield return core.Initialize(options);
             core.GetKit<IUIKit>().OpenPanel<HudPanel>();
         }

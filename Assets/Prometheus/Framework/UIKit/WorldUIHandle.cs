@@ -100,6 +100,12 @@ namespace Xuan.Prometheus
             GetOwnerOrThrow().ConfigureWorldUIPosition(this, worldPosition);
         }
 
+        /// <summary>立即把当前跟随目标或固定坐标同步到 UI 根节点，适合在隐藏实例重新显示前消除一帧旧坐标。</summary>
+        public void RefreshTransform()
+        {
+            GetOwnerOrThrow().RefreshWorldUITransform(this);
+        }
+
         /// <summary>设置屏幕空间世界锚点 UI 在投影位置上叠加的像素偏移。</summary>
         /// <param name="screenOffset">以 Overlay Canvas 参考分辨率为基准的二维偏移。</param>
         public void SetScreenOffset(Vector2 screenOffset)

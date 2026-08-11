@@ -107,6 +107,21 @@ namespace Xuan.Prometheus
         protected global::UnityEngine.UI.Image EnergyImg { get; private set; }
 
         /// <summary>
+        /// 获取 Binder 中名为 Ult 的强类型组件引用。
+        /// </summary>
+        protected global::Xuan.Prometheus.UltMono Ult { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 BuffList 的强类型组件引用。
+        /// </summary>
+        protected global::SuperScrollView.LoopListView2 BuffList { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 Skill 的强类型组件引用。
+        /// </summary>
+        protected global::Xuan.Prometheus.CdMono Skill { get; private set; }
+
+        /// <summary>
         /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
         /// </summary>
         protected abstract void OnLotteryButtonClick();
@@ -211,6 +226,9 @@ namespace Xuan.Prometheus
             HpBar = binder.Get<global::UnityEngine.UI.Image>(17, "HpBar");
             EnergyFrame = binder.Get<global::UnityEngine.UI.Image>(18, "EnergyFrame");
             EnergyImg = binder.Get<global::UnityEngine.UI.Image>(19, "EnergyImg");
+            Ult = binder.Get<global::Xuan.Prometheus.UltMono>(20, "Ult");
+            BuffList = binder.Get<global::SuperScrollView.LoopListView2>(21, "BuffList");
+            Skill = binder.Get<global::Xuan.Prometheus.CdMono>(22, "Skill");
 
             LotteryButton.onClick.AddListener(OnLotteryButtonClick);
             StickButton.onClick.AddListener(OnStickButtonClick);
@@ -272,6 +290,9 @@ namespace Xuan.Prometheus
             HpBar = null;
             EnergyFrame = null;
             EnergyImg = null;
+            Ult = null;
+            BuffList = null;
+            Skill = null;
         }
     }
 }

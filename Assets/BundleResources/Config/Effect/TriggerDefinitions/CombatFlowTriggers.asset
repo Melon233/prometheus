@@ -70,3 +70,26 @@ MonoBehaviour:
       damageAttribute: 0
     effects:
     - {fileID: 11400000, guid: b0374dce6e7be8e43bdd43c4397cd66a, type: 2}
+  - triggerId: Example.OnNormalAttackDamage.GainUltEnergy
+    signalType: 2
+    listenScope: 0
+    targetSelector: 0
+    probability: 1
+    cooldown: 0
+    oncePerSignalChain: 1
+    priority: 0
+    conditions:
+    - type: 7
+      tags: 0
+      threshold: 0
+      damageAttribute: 0
+    - type: 4
+      tags: 2
+      threshold: 0
+      damageAttribute: 0
+    - type: 6
+      tags: 16
+      threshold: 0
+      damageAttribute: 0
+    effects:
+    - {fileID: 11400000, guid: f7b56c2004d34368933ef43782cb7d02, type: 2}

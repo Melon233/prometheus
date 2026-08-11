@@ -157,7 +157,7 @@ namespace Xuan.Prometheus.Input.Tests
         private static InputFrame CreateFrame(long frameId, Vector2 move, bool attackPressedThisFrame, bool attackHeld)
         {
             InputButtonState attack = new InputButtonState(attackPressedThisFrame, attackHeld, false);
-            return new InputFrame(frameId, move, move, attack, default, default, default, default, default, default, default, default, default);
+            return new InputFrame(frameId, move, move, attack, default, default, default, default, default, default, default, default, default, default, default, default);
         }
 
         /// <summary>提供可计数且不依赖 UnityEngine.Input 的确定性输入源。</summary>

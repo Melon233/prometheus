@@ -186,7 +186,7 @@ namespace Xuan.Prometheus.Editor
         private static SceneView ResolveRecordedSceneView()
         {
             int instanceId = SessionState.GetInt(SceneViewInstanceIdSessionKey, 0);
-            return instanceId == 0 ? null : EditorUtility.InstanceIDToObject(instanceId) as SceneView;
+            return instanceId == 0 ? null : EditorUtility.EntityIdToObject(instanceId) as SceneView;
         }
     }
 }

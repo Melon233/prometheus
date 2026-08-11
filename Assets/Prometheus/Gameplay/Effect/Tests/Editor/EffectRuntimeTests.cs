@@ -379,6 +379,49 @@ namespace Xuan.Prometheus.Effects.Tests
             }
         }
 
+        /// <summary>验证大招能量操作每次增加配置值、按上限截断，并且普通实体不依赖全局 HUD 事件。</summary>
+        [Test]
+        public void UltEnergyGain_UsesConfiguredAmountAndClampsToLimit()
+        {
+            IEventKit previousEventKit = Core.Event;
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.UltEnergyGain";
+            definition.ConfigureForTests("Tests.UltEnergyGain", EffectTag.Buff | EffectTag.UltEnergyGain, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new UltEnergyGainOperation(EffectValueFormula.Constant(5f)) }, null, null, null);
+            try
+            {
+                Core.Event = null;
+                targetProperty.SetBaseValue(PropertyType.UltEnergyLimit, 10f);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(targetProperty.UltEnergy, Is.EqualTo(5f).Within(0.0001f));
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(targetProperty.UltEnergy, Is.EqualTo(10f).Within(0.0001f));
+                Assert.That(targetProperty.IsUltEnergyFull, Is.True);
+            }
+            finally
+            {
+                Core.Event = previousEventKit;
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>验证正式 CombatFlowTriggers 仅让造成正数实际伤害的普通攻击获得五点大招能量，技能伤害不会误充能。</summary>
+        [Test]
+        public void PersistentCombatFlow_NormalAttackDamageGainsFiveUltEnergyOnly()
+        {
+            const string libraryPath = "Assets/BundleResources/Config/Effect/EffectLibrary.asset";
+            EffectLibrary persistentLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(libraryPath);
+            Assert.That(persistentLibrary, Is.Not.Null);
+            registrations = runtime.RegisterTriggerSet(sourceEntity, persistentLibrary.CombatFlowTriggers);
+            sourceProperty.SetBaseValue(PropertyType.UltEnergyLimit, 100f);
+            EffectSignal normalAttackDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, "Tests.NormalAttack", damageActionType: DamageActionType.NormalAttack);
+            runtime.Publish(normalAttackDamage);
+            Assert.That(sourceProperty.UltEnergy, Is.EqualTo(5f).Within(0.0001f));
+            EffectSignal skillDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damageActionType: DamageActionType.Skill);
+            runtime.Publish(skillDamage);
+            Assert.That(sourceProperty.UltEnergy, Is.EqualTo(5f).Within(0.0001f));
+        }
+
         /// <summary>
         /// 验证燃烧每秒产生一次 DOT 伤害，并在同一施法者再次添加时刷新而不是复制实例。
         /// </summary>
@@ -422,6 +465,37 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(refreshCounter.ExecutionCount, Is.EqualTo(1));
                 runtime.Tick(0.26f);
                 Assert.That(tickCounter.ExecutionCount, Is.EqualTo(1), "刷新持续时间不得重置 TickElapsedTime，否则会错误推迟下一次 Tick。");
+            }
+            finally
+            {
+                runtime.RemoveAll(targetEntity);
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>验证持续 Effect 的应用、计时、叠层刷新和移除都会为正确 Owner 发布活动效果脏通知。</summary>
+        [Test]
+        public void PersistentEffect_EmitsOwnerDirtyAcrossCompleteLifetime()
+        {
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.ObservableBuff";
+            definition.ConfigureForTests("Tests.ObservableBuff", EffectTag.Buff, EffectDurationType.Duration, 3f, 0f, EffectStackPolicy.AddStackAndRefreshDuration, EffectStackKeyPolicy.Definition, 2, EffectExecutionPhase.Apply, 0, null, null, null, null);
+            int ownerDirtyCount = 0;
+            runtime.ActiveEffectsChanged += (owner, _) =>
+            {
+                if (ReferenceEquals(owner, targetEntity)) ownerDirtyCount++;
+            };
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(ownerDirtyCount, Is.EqualTo(1), "首次应用持续 Buff 必须通知所属实体。");
+                runtime.Tick(0.5f);
+                Assert.That(ownerDirtyCount, Is.EqualTo(2), "有限持续时间推进必须刷新 HUD 遮罩。");
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(ownerDirtyCount, Is.EqualTo(3), "同一次叠层与刷新事务只应产生一次列表脏通知。");
+                EffectInstance instance = runtime.GetActiveEffects(targetEntity)[0];
+                runtime.RemoveEffect(instance);
+                Assert.That(ownerDirtyCount, Is.EqualTo(4), "移除持续 Buff 必须立即刷新列表成员。");
             }
             finally
             {
@@ -710,6 +784,10 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(persistentLibrary.Burning, Is.Not.Null);
             Assert.That(persistentLibrary.CombatFlow, Is.Not.Null);
             Assert.That(persistentLibrary.Stun, Is.Not.Null);
+            Assert.That(persistentLibrary.CombatFlow.BuffIcon, Is.Not.Null, "正式战意 Buff 必须配置 HUD 图标。");
+            EffectDefinition boostDefinition = AssetDatabase.LoadAssetAtPath<EffectDefinition>("Assets/BundleResources/Config/Effect/EffectDefinitions/Boost.asset");
+            Assert.That(boostDefinition, Is.Not.Null);
+            Assert.That(boostDefinition.BuffIcon, Is.Not.Null, "正式 Boost Buff 必须配置 HUD 图标。");
             targetProperty.SetBaseValue(PropertyType.Toughness, 1f);
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int staggeredCount = 0;

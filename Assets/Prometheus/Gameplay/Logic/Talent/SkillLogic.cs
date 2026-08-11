@@ -32,12 +32,14 @@ namespace Xuan.Prometheus.Logic
         /// <summary>播放技能起手到主体的 AnimationLine 序列，并建立角色元素技能命中上下文。</summary>
         private void TryStartSkill()
         {
+            if (!skillComponent.IsCooldownReady) return;
             SkillExecutor configuration = SpineComponent.animationLib.skillExecutor;
             if (configuration == null) return;
             TalentAbilityValues values = skillComponent.TalentConfig.Skill;
             AnimationPlayback playback = SpineComponent.TryPlaySequence(configuration.StartSemantic, configuration.Semantic, ActionOwner, AnimationPriority.Skill, false, values.AnimationSpeed, true);
             PlayerCombatHitContext hitContext = new PlayerCombatHitContext(skillComponent.ColliderProxy, values.DamageMultiplier, values.DamageOffset, EffectTag.Attack | EffectTag.Skill, skillComponent.AbilityId, DamageActionType.Skill);
-            BeginAction(playback, hitContext, configuration.AudioClip, true, configuration.Vfx);
+            if (!BeginAction(playback, hitContext, configuration.AudioClip, true, configuration.Vfx)) return;
+            skillComponent.BeginCooldown();
         }
 
         /// <summary>实体回收时丢弃技能组件引用。</summary>

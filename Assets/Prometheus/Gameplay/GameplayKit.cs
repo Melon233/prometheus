@@ -20,16 +20,28 @@ namespace Xuan.Prometheus
         /// <param name="packageName">YooAsset 资源包名称。</param>
         /// <param name="runtimeRoot">承载运行时玩法对象的常驻根节点。</param>
         /// <param name="effectLibrary">当前单局使用的持久化 Effect 配置库。</param>
-        /// <param name="playerLocation">玩家预制体的资源地址。</param>
+        /// <param name="playerLocation">兼容旧调用的玩家预制体资源地址，三个小队槽位都会使用该地址。</param>
         /// <param name="enemyLocation">敌人预制体的资源地址。</param>
         /// <param name="enemySpawnPoints">敌人出生点集合；空元素会在创建时跳过并输出警告。</param>
         /// <param name="enemySpawnLimit">最多创建的敌人数；零表示使用全部有效出生点。</param>
-        public GameplayStartupOptions(string packageName, Transform runtimeRoot, EffectLibrary effectLibrary, string playerLocation, string enemyLocation, IReadOnlyList<Transform> enemySpawnPoints, int enemySpawnLimit)
+        public GameplayStartupOptions(string packageName, Transform runtimeRoot, EffectLibrary effectLibrary, string playerLocation, string enemyLocation, IReadOnlyList<Transform> enemySpawnPoints, int enemySpawnLimit) : this(packageName, runtimeRoot, effectLibrary, new[] { playerLocation, playerLocation, playerLocation }, enemyLocation, enemySpawnPoints, enemySpawnLimit)
+        {
+        }
+
+        /// <summary>创建一组包含固定三人小队配置的不可变玩法启动参数。</summary>
+        /// <param name="packageName">YooAsset 资源包名称。</param>
+        /// <param name="runtimeRoot">承载运行时玩法对象的常驻根节点。</param>
+        /// <param name="effectLibrary">当前单局使用的持久化 Effect 配置库。</param>
+        /// <param name="teamMemberLocations">三个固定小队槽位各自使用的玩家预制体资源地址。</param>
+        /// <param name="enemyLocation">敌人预制体的资源地址。</param>
+        /// <param name="enemySpawnPoints">敌人出生点集合。</param>
+        /// <param name="enemySpawnLimit">最多创建的敌人数；零表示使用全部有效出生点。</param>
+        public GameplayStartupOptions(string packageName, Transform runtimeRoot, EffectLibrary effectLibrary, IReadOnlyList<string> teamMemberLocations, string enemyLocation, IReadOnlyList<Transform> enemySpawnPoints, int enemySpawnLimit)
         {
             PackageName = ValidateText(packageName, nameof(packageName));
             RuntimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
             EffectLibrary = effectLibrary != null ? effectLibrary : throw new ArgumentNullException(nameof(effectLibrary));
-            PlayerLocation = ValidateText(playerLocation, nameof(playerLocation));
+            TeamMemberLocations = ValidateTeamMemberLocations(teamMemberLocations);
             EnemyLocation = ValidateText(enemyLocation, nameof(enemyLocation));
             EnemySpawnPoints = enemySpawnPoints ?? Array.Empty<Transform>();
             EnemySpawnLimit = enemySpawnLimit >= 0 ? enemySpawnLimit : throw new ArgumentOutOfRangeException(nameof(enemySpawnLimit), enemySpawnLimit, "Enemy spawn limit cannot be negative.");
@@ -51,9 +63,12 @@ namespace Xuan.Prometheus
         public EffectLibrary EffectLibrary { get; }
 
         /// <summary>
-        /// 玩家预制体的资源地址。
+        /// 获取三个固定小队槽位的玩家预制体资源地址。
         /// </summary>
-        public string PlayerLocation { get; }
+        public IReadOnlyList<string> TeamMemberLocations { get; }
+
+        /// <summary>获取第一个小队槽位的资源地址，保留该入口用于兼容只读取默认玩家地址的旧代码。</summary>
+        public string PlayerLocation => TeamMemberLocations[0];
 
         /// <summary>
         /// 敌人预制体的资源地址。
@@ -79,6 +94,16 @@ namespace Xuan.Prometheus
                 throw new ArgumentException("Gameplay startup value cannot be empty.", parameterName);
 
             return value;
+        }
+
+        /// <summary>复制并校验三个固定小队槽位，避免外部集合在初始化过程中被修改。</summary>
+        private static IReadOnlyList<string> ValidateTeamMemberLocations(IReadOnlyList<string> locations)
+        {
+            if (locations == null) throw new ArgumentNullException(nameof(locations));
+            if (locations.Count != TeamSystem.Capacity) throw new ArgumentException($"Gameplay requires exactly {TeamSystem.Capacity} team member locations.", nameof(locations));
+            string[] validatedLocations = new string[TeamSystem.Capacity];
+            for (int slotIndex = 0; slotIndex < validatedLocations.Length; slotIndex++) validatedLocations[slotIndex] = ValidateText(locations[slotIndex], $"{nameof(locations)}[{slotIndex}]");
+            return validatedLocations;
         }
     }
 
@@ -141,7 +166,8 @@ namespace Xuan.Prometheus
         private readonly Dictionary<int, float> pendingEntityRemovals = new Dictionary<int, float>();
         private readonly List<int> pendingEntityRemovalBuffer = new List<int>();
         private GameplayStartupOptions startupOptions;
-        private ControlLease playerInputLease;
+        /// <summary>保存当前单局唯一的小队系统，使 Player 属性始终解析为当前上场成员。</summary>
+        private TeamSystem teamSystem;
         private int nextEntityId = 1;
         private bool isDisposing;
         private bool isDisposed;
@@ -155,13 +181,14 @@ namespace Xuan.Prometheus
         public GameplayKit(IAssetKit assetKit)
         {
             this.assetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
+            Core.Gameplay = this;
         }
 
         /// <inheritdoc />
         public bool IsReady { get; private set; }
 
         /// <inheritdoc />
-        public PlayerEntity Player { get; private set; }
+        public PlayerEntity Player => teamSystem == null ? null : teamSystem.ActiveMember as PlayerEntity;
 
         /// <summary>
         /// 在初始化前写入场景启动参数，每个 GameplayKit 实例只接受一次配置。
@@ -185,6 +212,9 @@ namespace Xuan.Prometheus
 
             AddSystem(new InputSystem(new UnityLegacyInputSource()));
             AddSystem(new EffectSystem(library: options.EffectLibrary, traceEnabled: true));
+            AddSystem(new ListenSystem());
+            teamSystem = new TeamSystem();
+            AddSystem(teamSystem);
             startupOptions = options;
         }
 
@@ -222,12 +252,8 @@ namespace Xuan.Prometheus
                 return false;
 
             pendingEntityRemovals.Remove(entityId);
+            teamSystem?.UnregisterMember(entity);
             entities.Remove(entityId);
-            if (ReferenceEquals(Player, entity))
-            {
-                ReleasePlayerInput();
-                Player = null;
-            }
             entity.MarkDespawnRequested(0f);
             entity.DisposeImmediately();
             return true;
@@ -316,9 +342,8 @@ namespace Xuan.Prometheus
             foreach (XSystem system in systemInitializationOrder)
                 system.AfterNew(this);
 
-            CreatePlayer();
+            CreateTeam();
             CreateEnemies();
-            BindDefaultPlayerInput();
             IsReady = true;
         }
 
@@ -365,7 +390,6 @@ namespace Xuan.Prometheus
 
             isDisposing = true;
             IsReady = false;
-            ReleasePlayerInput();
             try
             {
                 foreach (Entity entity in entities)
@@ -389,7 +413,8 @@ namespace Xuan.Prometheus
                 {
                     systemInitializationOrder.Clear();
                     systems.Dispose();
-                    Player = null;
+                    if (ReferenceEquals(Core.Gameplay, this)) Core.Gameplay = null;
+                    teamSystem = null;
                     startupOptions = null;
                     isDisposed = true;
                     isDisposing = false;
@@ -398,24 +423,40 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 从配置的玩家资源创建场景对象和 PlayerEntity。
+        /// 从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后交给 TeamSystem 原子初始化。
         /// </summary>
-        private void CreatePlayer()
+        private void CreateTeam()
         {
-            GameObject playerObject = assetKit.InstantiateSync(startupOptions.PlayerLocation, startupOptions.RuntimeRoot);
-            int entityId = 0;
-
+            List<Entity> createdMembers = new List<Entity>(TeamSystem.Capacity);
             try
             {
-                Player = new PlayerEntity(playerObject);
-                entityId = AddEntity(Player);
-                Player.AfterNew();
+                for (int slotIndex = 0; slotIndex < TeamSystem.Capacity; slotIndex++)
+                {
+                    GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], startupOptions.RuntimeRoot);
+                    int entityId = 0;
+                    try
+                    {
+                        PlayerEntity member = new PlayerEntity(playerObject);
+                        entityId = AddEntity(member);
+                        member.AfterNew();
+                        createdMembers.Add(member);
+                    }
+                    catch
+                    {
+                        if (entityId > 0) RemoveEntity(entityId);
+                        else UnityEngine.Object.Destroy(playerObject);
+                        throw;
+                    }
+                }
+                teamSystem.InitializeMembers(createdMembers);
             }
             catch
             {
-                if (entityId > 0) RemoveEntity(entityId);
-                else UnityEngine.Object.Destroy(playerObject);
-                Player = null;
+                for (int index = createdMembers.Count - 1; index >= 0; index--)
+                {
+                    Entity member = createdMembers[index];
+                    if (member != null && !member.IsDespawningOrDisposed) RemoveEntity(member.EntityId);
+                }
                 throw;
             }
         }
@@ -468,31 +509,11 @@ namespace Xuan.Prometheus
                 int entityId = pendingEntityRemovalBuffer[index];
                 pendingEntityRemovals.Remove(entityId);
                 if (!entities.TryGet(entityId, out Entity entity)) continue;
+                teamSystem?.UnregisterMember(entity);
                 entities.Remove(entityId);
-                if (ReferenceEquals(Player, entity))
-                {
-                    ReleasePlayerInput();
-                    Player = null;
-                }
                 entity.DisposeImmediately();
             }
             pendingEntityRemovalBuffer.Clear();
-        }
-
-        /// <summary>为默认本地输入源建立玩家全部玩法动作的最低优先级控制绑定。</summary>
-        private void BindDefaultPlayerInput()
-        {
-            ReleasePlayerInput();
-            if (Player == null) return;
-            InputSystem inputSystem = GetSystem<InputSystem>();
-            playerInputLease = inputSystem.AcquireEntityControl(Player.EntityId, InputActionMask.Gameplay, InputContexts.Gameplay);
-        }
-
-        /// <summary>幂等释放默认玩家输入绑定，使控制权切换和 Entity 回收都不会遗留输入状态。</summary>
-        private void ReleasePlayerInput()
-        {
-            playerInputLease?.Dispose();
-            playerInputLease = null;
         }
 
         /// <summary>

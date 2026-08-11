@@ -363,6 +363,13 @@ namespace Xuan.Prometheus
             ApplyWorldUITransform(record);
         }
 
+        /// <summary>立即按照有效句柄当前保存的跟随目标或固定坐标刷新世界 UI 变换。</summary>
+        internal void RefreshWorldUITransform(WorldUIHandle handle)
+        {
+            if (!IsWorldUIHandleValid(handle)) throw new InvalidOperationException("Cannot refresh an invalid world UI handle.");
+            ApplyWorldUITransform(handle.Record);
+        }
+
         /// <summary>更新屏幕空间世界锚点 UI 的投影后像素偏移，并立即刷新其 Canvas 坐标。</summary>
         internal void ConfigureWorldUIScreenOffset(WorldUIHandle handle, Vector2 screenOffset)
         {

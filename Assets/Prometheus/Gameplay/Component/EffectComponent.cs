@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic;
 
@@ -14,6 +15,15 @@ namespace Xuan.Prometheus.Component
         private Entity owner;
         private IDisposable attackTriggerRegistration;
         private IDisposable combatFlowTriggerRegistration;
+
+        /// <summary>保存活动 Buff 列表的变化版本，使 ListenSystem 能通过统一字段接口监听集合变化和持续时间推进。</summary>
+        private readonly ModifiableProperty buffRevision = new ModifiableProperty();
+
+        /// <summary>复用 EffectRuntime 的活动效果复制缓冲区，避免持续时间逐帧变化时产生临时数组。</summary>
+        private readonly List<EffectInstance> activeEffectBuffer = new List<EffectInstance>();
+
+        /// <summary>获取活动 Buff 列表的可监听版本字段；监听方收到脏回调后应重新读取当前列表快照。</summary>
+        public ModifiableProperty BuffRevisionProperty => buffRevision;
 
         /// <summary>
         /// 获取当前 Entity 所属单局的 EffectRuntime；组件尚未初始化时抛出明确异常。
@@ -52,12 +62,14 @@ namespace Xuan.Prometheus.Component
 
             effectSystem = ownerSystem;
             owner = ownerEntity;
+            effectSystem.Runtime.ActiveEffectsChanged += OnActiveEffectsChanged;
             try
             {
                 attackTriggerRegistration = effectSystem.DefaultLibrary.RegisterAttackTriggers(effectSystem.Runtime, owner);
             }
             catch
             {
+                effectSystem.Runtime.ActiveEffectsChanged -= OnActiveEffectsChanged;
                 effectSystem = null;
                 owner = null;
                 attackTriggerRegistration = null;
@@ -90,6 +102,7 @@ namespace Xuan.Prometheus.Component
         {
             EffectSystem activeSystem = effectSystem;
             Entity activeOwner = owner;
+            if (activeSystem != null && !activeSystem.IsDisposed) activeSystem.Runtime.ActiveEffectsChanged -= OnActiveEffectsChanged;
             combatFlowTriggerRegistration?.Dispose();
             combatFlowTriggerRegistration = null;
             attackTriggerRegistration?.Dispose();
@@ -99,6 +112,32 @@ namespace Xuan.Prometheus.Component
 
             if (activeSystem != null && !activeSystem.IsDisposed && activeOwner != null)
                 activeSystem.Runtime.RemoveAll(activeOwner, EffectRemovalReason.OwnerDisposed);
+        }
+
+        /// <summary>把当前实体持有的活动持续型 Buff 复制到调用方缓冲区；即时 Effect、Debuff 和 Control Effect 不进入 HUD Buff 列表。</summary>
+        public void CopyActiveBuffs(List<EffectInstance> buffer)
+        {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            buffer.Clear();
+            activeEffectBuffer.Clear();
+            if (effectSystem == null || owner == null) return;
+            effectSystem.Runtime.CopyActiveEffects(owner, activeEffectBuffer);
+            foreach (EffectInstance instance in activeEffectBuffer)
+            {
+                if (instance == null || !instance.IsActive || instance.Definition.DurationType == EffectDurationType.Instant) continue;
+                if ((instance.Definition.Tags & EffectTag.Buff) == 0) continue;
+                buffer.Add(instance);
+            }
+        }
+
+        /// <summary>把所属实体的 EffectRuntime 集合变化转换为 ModifiableProperty 脏通知，其他实体变化不会污染当前组件。</summary>
+        private void OnActiveEffectsChanged(Entity changedOwner, EffectInstance changedInstance)
+        {
+            if (!ReferenceEquals(owner, changedOwner)) return;
+            if (changedInstance == null || changedInstance.Definition.DurationType == EffectDurationType.Instant) return;
+            if ((changedInstance.Definition.Tags & EffectTag.Buff) == 0) return;
+            float nextRevision = buffRevision.Value >= 1000000f ? 0f : buffRevision.Value + 1f;
+            buffRevision.SetValue(nextRevision);
         }
     }
 }

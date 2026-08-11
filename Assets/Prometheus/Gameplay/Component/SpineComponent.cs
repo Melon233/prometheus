@@ -17,8 +17,8 @@ namespace Xuan.Prometheus.Component
     [RequireComponent(typeof(SkeletonAnimation))]
     public sealed class SpineComponent : MonoComponent
     {
-        /// <summary>定义所有主轨动画之间统一使用的过渡时间，避免各 Logic 产生不一致的混合观感。</summary>
-        public const float TransitionDuration = 0.2f;
+        /// <summary>保留旧测试和外部调用的默认时长常量；运行时动画过渡不再读取该常量，而是统一查询 AnimationLibrary 矩阵。</summary>
+        public const float TransitionDuration = AnimationMixDurationMatrix.FallbackDuration;
 
         private AnimationPlayback currentPlayback;
         private int nextPlaybackVersion;
@@ -63,7 +63,11 @@ namespace Xuan.Prometheus.Component
         private void Awake()
         {
             spineAnimator = GetComponent<SkeletonAnimation>();
-            if (spineAnimator != null && spineAnimator.AnimationState != null) spineAnimator.AnimationState.Data.DefaultMix = TransitionDuration;
+            if (spineAnimator != null && spineAnimator.AnimationState != null)
+            {
+                if (animationLib != null) animationLib.ApplyMixDurationMatrix(spineAnimator.AnimationState.Data);
+                else spineAnimator.AnimationState.Data.DefaultMix = AnimationMixDurationMatrix.FallbackDuration;
+            }
             if (animationLib == null) Debug.LogError($"角色 '{name}' 未配置 AnimationLibrary。", this);
         }
 
@@ -82,21 +86,23 @@ namespace Xuan.Prometheus.Component
             return TryPlayResolvedSequence(line, null, owner, priority, loop, speed, restart, trackIndex);
         }
 
-        /// <summary>通过两个动画语义播放 AnimationLine 序列；片段间使用统一过渡，整个序列共享同一优先级和结束生命周期。</summary>
+        /// <summary>通过两个动画语义播放 AnimationLine 序列；片段间从 MixDuration 矩阵读取过渡，整个序列共享同一优先级和结束生命周期。</summary>
         public AnimationPlayback TryPlaySequence(AnimationSemantic firstSemantic, AnimationSemantic finalSemantic, AnimationOwner owner, AnimationPriority priority, bool finalLoop = false, float speed = 1f, bool restart = false, int trackIndex = 0)
         {
             if (animationLib == null || !animationLib.TryGetLine(firstSemantic, out AnimationLine firstLine) || !animationLib.TryGetLine(finalSemantic, out AnimationLine finalLine)) return null;
             return TryPlayResolvedSequence(firstLine, finalLine, owner, priority, finalLoop, speed, restart, trackIndex);
         }
 
-        /// <summary>仅当当前动画属于指定所有者时以统一时长淡出到 Setup Pose，避免硬清轨残留未被后续动画关键帧覆盖的骨骼姿势。</summary>
+        /// <summary>仅当当前动画属于指定所有者时按矩阵配置淡出到 Setup Pose，避免硬清轨残留未被后续动画关键帧覆盖的骨骼姿势。</summary>
         public bool Stop(AnimationOwner owner, AnimationEndReason reason = AnimationEndReason.Stopped, int trackIndex = 0)
         {
             AnimationPlayback playback = currentPlayback;
             if (playback == null || playback.Owner != owner || playback.TrackIndex != trackIndex) return false;
+            AnimationSemantic sourceSemantic = ResolveCurrentSemantic(trackIndex);
+            float mixDuration = GetMixDuration(sourceSemantic, AnimationSemantic.None);
             playback.DetachTrackCallbacks();
             currentPlayback = null;
-            spineAnimator.AnimationState.SetEmptyAnimation(trackIndex, TransitionDuration);
+            spineAnimator.AnimationState.SetEmptyAnimation(trackIndex, mixDuration);
             playback.Finish(reason);
             return true;
         }
@@ -168,18 +174,22 @@ namespace Xuan.Prometheus.Component
                 if (sameRequest && !restart) return previousPlayback;
                 previousPlayback.DetachTrackCallbacks();
             }
+            AnimationSemantic sourceSemantic = ResolveCurrentSemantic(trackIndex);
+            float firstMixDuration = GetMixDuration(sourceSemantic, firstLine.Semantic);
+            float normalizedSpeed = Mathf.Max(0f, speed);
             TrackEntry firstEntry = spineAnimator.AnimationState.SetAnimation(trackIndex, firstAnimation, finalLine == null && finalLoop);
-            firstEntry.MixDuration = TransitionDuration;
+            firstEntry.MixDuration = firstMixDuration;
             firstEntry.MixBlend = MixBlend.Replace;
-            firstEntry.TimeScale = Mathf.Max(0f, speed);
+            firstEntry.TimeScale = normalizedSpeed;
             TrackEntry resolvedFinalEntry = firstEntry;
             if (finalLine != null)
             {
+                float finalMixDuration = GetMixDuration(firstLine.Semantic, finalLine.Semantic);
                 resolvedFinalEntry = spineAnimator.AnimationState.AddAnimation(trackIndex, finalAnimation, finalLoop, 0f);
-                resolvedFinalEntry.Delay = Mathf.Max(0f, firstEntry.AnimationEnd - firstEntry.AnimationStart - TransitionDuration * firstEntry.TimeScale);
-                resolvedFinalEntry.MixDuration = TransitionDuration;
+                resolvedFinalEntry.Delay = Mathf.Max(0f, firstEntry.AnimationEnd - firstEntry.AnimationStart - finalMixDuration * firstEntry.TimeScale);
+                resolvedFinalEntry.MixDuration = finalMixDuration;
                 resolvedFinalEntry.MixBlend = MixBlend.Replace;
-                resolvedFinalEntry.TimeScale = Mathf.Max(0f, speed);
+                resolvedFinalEntry.TimeScale = normalizedSpeed;
             }
             AnimationPlayback playback = new AnimationPlayback(this, requestedSemantic, owner, priority, trackIndex, ++nextPlaybackVersion);
             playback.AddEntry(firstEntry);
@@ -188,6 +198,20 @@ namespace Xuan.Prometheus.Component
             currentPlayback = playback;
             previousPlayback?.Finish(AnimationEndReason.Interrupted);
             return playback;
+        }
+
+        /// <summary>从当前 Spine TrackEntry 反查实际正在混合的源语义；空轨道、EmptyAnimation 或歧义配置统一视为 Setup Pose。</summary>
+        private AnimationSemantic ResolveCurrentSemantic(int trackIndex)
+        {
+            TrackEntry currentEntry = spineAnimator == null || spineAnimator.AnimationState == null ? null : spineAnimator.AnimationState.GetCurrent(trackIndex);
+            if (currentEntry == null || currentEntry.Animation == null || animationLib == null) return AnimationSemantic.None;
+            return animationLib.TryGetSemantic(currentEntry.Animation, out AnimationSemantic semantic) ? semantic : AnimationSemantic.None;
+        }
+
+        /// <summary>从当前角色动画库读取有向过渡时长；缺少动画库时使用矩阵规范定义的 0.2 秒安全值。</summary>
+        private float GetMixDuration(AnimationSemantic from, AnimationSemantic to)
+        {
+            return animationLib == null ? AnimationMixDurationMatrix.FallbackDuration : animationLib.GetMixDuration(from, to);
         }
     }
 }

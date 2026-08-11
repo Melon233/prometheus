@@ -250,6 +250,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>当运行时产生诊断信息时触发，调用方可以连接到 Unity 日志或自定义调试面板。</summary>
         public event Action<string> Trace;
 
+        /// <summary>当指定实体的持续 Effect 被添加、刷新、叠层、计时或移除时触发，供 EffectComponent 转换为可监听字段脏通知。</summary>
+        public event Action<Entity, EffectInstance> ActiveEffectsChanged;
+
         /// <summary>
         /// 使用确定性随机种子创建效果运行时，便于测试和战斗回放。
         /// </summary>
@@ -360,6 +363,15 @@ namespace Xuan.Prometheus.Effects
             return container.Instances.ToArray();
         }
 
+        /// <summary>把目标当前活动效果复制到调用方复用的列表，避免 HUD 高频刷新持续时间时产生数组分配。</summary>
+        public void CopyActiveEffects(Entity owner, List<EffectInstance> buffer)
+        {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            buffer.Clear();
+            if (owner == null || !containers.TryGetValue(owner, out EffectContainer container)) return;
+            buffer.AddRange(container.Instances);
+        }
+
         /// <summary>
         /// 追加子信号并应用深度保护；该方法只供效果操作和运行时内部调用。
         /// </summary>
@@ -412,6 +424,8 @@ namespace Xuan.Prometheus.Effects
             triggers.Clear();
             signalQueue.Clear();
             requestQueue.Clear();
+            Trace = null;
+            ActiveEffectsChanged = null;
             disposed = true;
         }
 
@@ -527,6 +541,7 @@ namespace Xuan.Prometheus.Effects
             ExecuteOperations(request.Definition.OnApplyOperations, request.Definition, instance, request.Signal, request.Caster, request.Target, request.Source);
             EffectSignal appliedSignal = request.Signal.CreateChild(EffectSignalType.EffectApplied, request.Caster, request.Target, request.Source, 1f, 1f, request.Signal.Tags | request.Definition.Tags, request.Signal.AbilityId, instance.InstanceId, request.Signal.Position);
             EnqueueSignal(appliedSignal);
+            NotifyActiveEffectsChanged(instance);
             EmitTrace($"Applied effect {request.Definition.EffectId} as instance {instance.InstanceId}.");
         }
 
@@ -550,6 +565,7 @@ namespace Xuan.Prometheus.Effects
                 EnqueueSignal(refreshedSignal);
                 EmitTrace($"Refreshed effect {request.Definition.EffectId} duration to {request.Definition.Duration} second(s).");
             }
+            if (result.HasChanges) NotifyActiveEffectsChanged(instance);
         }
 
         /// <summary>
@@ -569,6 +585,7 @@ namespace Xuan.Prometheus.Effects
                     ExecuteOperations(instance.Definition.OnTickOperations, instance.Definition, instance, tickSignal, instance.Caster, instance.Owner, instance.Source);
                 });
             }
+            if (!expired && instance.IsActive && deltaTime > 0f && instance.Definition.DurationType == EffectDurationType.Duration) NotifyActiveEffectsChanged(instance);
             if (!expired || !instance.IsActive) return;
             EffectSignal expirationSignal = new EffectSignal(EffectSignalType.Manual, instance.Caster, instance.Owner, instance.Source, originEffectInstanceId: instance.InstanceId);
             RunTransaction(() => RemoveInstance(instance, EffectRemovalReason.Expired, expirationSignal));
@@ -586,7 +603,14 @@ namespace Xuan.Prometheus.Effects
             EffectSignal removedSignal = signal.CreateChild(EffectSignalType.EffectRemoved, instance.Caster, instance.Owner, instance.Source, (float)reason, (float)reason, instance.Definition.Tags, signal.AbilityId, instance.InstanceId, signal.Position);
             EnqueueSignal(removedSignal);
             if (container != null && container.Instances.Count == 0) containers.Remove(instance.Owner);
+            NotifyActiveEffectsChanged(instance);
             EmitTrace($"Removed effect {instance.Definition.EffectId} instance {instance.InstanceId} because {reason}.");
+        }
+
+        /// <summary>同步通知指定实体的活动效果快照已经变化；没有观察者时不会产生额外工作。</summary>
+        private void NotifyActiveEffectsChanged(EffectInstance instance)
+        {
+            if (instance != null && instance.Owner != null) ActiveEffectsChanged?.Invoke(instance.Owner, instance);
         }
 
         /// <summary>

@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 using Xuan.Prometheus.Ai;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
@@ -18,9 +20,11 @@ namespace Xuan.Prometheus.Animation.Tests
         private const string SlimePrefabPath = "Assets/BundleResources/Enemy/Slime.prefab";
         private const string YefaPrefabPath = "Assets/BundleResources/Character/Yefa.prefab";
         private const string YefaAnimationLibraryPath = "Assets/BundleResources/Config/Animation/YefaAnimationLibrary.asset";
+        private const string HudPanelPrefabPath = "Assets/BundleResources/UI/Hud/Prefabs/HudPanel.prefab";
         private const string SlimeHitRecoveryReferencePath = "Assets/Art/火环spine合集1/Q版小人/敌人/Enemy/slime_dark_l/Models/ReferenceAssets/leg_hitted2idle.asset";
         private AssetKit assetKit;
         private GameplayKit gameplayKit;
+        private ListenSystem listenSystem;
         private AnimationTestEntity animationEntity;
         private GameObject slimeInstance;
         private AnimationLibrary runtimeLibrary;
@@ -58,6 +62,9 @@ namespace Xuan.Prometheus.Animation.Tests
             propertyComponent.RefreshBaseValues();
             assetKit = new AssetKit();
             gameplayKit = new GameplayKit(assetKit);
+            listenSystem = new ListenSystem();
+            gameplayKit.AddSystem(listenSystem);
+            listenSystem.AfterNew(gameplayKit);
             animationEntity = new AnimationTestEntity(slimeInstance, spineComponent, motionComponent, propertyComponent);
             gameplayKit.AddEntity(animationEntity);
             animationEntity.AfterNew();
@@ -70,6 +77,7 @@ namespace Xuan.Prometheus.Animation.Tests
         {
             gameplayKit?.Dispose();
             gameplayKit = null;
+            listenSystem = null;
             assetKit?.Dispose();
             assetKit = null;
             if (runtimeLibrary != null) Object.DestroyImmediate(runtimeLibrary);
@@ -161,6 +169,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 Assert.That(attackComponent.TalentConfig.NormalAttack.TryGetStage(stageIndex, out NormalAttackTalentStage configuredStage), Is.True);
                 Assert.That(uniqueHitboxes.Add(selection.ColliderProxy), Is.True, $"第 {stageIndex + 1} 段必须使用独立 ColliderProxy。");
                 Assert.That(selection.ColliderProxy.GetComponent<Collider>(), Is.Not.Null);
+                Assert.That(selection.DamageMultiplier, Is.GreaterThan(0f), $"第 {stageIndex + 1} 段普通攻击必须配置正数伤害倍率，否则碰撞成功也会表现为无法命中。");
                 Assert.That(selection.DamageMultiplier, Is.EqualTo(configuredStage.DamageMultiplier).Within(0.0001f), "每段命中倍率必须读取 TalentConfig 当前资产值。");
                 Assert.That(selection.DamageOffset, Is.EqualTo(configuredStage.DamageOffset).Within(0.0001f), "每段命中偏移必须读取 TalentConfig 当前资产值。");
                 Assert.That(selection.AbilityId, Is.EqualTo($"Player.NormalAttack.{stageIndex + 1}"));
@@ -192,6 +201,62 @@ namespace Xuan.Prometheus.Animation.Tests
             {
                 Object.DestroyImmediate(runtimeTalentConfig);
                 Object.DestroyImmediate(yefaInstance);
+            }
+        }
+
+        /// <summary>验证 hit_end 会关闭全部普攻碰撞盒，切入第二段时也会先清除上一段泄漏再只开启当前段。</summary>
+        [Test]
+        public void NormalAttackHitWindow_HitEndAndStageSwitchCloseEveryBoundHitbox()
+        {
+            GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
+            Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
+            GameObject yefaInstance = Object.Instantiate(yefaPrefab);
+            int entityId = 0;
+            try
+            {
+                SpineComponent yefaSpine = yefaInstance.GetComponent<SpineComponent>();
+                AttackComponent yefaAttack = yefaInstance.GetComponent<AttackComponent>();
+                PropertyComponent yefaProperty = yefaInstance.GetComponent<PropertyComponent>();
+                Assert.That(yefaSpine, Is.Not.Null);
+                Assert.That(yefaAttack, Is.Not.Null);
+                Assert.That(yefaProperty, Is.Not.Null);
+                yefaSpine.spineAnimator = yefaInstance.GetComponent<Spine.Unity.SkeletonAnimation>();
+                yefaSpine.spineAnimator.Initialize(true);
+                yefaSpine.spineAnimator.AnimationState.Data.DefaultMix = SpineComponent.TransitionDuration;
+                yefaProperty.RefreshBaseValues();
+                Assert.That(yefaAttack.TryGetHitSelection(0, out NormalAttackHitSelection firstHit), Is.True);
+                Assert.That(yefaAttack.TryGetHitSelection(1, out NormalAttackHitSelection secondHit), Is.True);
+                CombatHitboxTestLogic combatLogic = new CombatHitboxTestLogic(firstHit.ColliderProxy, secondHit.ColliderProxy);
+                CombatHitboxTestEntity combatEntity = new CombatHitboxTestEntity(yefaInstance, combatLogic);
+                entityId = gameplayKit.AddEntity(combatEntity);
+                combatEntity.AfterNew();
+                AnimationPlayback firstPlayback = yefaSpine.TryPlay(AnimationSemantic.Attack1, AnimationOwner.NormalAttack, AnimationPriority.Attack, false, 1f, true);
+                Assert.That(combatLogic.BeginForTests(firstPlayback, firstHit, true, YefaVfx.Atk1), Is.True);
+                AdvanceAnimation(yefaSpine, 0.1f);
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.True, "第一段 hit_start 后必须开启第一段碰撞盒。");
+                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False);
+                VfxComponent yefaVfx = yefaInstance.GetComponent<VfxComponent>();
+                Assert.That(yefaVfx.vfxSlots[(int)YefaVfx.Atk1].activeSelf, Is.True, "第一段 hit_start 后必须启动第一段动作特效。");
+                AdvanceAnimation(yefaSpine, 0.2f);
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False, "第一段 hit_end 后必须关闭第一段碰撞盒。");
+                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False);
+                firstHit.ColliderProxy.cod.enabled = true;
+                AnimationPlayback secondPlayback = yefaSpine.TryPlay(AnimationSemantic.Attack2, AnimationOwner.NormalAttack, AnimationPriority.Attack, false, 1f, true);
+                Assert.That(yefaVfx.vfxSlots[(int)YefaVfx.Atk1].activeSelf, Is.False, "切段打断旧动作时必须立即停止旧段动作特效。");
+                Assert.That(combatLogic.BeginForTests(secondPlayback, secondHit), Is.True);
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False, "建立第二段动作上下文时必须立即清除上一段遗留碰撞盒。");
+                AdvanceAnimation(yefaSpine, 0.2f);
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False);
+                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.True, "第二段 hit_start 后必须只开启第二段碰撞盒。");
+                AdvanceAnimation(yefaSpine, 0.2f);
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False);
+                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False, "第二段 hit_end 后必须关闭第二段碰撞盒。");
+                Assert.That(combatLogic.HitWindowClosedCount, Is.EqualTo(2));
+            }
+            finally
+            {
+                if (entityId > 0) gameplayKit.RemoveEntity(entityId);
+                else if (yefaInstance != null) Object.DestroyImmediate(yefaInstance);
             }
         }
 
@@ -227,7 +292,7 @@ namespace Xuan.Prometheus.Animation.Tests
             Assert.That(suffixX + 12f, Is.LessThanOrEqualTo(valueRect.xMax), "百分号必须完整保留在输入框内部。");
         }
 
-        /// <summary>验证 PlayerEntity 注册四个独立动作 Logic，而 TalentLogic 保持为单独的常驻天赋组合。</summary>
+        /// <summary>验证 PlayerEntity 注册小队成员组件与四个独立动作 Logic，而 TalentLogic 保持为单独的常驻天赋组合。</summary>
         [Test]
         public void PlayerEntity_ComposesIndependentCombatActionLogics()
         {
@@ -237,17 +302,259 @@ namespace Xuan.Prometheus.Animation.Tests
             try
             {
                 PlayerEntity playerEntity = new PlayerEntity(yefaInstance);
+                Assert.That(playerEntity.TryGetComp(out TeamMemberComponent _), Is.True, "每个玩家 Entity 必须持有独立的小队槽位运行态。");
                 Assert.That(playerEntity.TryGetLogic(out TalentLogic talentLogic), Is.True);
                 Assert.That(talentLogic, Is.Not.InstanceOf<ITriggerHandler>(), "TalentLogic 不得再次接管具体攻击碰撞回调。");
                 Assert.That(playerEntity.TryGetLogic(out NormalAttackLogic _), Is.True);
                 Assert.That(playerEntity.TryGetLogic(out SpecialAttackLogic _), Is.True);
                 Assert.That(playerEntity.TryGetLogic(out SkillLogic _), Is.True);
+                Assert.That(playerEntity.TryGetLogic(out SkillCooldownLogic _), Is.True);
                 Assert.That(playerEntity.TryGetLogic(out UltimateLogic _), Is.True);
+                Assert.That(playerEntity.TryGetLogic(out UltimateCooldownLogic _), Is.True);
             }
             finally
             {
                 Object.DestroyImmediate(yefaInstance);
             }
+        }
+
+        /// <summary>验证 ListenSystem 会按 Entity、组件和字段立即同步，并在真实变化时回调且支持句柄精确退订。</summary>
+        [Test]
+        public void ListenSystem_TracksPlayerHudFieldsAndHandleStopsCallbacks()
+        {
+            GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
+            Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
+            GameObject yefaInstance = Object.Instantiate(yefaPrefab);
+            int hudEntityId = 0;
+            List<ListenHandle> handles = new List<ListenHandle>();
+            try
+            {
+                PropertyComponent playerProperty = yefaInstance.GetComponent<PropertyComponent>();
+                SkillComponent playerSkill = yefaInstance.GetComponent<SkillComponent>();
+                UltimateComponent playerUltimate = yefaInstance.GetComponent<UltimateComponent>();
+                Assert.That(playerProperty, Is.Not.Null);
+                Assert.That(playerSkill, Is.Not.Null);
+                Assert.That(playerUltimate, Is.Not.Null);
+                playerProperty.RefreshBaseValues();
+                playerProperty.OnRecoverHp(playerProperty.MaxHp * 0.75f);
+                playerProperty.OnGainCoreEnergy(20f);
+                playerProperty.OnGainUltEnergy(25f);
+                playerSkill.InitializeRuntimeState();
+                playerSkill.BeginCooldown();
+                playerUltimate.InitializeRuntimeState();
+                playerUltimate.BeginCooldown();
+                HudSyncTestEntity hudEntity = new HudSyncTestEntity(yefaInstance, playerProperty, playerSkill, playerUltimate);
+                hudEntityId = gameplayKit.AddEntity(hudEntity);
+                hudEntity.AfterNew();
+                int hpCalls = 0;
+                int coreEnergyCalls = 0;
+                int ultEnergyCalls = 0;
+                int skillCooldownCalls = 0;
+                int cooldownCalls = 0;
+                ListenHandle hpHandle = listenSystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.HpProperty, _ => hpCalls++);
+                handles.Add(hpHandle);
+                handles.Add(listenSystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.CoreEnergyProperty, _ => coreEnergyCalls++));
+                handles.Add(listenSystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.UltEnergyProperty, _ => ultEnergyCalls++));
+                handles.Add(listenSystem.Listen<SkillComponent>(hudEntity.EntityId, component => component.CooldownRemainingProperty, _ => skillCooldownCalls++));
+                handles.Add(listenSystem.Listen<UltimateComponent>(hudEntity.EntityId, component => component.CooldownRemainingProperty, _ => cooldownCalls++));
+                Assert.That(hpCalls, Is.EqualTo(1), "注册生命监听时必须立即同步当前值。");
+                Assert.That(coreEnergyCalls, Is.EqualTo(1), "注册核心能量监听时必须立即同步当前值。");
+                Assert.That(ultEnergyCalls, Is.EqualTo(1), "注册大招能量监听时必须立即同步当前值。");
+                Assert.That(skillCooldownCalls, Is.EqualTo(1), "注册技能冷却监听时必须立即同步当前值。");
+                Assert.That(cooldownCalls, Is.EqualTo(1), "注册大招冷却监听时必须立即同步当前值。");
+                playerProperty.OnTakeDamage(1f);
+                playerProperty.OnGainCoreEnergy(1f);
+                playerProperty.OnGainUltEnergy(1f);
+                playerSkill.AdvanceCooldown(0.1f);
+                playerUltimate.AdvanceCooldown(0.1f);
+                Assert.That(hpCalls, Is.EqualTo(2));
+                Assert.That(coreEnergyCalls, Is.EqualTo(2));
+                Assert.That(ultEnergyCalls, Is.EqualTo(2));
+                Assert.That(skillCooldownCalls, Is.EqualTo(2));
+                Assert.That(cooldownCalls, Is.EqualTo(2));
+                hpHandle.Dispose();
+                playerProperty.OnRecoverHp(1f);
+                Assert.That(hpCalls, Is.EqualTo(2), "释放 Handle 后属性不得继续持有 UI 回调。");
+            }
+            finally
+            {
+                foreach (ListenHandle handle in handles) handle.Dispose();
+                if (hudEntityId > 0) gameplayKit.RemoveEntity(hudEntityId);
+                else if (yefaInstance != null) Object.DestroyImmediate(yefaInstance);
+            }
+        }
+
+        /// <summary>验证技能只有冷却完成时可再次释放，并且冷却按角色 TalentConfig 的独立配置推进到零。</summary>
+        [Test]
+        public void SkillState_BeginsConfiguredCooldownAndAdvancesToReady()
+        {
+            GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
+            Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
+            GameObject yefaInstance = Object.Instantiate(yefaPrefab);
+            try
+            {
+                SkillComponent skillComponent = yefaInstance.GetComponent<SkillComponent>();
+                Assert.That(skillComponent, Is.Not.Null);
+                skillComponent.InitializeRuntimeState();
+                Assert.That(skillComponent.CooldownDuration, Is.EqualTo(5f).Within(0.0001f));
+                Assert.That(skillComponent.IsCooldownReady, Is.True);
+                skillComponent.BeginCooldown();
+                Assert.That(skillComponent.IsCooldownReady, Is.False);
+                Assert.That(skillComponent.CooldownRemaining, Is.EqualTo(5f).Within(0.0001f));
+                Assert.That(skillComponent.AdvanceCooldown(2f), Is.True);
+                Assert.That(skillComponent.CooldownRemaining, Is.EqualTo(3f).Within(0.0001f));
+                Assert.That(skillComponent.AdvanceCooldown(3f), Is.True);
+                Assert.That(skillComponent.IsCooldownReady, Is.True);
+                Assert.That(skillComponent.AdvanceCooldown(1f), Is.False, "冷却已经归零时不得继续产生脏回调。");
+            }
+            finally
+            {
+                Object.DestroyImmediate(yefaInstance);
+            }
+        }
+
+        /// <summary>验证大招只有满能量且冷却完成时可释放，成功提交后能量归零并按配置独立推进冷却。</summary>
+        [Test]
+        public void UltimateState_RequiresFullEnergyConsumesAllAndAdvancesCooldown()
+        {
+            GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
+            Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
+            GameObject yefaInstance = Object.Instantiate(yefaPrefab);
+            try
+            {
+                PropertyComponent playerProperty = yefaInstance.GetComponent<PropertyComponent>();
+                UltimateComponent ultimateComponent = yefaInstance.GetComponent<UltimateComponent>();
+                Assert.That(playerProperty, Is.Not.Null);
+                Assert.That(ultimateComponent, Is.Not.Null);
+                playerProperty.RefreshBaseValues();
+                ultimateComponent.InitializeRuntimeState();
+                Assert.That(ultimateComponent.CooldownDuration, Is.EqualTo(10f).Within(0.0001f));
+                playerProperty.OnGainUltEnergy(playerProperty.UltEnergyLimit - 1f);
+                Assert.That(ultimateComponent.CanRelease(playerProperty), Is.False);
+                playerProperty.OnGainUltEnergy(1f);
+                Assert.That(ultimateComponent.CanRelease(playerProperty), Is.True);
+                float consumedEnergy = playerProperty.ConsumeAllUltEnergy();
+                ultimateComponent.BeginCooldown();
+                Assert.That(consumedEnergy, Is.EqualTo(playerProperty.UltEnergyLimit).Within(0.0001f));
+                Assert.That(playerProperty.UltEnergy, Is.Zero);
+                Assert.That(ultimateComponent.CanRelease(playerProperty), Is.False);
+                Assert.That(ultimateComponent.AdvanceCooldown(4f), Is.True);
+                Assert.That(ultimateComponent.CooldownRemaining, Is.EqualTo(6f).Within(0.0001f));
+                Assert.That(ultimateComponent.AdvanceCooldown(6f), Is.True);
+                Assert.That(ultimateComponent.IsCooldownReady, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(yefaInstance);
+            }
+        }
+
+        /// <summary>验证 UltMono 使用两种进度分别驱动 Fill Image，并把剩余冷却格式化为一位小数。</summary>
+        [Test]
+        public void UltMono_DisplaysEnergyCooldownAndOneDecimalTime()
+        {
+            GameObject root = new GameObject("UltMonoTest.Root");
+            GameObject cooldownObject = new GameObject("UltMonoTest.Cooldown");
+            GameObject energyObject = new GameObject("UltMonoTest.Energy");
+            GameObject textObject = new GameObject("UltMonoTest.Text");
+            try
+            {
+                UltMono ultMono = root.AddComponent<UltMono>();
+                ultMono.cooldownImg = cooldownObject.AddComponent<Image>();
+                ultMono.energyImg = energyObject.AddComponent<Image>();
+                ultMono.cooldownTxt = textObject.AddComponent<TextMeshProUGUI>();
+                ultMono.ApplyState(25f, 100f, 6.25f, 10f);
+                Assert.That(ultMono.energyImg.fillAmount, Is.EqualTo(0.25f).Within(0.0001f));
+                Assert.That(ultMono.cooldownImg.fillAmount, Is.EqualTo(0.625f).Within(0.0001f));
+                Assert.That(ultMono.cooldownTxt.text, Is.EqualTo("6.3"));
+                ultMono.ApplyState(25f, 100f, 0f, 10f);
+                Assert.That(ultMono.cooldownImg.fillAmount, Is.Zero);
+                Assert.That(ultMono.cooldownTxt.text, Is.Empty);
+            }
+            finally
+            {
+                Object.DestroyImmediate(textObject);
+                Object.DestroyImmediate(energyObject);
+                Object.DestroyImmediate(cooldownObject);
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        /// <summary>验证通用 CdMono 按完整冷却计算遮罩比例，并把技能剩余冷却格式化为一位小数。</summary>
+        [Test]
+        public void CdMono_DisplaysSkillCooldownAndOneDecimalTime()
+        {
+            GameObject root = new GameObject("CdMonoTest.Root");
+            GameObject cooldownObject = new GameObject("CdMonoTest.Cooldown");
+            GameObject textObject = new GameObject("CdMonoTest.Text");
+            try
+            {
+                CdMono cdMono = root.AddComponent<CdMono>();
+                cdMono.cooldownImg = cooldownObject.AddComponent<Image>();
+                cdMono.cooldownTxt = textObject.AddComponent<TextMeshProUGUI>();
+                cdMono.ApplyState(3.25f, 5f);
+                Assert.That(cdMono.cooldownImg.fillAmount, Is.EqualTo(0.65f).Within(0.0001f));
+                Assert.That(cdMono.cooldownTxt.text, Is.EqualTo("3.3"));
+                cdMono.ApplyState(0f, 5f);
+                Assert.That(cdMono.cooldownImg.fillAmount, Is.Zero);
+                Assert.That(cdMono.cooldownTxt.text, Is.Empty);
+            }
+            finally
+            {
+                Object.DestroyImmediate(textObject);
+                Object.DestroyImmediate(cooldownObject);
+                Object.DestroyImmediate(root);
+            }
+        }
+
+        /// <summary>验证 HUD Binder 公开 Skill 的 CdMono，并且冷却遮罩和文本引用完整可用。</summary>
+        [Test]
+        public void HudSkill_HasCompleteCooldownBinding()
+        {
+            GameObject hudPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HudPanelPrefabPath);
+            Assert.That(hudPrefab, Is.Not.Null, $"无法加载 HUD 预制体：{HudPanelPrefabPath}");
+            UIComponentBinder binder = hudPrefab.GetComponent<UIComponentBinder>();
+            Assert.That(binder, Is.Not.Null);
+            UIComponentBinding skillBinding = null;
+            foreach (UIComponentBinding binding in binder.Bindings)
+            {
+                if (binding.Name == "Skill") skillBinding = binding;
+            }
+            Assert.That(skillBinding, Is.Not.Null, "HUD Binder 必须公开 Skill 字段。");
+            CdMono skillMono = skillBinding.Component as CdMono;
+            Assert.That(skillMono, Is.Not.Null, "HUD Skill 字段必须绑定 CdMono。");
+            Assert.That(skillMono.cooldownImg, Is.Not.Null);
+            Assert.That(skillMono.cooldownTxt, Is.Not.Null);
+        }
+
+        /// <summary>验证 HUD BuffList 已完成 Binder、ScrollRect、内容节点和可复用 Buff 项模板配置。</summary>
+        [Test]
+        public void HudBuffList_HasCompleteLoopListViewRuntimeConfiguration()
+        {
+            GameObject hudPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HudPanelPrefabPath);
+            Assert.That(hudPrefab, Is.Not.Null, $"无法加载 HUD 预制体：{HudPanelPrefabPath}");
+            UIComponentBinder binder = hudPrefab.GetComponent<UIComponentBinder>();
+            Assert.That(binder, Is.Not.Null);
+            UIComponentBinding buffListBinding = null;
+            foreach (UIComponentBinding binding in binder.Bindings)
+            {
+                if (binding.Name == "BuffList") buffListBinding = binding;
+            }
+            Assert.That(buffListBinding, Is.Not.Null, "HUD Binder 必须公开 BuffList 字段。");
+            UnityEngine.Component buffList = buffListBinding.Component;
+            Assert.That(buffList.GetType().FullName, Is.EqualTo("SuperScrollView.LoopListView2"));
+            ScrollRect scrollRect = buffList.GetComponent<ScrollRect>();
+            Assert.That(scrollRect, Is.Not.Null);
+            Assert.That(scrollRect.content, Is.Not.Null);
+            Assert.That(scrollRect.viewport, Is.Not.Null);
+            Transform itemTemplate = scrollRect.content.Find("Buff");
+            Assert.That(itemTemplate, Is.Not.Null);
+            Assert.That(itemTemplate.GetComponent("LoopListViewItem2"), Is.Not.Null);
+            BuffMono buffMono = itemTemplate.GetComponent<BuffMono>();
+            Assert.That(buffMono, Is.Not.Null);
+            Assert.That(buffMono.icon, Is.Not.Null);
+            Assert.That(buffMono.stackCnt, Is.Not.Null);
+            Assert.That(buffMono.durationImg, Is.Not.Null);
         }
 
         /// <summary>验证史莱姆空中运动把 AI 水平速度与属性重力合成为一次 CharacterController 位移。</summary>
@@ -342,13 +649,19 @@ namespace Xuan.Prometheus.Animation.Tests
         /// <summary>以接近运行时帧更新的固定步长推进 Spine 状态，使排队动画能够依次切换并发布完成事件。</summary>
         private void AdvanceAnimation(float duration)
         {
+            AdvanceAnimation(spineComponent, duration);
+        }
+
+        /// <summary>推进指定 SpineComponent 的正式 AnimationState，供角色和史莱姆事件窗口测试复用。</summary>
+        private static void AdvanceAnimation(SpineComponent targetSpineComponent, float duration)
+        {
             const float step = 0.05f;
             float elapsed = 0f;
             while (elapsed < duration)
             {
                 float deltaTime = Mathf.Min(step, duration - elapsed);
-                spineComponent.spineAnimator.AnimationState.Update(deltaTime);
-                spineComponent.spineAnimator.AnimationState.Apply(spineComponent.spineAnimator.Skeleton);
+                targetSpineComponent.spineAnimator.AnimationState.Update(deltaTime);
+                targetSpineComponent.spineAnimator.AnimationState.Apply(targetSpineComponent.spineAnimator.Skeleton);
                 elapsed += deltaTime;
             }
         }
@@ -372,6 +685,80 @@ namespace Xuan.Prometheus.Animation.Tests
                 AddLogic<EnemyAirMoveLogic>();
                 AddLogic<MotionLogic>();
                 AddLogic<AttackedLogic>();
+            }
+        }
+
+        /// <summary>为 ListenSystem 测试提供只包含玩家属性、技能冷却与大招状态组件的最小 Entity。</summary>
+        private sealed class HudSyncTestEntity : Entity
+        {
+            /// <summary>注册 HUD 监听寻址所需的场景对象、属性组件、技能组件和大招组件。</summary>
+            public HudSyncTestEntity(GameObject bindGameObject, PropertyComponent property, SkillComponent skill, UltimateComponent ultimate)
+            {
+                bindGo = bindGameObject;
+                AddComp(property);
+                AddComp(skill);
+                AddComp(ultimate);
+            }
+        }
+
+        /// <summary>提供可直接建立攻击会话的测试 Logic，以验证 PlayerCombatActionLogic 的统一命中窗口生命周期。</summary>
+        private sealed class CombatHitboxTestLogic : PlayerCombatActionLogic
+        {
+            private readonly ColliderProxy firstHitbox;
+            private readonly ColliderProxy secondHitbox;
+
+            /// <summary>创建只绑定前两段正式普通攻击碰撞盒的测试 Logic。</summary>
+            public CombatHitboxTestLogic(ColliderProxy firstHitbox, ColliderProxy secondHitbox)
+            {
+                this.firstHitbox = firstHitbox;
+                this.secondHitbox = secondHitbox;
+            }
+
+            /// <summary>测试 Logic 复用普通攻击动画所有权。</summary>
+            protected override AnimationOwner ActionOwner => AnimationOwner.NormalAttack;
+
+            /// <summary>记录正式 hit_end 事件进入派生扩展入口的次数。</summary>
+            public int HitWindowClosedCount { get; private set; }
+
+            /// <summary>通过基类正式入口建立一次测试动作上下文。</summary>
+            public bool BeginForTests(AnimationPlayback playback, NormalAttackHitSelection selection, bool hasVfx = false, YefaVfx vfx = default)
+            {
+                PlayerCombatHitContext hitContext = new PlayerCombatHitContext(selection.ColliderProxy, selection.DamageMultiplier, selection.DamageOffset, EffectTag.Attack | EffectTag.NormalAttack, selection.AbilityId, DamageActionType.NormalAttack);
+                return BeginAction(playback, hitContext, null, hasVfx, vfx);
+            }
+
+            /// <summary>绑定两段碰撞盒，使基类负责其启停和回收。</summary>
+            protected override void OnActionInitialized()
+            {
+                BindHitbox(firstHitbox);
+                BindHitbox(secondHitbox);
+            }
+
+            /// <summary>累计 hit_end 回调次数。</summary>
+            protected override void OnHitWindowClosed()
+            {
+                HitWindowClosedCount++;
+            }
+
+            /// <summary>测试 Logic 不消费帧输入，动画事件由正式 Spine 状态推进。</summary>
+            public override void OnUpdate(float dt)
+            {
+            }
+        }
+
+        /// <summary>为命中窗口测试注册 PlayerCombatActionLogic 所需的最小正式组件集合。</summary>
+        private sealed class CombatHitboxTestEntity : Entity
+        {
+            /// <summary>绑定 Yefa 正式组件并注册测试动作 Logic。</summary>
+            public CombatHitboxTestEntity(GameObject bindGameObject, CombatHitboxTestLogic combatLogic)
+            {
+                bindGo = bindGameObject;
+                AddComp<InputComponent>();
+                AddComp(bindGameObject.GetComponent<SpineComponent>());
+                AddComp(bindGameObject.GetComponent<PropertyComponent>());
+                AddComp(bindGameObject.GetComponent<EffectComponent>());
+                AddComp(bindGameObject.GetComponent<VfxComponent>());
+                AddLogic(combatLogic);
             }
         }
     }

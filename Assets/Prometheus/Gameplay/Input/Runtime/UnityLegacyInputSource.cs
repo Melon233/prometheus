@@ -26,7 +26,10 @@ namespace Xuan.Prometheus.Input
             InputButtonState toggleWalk = ReadKey(KeyCode.LeftControl);
             InputButtonState submit = Merge(ReadKey(KeyCode.Return), ReadKey(KeyCode.KeypadEnter));
             InputButtonState cancel = ReadKey(KeyCode.Escape);
-            return new InputFrame(frameId, move, move, attack, skill, ultimate, dodge, jump, specialAttack, toggleSprint, toggleWalk, submit, cancel);
+            InputButtonState selectTeamMember1 = ReadKey(KeyCode.Alpha1);
+            InputButtonState selectTeamMember2 = ReadKey(KeyCode.Alpha2);
+            InputButtonState selectTeamMember3 = ReadKey(KeyCode.Alpha3);
+            return new InputFrame(frameId, move, move, attack, skill, ultimate, dodge, jump, specialAttack, toggleSprint, toggleWalk, submit, cancel, selectTeamMember1, selectTeamMember2, selectTeamMember3);
         }
 
         /// <inheritdoc />

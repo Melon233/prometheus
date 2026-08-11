@@ -7,7 +7,7 @@ namespace Xuan.Prometheus.Input
     /// <summary>在单个 GameplayKit 内集中采样输入、按动作仲裁控制权并向 Entity 或普通对象分发输入。</summary>
     public sealed class InputSystem : XSystem
     {
-        private static readonly InputActionMask[] AtomicActions = { InputActionMask.Move, InputActionMask.Attack, InputActionMask.Skill, InputActionMask.Ultimate, InputActionMask.Dodge, InputActionMask.Jump, InputActionMask.SpecialAttack, InputActionMask.ToggleSprint, InputActionMask.ToggleWalk, InputActionMask.Navigate, InputActionMask.Submit, InputActionMask.Cancel };
+        private static readonly InputActionMask[] AtomicActions = { InputActionMask.Move, InputActionMask.Attack, InputActionMask.Skill, InputActionMask.Ultimate, InputActionMask.Dodge, InputActionMask.Jump, InputActionMask.SpecialAttack, InputActionMask.ToggleSprint, InputActionMask.ToggleWalk, InputActionMask.Navigate, InputActionMask.Submit, InputActionMask.Cancel, InputActionMask.SelectTeamMember1, InputActionMask.SelectTeamMember2, InputActionMask.SelectTeamMember3 };
         private readonly Dictionary<string, IInputSource> sources = new Dictionary<string, IInputSource>(StringComparer.Ordinal);
         private readonly List<IInputSource> sourceOrder = new List<IInputSource>();
         private readonly List<InputBinding> bindings = new List<InputBinding>();

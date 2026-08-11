@@ -20,9 +20,17 @@ namespace Xuan.Prometheus.Input
         Navigate = 1 << 9,
         Submit = 1 << 10,
         Cancel = 1 << 11,
+        /// <summary>选择第一个固定小队槽位。</summary>
+        SelectTeamMember1 = 1 << 12,
+        /// <summary>选择第二个固定小队槽位。</summary>
+        SelectTeamMember2 = 1 << 13,
+        /// <summary>选择第三个固定小队槽位。</summary>
+        SelectTeamMember3 = 1 << 14,
         Gameplay = Move | Attack | Skill | Ultimate | Dodge | Jump | SpecialAttack | ToggleSprint | ToggleWalk,
         Navigation = Navigate | Submit | Cancel,
-        All = Gameplay | Navigation
+        /// <summary>组合全部小队槽位选择动作，供 TeamSystem 申请独立控制权。</summary>
+        TeamSelection = SelectTeamMember1 | SelectTeamMember2 | SelectTeamMember3,
+        All = Gameplay | Navigation | TeamSelection
     }
 
     /// <summary>定义同一输入动作在相同仲裁层级中的分发方式。</summary>
@@ -127,7 +135,7 @@ namespace Xuan.Prometheus.Input
     public readonly struct InputFrame
     {
         /// <summary>创建包含玩法与界面动作的完整输入快照。</summary>
-        public InputFrame(long frameId, Vector2 move, Vector2 navigate, InputButtonState attack, InputButtonState skill, InputButtonState ultimate, InputButtonState dodge, InputButtonState jump, InputButtonState specialAttack, InputButtonState toggleSprint, InputButtonState toggleWalk, InputButtonState submit, InputButtonState cancel)
+        public InputFrame(long frameId, Vector2 move, Vector2 navigate, InputButtonState attack, InputButtonState skill, InputButtonState ultimate, InputButtonState dodge, InputButtonState jump, InputButtonState specialAttack, InputButtonState toggleSprint, InputButtonState toggleWalk, InputButtonState submit, InputButtonState cancel, InputButtonState selectTeamMember1, InputButtonState selectTeamMember2, InputButtonState selectTeamMember3)
         {
             FrameId = frameId;
             Move = move;
@@ -142,6 +150,9 @@ namespace Xuan.Prometheus.Input
             ToggleWalk = toggleWalk;
             Submit = submit;
             Cancel = cancel;
+            SelectTeamMember1 = selectTeamMember1;
+            SelectTeamMember2 = selectTeamMember2;
+            SelectTeamMember3 = selectTeamMember3;
         }
 
         /// <summary>获取由 InputSystem 分配的单调递增帧编号。</summary>
@@ -183,6 +194,15 @@ namespace Xuan.Prometheus.Input
         /// <summary>获取界面取消按钮状态。</summary>
         public InputButtonState Cancel { get; }
 
+        /// <summary>获取选择第一个小队成员按钮的状态。</summary>
+        public InputButtonState SelectTeamMember1 { get; }
+
+        /// <summary>获取选择第二个小队成员按钮的状态。</summary>
+        public InputButtonState SelectTeamMember2 { get; }
+
+        /// <summary>获取选择第三个小队成员按钮的状态。</summary>
+        public InputButtonState SelectTeamMember3 { get; }
+
         /// <summary>判断指定动作集合在当前快照中是否包含有效输入。</summary>
         public bool HasAny(InputActionMask actions)
         {
@@ -197,7 +217,10 @@ namespace Xuan.Prometheus.Input
             if ((actions & InputActionMask.ToggleSprint) != 0 && ToggleSprint.IsActive) return true;
             if ((actions & InputActionMask.ToggleWalk) != 0 && ToggleWalk.IsActive) return true;
             if ((actions & InputActionMask.Submit) != 0 && Submit.IsActive) return true;
-            return (actions & InputActionMask.Cancel) != 0 && Cancel.IsActive;
+            if ((actions & InputActionMask.Cancel) != 0 && Cancel.IsActive) return true;
+            if ((actions & InputActionMask.SelectTeamMember1) != 0 && SelectTeamMember1.IsActive) return true;
+            if ((actions & InputActionMask.SelectTeamMember2) != 0 && SelectTeamMember2.IsActive) return true;
+            return (actions & InputActionMask.SelectTeamMember3) != 0 && SelectTeamMember3.IsActive;
         }
     }
 

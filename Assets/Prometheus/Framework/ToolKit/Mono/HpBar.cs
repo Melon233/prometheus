@@ -34,6 +34,15 @@ namespace Xuan.Prometheus.Component
         /// <summary>记录当前血条是否已经订阅实体事件组件。</summary>
         private bool isEventBound;
 
+        /// <summary>记录当前血条是否已经通过 ListenSystem 订阅生命和生命上限字段。</summary>
+        private bool isPropertyBound;
+
+        /// <summary>保存当前生命字段的可释放监听。</summary>
+        private ListenHandle hpListenHandle;
+
+        /// <summary>保存最大生命字段的可释放监听。</summary>
+        private ListenHandle maxHpListenHandle;
+
         /// <summary>记录当前启用周期是否已经用属性组件同步过初始显示。</summary>
         private bool isInitialValueSynchronized;
 
@@ -63,6 +72,16 @@ namespace Xuan.Prometheus.Component
             isInitialValueSynchronized = false;
             TryBindEvents();
             SynchronizeInitialValue();
+        }
+
+        /// <summary>最终回收血条时解除实体事件与属性引用；临时隐藏不会调用该入口，因此能够在重新显示时恢复绑定。</summary>
+        public void Uninitialize()
+        {
+            deathFadeTween?.Kill();
+            deathFadeTween = null;
+            UnbindEvents();
+            propComp = null;
+            isInitialValueSynchronized = false;
         }
 
         /// <summary>
@@ -116,7 +135,7 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 收到生命变化事件时立即更新主血条，并启动延迟血条追赶过程。
+        /// 兼容直接传入生命事件的旧调用，并把事件数值同步到主血条。
         /// </summary>
         public void SetHp(HpChangedEvent evt)
         {
@@ -124,6 +143,22 @@ namespace Xuan.Prometheus.Component
             hpImg.fillAmount = evt.maxHp <= 0f ? 0f : Mathf.Clamp01(evt.newHp / evt.maxHp);
             wasHpChangedThisFrame = true;
             isInitialValueSynchronized = true;
+        }
+
+        /// <summary>生命或生命上限字段变脏时读取同一属性组件，并启动主血条与延迟血条的同步流程。</summary>
+        private void OnHpPropertyDirty(PropertyComponent propertyComponent)
+        {
+            if (hpImg == null || chaserImg == null) return;
+            float normalizedHp = propertyComponent.MaxHp <= 0f ? 0f : Mathf.Clamp01(propertyComponent.Hp / propertyComponent.MaxHp);
+            hpImg.fillAmount = normalizedHp;
+            if (!isInitialValueSynchronized)
+            {
+                chaserImg.fillAmount = normalizedHp;
+                chaserLen = normalizedHp;
+                isInitialValueSynchronized = true;
+                return;
+            }
+            wasHpChangedThisFrame = true;
         }
 
         /// <summary>
@@ -137,14 +172,19 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 在属性组件完成实体绑定后订阅生命变化和死亡事件，避免依赖不同 MonoBehaviour 的 Start 调用顺序。
+        /// 在属性组件完成实体绑定后通过 ListenSystem 订阅生命字段，并保留死亡事实事件用于淡出表现。
         /// </summary>
         private void TryBindEvents()
         {
-            if (isEventBound || propComp == null || propComp.Entity == null) return;
-            if (!propComp.Entity.TryGetComp(out EventComponent resolvedEventComponent)) return;
+            if (propComp == null || propComp.Entity == null) return;
+            if (!isPropertyBound && propComp.Entity.GameplayKit.TryGetSystem(out ListenSystem listenSystem))
+            {
+                hpListenHandle = listenSystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.HpProperty, OnHpPropertyDirty);
+                maxHpListenHandle = listenSystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.MaxHpProperty, OnHpPropertyDirty);
+                isPropertyBound = true;
+            }
+            if (isEventBound || !propComp.Entity.TryGetComp(out EventComponent resolvedEventComponent)) return;
             evtComp = resolvedEventComponent;
-            evtComp.AddListener<HpChangedEvent>(SetHp);
             evtComp.AddListener<DieEvent>(OnDie);
             isEventBound = true;
         }
@@ -154,7 +194,7 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         private void SynchronizeInitialValue()
         {
-            if (!isEventBound || isInitialValueSynchronized || propComp == null || hpImg == null || chaserImg == null || propComp.MaxHp <= 0f) return;
+            if (isPropertyBound || isInitialValueSynchronized || propComp == null || hpImg == null || chaserImg == null || propComp.MaxHp <= 0f) return;
             float normalizedHp = Mathf.Clamp01(propComp.Hp / propComp.MaxHp);
             hpImg.fillAmount = normalizedHp;
             chaserImg.fillAmount = normalizedHp;
@@ -170,22 +210,25 @@ namespace Xuan.Prometheus.Component
             deathFadeTween?.Kill();
             deathFadeTween = null;
             UnbindEvents();
-            propComp = null;
             isInitialValueSynchronized = false;
         }
 
         /// <summary>
-        /// 注销当前实体的生命和死亡事件，并清理事件组件引用，保证对象池复用不会保留旧实体。
+        /// 注销当前实体的生命字段监听和死亡事件，并清理引用，保证对象池复用不会保留旧实体。
         /// </summary>
         private void UnbindEvents()
         {
             if (isEventBound && evtComp != null)
             {
-                evtComp.RemoveListener<HpChangedEvent>(SetHp);
                 evtComp.RemoveListener<DieEvent>(OnDie);
             }
+            hpListenHandle?.Dispose();
+            maxHpListenHandle?.Dispose();
+            hpListenHandle = null;
+            maxHpListenHandle = null;
             evtComp = null;
             isEventBound = false;
+            isPropertyBound = false;
         }
     }
 }

@@ -114,7 +114,9 @@ namespace Xuan.Prometheus
         [SerializeField] private NormalAttackTalentValues normalAttack = new NormalAttackTalentValues();
         [SerializeField] private SpecialAttackTalentValues specialAttack = new SpecialAttackTalentValues();
         [SerializeField] private TalentAbilityValues skill = new TalentAbilityValues();
+        [SerializeField, Min(0f)] private float skillCooldown = 5f;
         [SerializeField] private TalentAbilityValues ultimate = new TalentAbilityValues();
+        [SerializeField, Min(0f)] private float ultimateCooldown = 10f;
 
         /// <summary>获取普通攻击全部数值。</summary>
         public NormalAttackTalentValues NormalAttack => normalAttack ?? (normalAttack = new NormalAttackTalentValues());
@@ -125,7 +127,13 @@ namespace Xuan.Prometheus
         /// <summary>获取技能全部数值。</summary>
         public TalentAbilityValues Skill => skill ?? (skill = new TalentAbilityValues());
 
+        /// <summary>获取技能成功释放后进入的非负冷却秒数。</summary>
+        public float SkillCooldown => Mathf.Max(0f, skillCooldown);
+
         /// <summary>获取大招全部数值。</summary>
         public TalentAbilityValues Ultimate => ultimate ?? (ultimate = new TalentAbilityValues());
+
+        /// <summary>获取大招成功释放后进入的非负冷却秒数。</summary>
+        public float UltimateCooldown => Mathf.Max(0f, ultimateCooldown);
     }
 }

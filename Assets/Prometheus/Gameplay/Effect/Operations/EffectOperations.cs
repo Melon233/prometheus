@@ -152,7 +152,6 @@ namespace Xuan.Prometheus.Effects
             if (actualDamage <= 0f) return;
             bool hasEntityEvents = context.Target.TryGetComp(out EventComponent eventComponent);
             if (hasEntityEvents) eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
-            if (context.Target is PlayerEntity && Core.Event != null) Core.Event.Invoke(Event.SelfHpChanged, new SelfHpChangedEvent(oldHp, property.Hp, property.MaxHp));
             if (wasFatal && hasEntityEvents) eventComponent.Invoke(new DieEvent());
         }
 
@@ -200,7 +199,7 @@ namespace Xuan.Prometheus.Effects
             float requestedHeal = Mathf.Max(0f, amount.Evaluate(context));
             float oldHp = property.Hp;
             float actualHeal = property.OnRecoverHp(requestedHeal);
-            PublishHpChangedEvent(context, property, oldHp);
+            PublishHpChangedEvent(context, property, oldHp, actualHeal);
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
             context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Healed, context.Caster, context.Target, context.Source, requestedHeal, actualHeal, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
         }
@@ -208,10 +207,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 同步发送治疗产生的生命变化事实事件，不重复承担飘字表现职责。
         /// </summary>
-        private static void PublishHpChangedEvent(EffectOperationContext context, PropertyComponent property, float oldHp)
+        private static void PublishHpChangedEvent(EffectOperationContext context, PropertyComponent property, float oldHp, float actualHeal)
         {
-            if (!context.Target.TryGetComp(out EventComponent eventComponent)) return;
-            eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
+            if (context.Target.TryGetComp(out EventComponent eventComponent)) eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
         }
     }
 
@@ -582,26 +580,42 @@ namespace Xuan.Prometheus.Effects
         }
 
         /// <summary>
-        /// 对目标结算核心能量增加，并仅在当前玩家的能量实际变化时通知全局 HUD。
+        /// 对目标结算核心能量增加，ModifiableProperty 会在最终值实际变化时通知监听方。
         /// </summary>
         public override void Execute(EffectOperationContext context)
         {
             if (context.Target == null) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
             float requestedGain = Mathf.Max(0f, amount.Evaluate(context));
-            float oldEnergy = property.CoreEnergy;
-            float actualGain = property.OnGainCoreEnergy(requestedGain);
-            PublishCoreEnergyChangedEvent(context, property, oldEnergy, actualGain);
+            property.OnGainCoreEnergy(requestedGain);
         }
 
-        /// <summary>
-        /// 仅为当前玩家向已经初始化的全局事件总线发送核心能量变化事实，普通实体和独立测试运行时不依赖 HUD 基础设施。
-        /// </summary>
-        private static void PublishCoreEnergyChangedEvent(EffectOperationContext context, PropertyComponent property, float oldEnergy, float actualGain)
+    }
+
+    /// <summary>按照配置公式增加目标的大招能量，并由 ModifiableProperty 向监听方发布脏通知。</summary>
+    [Serializable]
+    public sealed class UltEnergyGainOperation : EffectOperation
+    {
+        [SerializeField] private EffectValueFormula amount = new EffectValueFormula();
+
+        /// <summary>创建默认大招能量操作，供 Unity SerializeReference 实例化。</summary>
+        public UltEnergyGainOperation()
         {
-            if (actualGain <= 0f || !(context.Target is PlayerEntity) || Core.Event == null) return;
-            Core.Event.Invoke(Event.SelfCoreEnergyChanged, new SelfCoreEnergyChangedEvent(oldEnergy, property.CoreEnergy, property.CoreEnergyLimit));
         }
 
+        /// <summary>创建使用指定数值公式的大招能量操作。</summary>
+        public UltEnergyGainOperation(EffectValueFormula gainAmount)
+        {
+            amount = gainAmount ?? EffectValueFormula.Constant(0f);
+        }
+
+        /// <summary>增加目标大招能量；没有实际变化时属性不会触发脏回调。</summary>
+        public override void Execute(EffectOperationContext context)
+        {
+            if (context.Target == null) return;
+            if (!context.Target.TryGetComp(out PropertyComponent property)) return;
+            float requestedGain = Mathf.Max(0f, amount.Evaluate(context));
+            property.OnGainUltEnergy(requestedGain);
+        }
     }
 }

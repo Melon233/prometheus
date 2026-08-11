@@ -12,6 +12,7 @@ namespace Xuan.Prometheus.Effects
         [SerializeField] private string effectId;
         [SerializeField] private EffectTag tags;
         [SerializeField] private EffectDurationType durationType = EffectDurationType.Instant;
+        [SerializeField] private Sprite buffIcon;
         [SerializeField, Min(0f)] private float duration;
         [SerializeField, Min(0f)] private float tickInterval;
         [SerializeField] private EffectStackPolicy stackPolicy = EffectStackPolicy.Reject;
@@ -34,6 +35,9 @@ namespace Xuan.Prometheus.Effects
 
         /// <summary>获取持续时间类型。</summary>
         public EffectDurationType DurationType => durationType;
+
+        /// <summary>获取持续型 Buff 在 HUD 列表中显示的图标；未配置时 UI 会隐藏该实例的图标图片。</summary>
+        public Sprite BuffIcon => buffIcon;
 
         /// <summary>获取配置持续时间。</summary>
         public float Duration => duration;

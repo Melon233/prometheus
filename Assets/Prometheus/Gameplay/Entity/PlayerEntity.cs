@@ -15,6 +15,7 @@ namespace Xuan.Prometheus.Logic
         {
             bindGo = bindGameObject != null ? bindGameObject : throw new ArgumentNullException(nameof(bindGameObject));
             AddComp<InputComponent>();
+            AddComp<TeamMemberComponent>();
             AddComp<EventComponent>();
             AddComp<DodgeComponent>();
             AddComp(bindGo.GetComponent<EffectComponent>());
@@ -31,6 +32,8 @@ namespace Xuan.Prometheus.Logic
             AddLogic<IdleLogic>();
             AddLogic<MotionLogic>();
             AddLogic<TalentLogic>();
+            AddLogic<SkillCooldownLogic>();
+            AddLogic<UltimateCooldownLogic>();
             // 同帧输入按大招、技能、特殊攻击、普通攻击的注册顺序尝试，低优先级请求会被统一动画仲裁拒绝。
             AddLogic<UltimateLogic>();
             AddLogic<SkillLogic>();

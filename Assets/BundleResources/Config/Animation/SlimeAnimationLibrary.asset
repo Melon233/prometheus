@@ -15,6 +15,9 @@ MonoBehaviour:
   skeletonDataAsset: {fileID: 11400000, guid: 49c2de8d7a2f07e45bfd2a4b94b03b3b, type: 2}
   hitStart: hit_start
   hitEnd: hit_end
+  mixDurationMatrix:
+    defaultDuration: 0.2
+    overrides: []
   atkExecutor:
     attacks:
     - animationLine: {fileID: 11400000, guid: c72be6ae45e1c034db00df66daeb2339, type: 2}
