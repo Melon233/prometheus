@@ -34,7 +34,10 @@ namespace Xuan.Prometheus.Logic
         public override void OnEnable()
         {
             Entity.BlockLogic<GroundMoveLogic>();
-            Entity.BlockLogic<TalentLogic>();
+            Entity.BlockLogic<NormalAttackLogic>();
+            Entity.BlockLogic<SpecialAttackLogic>();
+            Entity.BlockLogic<SkillLogic>();
+            Entity.BlockLogic<UltimateLogic>();
             Entity.BlockLogic<DodgeLogic>();
         }
 
@@ -42,7 +45,10 @@ namespace Xuan.Prometheus.Logic
         {
             spineComponent.Stop(AnimationOwner.AirMove);
             Entity.UnBlockLogic<GroundMoveLogic>();
-            Entity.UnBlockLogic<TalentLogic>();
+            Entity.UnBlockLogic<NormalAttackLogic>();
+            Entity.UnBlockLogic<SpecialAttackLogic>();
+            Entity.UnBlockLogic<SkillLogic>();
+            Entity.UnBlockLogic<UltimateLogic>();
             Entity.UnBlockLogic<DodgeLogic>();
         }
 

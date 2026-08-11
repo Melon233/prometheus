@@ -83,8 +83,8 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private static void ConfigureBurning(EffectDefinition definition)
         {
-            List<EffectOperation> tickOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Fire | EffectTag.Dot | EffectTag.Periodic, EffectValueFormula.Constant(0f)) };
-            definition.ConfigureForTests(BurningId, EffectTag.Fire | EffectTag.Dot | EffectTag.Debuff, EffectDurationType.Duration, 10f, 1f, EffectStackPolicy.RefreshDuration, EffectStackKeyPolicy.DefinitionAndCaster, 1, EffectExecutionPhase.Apply, 20, null, null, tickOperations, null);
+            List<EffectOperation> tickOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Dot | EffectTag.Periodic, EffectValueFormula.Constant(0f), DamageAttributeSource.Fixed, DamageAttribute.Fire) };
+            definition.ConfigureForTests(BurningId, EffectTag.Dot | EffectTag.Debuff, EffectDurationType.Duration, 10f, 1f, EffectStackPolicy.RefreshDuration, EffectStackKeyPolicy.DefinitionAndSource, 1, EffectExecutionPhase.Apply, 20, null, null, tickOperations, null);
         }
 
         /// <summary>
@@ -120,19 +120,19 @@ namespace Xuan.Prometheus.Effects
         private static void ConfigureAttackTriggers(EffectTriggerSet triggerSet, EffectDefinition directDamage, EffectDefinition burning)
         {
             EffectTriggerDefinition damageTrigger = new EffectTriggerDefinition();
-            damageTrigger.ConfigureForTests("Example.OnAttackHit.Damage", EffectSignalType.HitConfirmed, EffectListenScope.Source, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Attack) }, new[] { directDamage });
+            damageTrigger.ConfigureForTests("Example.OnAttackHit.Damage", EffectSignalType.HitConfirmed, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Attack) }, new[] { directDamage });
             EffectTriggerDefinition burningTrigger = new EffectTriggerDefinition();
-            burningTrigger.ConfigureForTests("Example.OnFireHit.Burning", EffectSignalType.HitConfirmed, EffectListenScope.Source, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Fire) }, new[] { burning });
+            burningTrigger.ConfigureForTests("Example.OnFireDamage.Burning", EffectSignalType.DamageApplied, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.ValueGreaterThan(0f), EffectConditionDefinition.DamageAttributeEquals(DamageAttribute.Fire) }, new[] { burning });
             triggerSet.ConfigureForTests(new[] { damageTrigger, burningTrigger });
         }
 
         /// <summary>
-        /// 配置造成实际攻击伤害后给来源叠加战意，同时明确排除 DOT 伤害。
+        /// 配置造成实际攻击伤害后给直接释放者叠加战意，同时明确排除 DOT 伤害。
         /// </summary>
         private static void ConfigureCombatFlowTriggers(EffectTriggerSet triggerSet, EffectDefinition combatFlow)
         {
             EffectTriggerDefinition combatFlowTrigger = new EffectTriggerDefinition();
-            combatFlowTrigger.ConfigureForTests("Example.OnAttackDamage.CombatFlow", EffectSignalType.DamageApplied, EffectListenScope.Source, EffectTargetSelector.Source, 1f, 0f, true, 0, new[] { EffectConditionDefinition.ValueGreaterThan(0f), EffectConditionDefinition.HasAllTags(EffectTag.Attack), EffectConditionDefinition.LacksAnyTags(EffectTag.Dot) }, new[] { combatFlow });
+            combatFlowTrigger.ConfigureForTests("Example.OnAttackDamage.CombatFlow", EffectSignalType.DamageApplied, EffectListenScope.Caster, EffectTargetSelector.Caster, 1f, 0f, true, 0, new[] { EffectConditionDefinition.ValueGreaterThan(0f), EffectConditionDefinition.HasAllTags(EffectTag.Attack), EffectConditionDefinition.LacksAnyTags(EffectTag.Dot) }, new[] { combatFlow });
             triggerSet.ConfigureForTests(new[] { combatFlowTrigger });
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -12,9 +13,9 @@ namespace Xuan.Prometheus.Effects
     {
         [SerializeField] private string triggerId;
         [SerializeField] private EffectSignalType signalType;
-        [SerializeField] private EffectListenScope listenScope = EffectListenScope.Source;
+        [SerializeField] private EffectListenScope listenScope = EffectListenScope.Caster;
         [SerializeField] private EffectTargetSelector targetSelector = EffectTargetSelector.Target;
-        [SerializeField, Range(0f, 1f)] private float chance = 1f;
+        [SerializeField, FormerlySerializedAs("chance"), Range(0f, 1f)] private float probability = 1f;
         [SerializeField, Min(0f)] private float cooldown;
         [SerializeField] private bool oncePerSignalChain = true;
         [SerializeField] private int priority;
@@ -34,7 +35,7 @@ namespace Xuan.Prometheus.Effects
         public EffectTargetSelector TargetSelector => targetSelector;
 
         /// <summary>获取零到一之间的触发概率。</summary>
-        public float Chance => Mathf.Clamp01(chance);
+        public float Probability => Mathf.Clamp01(probability);
 
         /// <summary>获取成功触发后的冷却时间。</summary>
         public float Cooldown => Mathf.Max(0f, cooldown);

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e429abcbba345214885c2fc0f647c8f8, type: 3}
   m_Name: CombatFlow
   m_EditorClassIdentifier: 
-  effectId: Example.CombatFlow
+  effectId: 
   tags: 1280
   durationType: 1
   duration: 5
@@ -28,6 +28,7 @@ MonoBehaviour:
   onStackOperations:
   - rid: 1348142047778570250
   - rid: 1348142047778570251
+  onRefreshOperations: []
   onTickOperations: []
   onRemoveOperations: []
   grantedTriggers: []
@@ -42,7 +43,7 @@ MonoBehaviour:
         propertyType: 0
         modifierMode: 0
         valuePerStack:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 0.2
     - rid: 1348142047778570249
@@ -53,7 +54,7 @@ MonoBehaviour:
         propertyType: 3
         modifierMode: 0
         valuePerStack:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 0.2
     - rid: 1348142047778570250
@@ -64,7 +65,7 @@ MonoBehaviour:
         propertyType: 0
         modifierMode: 0
         valuePerStack:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 0.2
     - rid: 1348142047778570251
@@ -75,6 +76,6 @@ MonoBehaviour:
         propertyType: 3
         modifierMode: 0
         valuePerStack:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 0.2

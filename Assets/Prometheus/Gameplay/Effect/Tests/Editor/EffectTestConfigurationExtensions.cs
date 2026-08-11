@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 为测试或示例资产生成器写入完整效果定义，并复制所有集合以隔离调用方后续修改。
         /// </summary>
-        public static void ConfigureForTests(this EffectDefinition definition, string id, EffectTag effectTags, EffectDurationType effectDurationType, float effectDuration, float effectTickInterval, EffectStackPolicy effectStackPolicy, EffectStackKeyPolicy effectStackKeyPolicy, int effectMaxStacks, EffectExecutionPhase executionPhase, int executionPriority, IEnumerable<EffectOperation> applyOperations, IEnumerable<EffectOperation> stackOperations, IEnumerable<EffectOperation> tickOperations, IEnumerable<EffectOperation> removeOperations, IEnumerable<EffectTriggerDefinition> triggers = null)
+        public static void ConfigureForTests(this EffectDefinition definition, string id, EffectTag effectTags, EffectDurationType effectDurationType, float effectDuration, float effectTickInterval, EffectStackPolicy effectStackPolicy, EffectStackKeyPolicy effectStackKeyPolicy, int effectMaxStacks, EffectExecutionPhase executionPhase, int executionPriority, IEnumerable<EffectOperation> applyOperations, IEnumerable<EffectOperation> stackOperations, IEnumerable<EffectOperation> tickOperations, IEnumerable<EffectOperation> removeOperations, IEnumerable<EffectTriggerDefinition> triggers = null, IEnumerable<EffectOperation> refreshOperations = null)
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             SetPrivateField(definition, "effectId", id ?? string.Empty);
@@ -31,6 +31,7 @@ namespace Xuan.Prometheus.Effects
             SetPrivateField(definition, "priority", executionPriority);
             SetPrivateField(definition, "onApplyOperations", CopyToList(applyOperations));
             SetPrivateField(definition, "onStackOperations", CopyToList(stackOperations));
+            SetPrivateField(definition, "onRefreshOperations", CopyToList(refreshOperations));
             SetPrivateField(definition, "onTickOperations", CopyToList(tickOperations));
             SetPrivateField(definition, "onRemoveOperations", CopyToList(removeOperations));
             SetPrivateField(definition, "grantedTriggers", CopyToList(triggers));
@@ -39,14 +40,14 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 为测试或示例资产生成器写入完整触发规则，并保持与 Inspector 相同的概率和冷却边界约束。
         /// </summary>
-        public static void ConfigureForTests(this EffectTriggerDefinition definition, string id, EffectSignalType type, EffectListenScope scope, EffectTargetSelector selector, float triggerChance, float triggerCooldown, bool triggerOncePerSignalChain, int triggerPriority, IEnumerable<EffectConditionDefinition> triggerConditions, IEnumerable<EffectDefinition> triggeredEffects)
+        public static void ConfigureForTests(this EffectTriggerDefinition definition, string id, EffectSignalType type, EffectListenScope scope, EffectTargetSelector selector, float triggerProbability, float triggerCooldown, bool triggerOncePerSignalChain, int triggerPriority, IEnumerable<EffectConditionDefinition> triggerConditions, IEnumerable<EffectDefinition> triggeredEffects)
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             SetPrivateField(definition, "triggerId", id ?? string.Empty);
             SetPrivateField(definition, "signalType", type);
             SetPrivateField(definition, "listenScope", scope);
             SetPrivateField(definition, "targetSelector", selector);
-            SetPrivateField(definition, "chance", Mathf.Clamp01(triggerChance));
+            SetPrivateField(definition, "probability", Mathf.Clamp01(triggerProbability));
             SetPrivateField(definition, "cooldown", Mathf.Max(0f, triggerCooldown));
             SetPrivateField(definition, "oncePerSignalChain", triggerOncePerSignalChain);
             SetPrivateField(definition, "priority", triggerPriority);

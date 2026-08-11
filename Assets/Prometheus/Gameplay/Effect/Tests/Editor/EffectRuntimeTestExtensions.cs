@@ -52,7 +52,7 @@ namespace Xuan.Prometheus.Effects.Tests
             if (runtime == null) throw new ArgumentNullException(nameof(runtime));
             float requestedDamage = 0f;
             if (attacker != null && attacker.TryGetComp(out PropertyComponent property)) requestedDamage = property.Atk;
-            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, attacker, target, attacker, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire, abilityId);
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, attacker, target, attacker, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack, abilityId, damageAttribute: DamageAttribute.Fire, damageActionType: DamageActionType.NormalAttack);
             runtime.Publish(signal);
         }
 

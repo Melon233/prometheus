@@ -11,16 +11,18 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     public enum EffectSignalType
     {
-        Manual,
-        HitConfirmed,
-        DamageApplied,
-        Healed,
-        Killed,
-        EffectApplied,
-        EffectStacked,
-        EffectRemoved,
-        PeriodicTick,
-        CoreEnergyGain,
+        Manual = 0,
+        HitConfirmed = 1,
+        DamageApplied = 2,
+        Healed = 3,
+        Killed = 4,
+        EffectApplied = 5,
+        EffectStacked = 6,
+        EffectRemoved = 7,
+        PeriodicTick = 8,
+        CoreEnergyGain = 9,
+        /// <summary>持续效果被重复施加并成功刷新有限持续时间。</summary>
+        EffectRefreshed = 10,
     }
 
     /// <summary>
@@ -44,6 +46,10 @@ namespace Xuan.Prometheus.Effects
         Control = 1 << 11,
         CoreEnergyGain = 1 << 12,
         UltEnergyGain = 1 << 13,
+        /// <summary>标识特殊攻击产生的信号；追加位保证已有标签掩码保持稳定。</summary>
+        SpecialAttack = 1 << 14,
+        /// <summary>标识大招产生的信号；追加位保证已有标签掩码保持稳定。</summary>
+        Ultimate = 1 << 15,
     }
 
     /// <summary>
@@ -51,10 +57,10 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     public enum EffectListenScope
     {
-        Source,
-        Target,
-        Caster,
-        Any
+        Caster = 0,
+        Target = 1,
+        Source = 2,
+        Any = 3
     }
 
     /// <summary>
@@ -62,9 +68,9 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     public enum EffectTargetSelector
     {
-        Source,
-        Target,
-        Caster
+        Caster = 0,
+        Target = 1,
+        Source = 2
     }
 
     /// <summary>
@@ -95,9 +101,9 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     public enum EffectStackKeyPolicy
     {
-        Definition,
-        DefinitionAndCaster,
-        DefinitionAndSource
+        Definition = 0,
+        DefinitionAndSource = 1,
+        DefinitionAndCaster = 2
     }
 
     /// <summary>
@@ -130,14 +136,14 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     public enum EffectValueSource
     {
-        Constant,
+        One,
         SignalValue,
         SignalRequestedValue,
-        SourceAttack,
+        CasterAttack,
         TargetAttack,
-        SourceMaxHp,
+        CasterMaxHp,
         TargetMaxHp,
-        SourceCoreEnergy,
+        CasterCoreEnergy,
     }
 
     /// <summary>
@@ -146,14 +152,18 @@ namespace Xuan.Prometheus.Effects
     public enum EffectConditionType
     {
         Always,
-        SourceExists,
-        TargetExists,
         CasterExists,
+        TargetExists,
+        SourceExists,
         HasAllTags,
         HasAnyTags,
         LacksAnyTags,
         ValueGreaterThan,
-        ValueGreaterThanOrEqual
+        ValueGreaterThanOrEqual,
+        /// <summary>要求信号最终伤害属性等于配置属性；追加值保证已有条件资产索引稳定。</summary>
+        DamageAttributeEquals,
+        /// <summary>要求信号已经完成克制判定且关系为 Advantage。</summary>
+        DamageWasAdvantage
     }
 
     /// <summary>
@@ -170,14 +180,14 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取信号类型。</summary>
         public EffectSignalType Type { get; }
 
-        /// <summary>获取行为发起者。</summary>
-        public Entity Source { get; }
+        /// <summary>获取直接释放当前行为的实体。</summary>
+        public Entity Caster { get; }
 
         /// <summary>获取行为直接目标。</summary>
         public Entity Target { get; }
 
-        /// <summary>获取技能或效果的原始施法者。</summary>
-        public Entity Caster { get; }
+        /// <summary>获取当前因果链的实际源头实体。</summary>
+        public Entity Source { get; }
 
         /// <summary>获取结算前请求数值。</summary>
         public float RequestedValue { get; }
@@ -190,6 +200,18 @@ namespace Xuan.Prometheus.Effects
 
         /// <summary>获取本次伤害是否首次把目标从存活推进到死亡。</summary>
         public bool WasFatal { get; }
+
+        /// <summary>获取当前伤害经过动作与 Effect 覆盖后使用的唯一属性。</summary>
+        public DamageAttribute DamageAttribute { get; }
+
+        /// <summary>获取产生当前伤害的动作类别。</summary>
+        public DamageActionType DamageActionType { get; }
+
+        /// <summary>获取当前伤害属性与目标角色属性之间的最终克制关系。</summary>
+        public DamageAttributeRelation DamageAttributeRelation { get; }
+
+        /// <summary>获取本次属性克制独立乘区倍率。</summary>
+        public float DamageAttributeMultiplier { get; }
 
         /// <summary>获取信号标签。</summary>
         public EffectTag Tags { get; }
@@ -206,16 +228,20 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建一条战斗信号；SignalChainId 为零时由 EffectRuntime 在因果链开始时自动分配。
         /// </summary>
-        public EffectSignal(EffectSignalType type, Entity source, Entity target, Entity caster, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, long signalChainId = 0L, int chainDepth = 0, float interruptPower = 0f, bool wasFatal = false)
+        public EffectSignal(EffectSignalType type, Entity caster, Entity target, Entity source, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, long signalChainId = 0L, int chainDepth = 0, float interruptPower = 0f, bool wasFatal = false, DamageAttribute damageAttribute = DamageAttribute.Physical, DamageActionType damageActionType = DamageActionType.Effect, DamageAttributeRelation damageAttributeRelation = DamageAttributeRelation.Neutral, float damageAttributeMultiplier = 1f)
         {
             Type = type;
-            Source = source;
-            Target = target;
             Caster = caster;
+            Target = target;
+            Source = source;
             RequestedValue = requestedValue;
             Value = value;
             InterruptPower = Mathf.Max(0f, interruptPower);
             WasFatal = wasFatal;
+            DamageAttribute = damageAttribute;
+            DamageActionType = damageActionType;
+            DamageAttributeRelation = damageAttributeRelation;
+            DamageAttributeMultiplier = Mathf.Max(0f, damageAttributeMultiplier);
             Tags = tags;
             AbilityId = abilityId ?? string.Empty;
             OriginEffectInstanceId = originEffectInstanceId;
@@ -237,9 +263,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 基于当前信号创建同一事务中的子信号，并自动增加触发链深度。
         /// </summary>
-        public EffectSignal CreateChild(EffectSignalType type, Entity source, Entity target, Entity caster, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, float? interruptPower = null, bool? wasFatal = null)
+        public EffectSignal CreateChild(EffectSignalType type, Entity caster, Entity target, Entity source, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, float? interruptPower = null, bool? wasFatal = null, DamageAttribute? damageAttribute = null, DamageActionType? damageActionType = null, DamageAttributeRelation? damageAttributeRelation = null, float? damageAttributeMultiplier = null)
         {
-            return new EffectSignal(type, source, target, caster, requestedValue, value, tags, abilityId, originEffectInstanceId, position, SignalChainId, ChainDepth + 1, interruptPower ?? InterruptPower, wasFatal ?? WasFatal);
+            return new EffectSignal(type, caster, target, source, requestedValue, value, tags, abilityId, originEffectInstanceId, position, SignalChainId, ChainDepth + 1, interruptPower ?? InterruptPower, wasFatal ?? WasFatal, damageAttribute ?? DamageAttribute, damageActionType ?? DamageActionType, damageAttributeRelation ?? DamageAttributeRelation, damageAttributeMultiplier ?? DamageAttributeMultiplier);
         }
     }
 
@@ -249,7 +275,7 @@ namespace Xuan.Prometheus.Effects
     [Serializable]
     public sealed class EffectValueFormula
     {
-        [SerializeField] private EffectValueSource source = EffectValueSource.Constant;
+        [SerializeField, FormerlySerializedAs("source")] private EffectValueSource baseValueSource = EffectValueSource.One;
         [SerializeField] private float multiplier;
         [SerializeField, FormerlySerializedAs("additive")] private float offset;
 
@@ -258,15 +284,15 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         public static EffectValueFormula Constant(float value)
         {
-            return new EffectValueFormula { source = EffectValueSource.Constant, multiplier = 0f, offset = value };
+            return new EffectValueFormula { baseValueSource = EffectValueSource.One, multiplier = 0f, offset = value };
         }
 
         /// <summary>
-        /// 创建读取来源实体攻击力的公式。
+        /// 创建读取直接释放者攻击力的公式。
         /// </summary>
-        public static EffectValueFormula SourceAttack(float multiplier = 1f, float offset = 0f)
+        public static EffectValueFormula CasterAttack(float multiplier = 1f, float offset = 0f)
         {
-            return new EffectValueFormula { source = EffectValueSource.SourceAttack, multiplier = multiplier, offset = offset };
+            return new EffectValueFormula { baseValueSource = EffectValueSource.CasterAttack, multiplier = multiplier, offset = offset };
         }
 
         /// <summary>
@@ -274,7 +300,7 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         public static EffectValueFormula SignalValue(float multiplier = 1f, float offset = 0f)
         {
-            return new EffectValueFormula { source = EffectValueSource.SignalValue, multiplier = multiplier, offset = offset };
+            return new EffectValueFormula { baseValueSource = EffectValueSource.SignalValue, multiplier = multiplier, offset = offset };
         }
 
         /// <summary>
@@ -282,7 +308,7 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         public static EffectValueFormula SignalRequestedValue(float multiplier = 1f, float offset = 0f)
         {
-            return new EffectValueFormula { source = EffectValueSource.SignalRequestedValue, multiplier = multiplier, offset = offset };
+            return new EffectValueFormula { baseValueSource = EffectValueSource.SignalRequestedValue, multiplier = multiplier, offset = offset };
         }
 
         /// <summary>
@@ -299,16 +325,16 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private float ResolveBaseValue(EffectOperationContext context)
         {
-            switch (source)
+            switch (baseValueSource)
             {
-                case EffectValueSource.Constant: return 1f;
+                case EffectValueSource.One: return 1f;
                 case EffectValueSource.SignalValue: return context.Signal.Value;
                 case EffectValueSource.SignalRequestedValue: return context.Signal.RequestedValue;
-                case EffectValueSource.SourceAttack: return ReadProperty(context.Source, property => property.Atk);
+                case EffectValueSource.CasterAttack: return ReadProperty(context.Caster, property => property.Atk);
                 case EffectValueSource.TargetAttack: return ReadProperty(context.Target, property => property.Atk);
-                case EffectValueSource.SourceMaxHp: return ReadProperty(context.Source, property => property.MaxHp);
+                case EffectValueSource.CasterMaxHp: return ReadProperty(context.Caster, property => property.MaxHp);
                 case EffectValueSource.TargetMaxHp: return ReadProperty(context.Target, property => property.MaxHp);
-                case EffectValueSource.SourceCoreEnergy: return ReadProperty(context.Source, property => property.CoreEnergyLimit);
+                case EffectValueSource.CasterCoreEnergy: return ReadProperty(context.Caster, property => property.CoreEnergyLimit);
                 default: return 0f;
             }
         }
@@ -333,6 +359,7 @@ namespace Xuan.Prometheus.Effects
         [SerializeField] private EffectConditionType type = EffectConditionType.Always;
         [SerializeField] private EffectTag tags;
         [SerializeField] private float threshold;
+        [SerializeField] private DamageAttribute damageAttribute = DamageAttribute.Physical;
 
         /// <summary>
         /// 创建一条始终通过的条件。
@@ -383,6 +410,22 @@ namespace Xuan.Prometheus.Effects
         }
 
         /// <summary>
+        /// 创建一条要求信号最终伤害属性等于指定属性的条件。
+        /// </summary>
+        public static EffectConditionDefinition DamageAttributeEquals(DamageAttribute attribute)
+        {
+            return new EffectConditionDefinition { type = EffectConditionType.DamageAttributeEquals, damageAttribute = attribute };
+        }
+
+        /// <summary>
+        /// 创建一条要求信号已经形成伤害属性克制的条件。
+        /// </summary>
+        public static EffectConditionDefinition DamageWasAdvantage()
+        {
+            return new EffectConditionDefinition { type = EffectConditionType.DamageWasAdvantage };
+        }
+
+        /// <summary>
         /// 判断指定信号是否满足当前条件。
         /// </summary>
         public bool Evaluate(EffectSignal signal)
@@ -390,14 +433,16 @@ namespace Xuan.Prometheus.Effects
             switch (type)
             {
                 case EffectConditionType.Always: return true;
-                case EffectConditionType.SourceExists: return signal.Source != null;
-                case EffectConditionType.TargetExists: return signal.Target != null;
                 case EffectConditionType.CasterExists: return signal.Caster != null;
+                case EffectConditionType.TargetExists: return signal.Target != null;
+                case EffectConditionType.SourceExists: return signal.Source != null;
                 case EffectConditionType.HasAllTags: return (signal.Tags & tags) == tags;
                 case EffectConditionType.HasAnyTags: return (signal.Tags & tags) != 0;
                 case EffectConditionType.LacksAnyTags: return (signal.Tags & tags) == 0;
                 case EffectConditionType.ValueGreaterThan: return signal.Value > threshold;
                 case EffectConditionType.ValueGreaterThanOrEqual: return signal.Value >= threshold;
+                case EffectConditionType.DamageAttributeEquals: return signal.DamageAttribute == damageAttribute;
+                case EffectConditionType.DamageWasAdvantage: return signal.DamageAttributeRelation == DamageAttributeRelation.Advantage;
                 default: return false;
             }
         }

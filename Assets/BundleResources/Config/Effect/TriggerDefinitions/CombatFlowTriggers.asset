@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: CombatFlowTriggers
   m_EditorClassIdentifier: 
   triggers:
-  - triggerId: Example.OnAttackDamage.CombatFlow
+  - triggerId: 
     signalType: 2
     listenScope: 0
     targetSelector: 0
-    chance: 1
+    probability: 1
     cooldown: 0
     oncePerSignalChain: 1
     priority: 0
@@ -25,19 +25,22 @@ MonoBehaviour:
     - type: 7
       tags: 0
       threshold: 0
+      damageAttribute: 0
     - type: 4
       tags: 1
       threshold: 0
+      damageAttribute: 0
     - type: 6
       tags: 16
       threshold: 0
+      damageAttribute: 0
     effects:
     - {fileID: 11400000, guid: b24dec1869864ae4faef9c06a48f61c8, type: 2}
-  - triggerId: Example.OnAttackDamage.GainEnergy
+  - triggerId: 
     signalType: 2
     listenScope: 0
     targetSelector: 0
-    chance: 1
+    probability: 1
     cooldown: 0
     oncePerSignalChain: 1
     priority: 0
@@ -45,16 +48,18 @@ MonoBehaviour:
     - type: 7
       tags: 0
       threshold: 0
+      damageAttribute: 0
     - type: 6
       tags: 16
       threshold: 0
+      damageAttribute: 0
     effects:
     - {fileID: 11400000, guid: 60afab9c29565f34ca3b2edf32fc138c, type: 2}
-  - triggerId: Example.OnAttackDamage.GainEnergyA
+  - triggerId: 
     signalType: 9
     listenScope: 0
     targetSelector: 0
-    chance: 1
+    probability: 1
     cooldown: 0
     oncePerSignalChain: 1
     priority: 0
@@ -62,5 +67,6 @@ MonoBehaviour:
     - type: 8
       tags: 4096
       threshold: 100
+      damageAttribute: 0
     effects:
     - {fileID: 11400000, guid: b0374dce6e7be8e43bdd43c4397cd66a, type: 2}

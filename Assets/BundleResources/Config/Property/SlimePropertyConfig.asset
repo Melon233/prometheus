@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dac518e4a241358489ae47a9688afc85, type: 3}
   m_Name: SlimePropertyConfig
   m_EditorClassIdentifier: 
+  elementAttribute: 0
   atk: 100
   atkSpeed: 1
   critDmg: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e429abcbba345214885c2fc0f647c8f8, type: 3}
   m_Name: Boost
   m_EditorClassIdentifier: 
-  effectId: Example.Boost
+  effectId: 
   tags: 1280
   durationType: 1
   duration: 15
@@ -27,6 +27,7 @@ MonoBehaviour:
   - rid: 1348142047778570249
   - rid: 1474841158051692615
   onStackOperations: []
+  onRefreshOperations: []
   onTickOperations: []
   onRemoveOperations: []
   grantedTriggers: []
@@ -41,7 +42,7 @@ MonoBehaviour:
         propertyType: 5
         modifierMode: 0
         valuePerStack:
-          source: 0
+          baseValueSource: 0
           multiplier: 0
           offset: 20
     - rid: 1348142047778570249
@@ -52,14 +53,14 @@ MonoBehaviour:
         propertyType: 4
         modifierMode: 0
         valuePerStack:
-          source: 0
-          multiplier: 0
+          baseValueSource: 0
+          multiplier: 1
           offset: 1
     - rid: 1474841158051692615
       type: {class: HealOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
         amount:
-          source: 0
-          multiplier: 0
+          baseValueSource: 0
+          multiplier: 1
           offset: 666
         additionalTags: 128

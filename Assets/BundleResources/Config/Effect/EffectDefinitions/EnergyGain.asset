@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e429abcbba345214885c2fc0f647c8f8, type: 3}
   m_Name: EnergyGain
   m_EditorClassIdentifier: 
-  effectId: Example.DirectAttackDamage
+  effectId: 
   tags: 256
   durationType: 0
   duration: 0
@@ -26,6 +26,7 @@ MonoBehaviour:
   - rid: 1474841158051692612
   - rid: 1474841158051692614
   onStackOperations: []
+  onRefreshOperations: []
   onTickOperations: []
   onRemoveOperations: []
   grantedTriggers: []
@@ -36,16 +37,15 @@ MonoBehaviour:
       type: {class: CoreEnergyGainOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
         amount:
-          source: 0
+          baseValueSource: 0
           multiplier: 1
           offset: 20
-        additionalTags: 4096
     - rid: 1474841158051692614
       type: {class: EmitSignalOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
       data:
         signalType: 9
         value:
-          source: 7
+          baseValueSource: 7
           multiplier: 1
           offset: 0
         additionalTags: 4096

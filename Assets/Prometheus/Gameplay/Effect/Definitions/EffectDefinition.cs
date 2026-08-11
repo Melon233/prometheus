@@ -21,6 +21,7 @@ namespace Xuan.Prometheus.Effects
         [SerializeField] private int priority;
         [SerializeReference] private List<EffectOperation> onApplyOperations = new List<EffectOperation>();
         [SerializeReference] private List<EffectOperation> onStackOperations = new List<EffectOperation>();
+        [SerializeReference] private List<EffectOperation> onRefreshOperations = new List<EffectOperation>();
         [SerializeReference] private List<EffectOperation> onTickOperations = new List<EffectOperation>();
         [SerializeReference] private List<EffectOperation> onRemoveOperations = new List<EffectOperation>();
         [SerializeField] private List<EffectTriggerDefinition> grantedTriggers = new List<EffectTriggerDefinition>();
@@ -58,8 +59,11 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取首次应用时执行的操作。</summary>
         public IReadOnlyList<EffectOperation> OnApplyOperations => onApplyOperations;
 
-        /// <summary>获取叠层或刷新时执行的操作。</summary>
+        /// <summary>获取层数实际增加时执行的操作。</summary>
         public IReadOnlyList<EffectOperation> OnStackOperations => onStackOperations;
+
+        /// <summary>获取有限持续时间实际刷新时执行的操作。</summary>
+        public IReadOnlyList<EffectOperation> OnRefreshOperations => onRefreshOperations;
 
         /// <summary>获取每次周期 Tick 时执行的操作。</summary>
         public IReadOnlyList<EffectOperation> OnTickOperations => onTickOperations;

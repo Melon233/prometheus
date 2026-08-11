@@ -13,14 +13,14 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取请求的效果定义。</summary>
         public EffectDefinition Definition { get; }
 
-        /// <summary>获取效果来源实体。</summary>
-        public Entity Source { get; }
+        /// <summary>获取直接释放当前效果的实体。</summary>
+        public Entity Caster { get; }
 
         /// <summary>获取效果目标实体。</summary>
         public Entity Target { get; }
 
-        /// <summary>获取效果原始施法者。</summary>
-        public Entity Caster { get; }
+        /// <summary>获取当前效果因果链的实际源头实体。</summary>
+        public Entity Source { get; }
 
         /// <summary>获取产生请求的因果信号。</summary>
         public EffectSignal Signal { get; }
@@ -37,16 +37,40 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建完整效果请求。
         /// </summary>
-        public EffectRequest(EffectDefinition definition, Entity source, Entity target, Entity caster, EffectSignal signal, int priority, long sequence)
+        public EffectRequest(EffectDefinition definition, Entity caster, Entity target, Entity source, EffectSignal signal, int priority, long sequence)
         {
             Definition = definition;
-            Source = source;
-            Target = target;
             Caster = caster;
+            Target = target;
+            Source = source;
             Signal = signal;
             Phase = definition.Phase;
             Priority = priority;
             Sequence = sequence;
+        }
+    }
+
+    /// <summary>
+    /// EffectReapplyResult 分别记录重复施加是否刷新持续时间和改变层数，避免用单一 changed 混淆两个生命周期分支。
+    /// </summary>
+    internal readonly struct EffectReapplyResult
+    {
+        /// <summary>获取有限持续时间是否已经刷新。</summary>
+        public bool DurationRefreshed { get; }
+
+        /// <summary>获取效果层数是否实际改变。</summary>
+        public bool StacksChanged { get; }
+
+        /// <summary>获取本次重复施加是否产生任何有效状态变化。</summary>
+        public bool HasChanges => DurationRefreshed || StacksChanged;
+
+        /// <summary>
+        /// 创建一次重复施加的独立状态变化结果。
+        /// </summary>
+        public EffectReapplyResult(bool durationRefreshed, bool stacksChanged)
+        {
+            DurationRefreshed = durationRefreshed;
+            StacksChanged = stacksChanged;
         }
     }
 
@@ -64,14 +88,14 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取实例使用的只读定义。</summary>
         public EffectDefinition Definition { get; }
 
-        /// <summary>获取最初产生效果的来源实体。</summary>
-        public Entity Source { get; }
+        /// <summary>获取最初直接释放效果的实体。</summary>
+        public Entity Caster { get; }
 
         /// <summary>获取持有效果的目标实体。</summary>
         public Entity Owner { get; }
 
-        /// <summary>获取效果原始施法者。</summary>
-        public Entity Caster { get; }
+        /// <summary>获取当前效果因果链的实际源头实体。</summary>
+        public Entity Source { get; }
 
         /// <summary>获取当前已经存在的时间。</summary>
         public float ElapsedTime { get; private set; }
@@ -85,56 +109,57 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取实例是否仍在容器中生效。</summary>
         public bool IsActive { get; private set; } = true;
 
-        /// <summary>获取最近一次应用或叠层该实例的信号。</summary>
+        /// <summary>获取最近一次成功应用、叠层或刷新该实例的信号。</summary>
         public EffectSignal LastSignal { get; private set; }
 
         /// <summary>
         /// 创建一个新的持续效果实例。
         /// </summary>
-        internal EffectInstance(long instanceId, EffectDefinition definition, Entity source, Entity owner, Entity caster, EffectSignal signal)
+        internal EffectInstance(long instanceId, EffectDefinition definition, Entity caster, Entity owner, Entity source, EffectSignal signal)
         {
             InstanceId = instanceId;
             Definition = definition;
-            Source = source;
-            Owner = owner;
             Caster = caster;
+            Owner = owner;
+            Source = source;
             LastSignal = signal;
         }
 
         /// <summary>
-        /// 判断当前实例是否与指定定义和来源关系属于同一个堆叠组。
+        /// 判断当前实例是否与指定定义、直接释放者和实际源头关系属于同一个堆叠组。
         /// </summary>
-        internal bool Matches(EffectDefinition definition, Entity source, Entity caster)
+        internal bool Matches(EffectDefinition definition, Entity caster, Entity source)
         {
             if (!IsActive || definition == null || Definition.EffectId != definition.EffectId) return false;
             switch (definition.StackKeyPolicy)
             {
                 case EffectStackKeyPolicy.Definition: return true;
-                case EffectStackKeyPolicy.DefinitionAndCaster: return ReferenceEquals(Caster, caster);
                 case EffectStackKeyPolicy.DefinitionAndSource: return ReferenceEquals(Source, source);
+                case EffectStackKeyPolicy.DefinitionAndCaster: return ReferenceEquals(Caster, caster);
                 default: return false;
             }
         }
 
         /// <summary>
-        /// 根据定义的堆叠策略更新层数和持续时间，并返回实例状态是否发生变化。
+        /// 根据定义的重复施加策略分别更新层数和有限持续时间，并保留周期 Tick 的既有进度。
         /// </summary>
-        internal bool ApplyStack(EffectStackPolicy policy, EffectSignal signal)
+        internal EffectReapplyResult Reapply(EffectStackPolicy policy, EffectSignal signal)
         {
-            bool changed = false;
-            LastSignal = signal;
-            if (policy == EffectStackPolicy.RefreshDuration || policy == EffectStackPolicy.AddStackAndRefreshDuration)
+            bool durationRefreshed = Definition.DurationType == EffectDurationType.Duration && (policy == EffectStackPolicy.RefreshDuration || policy == EffectStackPolicy.AddStackAndRefreshDuration);
+            bool stacksChanged = false;
+            if (durationRefreshed)
             {
                 ElapsedTime = 0f;
-                changed = true;
             }
             if (policy == EffectStackPolicy.AddStack || policy == EffectStackPolicy.AddStackAndRefreshDuration)
             {
                 int newStacks = Mathf.Min(Definition.MaxStacks, Stacks + 1);
-                changed |= newStacks != Stacks;
+                stacksChanged = newStacks != Stacks;
                 Stacks = newStacks;
             }
-            return changed;
+            EffectReapplyResult result = new EffectReapplyResult(durationRefreshed, stacksChanged);
+            if (result.HasChanges) LastSignal = signal;
+            return result;
         }
 
         /// <summary>
@@ -271,12 +296,12 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 不经过 Trigger 直接请求一个效果，但仍然使用同一请求队列、堆叠规则和生命周期。
         /// </summary>
-        public void ApplyEffect(EffectDefinition definition, Entity source, Entity target, Entity caster = null)
+        public void ApplyEffect(EffectDefinition definition, Entity caster, Entity target, Entity source = null)
         {
             ThrowIfDisposed();
             if (definition == null) throw new ArgumentNullException(nameof(definition));
-            EffectSignal signal = new EffectSignal(EffectSignalType.Manual, source, target, caster ?? source);
-            RunTransaction(() => EnqueueEffect(definition, source, target, caster ?? source, signal, 0));
+            EffectSignal signal = new EffectSignal(EffectSignalType.Manual, caster, target, source ?? caster);
+            RunTransaction(() => EnqueueEffect(definition, caster, target, source ?? caster, signal, 0));
         }
 
         /// <summary>
@@ -300,7 +325,7 @@ namespace Xuan.Prometheus.Effects
         {
             ThrowIfDisposed();
             if (instance == null || !instance.IsActive) return;
-            EffectSignal signal = new EffectSignal(EffectSignalType.Manual, instance.Source, instance.Owner, instance.Caster, originEffectInstanceId: instance.InstanceId);
+            EffectSignal signal = new EffectSignal(EffectSignalType.Manual, instance.Caster, instance.Owner, instance.Source, originEffectInstanceId: instance.InstanceId);
             RunTransaction(() => RemoveInstance(instance, reason, signal));
         }
 
@@ -353,11 +378,11 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 追加效果请求并赋予稳定序号；该方法不会立即执行效果。
         /// </summary>
-        internal void EnqueueEffect(EffectDefinition definition, Entity source, Entity target, Entity caster, EffectSignal signal, int priorityOffset)
+        internal void EnqueueEffect(EffectDefinition definition, Entity caster, Entity target, Entity source, EffectSignal signal, int priorityOffset)
         {
             if (definition == null || target == null || signal == null) return;
             if (signal.SignalChainId == 0L) signal.AssignTransaction(nextSignalChainId++, 0);
-            requestQueue.Add(new EffectRequest(definition, source, target, caster, signal, definition.Priority + priorityOffset, nextSequence++));
+            requestQueue.Add(new EffectRequest(definition, caster, target, source, signal, definition.Priority + priorityOffset, nextSequence++));
         }
 
         /// <summary>
@@ -367,9 +392,9 @@ namespace Xuan.Prometheus.Effects
         {
             switch (selector)
             {
-                case EffectTargetSelector.Source: return signal.Source;
-                case EffectTargetSelector.Target: return signal.Target;
                 case EffectTargetSelector.Caster: return signal.Caster;
+                case EffectTargetSelector.Target: return signal.Target;
+                case EffectTargetSelector.Source: return signal.Source;
                 default: return null;
             }
         }
@@ -449,11 +474,11 @@ namespace Xuan.Prometheus.Effects
             foreach (EffectTriggerRuntime trigger in snapshot)
             {
                 if (!trigger.CanTrigger(signal)) continue;
-                if (random.NextDouble() > trigger.Definition.Chance) continue;
+                if (random.NextDouble() > trigger.Definition.Probability) continue;
                 Entity target = SelectTarget(signal, trigger.Definition.TargetSelector);
                 if (target == null) continue;
                 trigger.MarkTriggered(signal.SignalChainId);
-                foreach (EffectDefinition definition in trigger.Definition.Effects) EnqueueEffect(definition, signal.Source, target, signal.Caster, signal, trigger.Definition.Priority);
+                foreach (EffectDefinition definition in trigger.Definition.Effects) EnqueueEffect(definition, signal.Caster, target, signal.Source, signal, trigger.Definition.Priority);
                 EmitTrace($"Signal {signal.Type} matched trigger {trigger.Definition.TriggerId} for signal chain {signal.SignalChainId}.");
             }
         }
@@ -465,11 +490,11 @@ namespace Xuan.Prometheus.Effects
         {
             if (request.Definition.DurationType == EffectDurationType.Instant)
             {
-                ExecuteOperations(request.Definition.OnApplyOperations, request.Definition, null, request.Signal, request.Source, request.Target, request.Caster);
+                ExecuteOperations(request.Definition.OnApplyOperations, request.Definition, null, request.Signal, request.Caster, request.Target, request.Source);
                 return;
             }
             EffectContainer container = GetOrCreateContainer(request.Target);
-            EffectInstance existing = request.Definition.StackPolicy == EffectStackPolicy.Independent ? null : container.FindMatching(request.Definition, request.Source, request.Caster);
+            EffectInstance existing = request.Definition.StackPolicy == EffectStackPolicy.Independent ? null : container.FindMatching(request.Definition, request.Caster, request.Source);
             if (existing == null)
             {
                 CreateInstance(container, request);
@@ -485,7 +510,7 @@ namespace Xuan.Prometheus.Effects
                 case EffectStackPolicy.RefreshDuration:
                 case EffectStackPolicy.AddStack:
                 case EffectStackPolicy.AddStackAndRefreshDuration:
-                    ApplyStack(existing, request);
+                    ReapplyExisting(existing, request);
                     return;
                 default: return;
             }
@@ -496,25 +521,35 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private void CreateInstance(EffectContainer container, EffectRequest request)
         {
-            EffectInstance instance = new EffectInstance(nextInstanceId++, request.Definition, request.Source, request.Target, request.Caster, request.Signal);
+            EffectInstance instance = new EffectInstance(nextInstanceId++, request.Definition, request.Caster, request.Target, request.Source, request.Signal);
             container.Add(instance);
             foreach (EffectTriggerDefinition trigger in request.Definition.GrantedTriggers) instance.AddTriggerRegistration(RegisterTrigger(instance.Owner, trigger));
-            ExecuteOperations(request.Definition.OnApplyOperations, request.Definition, instance, request.Signal, request.Source, request.Target, request.Caster);
-            EffectSignal appliedSignal = request.Signal.CreateChild(EffectSignalType.EffectApplied, request.Source, request.Target, request.Caster, 1f, 1f, request.Signal.Tags | request.Definition.Tags, request.Signal.AbilityId, instance.InstanceId, request.Signal.Position);
+            ExecuteOperations(request.Definition.OnApplyOperations, request.Definition, instance, request.Signal, request.Caster, request.Target, request.Source);
+            EffectSignal appliedSignal = request.Signal.CreateChild(EffectSignalType.EffectApplied, request.Caster, request.Target, request.Source, 1f, 1f, request.Signal.Tags | request.Definition.Tags, request.Signal.AbilityId, instance.InstanceId, request.Signal.Position);
             EnqueueSignal(appliedSignal);
             EmitTrace($"Applied effect {request.Definition.EffectId} as instance {instance.InstanceId}.");
         }
 
         /// <summary>
-        /// 更新已有实例的层数或持续时间，并重新执行依赖层数的 OnStack 操作。
+        /// 更新已有实例，并只为实际发生的层数变化和有限时长刷新执行各自的操作与信号。
         /// </summary>
-        private void ApplyStack(EffectInstance instance, EffectRequest request)
+        private void ReapplyExisting(EffectInstance instance, EffectRequest request)
         {
-            if (!instance.ApplyStack(request.Definition.StackPolicy, request.Signal)) return;
-            ExecuteOperations(request.Definition.OnStackOperations, request.Definition, instance, request.Signal, instance.Source, instance.Owner, instance.Caster);
-            EffectSignal stackedSignal = request.Signal.CreateChild(EffectSignalType.EffectStacked, instance.Source, instance.Owner, instance.Caster, instance.Stacks, instance.Stacks, request.Signal.Tags | request.Definition.Tags, request.Signal.AbilityId, instance.InstanceId, request.Signal.Position);
-            EnqueueSignal(stackedSignal);
-            EmitTrace($"Stacked effect {request.Definition.EffectId} to {instance.Stacks} stack(s).");
+            EffectReapplyResult result = instance.Reapply(request.Definition.StackPolicy, request.Signal);
+            if (result.StacksChanged)
+            {
+                ExecuteOperations(request.Definition.OnStackOperations, request.Definition, instance, request.Signal, instance.Caster, instance.Owner, instance.Source);
+                EffectSignal stackedSignal = request.Signal.CreateChild(EffectSignalType.EffectStacked, instance.Caster, instance.Owner, instance.Source, instance.Stacks, instance.Stacks, request.Signal.Tags | request.Definition.Tags, request.Signal.AbilityId, instance.InstanceId, request.Signal.Position);
+                EnqueueSignal(stackedSignal);
+                EmitTrace($"Stacked effect {request.Definition.EffectId} to {instance.Stacks} stack(s).");
+            }
+            if (result.DurationRefreshed)
+            {
+                ExecuteOperations(request.Definition.OnRefreshOperations, request.Definition, instance, request.Signal, instance.Caster, instance.Owner, instance.Source);
+                EffectSignal refreshedSignal = request.Signal.CreateChild(EffectSignalType.EffectRefreshed, instance.Caster, instance.Owner, instance.Source, request.Definition.Duration, request.Definition.Duration, request.Signal.Tags | request.Definition.Tags, request.Signal.AbilityId, instance.InstanceId, request.Signal.Position);
+                EnqueueSignal(refreshedSignal);
+                EmitTrace($"Refreshed effect {request.Definition.EffectId} duration to {request.Definition.Duration} second(s).");
+            }
         }
 
         /// <summary>
@@ -526,15 +561,16 @@ namespace Xuan.Prometheus.Effects
             int tickCount = instance.Advance(deltaTime, MaxTicksPerUpdate, out bool expired);
             for (int i = 0; i < tickCount && instance.IsActive; i++)
             {
-                EffectSignal tickSignal = new EffectSignal(EffectSignalType.PeriodicTick, instance.Source, instance.Owner, instance.Caster, instance.Stacks, instance.Stacks, instance.Definition.Tags | EffectTag.Periodic, originEffectInstanceId: instance.InstanceId);
+                DamageAttribute inheritedDamageAttribute = instance.LastSignal == null ? DamageAttribute.Physical : instance.LastSignal.DamageAttribute;
+                EffectSignal tickSignal = new EffectSignal(EffectSignalType.PeriodicTick, instance.Caster, instance.Owner, instance.Source, instance.Stacks, instance.Stacks, instance.Definition.Tags | EffectTag.Periodic, originEffectInstanceId: instance.InstanceId, damageAttribute: inheritedDamageAttribute, damageActionType: DamageActionType.Periodic);
                 RunTransaction(() =>
                 {
                     EnqueueSignal(tickSignal);
-                    ExecuteOperations(instance.Definition.OnTickOperations, instance.Definition, instance, tickSignal, instance.Source, instance.Owner, instance.Caster);
+                    ExecuteOperations(instance.Definition.OnTickOperations, instance.Definition, instance, tickSignal, instance.Caster, instance.Owner, instance.Source);
                 });
             }
             if (!expired || !instance.IsActive) return;
-            EffectSignal expirationSignal = new EffectSignal(EffectSignalType.Manual, instance.Source, instance.Owner, instance.Caster, originEffectInstanceId: instance.InstanceId);
+            EffectSignal expirationSignal = new EffectSignal(EffectSignalType.Manual, instance.Caster, instance.Owner, instance.Source, originEffectInstanceId: instance.InstanceId);
             RunTransaction(() => RemoveInstance(instance, EffectRemovalReason.Expired, expirationSignal));
         }
 
@@ -545,9 +581,9 @@ namespace Xuan.Prometheus.Effects
         {
             if (instance == null || !instance.IsActive) return;
             if (containers.TryGetValue(instance.Owner, out EffectContainer container)) container.Remove(instance);
-            ExecuteOperations(instance.Definition.OnRemoveOperations, instance.Definition, instance, signal, instance.Source, instance.Owner, instance.Caster);
+            ExecuteOperations(instance.Definition.OnRemoveOperations, instance.Definition, instance, signal, instance.Caster, instance.Owner, instance.Source);
             instance.Deactivate();
-            EffectSignal removedSignal = signal.CreateChild(EffectSignalType.EffectRemoved, instance.Source, instance.Owner, instance.Caster, (float)reason, (float)reason, instance.Definition.Tags, signal.AbilityId, instance.InstanceId, signal.Position);
+            EffectSignal removedSignal = signal.CreateChild(EffectSignalType.EffectRemoved, instance.Caster, instance.Owner, instance.Source, (float)reason, (float)reason, instance.Definition.Tags, signal.AbilityId, instance.InstanceId, signal.Position);
             EnqueueSignal(removedSignal);
             if (container != null && container.Instances.Count == 0) containers.Remove(instance.Owner);
             EmitTrace($"Removed effect {instance.Definition.EffectId} instance {instance.InstanceId} because {reason}.");
@@ -556,9 +592,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 依次执行定义中的操作，操作产生的新信号和请求只会追加到当前事务队列。
         /// </summary>
-        private void ExecuteOperations(IReadOnlyList<EffectOperation> operations, EffectDefinition definition, EffectInstance instance, EffectSignal signal, Entity source, Entity target, Entity caster)
+        private void ExecuteOperations(IReadOnlyList<EffectOperation> operations, EffectDefinition definition, EffectInstance instance, EffectSignal signal, Entity caster, Entity target, Entity source)
         {
-            EffectOperationContext context = new EffectOperationContext(this, definition, instance, signal, source, target, caster);
+            EffectOperationContext context = new EffectOperationContext(this, definition, instance, signal, caster, target, source);
             for (int i = 0; i < operations.Count; i++) operations[i]?.Execute(context);
         }
 
@@ -652,9 +688,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 按定义堆叠策略查找可合并实例。
         /// </summary>
-        public EffectInstance FindMatching(EffectDefinition definition, Entity source, Entity caster)
+        public EffectInstance FindMatching(EffectDefinition definition, Entity caster, Entity source)
         {
-            return instances.Find(instance => instance.Matches(definition, source, caster));
+            return instances.Find(instance => instance.Matches(definition, caster, source));
         }
 
         /// <summary>
@@ -736,9 +772,9 @@ namespace Xuan.Prometheus.Effects
         {
             switch (Definition.ListenScope)
             {
-                case EffectListenScope.Source: return ReferenceEquals(Owner, signal.Source);
-                case EffectListenScope.Target: return ReferenceEquals(Owner, signal.Target);
                 case EffectListenScope.Caster: return ReferenceEquals(Owner, signal.Caster);
+                case EffectListenScope.Target: return ReferenceEquals(Owner, signal.Target);
+                case EffectListenScope.Source: return ReferenceEquals(Owner, signal.Source);
                 case EffectListenScope.Any: return true;
                 default: return false;
             }

@@ -42,6 +42,14 @@ AnimationPlayback playback = spineComponent.TryPlay(AnimationSemantic.Idle, Anim
 
 受击配置允许只设置 `attackedLine`，也允许同时设置 `nextAttackedLine`。存在恢复段时，`AttackedExecutor` 会自动播放 `Hit -> HitRecovery` 序列，不需要额外布尔开关；连续受击会重启整个序列，但只在最后一个恢复段完成后发布一次受击结束事件。
 
+## 玩家战斗动作
+
+- `NormalAttackLogic`、`SpecialAttackLogic`、`SkillLogic` 和 `UltimateLogic` 分别消费自己的输入并持有独立 `AnimationOwner`；`PlayerCombatActionLogic` 只复用动画事件、命中发布和控制锁的公共机制。
+- `TalentLogic` 不再处理任何具体动作，只初始化战斗心流被动并保留跨动作天赋组合入口。
+- 四个玩家能力组件引用同一个角色 `TalentConfig`。其中集中保存普通攻击连段间隔及逐段倍率、偏移、标签，特殊攻击蓄力时间，以及特殊攻击、技能和大招的倍率、偏移、动画速度。
+- `AttackComponent.attackHits` 与 `AnimationLibrary.atkExecutor.attacks` 按下标一一对应，组件的每段 Inspector 配置只保留 `ColliderProxy` 和 `abilityId`；数值由 `TalentConfig.normalAttack.stages` 的同一下标提供，命中伤害按 `Max(0, GetCalculatedDamage × damageMultiplier + damageOffset)` 生成。
+- `ColliderProxy` 会把自身连同目标 Collider 一起传给处理器；Logic 只接受当前动画段的活动碰撞体，避免上一段迟到的物理回调被下一段命中信息接收。
+
 ## 敌人空中运动
 
 敌人和角色共享 `MotionComponent` 与 `MotionLogic`。AI Logic 只写入水平速度，`EnemyAirMoveLogic` 根据 `PropertyComponent.Gravity` 更新竖直速度，`MotionLogic` 在 `AfterGameplay` 阶段把两者合成为一次 `CharacterController.Move`。受击、眩晕和死亡可以停止 AI 水平移动，但不会暂停重力。

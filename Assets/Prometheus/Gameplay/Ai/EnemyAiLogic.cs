@@ -59,9 +59,9 @@ namespace Xuan.Prometheus.Ai
             if (aiComponent.CharacterController == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not contain a CharacterController for Enemy AI movement.");
             if (motionComponent.cc == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' MotionComponent does not reference a CharacterController.");
             if (!ReferenceEquals(motionComponent.cc, aiComponent.CharacterController)) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' must use the same CharacterController in MotionComponent and EnemyAiComponent.");
-            if (attackComponent.atkCollider == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not contain an attack ColliderProxy.");
-            attackComponent.atkCollider.handler = this;
-            if (attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = false;
+            if (attackComponent.PrimaryHitbox == null) throw new InvalidOperationException($"Enemy '{Entity.bindGo.name}' does not contain an attack ColliderProxy.");
+            attackComponent.PrimaryHitbox.handler = this;
+            if (attackComponent.PrimaryHitbox.cod != null) attackComponent.PrimaryHitbox.cod.enabled = false;
             eventComponent.AddListener<DieEvent>(OnDie);
             brain = new EnemyAiBrain(aiComponent.Definition, this, Entity.bindGo.GetInstanceID());
         }
@@ -106,7 +106,7 @@ namespace Xuan.Prometheus.Ai
                 eventComponent.RemoveListener<DieEvent>(OnDie);
             }
 
-            if (attackComponent != null && attackComponent.atkCollider != null && ReferenceEquals(attackComponent.atkCollider.handler, this)) attackComponent.atkCollider.handler = null;
+            if (attackComponent != null && attackComponent.PrimaryHitbox != null && ReferenceEquals(attackComponent.PrimaryHitbox.handler, this)) attackComponent.PrimaryHitbox.handler = null;
             brain?.Dispose();
             brain = null;
             brainRunning = false;
@@ -215,15 +215,16 @@ namespace Xuan.Prometheus.Ai
         /// <summary>
         /// 将攻击碰撞命中转换为 EffectSignal，并确保一次攻击不会重复命中同一 PropertyComponent。
         /// </summary>
-        public void OnTriggerEnter(Collider other)
+        public void OnTriggerEnter(ColliderProxy source, Collider other)
         {
-            if (!Entity.IsActive || dead || attackPlayback == null || other == null) return;
+            if (!Entity.IsActive || dead || attackPlayback == null || source == null || other == null || !ReferenceEquals(source, attackComponent.PrimaryHitbox)) return;
             PropertyComponent targetProperty = other.GetComponentInParent<PropertyComponent>();
             if (!IsPropertyTargetValid(targetProperty, aiComponent.Definition.TargetTag)) return;
             int targetId = targetProperty.GetInstanceID();
             if (!hitTargets.Add(targetId)) return;
             float requestedDamage = propertyComponent.Atk;
-            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack, aiComponent.Definition.AttackSignalId, position: other.transform.position);
+            DamageAttribute damageAttribute = propertyComponent.ResolveDamageAttribute(DamageActionType.NormalAttack);
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack, aiComponent.Definition.AttackSignalId, position: other.transform.position, damageAttribute: damageAttribute, damageActionType: DamageActionType.NormalAttack);
             effectComponent.Runtime.Publish(signal);
         }
 
@@ -254,7 +255,7 @@ namespace Xuan.Prometheus.Ai
             if (!ReferenceEquals(source, attackPlayback)) return;
             if (animationEvent.Data.Name == spineComponent.animationLib.hitStart)
             {
-                if (attackComponent.atkCollider != null && attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = true;
+                if (attackComponent.PrimaryHitbox != null && attackComponent.PrimaryHitbox.cod != null) attackComponent.PrimaryHitbox.cod.enabled = true;
                 if (spineComponent.animationLib.atkExecutor.TryGetSelection(0, false, out AttackAnimationSelection selection))
                 {
                     if (selection.HasVfx) vfxComponent.Play(selection.Vfx);
@@ -284,7 +285,7 @@ namespace Xuan.Prometheus.Ai
         /// <summary>关闭攻击碰撞体，兼容 ColliderProxy 尚未执行 Awake 的构造阶段。</summary>
         private void DisableAttackCollider()
         {
-            if (attackComponent != null && attackComponent.atkCollider != null && attackComponent.atkCollider.cod != null) attackComponent.atkCollider.cod.enabled = false;
+            if (attackComponent != null && attackComponent.PrimaryHitbox != null && attackComponent.PrimaryHitbox.cod != null) attackComponent.PrimaryHitbox.cod.enabled = false;
         }
 
         /// <summary>仅清除 AI 管理的水平速度，保留 EnemyAirMoveLogic 持有的竖直重力速度。</summary>

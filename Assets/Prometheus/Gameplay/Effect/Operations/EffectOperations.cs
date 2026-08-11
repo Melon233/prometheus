@@ -36,14 +36,14 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取驱动本次操作的信号。</summary>
         public EffectSignal Signal { get; }
 
-        /// <summary>获取效果来源实体。</summary>
-        public Xuan.Prometheus.Logic.Entity Source { get; }
+        /// <summary>获取直接释放当前效果的实体。</summary>
+        public Xuan.Prometheus.Logic.Entity Caster { get; }
 
         /// <summary>获取效果目标实体。</summary>
         public Xuan.Prometheus.Logic.Entity Target { get; }
 
-        /// <summary>获取效果原始施法者。</summary>
-        public Xuan.Prometheus.Logic.Entity Caster { get; }
+        /// <summary>获取当前效果因果链的实际源头实体。</summary>
+        public Xuan.Prometheus.Logic.Entity Source { get; }
 
         /// <summary>获取当前层数；即时效果固定为一层。</summary>
         public int Stacks => Instance == null ? 1 : Instance.Stacks;
@@ -51,20 +51,33 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建完整操作上下文。
         /// </summary>
-        internal EffectOperationContext(EffectRuntime runtime, EffectDefinition definition, EffectInstance instance, EffectSignal signal, Xuan.Prometheus.Logic.Entity source, Xuan.Prometheus.Logic.Entity target, Xuan.Prometheus.Logic.Entity caster)
+        internal EffectOperationContext(EffectRuntime runtime, EffectDefinition definition, EffectInstance instance, EffectSignal signal, Xuan.Prometheus.Logic.Entity caster, Xuan.Prometheus.Logic.Entity target, Xuan.Prometheus.Logic.Entity source)
         {
             Runtime = runtime;
             Definition = definition;
             Instance = instance;
             Signal = signal;
-            Source = source;
-            Target = target;
             Caster = caster;
+            Target = target;
+            Source = source;
         }
     }
 
     /// <summary>
-    /// DamageOperation 计算请求伤害、修改目标生命值、发布 DamageApplied，并在打断能力严格超过韧性时发布受击事实。
+    /// 指定 DamageOperation 从信号、直接释放者角色元素或固定配置读取最终伤害属性。
+    /// </summary>
+    public enum DamageAttributeSource
+    {
+        /// <summary>继承当前 EffectSignal 已经解析的伤害属性。</summary>
+        InheritSignal = 0,
+        /// <summary>按当前动作类别读取直接释放者经过 Effect 覆盖后的角色出伤属性。</summary>
+        CasterElement = 1,
+        /// <summary>使用 DamageOperation 自己配置的固定伤害属性。</summary>
+        Fixed = 2
+    }
+
+    /// <summary>
+    /// DamageOperation 计算请求伤害、结算属性克制、修改目标生命值、发布 DamageApplied，并在打断能力严格超过韧性时发布受击事实。
     /// </summary>
     [Serializable]
     public sealed class DamageOperation : EffectOperation
@@ -73,6 +86,10 @@ namespace Xuan.Prometheus.Effects
         /// <summary>配置本次伤害用于对比目标韧性的打断能力；零表示只扣血而不打断。</summary>
         [SerializeField] private EffectValueFormula interruptPower = new EffectValueFormula();
         [SerializeField] private EffectTag additionalTags = EffectTag.Attack;
+        /// <summary>配置当前操作解析唯一伤害属性时使用的数据来源。</summary>
+        [SerializeField] private DamageAttributeSource damageAttributeSource = DamageAttributeSource.InheritSignal;
+        /// <summary>仅在 Fixed 来源下使用的固定伤害属性。</summary>
+        [SerializeField] private DamageAttribute fixedDamageAttribute = DamageAttribute.Physical;
 
         /// <summary>
         /// 创建默认伤害操作，供 Unity 序列化器使用。
@@ -84,11 +101,13 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建使用指定伤害公式、标签和打断能力公式的伤害操作。
         /// </summary>
-        public DamageOperation(EffectValueFormula damageAmount, EffectTag tags, EffectValueFormula damageInterruptPower = null)
+        public DamageOperation(EffectValueFormula damageAmount, EffectTag tags, EffectValueFormula damageInterruptPower = null, DamageAttributeSource attributeSource = DamageAttributeSource.InheritSignal, DamageAttribute fixedAttribute = DamageAttribute.Physical)
         {
             amount = damageAmount ?? EffectValueFormula.Constant(0f);
             additionalTags = tags;
             interruptPower = damageInterruptPower ?? EffectValueFormula.Constant(0f);
+            damageAttributeSource = attributeSource;
+            fixedDamageAttribute = fixedAttribute;
         }
 
         /// <summary>
@@ -100,14 +119,29 @@ namespace Xuan.Prometheus.Effects
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
             float requestedDamage = Mathf.Max(0f, amount.Evaluate(context));
             float resolvedInterruptPower = Mathf.Max(0f, interruptPower.Evaluate(context));
+            DamageAttribute resolvedDamageAttribute = ResolveDamageAttribute(context);
+            DamageAttributeRelation damageAttributeRelation = DamageAttributeRules.GetRelation(resolvedDamageAttribute, property.ElementAttribute);
+            float damageAttributeMultiplier = damageAttributeRelation == DamageAttributeRelation.Advantage ? DamageAttributeRules.AdvantageMultiplier : 1f;
+            float attributedDamage = requestedDamage * damageAttributeMultiplier;
             float oldHp = property.Hp;
-            float actualDamage = property.OnTakeDamage(requestedDamage, out bool wasFatal);
+            float actualDamage = property.OnTakeDamage(attributedDamage, out bool wasFatal);
             PublishHealthEvents(context, property, oldHp, actualDamage, wasFatal);
             PublishStaggeredEvent(context, property, actualDamage, resolvedInterruptPower, wasFatal);
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
-            EffectSignal damageSignal = context.Signal.CreateChild(EffectSignalType.DamageApplied, context.Source, context.Target, context.Caster, requestedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, wasFatal);
+            EffectSignal damageSignal = context.Signal.CreateChild(EffectSignalType.DamageApplied, context.Caster, context.Target, context.Source, attributedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, wasFatal, resolvedDamageAttribute, context.Signal.DamageActionType, damageAttributeRelation, damageAttributeMultiplier);
             context.Runtime.EnqueueSignal(damageSignal);
-            if (wasFatal) context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Killed, context.Source, context.Target, context.Caster, requestedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, true));
+            if (wasFatal) context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Killed, context.Caster, context.Target, context.Source, attributedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, true, resolvedDamageAttribute, context.Signal.DamageActionType, damageAttributeRelation, damageAttributeMultiplier));
+        }
+
+        /// <summary>
+        /// 根据配置策略解析本次唯一伤害属性；缺少释放者属性组件时安全回退为物理。
+        /// </summary>
+        private DamageAttribute ResolveDamageAttribute(EffectOperationContext context)
+        {
+            if (damageAttributeSource == DamageAttributeSource.Fixed) return fixedDamageAttribute;
+            if (damageAttributeSource != DamageAttributeSource.CasterElement) return context.Signal.DamageAttribute;
+            if (context.Caster == null || !context.Caster.TryGetComp(out PropertyComponent casterProperty)) return DamageAttribute.Physical;
+            return casterProperty.ResolveDamageAttribute(context.Signal.DamageActionType);
         }
 
         /// <summary>
@@ -168,7 +202,7 @@ namespace Xuan.Prometheus.Effects
             float actualHeal = property.OnRecoverHp(requestedHeal);
             PublishHpChangedEvent(context, property, oldHp);
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
-            context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Healed, context.Source, context.Target, context.Caster, requestedHeal, actualHeal, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
+            context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Healed, context.Caster, context.Target, context.Source, requestedHeal, actualHeal, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
         }
 
         /// <summary>
@@ -315,6 +349,49 @@ namespace Xuan.Prometheus.Effects
     }
 
     /// <summary>
+    /// DamageAttributeModifierOperation 为持续 Effect 登记指定动作范围的出伤属性覆盖，并由实例资源生命周期自动回滚。
+    /// </summary>
+    [Serializable]
+    public sealed class DamageAttributeModifierOperation : EffectOperation
+    {
+        /// <summary>配置 Effect 生效期间覆盖后的出伤属性。</summary>
+        [SerializeField] private DamageAttribute damageAttribute = DamageAttribute.Physical;
+        /// <summary>配置当前覆盖能够影响的伤害动作范围。</summary>
+        [SerializeField] private DamageActionMask actionMask = DamageActionMask.All;
+        /// <summary>配置覆盖优先级；数值越大越优先。</summary>
+        [SerializeField] private int priority;
+
+        /// <summary>创建默认的全动作物理属性覆盖，供 Unity 序列化器使用。</summary>
+        public DamageAttributeModifierOperation()
+        {
+        }
+
+        /// <summary>创建使用指定伤害属性、动作范围和覆盖优先级的操作。</summary>
+        public DamageAttributeModifierOperation(DamageAttribute attribute, DamageActionMask mask, int modifierPriority = 0)
+        {
+            damageAttribute = attribute;
+            actionMask = mask;
+            priority = modifierPriority;
+        }
+
+        /// <summary>
+        /// 为持续效果目标登记属性覆盖；即时效果没有实例资源生命周期，因此不会留下永久覆盖。
+        /// </summary>
+        public override void Execute(EffectOperationContext context)
+        {
+            if (context.Instance == null || context.Target == null || actionMask == DamageActionMask.None) return;
+            if (!context.Target.TryGetComp(out PropertyComponent property)) return;
+            context.Instance.SetResource(BuildResourceKey(actionMask), new EffectDamageAttributeModifierHandle(property, damageAttribute, actionMask, priority));
+        }
+
+        /// <summary>按动作范围生成同一 EffectInstance 内稳定的覆盖资源键。</summary>
+        public static string BuildResourceKey(DamageActionMask mask)
+        {
+            return $"DamageAttributeModifier:{mask}";
+        }
+    }
+
+    /// <summary>
     /// ApplyEffectOperation 允许一个效果按配置请求另一个效果，同时仍然经过统一队列和递归保护。
     /// </summary>
     [Serializable]
@@ -348,7 +425,7 @@ namespace Xuan.Prometheus.Effects
         {
             if (effect == null) return;
             Xuan.Prometheus.Logic.Entity target = EffectRuntime.SelectTarget(context.Signal, targetSelector);
-            context.Runtime.EnqueueEffect(effect, context.Source, target, context.Caster, context.Signal, priorityOffset);
+            context.Runtime.EnqueueEffect(effect, context.Caster, target, context.Source, context.Signal, priorityOffset);
         }
     }
 
@@ -386,7 +463,7 @@ namespace Xuan.Prometheus.Effects
         {
             float resolvedValue = value.Evaluate(context);
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
-            context.Runtime.EnqueueSignal(context.Signal.CreateChild(signalType, context.Source, context.Target, context.Caster, resolvedValue, resolvedValue, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
+            context.Runtime.EnqueueSignal(context.Signal.CreateChild(signalType, context.Caster, context.Target, context.Source, resolvedValue, resolvedValue, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
         }
     }
 
@@ -434,6 +511,32 @@ namespace Xuan.Prometheus.Effects
     }
 
     /// <summary>
+    /// EffectDamageAttributeModifierHandle 精确拥有一份出伤属性覆盖，并保证 Effect 移除时只撤销自身贡献。
+    /// </summary>
+    internal sealed class EffectDamageAttributeModifierHandle : IDisposable
+    {
+        private readonly PropertyComponent property;
+        private readonly DamageAttributeModifier modifier;
+        private bool disposed;
+
+        /// <summary>创建句柄时立即向目标 PropertyComponent 登记出伤属性覆盖。</summary>
+        public EffectDamageAttributeModifierHandle(PropertyComponent targetProperty, DamageAttribute attribute, DamageActionMask actionMask, int priority)
+        {
+            property = targetProperty;
+            modifier = property == null ? null : property.AddDamageAttributeModifier(attribute, actionMask, priority);
+        }
+
+        /// <summary>首次释放时按对象身份移除当前 Effect 持有的属性覆盖。</summary>
+        public void Dispose()
+        {
+            if (disposed) return;
+            disposed = true;
+            if (property == null || modifier == null) return;
+            property.RemoveDamageAttributeModifier(modifier);
+        }
+    }
+
+    /// <summary>
     /// EffectControlStateModifierHandle 精确记录单个效果实例贡献的控制状态，并保证释放操作幂等。
     /// </summary>
     internal sealed class EffectControlStateModifierHandle : IDisposable
@@ -462,44 +565,41 @@ namespace Xuan.Prometheus.Effects
     public sealed class CoreEnergyGainOperation : EffectOperation
     {
         [SerializeField] private EffectValueFormula amount = new EffectValueFormula();
-        [SerializeField] private EffectTag additionalTags = EffectTag.CoreEnergyGain;
 
         /// <summary>
-        /// 创建默认治疗操作，供 Unity 序列化器使用。
+        /// 创建默认核心能量增加操作，供 Unity 序列化器使用。
         /// </summary>
         public CoreEnergyGainOperation()
         {
         }
 
         /// <summary>
-        /// 创建使用指定数值公式和标签的治疗操作。
+        /// 创建使用指定数值公式和标签的核心能量增加操作。
         /// </summary>
-        public CoreEnergyGainOperation(EffectValueFormula gainAmount, EffectTag tags)
+        public CoreEnergyGainOperation(EffectValueFormula gainAmount)
         {
             amount = gainAmount ?? EffectValueFormula.Constant(0f);
-            additionalTags = tags;
         }
 
         /// <summary>
-        /// 对目标结算治疗，并将实际生命变化作为后续触发依据。
+        /// 对目标结算核心能量增加，并仅在当前玩家的能量实际变化时通知全局 HUD。
         /// </summary>
         public override void Execute(EffectOperationContext context)
         {
             if (context.Target == null) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
             float requestedGain = Mathf.Max(0f, amount.Evaluate(context));
-            float old = property.CoreEnergy;
-            property.OnGainCoreEnergy(requestedGain);
-            PublishCoreEnergyChangedEvent(context, property, old);
-            // EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
-            // context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Healed, context.Source, context.Target, context.Caster, requestedGain, actualHeal, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position));
+            float oldEnergy = property.CoreEnergy;
+            float actualGain = property.OnGainCoreEnergy(requestedGain);
+            PublishCoreEnergyChangedEvent(context, property, oldEnergy, actualGain);
         }
 
         /// <summary>
-        /// 同步发送治疗产生的生命变化事实事件，不重复承担飘字表现职责。
+        /// 仅为当前玩家向已经初始化的全局事件总线发送核心能量变化事实，普通实体和独立测试运行时不依赖 HUD 基础设施。
         /// </summary>
-        private static void PublishCoreEnergyChangedEvent(EffectOperationContext context, PropertyComponent property, float oldEnergy)
+        private static void PublishCoreEnergyChangedEvent(EffectOperationContext context, PropertyComponent property, float oldEnergy, float actualGain)
         {
+            if (actualGain <= 0f || !(context.Target is PlayerEntity) || Core.Event == null) return;
             Core.Event.Invoke(Event.SelfCoreEnergyChanged, new SelfCoreEnergyChangedEvent(oldEnergy, property.CoreEnergy, property.CoreEnergyLimit));
         }
 

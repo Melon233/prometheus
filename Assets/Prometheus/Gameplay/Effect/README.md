@@ -35,12 +35,19 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 ## 示例规则
 
-- `DirectAttackDamage.asset`：即时效果，按来源实体当前攻击力造成伤害。
-- `Burning.asset`：持续十秒，每秒造成十点火焰 DOT，同一施法者重复添加时刷新时间。
+- `DirectAttackDamage.asset`：即时效果，按直接释放者 Caster 的当前攻击力造成伤害。
+- `Burning.asset`：持续十秒，每秒造成十点火焰 DOT，同一实际源头 Source 重复添加时刷新时间。
 - `CombatFlow.asset`：持续三秒，最多五层，每层增加 10% 攻击力和 5% 攻速，叠层时刷新时间。
 - `Stun.asset`：持续三秒，通过 `ControlStateModifierOperation` 施加眩晕，实例移除时自动回滚自身句柄。
-- `AttackTriggers.asset`：攻击命中产生直接伤害，带 `Fire` 标签时额外施加燃烧，带 `Control` 标签时额外施加眩晕。
+- `AttackTriggers.asset`：攻击命中产生直接伤害，最终 `DamageApplied` 为火属性时额外施加燃烧，带 `Control` 标签时额外施加眩晕。
 - `CombatFlowTriggers.asset`：实际攻击伤害大于零时叠加战意，并通过 `LacksAnyTags(Dot)` 排除 DOT。
+
+## 伤害属性
+
+- `DamageAttribute` 固定包含火、水、雷、冰、草、光、暗、物理八种属性，角色基础元素配置在 `PropertyConfig.elementAttribute`。
+- 普通攻击和特殊攻击默认使用物理属性，技能和大招默认使用角色元素属性；持续 `DamageAttributeModifierOperation` 可以按动作范围和优先级覆盖结果，并在 Effect 移除时自动回滚。
+- 火克冰、冰克草、草克雷、雷克水、水克火，光暗互克，物理中立；仅克制方在独立乘区获得 1.3 倍伤害，不存在被克减伤。
+- `DamageOperation` 可以继承命中信号属性、读取 Caster 当前动作属性或使用固定属性；最终属性、动作类型、克制关系和属性倍率会写入 `DamageApplied` 与 `Killed` 信号。
 
 ## 运行约束
 
@@ -50,6 +57,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 - 持续属性修改必须使用实例资源句柄，实例移除时由运行时统一回滚。
 - 持续控制必须使用 `ControlStateModifierOperation`；不要再用成对的 Start/End Event 手动阻塞 Logic。
 - 子信号必须保留 SignalChainId 并增加 ChainDepth，以便 OncePerSignalChain 和递归上限生效。
+- `Caster` 始终表示直接释放当前行为的实体，`Source` 始终表示整条因果链的实际源头实体。
 - 表现层应监听结果信号播放 VFX、音效和飘字，不应反向修改效果运行时。
 
 ## 控制状态
@@ -69,6 +77,8 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 在 Unity 菜单执行 `Tools/Prometheus/Effect System/Create Or Update Example Assets`。该测试工具会在 `Assets/BundleResources/Config/Effect` 中更新已有有效资产；只有检测到旧资产脚本绑定无效时才会重建该资产。
 
-选中任意 `EffectDefinition` 资产后，可以在自定义 Inspector 的四个生命周期列表中点击 `Add Operation`，直接添加伤害、属性修改、控制状态修改、二次效果或发信号操作。
+选中任意 `EffectDefinition` 资产后，可以在自定义 Inspector 当前有效的生命周期列表中点击 `Add Operation`，直接添加伤害、属性修改、控制状态修改、二次效果或发信号操作。Instant 只显示 On Apply；Duration 才显示 Duration；持续效果按 Tick Interval 和 Stack Policy 继续显示实际会执行的配置。On Stack 只在 AddStack 类策略且 Max Stacks 大于一时显示；On Refresh 只在有限 Duration 使用 RefreshDuration 类策略时显示。
 
-新增 `Property Modifier` 时会自动展开 `valuePerStack`，其默认公式为 `Constant × 0 + 0`。`Key Policy` 默认使用 `Automatic`，按 `PropertyType + PropertyModifierMode` 生成实例资源键；只有同一效果需要多条相同属性和相同模式的独立 Modifier 时才选择 `Custom`。在任意 `PropertyModifierOperation` 配置框内点击鼠标右键，可以复制完整配置并粘贴到其他 Property Modifier。
+重复施加持续效果时，层数变化与时长刷新分别产生 `EffectStacked` 和 `EffectRefreshed`。`RefreshDuration` 不执行 On Stack；`AddStackAndRefreshDuration` 未满层时同时执行 On Stack 与 On Refresh，满层后只执行 On Refresh；刷新 `ElapsedTime` 时保留 `TickElapsedTime`，避免改变周期效果的既有结算节奏。
+
+Effect Id 和 Trigger Id 都提供 `Automatic` 与 `Custom` 两种模式；Automatic 分别使用资产名和 Signal Type，减少手写标识符错误。新增 `Property Modifier` 时会自动展开 `valuePerStack`，其默认公式为 `One × 0 + 0`。`Key Policy` 默认使用 `Automatic`，按 `PropertyType + PropertyModifierMode` 生成实例资源键；只有同一效果需要多条相同属性和相同模式的独立 Modifier 时才选择 `Custom`。在任意 `PropertyModifierOperation` 配置框内点击鼠标右键，可以复制完整配置并粘贴到其他 Property Modifier。

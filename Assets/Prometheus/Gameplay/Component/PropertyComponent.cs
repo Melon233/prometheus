@@ -55,7 +55,11 @@ namespace Xuan.Prometheus.Component
         CoreEnergyLimit,
         UltEnergyLimit,
         /// <summary>标识抵抗伤害打断的韧性属性；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
-        Toughness
+        Toughness,
+        /// <summary>标识出伤阶段按 (1 + x) 独立乘算的伤害加成系数；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
+        DamageBoost,
+        /// <summary>标识受伤阶段按 (1 + x) 独立乘算的受伤加成系数；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
+        DamageTakenBoost
     }
 
     /// <summary>
@@ -191,6 +195,16 @@ namespace Xuan.Prometheus.Component
         private readonly HashSet<ControlStateModifier> controlStateModifiers = new HashSet<ControlStateModifier>();
 
         /// <summary>
+        /// 保存 Effect 添加的全部出伤属性覆盖；解析时按优先级和加入顺序确定唯一结果。
+        /// </summary>
+        private readonly HashSet<DamageAttributeModifier> damageAttributeModifiers = new HashSet<DamageAttributeModifier>();
+
+        /// <summary>
+        /// 为伤害属性覆盖分配单调递增序号，使同优先级后应用者稳定胜出。
+        /// </summary>
+        private long nextDamageAttributeModifierSequence;
+
+        /// <summary>
         /// 保存攻击力的基础值、Boost、Offset 和最终值。
         /// </summary>
         private readonly ModifiableProperty atk = new ModifiableProperty();
@@ -204,6 +218,16 @@ namespace Xuan.Prometheus.Component
         /// 保存韧性的基础值、Boost、Offset 和最终值。
         /// </summary>
         private readonly ModifiableProperty toughness = new ModifiableProperty();
+
+        /// <summary>
+        /// 保存出伤阶段独立乘区的加成系数 x，最终伤害按 (1 + x) 乘算。
+        /// </summary>
+        private readonly ModifiableProperty damageBoost = new ModifiableProperty();
+
+        /// <summary>
+        /// 保存受伤阶段独立乘区的加成系数 x，承受伤害按 (1 + x) 乘算。
+        /// </summary>
+        private readonly ModifiableProperty damageTakenBoost = new ModifiableProperty();
 
         /// <summary>
         /// 保存当前移动模式速度的基础值、Boost、Offset 和最终值。
@@ -271,6 +295,16 @@ namespace Xuan.Prometheus.Component
         public float Toughness => toughness.Value;
 
         /// <summary>
+        /// 获取已经应用 Boost 和 Offset 的出伤独立乘区加成系数 x。
+        /// </summary>
+        public float DamageBonus => damageBoost.Value;
+
+        /// <summary>
+        /// 获取已经应用 Boost 和 Offset 的受伤独立乘区加成系数 x。
+        /// </summary>
+        public float DamageTakenBonus => damageTakenBoost.Value;
+
+        /// <summary>
         /// 获取已经应用 Boost 和 Offset 的当前移动速度。
         /// </summary>
         public float MoveSpeed => moveSpeed.Value;
@@ -319,6 +353,10 @@ namespace Xuan.Prometheus.Component
         /// 获取已经应用 Boost 和 Offset 的终结技能量上限。
         /// </summary>
         public float UltEnergyLimit => ultEnergyLimit.Value;
+
+        /// <summary>获取 PropertyConfig 配置的角色基础元素；缺少配置时安全回退为物理。</summary>
+        public DamageAttribute ElementAttribute => propConfig == null ? DamageAttribute.Physical : propConfig.elementAttribute;
+
         public float CoreEnergy { get; private set; }
         public float UltEnergy { get; private set; }
         /// <summary>
@@ -401,6 +439,42 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
+        /// 添加一份指定动作范围的出伤属性覆盖，并返回只能按对象身份精确移除的句柄。
+        /// </summary>
+        public DamageAttributeModifier AddDamageAttributeModifier(DamageAttribute attribute, DamageActionMask actionMask, int priority)
+        {
+            DamageAttributeModifier modifier = new DamageAttributeModifier(attribute, actionMask, priority, ++nextDamageAttributeModifierSequence);
+            damageAttributeModifiers.Add(modifier);
+            return modifier;
+        }
+
+        /// <summary>
+        /// 按对象身份移除出伤属性覆盖，不影响其他 Effect 提供的同属性或同优先级覆盖。
+        /// </summary>
+        public bool RemoveDamageAttributeModifier(DamageAttributeModifier modifier)
+        {
+            return modifier != null && damageAttributeModifiers.Remove(modifier);
+        }
+
+        /// <summary>
+        /// 先解析动作基础属性，再让匹配动作范围的最高优先级 Effect 覆盖最终出伤属性。
+        /// </summary>
+        public DamageAttribute ResolveDamageAttribute(DamageActionType actionType)
+        {
+            DamageAttribute resolvedAttribute = DamageAttributeRules.GetBaseAttribute(actionType, ElementAttribute);
+            DamageActionMask requiredMask = DamageAttributeRules.GetActionMask(actionType);
+            DamageAttributeModifier selectedModifier = null;
+            foreach (DamageAttributeModifier modifier in damageAttributeModifiers)
+            {
+                if ((modifier.ActionMask & requiredMask) == 0) continue;
+                if (selectedModifier != null && modifier.Priority < selectedModifier.Priority) continue;
+                if (selectedModifier != null && modifier.Priority == selectedModifier.Priority && modifier.Sequence < selectedModifier.Sequence) continue;
+                selectedModifier = modifier;
+            }
+            return selectedModifier == null ? resolvedAttribute : selectedModifier.Attribute;
+        }
+
+        /// <summary>
         /// 添加一份控制状态贡献并返回身份句柄；传入组合标记可以由同一个 Effect 同时施加多种限制。
         /// </summary>
         public ControlStateModifier AddControlStateModifier(ControlState states)
@@ -437,12 +511,12 @@ namespace Xuan.Prometheus.Component
             return OnTakeDamage(damage, out _);
         }
 
-        /// <summary>结算一次非负伤害，显示经过安全修正的预计伤害飘字，并以原子返回值指出本次结算是否首次把目标从存活推进到死亡；返回值仍为受剩余生命值限制的实际扣血量。</summary>
+        /// <summary>将传入伤害按受伤独立乘区 (1 + DamageTakenBonus) 结算一次，显示经过安全修正的预计伤害飘字，并以原子返回值指出本次结算是否首次把目标从存活推进到死亡；返回值仍为受剩余生命值限制的实际扣血量。</summary>
         public float OnTakeDamage(float damage, out bool wasFatal)
         {
             wasFatal = false;
             if (isDead) return 0f;
-            float safeDamage = Mathf.Max(0f, damage);
+            float safeDamage = Mathf.Max(0f, damage * (1f + DamageTakenBonus));
             float oldHp = Hp;
             Hp = Mathf.Max(0f, oldHp - safeDamage);
             float actualDamage = oldHp - Hp;
@@ -474,11 +548,11 @@ namespace Xuan.Prometheus.Component
             return CoreEnergy - oldCoreEnergy;
         }
         /// <summary>
-        /// 基于缓存的 Atk、CritRate 和 CritDmg 生成一次攻击伤害。
+        /// 基于缓存的 Atk、CritRate 和 CritDmg 生成一次攻击伤害，并在暴击结算后按出伤独立乘区 (1 + DamageBonus) 乘算一次。
         /// </summary>
         public float GetCalculatedDamage()
         {
-            return Atk * (1f + (CritRate >= UnityEngine.Random.Range(0f, 1f) ? CritDmg : 0f));
+            return Atk * (1f + (CritRate >= UnityEngine.Random.Range(0f, 1f) ? CritDmg : 0f)) * (1f + DamageBonus);
         }
 
         /// <summary>
@@ -501,6 +575,8 @@ namespace Xuan.Prometheus.Component
                 case PropertyType.CoreEnergyLimit: return coreEnergyLimit;
                 case PropertyType.UltEnergyLimit: return ultEnergyLimit;
                 case PropertyType.Toughness: return toughness;
+                case PropertyType.DamageBoost: return damageBoost;
+                case PropertyType.DamageTakenBoost: return damageTakenBoost;
                 default: throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported property type.");
             }
         }
@@ -526,6 +602,9 @@ namespace Xuan.Prometheus.Component
             atk.SetBaseValue(propConfig == null ? 0f : propConfig.atk);
             def.SetBaseValue(propConfig == null ? 0f : propConfig.def);
             toughness.SetBaseValue(propConfig == null ? 0f : propConfig.toughness);
+            // 伤害加成不属于静态配置，每次刷新都从零基础值开始，仅接受运行时修改。
+            damageBoost.SetBaseValue(0f);
+            damageTakenBoost.SetBaseValue(0f);
             moveSpeed.SetBaseValue(propConfig == null ? 0f : propConfig.runSpeed);
             atkSpeed.SetBaseValue(propConfig == null ? 1f : propConfig.atkSpeed);
             critRate.SetBaseValue(propConfig == null ? 0f : propConfig.critRate);

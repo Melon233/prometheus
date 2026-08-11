@@ -32,6 +32,12 @@
         "com.unity.render-pipelines.universal": "7.1.5"
       }
     },
+    "com.heath.lattice": {
+      "version": "file:com.heath.lattice",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.singularitygroup.hotreload": {
       "version": "file:com.singularitygroup.hotreload",
       "depth": 0,

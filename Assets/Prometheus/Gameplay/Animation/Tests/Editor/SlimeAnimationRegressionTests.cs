@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
@@ -5,7 +6,9 @@ using UnityEngine;
 using Xuan.Prometheus.Ai;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic;
+using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus.Animation.Tests
 {
@@ -13,6 +16,7 @@ namespace Xuan.Prometheus.Animation.Tests
     public sealed class SlimeAnimationRegressionTests
     {
         private const string SlimePrefabPath = "Assets/BundleResources/Enemy/Slime.prefab";
+        private const string YefaPrefabPath = "Assets/BundleResources/Character/Yefa.prefab";
         private const string YefaAnimationLibraryPath = "Assets/BundleResources/Config/Animation/YefaAnimationLibrary.asset";
         private const string SlimeHitRecoveryReferencePath = "Assets/Art/火环spine合集1/Q版小人/敌人/Enemy/slime_dark_l/Models/ReferenceAssets/leg_hitted2idle.asset";
         private AssetKit assetKit;
@@ -126,6 +130,123 @@ namespace Xuan.Prometheus.Animation.Tests
                 AnimationLine line = AssetDatabase.LoadAssetAtPath<AnimationLine>(linePath);
                 Assert.That(line, Is.Not.Null, $"无法加载 AnimationLine：{linePath}");
                 Assert.That(line.Semantic, Is.Not.EqualTo(AnimationSemantic.None), $"AnimationLine 尚未配置语义：{linePath}");
+            }
+        }
+
+        /// <summary>验证 Yefa 每段普通攻击只在组件保存碰撞体与 ID，并从统一 TalentConfig 读取独立倍率和偏移。</summary>
+        [Test]
+        public void YefaNormalAttackStages_UseIndependentHitboxesAndConfigurableDamageFormula()
+        {
+            GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
+            Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
+            AttackComponent attackComponent = yefaPrefab.GetComponent<AttackComponent>();
+            SpineComponent yefaSpine = yefaPrefab.GetComponent<SpineComponent>();
+            Assert.That(attackComponent, Is.Not.Null, "Yefa 预制体必须包含 AttackComponent。");
+            Assert.That(yefaSpine, Is.Not.Null);
+            Assert.That(attackComponent.TalentConfig, Is.Not.Null, "Yefa AttackComponent 必须引用 TalentConfig。");
+            Assert.That(yefaPrefab.GetComponent<SpecialAttackComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
+            Assert.That(yefaPrefab.GetComponent<SkillComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
+            Assert.That(yefaPrefab.GetComponent<UltimateComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
+            Assert.That(attackComponent.ConfiguredHitCount, Is.EqualTo(yefaSpine.animationLib.atkExecutor.Count), "普通攻击动画段和命中配置必须一一对应。");
+            Assert.That(attackComponent.TalentConfig.NormalAttack.StageCount, Is.EqualTo(attackComponent.ConfiguredHitCount), "TalentConfig 普攻数值段必须与碰撞绑定段一一对应。");
+            SerializedObject prefabAttack = new SerializedObject(attackComponent);
+            SerializedProperty firstBinding = prefabAttack.FindProperty("attackHits").GetArrayElementAtIndex(0);
+            Assert.That(firstBinding.FindPropertyRelative("damageMultiplier"), Is.Null, "AttackComponent 不得继续暴露伤害倍率。");
+            Assert.That(firstBinding.FindPropertyRelative("damageOffset"), Is.Null, "AttackComponent 不得继续暴露伤害偏移。");
+            Assert.That(firstBinding.FindPropertyRelative("additionalTags"), Is.Null, "AttackComponent 不得继续暴露数值关联标签。");
+            HashSet<ColliderProxy> uniqueHitboxes = new HashSet<ColliderProxy>();
+            for (int stageIndex = 0; stageIndex < attackComponent.ConfiguredHitCount; stageIndex++)
+            {
+                Assert.That(attackComponent.TryGetHitSelection(stageIndex, out NormalAttackHitSelection selection), Is.True, $"第 {stageIndex + 1} 段缺少有效命中配置。");
+                Assert.That(attackComponent.TalentConfig.NormalAttack.TryGetStage(stageIndex, out NormalAttackTalentStage configuredStage), Is.True);
+                Assert.That(uniqueHitboxes.Add(selection.ColliderProxy), Is.True, $"第 {stageIndex + 1} 段必须使用独立 ColliderProxy。");
+                Assert.That(selection.ColliderProxy.GetComponent<Collider>(), Is.Not.Null);
+                Assert.That(selection.DamageMultiplier, Is.EqualTo(configuredStage.DamageMultiplier).Within(0.0001f), "每段命中倍率必须读取 TalentConfig 当前资产值。");
+                Assert.That(selection.DamageOffset, Is.EqualTo(configuredStage.DamageOffset).Within(0.0001f), "每段命中偏移必须读取 TalentConfig 当前资产值。");
+                Assert.That(selection.AbilityId, Is.EqualTo($"Player.NormalAttack.{stageIndex + 1}"));
+            }
+            Assert.That(attackComponent.TalentConfig.NormalAttack.TryGetStage(0, out NormalAttackTalentStage configuredFirstStage), Is.True);
+            GameObject yefaInstance = Object.Instantiate(yefaPrefab);
+            TalentConfig runtimeTalentConfig = Object.Instantiate(attackComponent.TalentConfig);
+            try
+            {
+                AttackComponent runtimeAttack = yefaInstance.GetComponent<AttackComponent>();
+                SerializedObject serializedAttack = new SerializedObject(runtimeAttack);
+                serializedAttack.FindProperty("talentConfig").objectReferenceValue = runtimeTalentConfig;
+                serializedAttack.ApplyModifiedPropertiesWithoutUndo();
+                SerializedObject serializedTalent = new SerializedObject(runtimeTalentConfig);
+                SerializedProperty secondStage = serializedTalent.FindProperty("normalAttack").FindPropertyRelative("stages").GetArrayElementAtIndex(1);
+                secondStage.FindPropertyRelative("damageMultiplier").floatValue = 1.75f;
+                secondStage.FindPropertyRelative("damageOffset").floatValue = 2f;
+                serializedTalent.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(runtimeAttack.TryGetHitSelection(1, out NormalAttackHitSelection modifiedSelection), Is.True);
+                Assert.That(modifiedSelection.DamageMultiplier, Is.EqualTo(1.75f).Within(0.0001f), "普通攻击 Logic 必须读取当前段独立配置的伤害倍率。");
+                Assert.That(modifiedSelection.DamageOffset, Is.EqualTo(2f).Within(0.0001f), "普通攻击 Logic 必须读取当前段独立配置的伤害偏移。");
+                PlayerCombatHitContext hitContext = new PlayerCombatHitContext(modifiedSelection.ColliderProxy, modifiedSelection.DamageMultiplier, modifiedSelection.DamageOffset, EffectTag.Attack | EffectTag.NormalAttack, modifiedSelection.AbilityId, DamageActionType.NormalAttack);
+                Assert.That(hitContext.CalculateRequestedDamage(20f), Is.EqualTo(37f).Within(0.0001f), "第二段配置必须按照二十乘 1.75 再加二计算为三十七点请求伤害。");
+                Assert.That(runtimeAttack.TryGetHitSelection(0, out NormalAttackHitSelection unchangedSelection), Is.True);
+                Assert.That(unchangedSelection.DamageMultiplier, Is.EqualTo(configuredFirstStage.DamageMultiplier).Within(0.0001f), "修改单段倍率不得影响其他连段。");
+                Assert.That(unchangedSelection.DamageOffset, Is.EqualTo(configuredFirstStage.DamageOffset).Within(0.0001f), "修改单段偏移不得影响其他连段。");
+            }
+            finally
+            {
+                Object.DestroyImmediate(runtimeTalentConfig);
+                Object.DestroyImmediate(yefaInstance);
+            }
+        }
+
+        /// <summary>验证所有 TalentConfig 伤害倍率都启用百分比 Inspector，并保持百分比与运行时倍率的双向换算。</summary>
+        [Test]
+        public void TalentDamageMultipliers_UsePercentageInspector()
+        {
+            FieldInfo abilityMultiplier = typeof(TalentAbilityValues).GetField("damageMultiplier", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo normalAttackMultiplier = typeof(NormalAttackTalentStage).GetField("damageMultiplier", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(abilityMultiplier, Is.Not.Null);
+            Assert.That(normalAttackMultiplier, Is.Not.Null);
+            Assert.That(abilityMultiplier.GetCustomAttribute<PercentageAttribute>(), Is.Not.Null, "特殊攻击、技能和大招的倍率必须按百分比编辑。");
+            Assert.That(normalAttackMultiplier.GetCustomAttribute<PercentageAttribute>(), Is.Not.Null, "普通攻击逐段倍率必须按百分比编辑。");
+            System.Type drawerType = null;
+            foreach (Assembly assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                drawerType = assembly.GetType("Xuan.Prometheus.Editor.PercentageAttributeDrawer");
+                if (drawerType != null) break;
+            }
+            Assert.That(drawerType, Is.Not.Null, "必须存在 PercentageAttribute 对应的 Editor 绘制器。");
+            MethodInfo toDisplayPercentage = drawerType.GetMethod("ToDisplayPercentage", BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo toStoredMultiplier = drawerType.GetMethod("ToStoredMultiplier", BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo calculateSuffixX = drawerType.GetMethod("CalculateSuffixX", BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(toDisplayPercentage, Is.Not.Null);
+            Assert.That(toStoredMultiplier, Is.Not.Null);
+            Assert.That(calculateSuffixX, Is.Not.Null);
+            Assert.That((float)toDisplayPercentage.Invoke(null, new object[] { 1.25f }), Is.EqualTo(125f).Within(0.0001f));
+            Assert.That((float)toStoredMultiplier.Invoke(null, new object[] { 175f, 0f }), Is.EqualTo(1.75f).Within(0.0001f));
+            Assert.That((float)toStoredMultiplier.Invoke(null, new object[] { -20f, 0f }), Is.Zero, "百分比输入不得绕过非负倍率约束。");
+            Rect valueRect = new Rect(10f, 0f, 100f, EditorGUIUtility.singleLineHeight);
+            float suffixX = (float)calculateSuffixX.Invoke(null, new object[] { valueRect, 125f, EditorStyles.numberField });
+            Assert.That(suffixX, Is.GreaterThan(valueRect.x), "百分号必须位于数字起点右侧。");
+            Assert.That(suffixX + 12f, Is.LessThanOrEqualTo(valueRect.xMax), "百分号必须完整保留在输入框内部。");
+        }
+
+        /// <summary>验证 PlayerEntity 注册四个独立动作 Logic，而 TalentLogic 保持为单独的常驻天赋组合。</summary>
+        [Test]
+        public void PlayerEntity_ComposesIndependentCombatActionLogics()
+        {
+            GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
+            Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
+            GameObject yefaInstance = Object.Instantiate(yefaPrefab);
+            try
+            {
+                PlayerEntity playerEntity = new PlayerEntity(yefaInstance);
+                Assert.That(playerEntity.TryGetLogic(out TalentLogic talentLogic), Is.True);
+                Assert.That(talentLogic, Is.Not.InstanceOf<ITriggerHandler>(), "TalentLogic 不得再次接管具体攻击碰撞回调。");
+                Assert.That(playerEntity.TryGetLogic(out NormalAttackLogic _), Is.True);
+                Assert.That(playerEntity.TryGetLogic(out SpecialAttackLogic _), Is.True);
+                Assert.That(playerEntity.TryGetLogic(out SkillLogic _), Is.True);
+                Assert.That(playerEntity.TryGetLogic(out UltimateLogic _), Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(yefaInstance);
             }
         }
 

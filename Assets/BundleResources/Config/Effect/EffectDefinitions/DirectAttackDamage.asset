@@ -43,3 +43,5 @@ MonoBehaviour:
           multiplier: 0
           offset: 2
         additionalTags: 1
+        damageAttributeSource: 0
+        fixedDamageAttribute: 0

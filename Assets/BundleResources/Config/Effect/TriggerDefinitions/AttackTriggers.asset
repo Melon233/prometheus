@@ -30,8 +30,8 @@ MonoBehaviour:
       threshold: 0
     effects:
     - {fileID: 11400000, guid: 0f82c33f324baa349b0caca8c2801801, type: 2}
-  - triggerId: Example.OnFireHit.Burning
-    signalType: 1
+  - triggerId: Example.OnFireDamage.Burning
+    signalType: 2
     listenScope: 0
     targetSelector: 1
     chance: 1
@@ -42,8 +42,12 @@ MonoBehaviour:
     - type: 2
       tags: 0
       threshold: 0
-    - type: 5
-      tags: 8
+    - type: 7
+      tags: 0
       threshold: 0
+    - type: 9
+      tags: 0
+      threshold: 0
+      damageAttribute: 1
     effects:
     - {fileID: 11400000, guid: 95e8053e36792be4b8dcba7b66027a36, type: 2}

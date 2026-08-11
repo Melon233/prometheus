@@ -17,7 +17,15 @@ namespace Xuan.Prometheus
         PlayerAction,
         EnemyAction,
         HitReaction,
-        Death
+        Death,
+        /// <summary>普通攻击 Logic 独占的动画所有者。</summary>
+        NormalAttack,
+        /// <summary>特殊攻击 Logic 独占的动画所有者。</summary>
+        SpecialAttack,
+        /// <summary>技能 Logic 独占的动画所有者。</summary>
+        Skill,
+        /// <summary>大招 Logic 独占的动画所有者。</summary>
+        Ultimate
     }
 
     /// <summary>定义主动画轨道的抢占优先级；数值越大越能打断当前动画。</summary>

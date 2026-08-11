@@ -36,7 +36,7 @@ namespace Xuan.Prometheus
                     // 如果实例为空，尝试查找或创建
                     if (_instance == null)
                     {
-                        _instance = FindObjectOfType<T>();
+                        _instance = FindFirstObjectByType<T>();
 
                         // 如果场景中不存在，则创建新 GameObject 挂载
                         if (_instance == null)

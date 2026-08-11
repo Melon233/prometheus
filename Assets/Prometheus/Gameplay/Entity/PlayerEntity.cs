@@ -31,6 +31,11 @@ namespace Xuan.Prometheus.Logic
             AddLogic<IdleLogic>();
             AddLogic<MotionLogic>();
             AddLogic<TalentLogic>();
+            // 同帧输入按大招、技能、特殊攻击、普通攻击的注册顺序尝试，低优先级请求会被统一动画仲裁拒绝。
+            AddLogic<UltimateLogic>();
+            AddLogic<SkillLogic>();
+            AddLogic<SpecialAttackLogic>();
+            AddLogic<NormalAttackLogic>();
             AddLogic<AirMoveLogic>();
             AddLogic<JumpLogic>();
             AddLogic<RotateLogic>();

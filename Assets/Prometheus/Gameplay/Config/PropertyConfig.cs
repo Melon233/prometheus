@@ -5,6 +5,8 @@ namespace Xuan.Prometheus
     [CreateAssetMenu(menuName = "Prometheus/PropertyConfig")]
     public class PropertyConfig : ScriptableObject
     {
+        /// <summary>配置角色自身元素；普通攻击和特殊攻击仍以物理为基础，技能与大招读取该值。</summary>
+        public DamageAttribute elementAttribute = DamageAttribute.Physical;
         public float atk = 1f;
         /// <summary>
         /// 攻击速度的基础倍率，默认值 1 表示正常播放速度。

@@ -94,6 +94,154 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty, "即时伤害和受击事件都不得留下持续 Effect 实例。");
         }
 
+        /// <summary>
+        /// 验证五行单向克制、光暗互克和物理中立组成唯一克制矩阵，所有未列出的组合都不得产生减伤或额外增伤。
+        /// </summary>
+        [Test]
+        public void DamageAttributeRules_ApplyOnlyConfiguredAdvantages()
+        {
+            Array attributes = Enum.GetValues(typeof(DamageAttribute));
+            foreach (DamageAttribute attackAttribute in attributes)
+            {
+                foreach (DamageAttribute targetAttribute in attributes)
+                {
+                    bool expectedAdvantage = attackAttribute == DamageAttribute.Fire && targetAttribute == DamageAttribute.Ice || attackAttribute == DamageAttribute.Ice && targetAttribute == DamageAttribute.Grass || attackAttribute == DamageAttribute.Grass && targetAttribute == DamageAttribute.Lightning || attackAttribute == DamageAttribute.Lightning && targetAttribute == DamageAttribute.Water || attackAttribute == DamageAttribute.Water && targetAttribute == DamageAttribute.Fire || attackAttribute == DamageAttribute.Light && targetAttribute == DamageAttribute.Dark || attackAttribute == DamageAttribute.Dark && targetAttribute == DamageAttribute.Light;
+                    DamageAttributeRelation expectedRelation = expectedAdvantage ? DamageAttributeRelation.Advantage : DamageAttributeRelation.Neutral;
+                    float expectedMultiplier = expectedAdvantage ? DamageAttributeRules.AdvantageMultiplier : 1f;
+                    Assert.That(DamageAttributeRules.GetRelation(attackAttribute, targetAttribute), Is.EqualTo(expectedRelation), $"Unexpected relation for {attackAttribute} -> {targetAttribute}.");
+                    Assert.That(DamageAttributeRules.GetMultiplier(attackAttribute, targetAttribute), Is.EqualTo(expectedMultiplier).Within(0.0001f), $"Unexpected multiplier for {attackAttribute} -> {targetAttribute}.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 验证普攻与特殊攻击从物理开始，技能与大招读取角色元素，并由最高优先级和同优先级后加入的 Effect 覆盖。
+        /// </summary>
+        [Test]
+        public void DamageAttributeResolution_UsesActionDefaultsAndDeterministicModifiers()
+        {
+            sourceConfig.elementAttribute = DamageAttribute.Water;
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Physical));
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.SpecialAttack), Is.EqualTo(DamageAttribute.Physical));
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Ultimate), Is.EqualTo(DamageAttribute.Water));
+            DamageAttributeModifier allFire = sourceProperty.AddDamageAttributeModifier(DamageAttribute.Fire, DamageActionMask.All, 1);
+            DamageAttributeModifier skillDark = sourceProperty.AddDamageAttributeModifier(DamageAttribute.Dark, DamageActionMask.Skill, 10);
+            DamageAttributeModifier skillLight = sourceProperty.AddDamageAttributeModifier(DamageAttribute.Light, DamageActionMask.Skill, 10);
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Fire));
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Light));
+            Assert.That(sourceProperty.RemoveDamageAttributeModifier(skillLight), Is.True);
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Dark));
+            Assert.That(sourceProperty.RemoveDamageAttributeModifier(skillDark), Is.True);
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Fire));
+            Assert.That(sourceProperty.RemoveDamageAttributeModifier(allFire), Is.True);
+            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+        }
+
+        /// <summary>
+        /// 验证 DamageOperation 只应用一次克制独立乘区，并在 DamageApplied 中携带最终属性、关系、倍率和实际伤害。
+        /// </summary>
+        [Test]
+        public void DamageOperation_AppliesAttributeAdvantageOnceAndPublishesResolvedContext()
+        {
+            targetConfig.elementAttribute = DamageAttribute.Ice;
+            DamageSignalCaptureOperation capture = new DamageSignalCaptureOperation();
+            EffectDefinition damageEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectDefinition captureEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectTriggerSet triggerSet = ScriptableObject.CreateInstance<EffectTriggerSet>();
+            damageEffect.name = "Tests.FireDamage";
+            captureEffect.name = "Tests.CaptureDamageApplied";
+            triggerSet.name = "Tests.CaptureDamageAppliedSet";
+            damageEffect.ConfigureForTests("Tests.FireDamage", EffectTag.Attack, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Attack, EffectValueFormula.Constant(0f), DamageAttributeSource.Fixed, DamageAttribute.Fire) }, null, null, null);
+            captureEffect.ConfigureForTests("Tests.CaptureDamageApplied", EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.AfterApply, 0, new EffectOperation[] { capture }, null, null, null);
+            EffectTriggerDefinition captureTrigger = new EffectTriggerDefinition();
+            captureTrigger.ConfigureForTests("Tests.OnDamageApplied.Capture", EffectSignalType.DamageApplied, EffectListenScope.Target, EffectTargetSelector.Target, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { captureEffect });
+            triggerSet.ConfigureForTests(new[] { captureTrigger });
+            IDisposable captureRegistration = runtime.RegisterTriggerSet(targetEntity, triggerSet);
+            try
+            {
+                runtime.ApplyEffect(damageEffect, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(targetProperty.Hp, Is.EqualTo(87f).Within(0.0001f));
+                Assert.That(capture.Signal, Is.Not.Null);
+                Assert.That(capture.Signal.RequestedValue, Is.EqualTo(13f).Within(0.0001f));
+                Assert.That(capture.Signal.Value, Is.EqualTo(13f).Within(0.0001f));
+                Assert.That(capture.Signal.DamageAttribute, Is.EqualTo(DamageAttribute.Fire));
+                Assert.That(capture.Signal.DamageActionType, Is.EqualTo(DamageActionType.Effect));
+                Assert.That(capture.Signal.DamageAttributeRelation, Is.EqualTo(DamageAttributeRelation.Advantage));
+                Assert.That(capture.Signal.DamageAttributeMultiplier, Is.EqualTo(1.3f).Within(0.0001f));
+            }
+            finally
+            {
+                captureRegistration.Dispose();
+                UnityEngine.Object.DestroyImmediate(triggerSet);
+                UnityEngine.Object.DestroyImmediate(captureEffect);
+                UnityEngine.Object.DestroyImmediate(damageEffect);
+            }
+        }
+
+        /// <summary>
+        /// 验证持续 Effect 的伤害属性覆盖只影响配置动作范围，并在效果移除时自动恢复角色原有解析结果。
+        /// </summary>
+        [Test]
+        public void DamageAttributeModifierEffect_AppliesByScopeAndRollsBackOnRemove()
+        {
+            sourceConfig.elementAttribute = DamageAttribute.Water;
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.FireNormalAttackInfusion";
+            definition.ConfigureForTests("Tests.FireNormalAttackInfusion", EffectTag.Buff | EffectTag.Attribute, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageAttributeModifierOperation(DamageAttribute.Fire, DamageActionMask.NormalAttack, 5) }, null, null, null);
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, sourceEntity, sourceEntity);
+                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Fire));
+                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+                runtime.RemoveAll(sourceEntity);
+                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Physical));
+                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+            }
+            finally
+            {
+                runtime.RemoveAll(sourceEntity);
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
+        /// 验证伤害 Effect 从施法者读取技能属性时会使用持续 Effect 的覆盖结果，并在克制目标时进入独立 1.3 倍乘区。
+        /// </summary>
+        [Test]
+        public void CasterElementDamage_UsesEffectModifiedSkillAttribute()
+        {
+            sourceConfig.elementAttribute = DamageAttribute.Water;
+            targetConfig.elementAttribute = DamageAttribute.Lightning;
+            EffectDefinition infusionEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectDefinition damageEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectTriggerSet triggerSet = ScriptableObject.CreateInstance<EffectTriggerSet>();
+            infusionEffect.name = "Tests.GrassSkillInfusion";
+            damageEffect.name = "Tests.CasterElementDamage";
+            triggerSet.name = "Tests.CasterElementDamageSet";
+            infusionEffect.ConfigureForTests("Tests.GrassSkillInfusion", EffectTag.Buff | EffectTag.Attribute, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageAttributeModifierOperation(DamageAttribute.Grass, DamageActionMask.Skill, 10) }, null, null, null);
+            damageEffect.ConfigureForTests("Tests.CasterElementDamage", EffectTag.Attack | EffectTag.Skill, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack | EffectTag.Skill, EffectValueFormula.Constant(0f), DamageAttributeSource.CasterElement) }, null, null, null);
+            EffectTriggerDefinition damageTrigger = new EffectTriggerDefinition();
+            damageTrigger.ConfigureForTests("Tests.OnSkillHit.CasterElementDamage", EffectSignalType.HitConfirmed, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { damageEffect });
+            triggerSet.ConfigureForTests(new[] { damageTrigger });
+            IDisposable damageRegistration = runtime.RegisterTriggerSet(sourceEntity, triggerSet);
+            try
+            {
+                runtime.ApplyEffect(infusionEffect, sourceEntity, sourceEntity, sourceEntity);
+                runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damageAttribute: DamageAttribute.Physical, damageActionType: DamageActionType.Skill));
+                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Grass));
+                Assert.That(targetProperty.Hp, Is.EqualTo(87f).Within(0.0001f));
+            }
+            finally
+            {
+                damageRegistration.Dispose();
+                runtime.RemoveAll(sourceEntity);
+                UnityEngine.Object.DestroyImmediate(triggerSet);
+                UnityEngine.Object.DestroyImmediate(damageEffect);
+                UnityEngine.Object.DestroyImmediate(infusionEffect);
+            }
+        }
+
         /// <summary>验证首次致死伤害只发布一次 DieEvent 和 Killed Signal，后续命中与治疗都不能让尸体再次结算死亡。</summary>
         [Test]
         public void FatalDamage_EmitsDeathAndKilledExactlyOnce()
@@ -111,7 +259,7 @@ namespace Xuan.Prometheus.Effects.Tests
             killedCounterEffect.name = "Tests.KilledCounterEffect";
             killedCounterEffect.ConfigureForTests("Tests.KilledCounterEffect", EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.AfterApply, 0, new EffectOperation[] { killedCounter }, null, null, null);
             EffectTriggerDefinition killedTrigger = new EffectTriggerDefinition();
-            killedTrigger.ConfigureForTests("Tests.OnKilled.Count", EffectSignalType.Killed, EffectListenScope.Source, EffectTargetSelector.Source, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { killedCounterEffect });
+            killedTrigger.ConfigureForTests("Tests.OnKilled.Count", EffectSignalType.Killed, EffectListenScope.Caster, EffectTargetSelector.Caster, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { killedCounterEffect });
             EffectTriggerSet killedTriggerSet = ScriptableObject.CreateInstance<EffectTriggerSet>();
             killedTriggerSet.name = "Tests.KilledTriggerSet";
             killedTriggerSet.ConfigureForTests(new[] { killedTrigger });
@@ -208,6 +356,30 @@ namespace Xuan.Prometheus.Effects.Tests
         }
 
         /// <summary>
+        /// 验证普通实体增加核心能量不依赖全局 EventKit，EffectRuntime 可以在独立测试和非玩家实体上安全运行。
+        /// </summary>
+        [Test]
+        public void CoreEnergyGain_NonPlayerTargetDoesNotRequireGlobalEventKit()
+        {
+            IEventKit previousEventKit = Core.Event;
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.CoreEnergyGain";
+            definition.ConfigureForTests("Tests.CoreEnergyGain", EffectTag.Buff | EffectTag.CoreEnergyGain, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new CoreEnergyGainOperation(EffectValueFormula.Constant(20f)) }, null, null, null);
+            try
+            {
+                Core.Event = null;
+                targetProperty.SetBaseValue(PropertyType.CoreEnergyLimit, 100f);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(targetProperty.CoreEnergy, Is.EqualTo(20f).Within(0.0001f));
+            }
+            finally
+            {
+                Core.Event = previousEventKit;
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
         /// 验证燃烧每秒产生一次 DOT 伤害，并在同一施法者再次添加时刷新而不是复制实例。
         /// </summary>
         [Test]
@@ -221,6 +393,123 @@ namespace Xuan.Prometheus.Effects.Tests
             examples.Library.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
             Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.BurningId), Is.EqualTo(1));
             Assert.That(runtime.GetActiveEffects(targetEntity).Count, Is.EqualTo(1), "目标只应持有刷新后的 Burning，受击不再创建持续 Effect。");
+        }
+
+        /// <summary>
+        /// 验证 RefreshDuration 只执行刷新分支并保留已有 Tick 进度，不会执行 OnStack 或推迟下一次周期结算。
+        /// </summary>
+        [Test]
+        public void RefreshDuration_OnlyRefreshesDurationAndPreservesTickCadence()
+        {
+            CountingOperation stackCounter = new CountingOperation();
+            CountingOperation refreshCounter = new CountingOperation();
+            CountingOperation tickCounter = new CountingOperation();
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.RefreshDuration";
+            definition.ConfigureForTests("Tests.RefreshDuration", EffectTag.Buff, EffectDurationType.Duration, 2f, 1f, EffectStackPolicy.RefreshDuration, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, null, new EffectOperation[] { stackCounter }, new EffectOperation[] { tickCounter }, null, refreshOperations: new EffectOperation[] { refreshCounter });
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                runtime.Tick(0.75f);
+                EffectInstance instance = runtime.GetActiveEffects(targetEntity)[0];
+                Assert.That(instance.ElapsedTime, Is.EqualTo(0.75f).Within(0.0001f));
+                Assert.That(instance.TickElapsedTime, Is.EqualTo(0.75f).Within(0.0001f));
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(instance.ElapsedTime, Is.EqualTo(0f).Within(0.0001f));
+                Assert.That(instance.TickElapsedTime, Is.EqualTo(0.75f).Within(0.0001f));
+                Assert.That(instance.Stacks, Is.EqualTo(1));
+                Assert.That(stackCounter.ExecutionCount, Is.Zero);
+                Assert.That(refreshCounter.ExecutionCount, Is.EqualTo(1));
+                runtime.Tick(0.26f);
+                Assert.That(tickCounter.ExecutionCount, Is.EqualTo(1), "刷新持续时间不得重置 TickElapsedTime，否则会错误推迟下一次 Tick。");
+            }
+            finally
+            {
+                runtime.RemoveAll(targetEntity);
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
+        /// 验证 AddStackAndRefreshDuration 未满层时同时执行两个分支，满层后只刷新并且不再发送 EffectStacked。
+        /// </summary>
+        [Test]
+        public void AddStackAndRefreshDuration_EmitsStackOnlyWhenCountChangesButRefreshesAtCap()
+        {
+            CountingOperation stackCounter = new CountingOperation();
+            CountingOperation refreshCounter = new CountingOperation();
+            CountingOperation stackedSignalCounter = new CountingOperation();
+            CountingOperation refreshedSignalCounter = new CountingOperation();
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectDefinition stackedSignalEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectDefinition refreshedSignalEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectTriggerSet triggerSet = ScriptableObject.CreateInstance<EffectTriggerSet>();
+            definition.name = "Tests.AddStackAndRefresh";
+            stackedSignalEffect.name = "Tests.CountEffectStacked";
+            refreshedSignalEffect.name = "Tests.CountEffectRefreshed";
+            triggerSet.name = "Tests.ReapplySignals";
+            definition.ConfigureForTests("Tests.AddStackAndRefresh", EffectTag.Buff, EffectDurationType.Duration, 3f, 0f, EffectStackPolicy.AddStackAndRefreshDuration, EffectStackKeyPolicy.Definition, 2, EffectExecutionPhase.Apply, 0, null, new EffectOperation[] { stackCounter }, null, null, refreshOperations: new EffectOperation[] { refreshCounter });
+            stackedSignalEffect.ConfigureForTests("Tests.CountEffectStacked", EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { stackedSignalCounter }, null, null, null);
+            refreshedSignalEffect.ConfigureForTests("Tests.CountEffectRefreshed", EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { refreshedSignalCounter }, null, null, null);
+            EffectTriggerDefinition stackedTrigger = new EffectTriggerDefinition();
+            EffectTriggerDefinition refreshedTrigger = new EffectTriggerDefinition();
+            stackedTrigger.ConfigureForTests("Tests.OnEffectStacked", EffectSignalType.EffectStacked, EffectListenScope.Target, EffectTargetSelector.Target, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { stackedSignalEffect });
+            refreshedTrigger.ConfigureForTests("Tests.OnEffectRefreshed", EffectSignalType.EffectRefreshed, EffectListenScope.Target, EffectTargetSelector.Target, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { refreshedSignalEffect });
+            triggerSet.ConfigureForTests(new[] { stackedTrigger, refreshedTrigger });
+            IDisposable signalRegistrations = runtime.RegisterTriggerSet(targetEntity, triggerSet);
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                runtime.Tick(0.5f);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(runtime.GetStackCount(targetEntity, definition.EffectId), Is.EqualTo(2));
+                Assert.That(stackCounter.ExecutionCount, Is.EqualTo(1));
+                Assert.That(refreshCounter.ExecutionCount, Is.EqualTo(1));
+                Assert.That(stackedSignalCounter.ExecutionCount, Is.EqualTo(1));
+                Assert.That(refreshedSignalCounter.ExecutionCount, Is.EqualTo(1));
+                runtime.Tick(0.5f);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                EffectInstance instance = runtime.GetActiveEffects(targetEntity)[0];
+                Assert.That(instance.ElapsedTime, Is.EqualTo(0f).Within(0.0001f));
+                Assert.That(instance.Stacks, Is.EqualTo(2));
+                Assert.That(stackCounter.ExecutionCount, Is.EqualTo(1), "满层后的重复施加不得再次执行 OnStack Operations。");
+                Assert.That(refreshCounter.ExecutionCount, Is.EqualTo(2));
+                Assert.That(stackedSignalCounter.ExecutionCount, Is.EqualTo(1), "满层后的重复施加不得发送 EffectStacked。");
+                Assert.That(refreshedSignalCounter.ExecutionCount, Is.EqualTo(2));
+            }
+            finally
+            {
+                signalRegistrations.Dispose();
+                runtime.RemoveAll(targetEntity);
+                UnityEngine.Object.DestroyImmediate(triggerSet);
+                UnityEngine.Object.DestroyImmediate(refreshedSignalEffect);
+                UnityEngine.Object.DestroyImmediate(stackedSignalEffect);
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
+        /// 验证 Permanent 不存在可刷新的有限时长，因此 RefreshDuration 不执行刷新生命周期。
+        /// </summary>
+        [Test]
+        public void PermanentRefreshDuration_DoesNotExecuteRefreshBranch()
+        {
+            CountingOperation refreshCounter = new CountingOperation();
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.PermanentRefresh";
+            definition.ConfigureForTests("Tests.PermanentRefresh", EffectTag.Buff, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.RefreshDuration, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, null, null, null, null, refreshOperations: new EffectOperation[] { refreshCounter });
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(runtime.GetActiveEffects(targetEntity).Count, Is.EqualTo(1));
+                Assert.That(refreshCounter.ExecutionCount, Is.Zero);
+            }
+            finally
+            {
+                runtime.RemoveAll(targetEntity);
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
         }
 
         /// <summary>
@@ -258,6 +547,36 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(targetProperty.RemoveModifier(toughnessBoost), Is.True);
             Assert.That(targetProperty.RemoveModifier(toughnessOffset), Is.True);
             Assert.That(targetProperty.Toughness, Is.EqualTo(1f).Within(0.0001f));
+        }
+
+        /// <summary>
+        /// 验证伤害加成在攻击力和暴击结算之后作为独立乘区只乘算一次。
+        /// </summary>
+        [Test]
+        public void DamageBonus_MultipliesCalculatedDamageAsIndependentZoneOnce()
+        {
+            Assert.That(sourceProperty.DamageBonus, Is.EqualTo(0f).Within(0.0001f));
+            sourceProperty.SetBaseValue(PropertyType.CritRate, 0f);
+            sourceProperty.SetBaseValue(PropertyType.CritDmg, 0f);
+            sourceProperty.AddModifier(PropertyType.Atk, PropertyModifierMode.Boost, 0.5f);
+            sourceProperty.AddModifier(PropertyType.DamageBoost, PropertyModifierMode.Offset, 0.5f);
+            Assert.That(sourceProperty.Atk, Is.EqualTo(30f).Within(0.0001f));
+            Assert.That(sourceProperty.DamageBonus, Is.EqualTo(0.5f).Within(0.0001f));
+            Assert.That(sourceProperty.GetCalculatedDamage(), Is.EqualTo(45f).Within(0.0001f));
+        }
+
+        /// <summary>
+        /// 验证受伤加成只在 OnTakeDamage 入口作为独立乘区结算一次，并返回乘算后的实际扣血量。
+        /// </summary>
+        [Test]
+        public void DamageTakenBonus_MultipliesIncomingDamageAsIndependentZoneOnce()
+        {
+            Assert.That(targetProperty.DamageTakenBonus, Is.EqualTo(0f).Within(0.0001f));
+            targetProperty.AddModifier(PropertyType.DamageTakenBoost, PropertyModifierMode.Offset, 0.5f);
+            float actualDamage = targetProperty.OnTakeDamage(20f);
+            Assert.That(targetProperty.DamageTakenBonus, Is.EqualTo(0.5f).Within(0.0001f));
+            Assert.That(actualDamage, Is.EqualTo(30f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(70f).Within(0.0001f));
         }
 
         /// <summary>
@@ -398,7 +717,7 @@ namespace Xuan.Prometheus.Effects.Tests
             float sourceAttackBeforeEffect = sourceProperty.Atk;
             float sourceAttackSpeedBeforeEffect = sourceProperty.AtkSpeed;
             float targetHpBeforeEffect = targetProperty.Hp;
-            EffectSignal fireAttackSignal = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, sourceAttackBeforeEffect, sourceAttackBeforeEffect, EffectTag.Attack | EffectTag.NormalAttack | EffectTag.Fire, "Example.FireAttack");
+            EffectSignal fireAttackSignal = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, sourceAttackBeforeEffect, sourceAttackBeforeEffect, EffectTag.Attack | EffectTag.NormalAttack, "Example.FireAttack", damageAttribute: DamageAttribute.Fire, damageActionType: DamageActionType.NormalAttack);
             float configuredDamage = ReadConfiguredDamage(persistentLibrary.DirectDamage, fireAttackSignal);
             float expectedActualDamage = Mathf.Min(targetHpBeforeEffect, Mathf.Max(0f, configuredDamage));
             EffectSignal damageAppliedSignal = fireAttackSignal.CreateChild(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, configuredDamage, expectedActualDamage, fireAttackSignal.Tags | persistentLibrary.DirectDamage.Tags);
@@ -445,7 +764,7 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(copyConfiguration, Is.Not.Null);
                 Assert.That(pasteConfiguration, Is.Not.Null);
                 addOperation.Invoke(definitionEditor, new object[] { "onApplyOperations", new PropertyModifierOperation() });
-                addOperation.Invoke(definitionEditor, new object[] { "onApplyOperations", new PropertyModifierOperation("Copied.Property", PropertyType.Def, PropertyModifierMode.Offset, EffectValueFormula.SourceAttack(2f, 3f)) });
+                addOperation.Invoke(definitionEditor, new object[] { "onApplyOperations", new PropertyModifierOperation("Copied.Property", PropertyType.Def, PropertyModifierMode.Offset, EffectValueFormula.CasterAttack(2f, 3f)) });
                 definitionEditor.serializedObject.Update();
                 SerializedProperty list = definitionEditor.serializedObject.FindProperty("onApplyOperations");
                 SerializedProperty defaultElement = list.GetArrayElementAtIndex(0);
@@ -470,7 +789,7 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(pastedElement.FindPropertyRelative("customModifierKey").stringValue, Is.EqualTo("Copied.Property"));
                 Assert.That(pastedElement.FindPropertyRelative("propertyType").enumValueIndex, Is.EqualTo((int)PropertyType.Def));
                 Assert.That(pastedElement.FindPropertyRelative("modifierMode").enumValueIndex, Is.EqualTo((int)PropertyModifierMode.Offset));
-                Assert.That(pastedValuePerStack.FindPropertyRelative("source").enumValueIndex, Is.EqualTo((int)EffectValueSource.SourceAttack));
+                Assert.That(pastedValuePerStack.FindPropertyRelative("baseValueSource").enumValueIndex, Is.EqualTo((int)EffectValueSource.CasterAttack));
                 Assert.That(pastedValuePerStack.FindPropertyRelative("multiplier").floatValue, Is.EqualTo(2f));
                 Assert.That(pastedValuePerStack.FindPropertyRelative("offset").floatValue, Is.EqualTo(3f));
                 Assert.That(pastedValuePerStack.isExpanded, Is.True);
@@ -479,6 +798,114 @@ namespace Xuan.Prometheus.Effects.Tests
             {
                 EditorGUIUtility.systemCopyBuffer = previousClipboard;
                 if (definitionEditor != null) UnityEngine.Object.DestroyImmediate(definitionEditor);
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
+        /// 验证 Caster 始终表示直接释放者、Source 始终表示因果链源头，并锁定旧资产所依赖的枚举序号。
+        /// </summary>
+        [Test]
+        public void CasterAndSource_UseDirectActorAndOriginSemanticsWithoutChangingSerializedEnumValues()
+        {
+            RelationCaptureOperation capture = new RelationCaptureOperation();
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.RelationCapture";
+            definition.ConfigureForTests(string.Empty, EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { capture }, null, null, null);
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, targetEntity);
+                Assert.That(capture.Caster, Is.SameAs(sourceEntity));
+                Assert.That(capture.Target, Is.SameAs(targetEntity));
+                Assert.That(capture.Source, Is.SameAs(targetEntity));
+                Assert.That(definition.EffectId, Is.EqualTo(definition.name));
+                Assert.That((int)EffectListenScope.Caster, Is.EqualTo(0));
+                Assert.That((int)EffectListenScope.Source, Is.EqualTo(2));
+                Assert.That((int)EffectTargetSelector.Caster, Is.EqualTo(0));
+                Assert.That((int)EffectTargetSelector.Source, Is.EqualTo(2));
+                Assert.That((int)EffectStackKeyPolicy.DefinitionAndSource, Is.EqualTo(1));
+                Assert.That((int)EffectStackKeyPolicy.DefinitionAndCaster, Is.EqualTo(2));
+                Assert.That((int)EffectValueSource.One, Is.EqualTo(0));
+                Assert.That((int)EffectValueSource.CasterAttack, Is.EqualTo(3));
+                Assert.That((int)EffectConditionType.CasterExists, Is.EqualTo(1));
+                Assert.That((int)EffectConditionType.SourceExists, Is.EqualTo(3));
+                Assert.That((int)EffectConditionType.DamageAttributeEquals, Is.EqualTo(9));
+                Assert.That((int)EffectSignalType.EffectStacked, Is.EqualTo(6));
+                Assert.That((int)EffectSignalType.EffectRefreshed, Is.EqualTo(10));
+                Assert.That((int)DamageAttribute.Physical, Is.EqualTo(0));
+                Assert.That((int)DamageAttribute.Dark, Is.EqualTo(7));
+                Assert.That((int)EffectTag.SpecialAttack, Is.EqualTo(1 << 14));
+                Assert.That((int)EffectTag.Ultimate, Is.EqualTo(1 << 15));
+                EffectTriggerDefinition automaticTrigger = new EffectTriggerDefinition();
+                automaticTrigger.ConfigureForTests(string.Empty, EffectSignalType.DamageApplied, EffectListenScope.Caster, EffectTargetSelector.Target, 0.25f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), Array.Empty<EffectDefinition>());
+                Assert.That(automaticTrigger.TriggerId, Is.EqualTo(nameof(EffectSignalType.DamageApplied)));
+                Assert.That(automaticTrigger.Probability, Is.EqualTo(0.25f).Within(0.0001f));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
+        /// 验证 Inspector 只显示当前持续时间与堆叠策略确实可能执行的 Stack 和 Refresh 操作列表。
+        /// </summary>
+        [Test]
+        public void EffectDefinitionEditor_ShowsOnlyReachableReapplyOperationBranches()
+        {
+            Type editorType = FindType("Xuan.Prometheus.Effects.Editor.EffectDefinitionEditor");
+            Assert.That(editorType, Is.Not.Null);
+            MethodInfo executesOnStackOperations = editorType.GetMethod("ExecutesOnStackOperations", BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo executesOnRefreshOperations = editorType.GetMethod("ExecutesOnRefreshOperations", BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(executesOnStackOperations, Is.Not.Null);
+            Assert.That(executesOnRefreshOperations, Is.Not.Null);
+            Assert.That(executesOnStackOperations.Invoke(null, new object[] { EffectStackPolicy.AddStack, 1 }), Is.False);
+            Assert.That(executesOnStackOperations.Invoke(null, new object[] { EffectStackPolicy.AddStack, 2 }), Is.True);
+            Assert.That(executesOnStackOperations.Invoke(null, new object[] { EffectStackPolicy.RefreshDuration, 99 }), Is.False);
+            Assert.That(executesOnStackOperations.Invoke(null, new object[] { EffectStackPolicy.AddStackAndRefreshDuration, 1 }), Is.False);
+            Assert.That(executesOnStackOperations.Invoke(null, new object[] { EffectStackPolicy.AddStackAndRefreshDuration, 2 }), Is.True);
+            Assert.That(executesOnStackOperations.Invoke(null, new object[] { EffectStackPolicy.Reject, 99 }), Is.False);
+            Assert.That(executesOnRefreshOperations.Invoke(null, new object[] { EffectDurationType.Duration, EffectStackPolicy.RefreshDuration }), Is.True);
+            Assert.That(executesOnRefreshOperations.Invoke(null, new object[] { EffectDurationType.Duration, EffectStackPolicy.AddStackAndRefreshDuration }), Is.True);
+            Assert.That(executesOnRefreshOperations.Invoke(null, new object[] { EffectDurationType.Duration, EffectStackPolicy.AddStack }), Is.False);
+            Assert.That(executesOnRefreshOperations.Invoke(null, new object[] { EffectDurationType.Permanent, EffectStackPolicy.RefreshDuration }), Is.False);
+        }
+
+        /// <summary>
+        /// 验证公式、条件和 Trigger Drawer 使用新的紧凑行高，防止后续修改重新引入逐字段纵向排列。
+        /// </summary>
+        [Test]
+        public void EffectInspectorDrawers_UseCompactRowHeights()
+        {
+            EffectTriggerDefinition trigger = new EffectTriggerDefinition();
+            trigger.ConfigureForTests("Tests.CompactLayout", EffectSignalType.DamageApplied, EffectListenScope.Caster, EffectTargetSelector.Target, 0.5f, 1f, true, 10, new[] { EffectConditionDefinition.HasAnyTags(EffectTag.Attack) }, Array.Empty<EffectDefinition>());
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.CompactInspector";
+            definition.ConfigureForTests("Tests.CompactInspector", EffectTag.Buff, EffectDurationType.Duration, 1f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new PropertyModifierOperation(PropertyType.Atk, EffectValueFormula.Constant(0.1f)) }, null, null, null, triggers: new[] { trigger });
+            try
+            {
+                SerializedObject serializedDefinition = new SerializedObject(definition);
+                serializedDefinition.Update();
+                SerializedProperty formula = serializedDefinition.FindProperty("onApplyOperations").GetArrayElementAtIndex(0).FindPropertyRelative("valuePerStack");
+                SerializedProperty serializedTrigger = serializedDefinition.FindProperty("grantedTriggers").GetArrayElementAtIndex(0);
+                SerializedProperty condition = serializedTrigger.FindPropertyRelative("conditions").GetArrayElementAtIndex(0);
+                PropertyDrawer formulaDrawer = CreatePropertyDrawer("Xuan.Prometheus.Effects.Editor.EffectValueFormulaDrawer");
+                PropertyDrawer conditionDrawer = CreatePropertyDrawer("Xuan.Prometheus.Effects.Editor.EffectConditionDefinitionDrawer");
+                PropertyDrawer triggerDrawer = CreatePropertyDrawer("Xuan.Prometheus.Effects.Editor.EffectTriggerDefinitionDrawer");
+                float lineHeight = EditorGUIUtility.singleLineHeight;
+                float spacing = EditorGUIUtility.standardVerticalSpacing;
+                formula.isExpanded = true;
+                Assert.That(formulaDrawer.GetPropertyHeight(formula, new GUIContent("Value Per Stack")), Is.EqualTo(lineHeight * 2f + spacing).Within(0.0001f));
+                condition.isExpanded = false;
+                Assert.That(conditionDrawer.GetPropertyHeight(condition, new GUIContent("Element 0")), Is.EqualTo(lineHeight).Within(0.0001f));
+                condition.isExpanded = true;
+                Assert.That(conditionDrawer.GetPropertyHeight(condition, new GUIContent("Element 0")), Is.EqualTo(lineHeight).Within(0.0001f));
+                serializedTrigger.isExpanded = true;
+                float expectedTriggerHeight = lineHeight + (lineHeight + spacing) * 7f + spacing + EditorGUI.GetPropertyHeight(serializedTrigger.FindPropertyRelative("conditions"), true) + spacing + EditorGUI.GetPropertyHeight(serializedTrigger.FindPropertyRelative("effects"), true);
+                Assert.That(triggerDrawer.GetPropertyHeight(serializedTrigger, new GUIContent("Element 0")), Is.EqualTo(expectedTriggerHeight).Within(0.0001f));
+            }
+            finally
+            {
                 UnityEngine.Object.DestroyImmediate(definition);
             }
         }
@@ -600,23 +1027,23 @@ namespace Xuan.Prometheus.Effects.Tests
         }
 
         /// <summary>
-        /// 按 EffectValueFormula 的序列化 source、multiplier 和 offset 计算期望值，使测试数值始终来源于当前资产配置。
+        /// 按 EffectValueFormula 的序列化 baseValueSource、multiplier 和 offset 计算期望值，使测试数值始终来源于当前资产配置。
         /// </summary>
         private static float EvaluateConfiguredFormula(SerializedProperty formula, EffectSignal signal)
         {
             Assert.That(formula, Is.Not.Null);
-            EffectValueSource source = (EffectValueSource)formula.FindPropertyRelative("source").enumValueIndex;
+            EffectValueSource baseValueSource = (EffectValueSource)formula.FindPropertyRelative("baseValueSource").enumValueIndex;
             float baseValue;
-            switch (source)
+            switch (baseValueSource)
             {
-                case EffectValueSource.Constant: baseValue = 1f; break;
+                case EffectValueSource.One: baseValue = 1f; break;
                 case EffectValueSource.SignalValue: baseValue = signal.Value; break;
                 case EffectValueSource.SignalRequestedValue: baseValue = signal.RequestedValue; break;
-                case EffectValueSource.SourceAttack: baseValue = ReadConfiguredProperty(signal.Source, property => property.Atk); break;
+                case EffectValueSource.CasterAttack: baseValue = ReadConfiguredProperty(signal.Caster, property => property.Atk); break;
                 case EffectValueSource.TargetAttack: baseValue = ReadConfiguredProperty(signal.Target, property => property.Atk); break;
-                case EffectValueSource.SourceMaxHp: baseValue = ReadConfiguredProperty(signal.Source, property => property.MaxHp); break;
+                case EffectValueSource.CasterMaxHp: baseValue = ReadConfiguredProperty(signal.Caster, property => property.MaxHp); break;
                 case EffectValueSource.TargetMaxHp: baseValue = ReadConfiguredProperty(signal.Target, property => property.MaxHp); break;
-                case EffectValueSource.SourceCoreEnergy: baseValue = ReadConfiguredProperty(signal.Source, property => property.CoreEnergy); break;
+                case EffectValueSource.CasterCoreEnergy: baseValue = ReadConfiguredProperty(signal.Caster, property => property.CoreEnergy); break;
                 default: baseValue = 0f; break;
             }
             float multiplier = formula.FindPropertyRelative("multiplier").floatValue;
@@ -649,6 +1076,18 @@ namespace Xuan.Prometheus.Effects.Tests
         }
 
         /// <summary>
+        /// 从当前 Editor 程序集中创建指定 PropertyDrawer，并为类型缺失或构造失败提供清晰的测试错误。
+        /// </summary>
+        private static PropertyDrawer CreatePropertyDrawer(string fullName)
+        {
+            Type drawerType = FindType(fullName);
+            Assert.That(drawerType, Is.Not.Null, $"Editor drawer type '{fullName}' must be loaded.");
+            object drawer = Activator.CreateInstance(drawerType);
+            Assert.That(drawer, Is.InstanceOf<PropertyDrawer>(), $"Editor drawer type '{fullName}' must derive from PropertyDrawer.");
+            return (PropertyDrawer)drawer;
+        }
+
+        /// <summary>
         /// TestEntity 只注册效果示例需要的属性和事件组件，避免测试依赖场景预制体。
         /// </summary>
         private sealed class TestEntity : Entity
@@ -675,6 +1114,42 @@ namespace Xuan.Prometheus.Effects.Tests
             public override void Execute(EffectOperationContext context)
             {
                 ExecutionCount++;
+            }
+        }
+
+        /// <summary>保存最近一次操作接收到的 DamageApplied 信号，供伤害属性结算测试检查完整上下文。</summary>
+        [Serializable]
+        private sealed class DamageSignalCaptureOperation : EffectOperation
+        {
+            /// <summary>获取最近一次执行时收到的不可变战斗信号。</summary>
+            public EffectSignal Signal { get; private set; }
+
+            /// <inheritdoc />
+            public override void Execute(EffectOperationContext context)
+            {
+                Signal = context.Signal;
+            }
+        }
+
+        /// <summary>记录一次操作拿到的实体关系，用于验证 Caster 与 Source 的新语义不会在请求链中被反转。</summary>
+        [Serializable]
+        private sealed class RelationCaptureOperation : EffectOperation
+        {
+            /// <summary>获取直接释放当前行为的实体。</summary>
+            public Entity Caster { get; private set; }
+
+            /// <summary>获取当前行为的目标实体。</summary>
+            public Entity Target { get; private set; }
+
+            /// <summary>获取整条因果链的实际源头实体。</summary>
+            public Entity Source { get; private set; }
+
+            /// <inheritdoc />
+            public override void Execute(EffectOperationContext context)
+            {
+                Caster = context.Caster;
+                Target = context.Target;
+                Source = context.Source;
             }
         }
 

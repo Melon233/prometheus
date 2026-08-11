@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Burning
   m_EditorClassIdentifier: 
   effectId: Example.Burning
-  tags: 536
+  tags: 528
   durationType: 1
   duration: 10
   tickInterval: 2
@@ -42,4 +42,6 @@ MonoBehaviour:
           source: 0
           multiplier: 0
           offset: 0
-        additionalTags: 56
+        additionalTags: 48
+        damageAttributeSource: 2
+        fixedDamageAttribute: 1

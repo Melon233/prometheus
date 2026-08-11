@@ -246,11 +246,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe9d9703fa244062acbc3c5dfd79ca55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elapsedComboTime: 0
-  maxComboIndex: 3
-  maxComboInterval: 2
-  nextComboIndex: 0
-  atkCollider: {fileID: 8140240498181792558}
+  talentConfig: {fileID: 0}
+  attackHits: []
+  legacyAttackCollider: {fileID: 8140240498181792558}
 --- !u!114 &3247687134074917520
 MonoBehaviour:
   m_ObjectHideFlags: 0
