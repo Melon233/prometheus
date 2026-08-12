@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8985909611655034182}
   - component: {fileID: 4228252282322878951}
   - component: {fileID: 7510624304902630162}
+  - component: {fileID: 4163028058706716810}
   m_Layer: 0
   m_Name: Ult
   m_TagString: Untagged
@@ -139,6 +140,19 @@ MonoBehaviour:
   cooldownImg: {fileID: 8577389613818754682}
   energyImg: {fileID: 9009174428487815798}
   cooldownTxt: {fileID: 4185642596334627059}
+--- !u!114 &4163028058706716810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9608893338536637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/ultimate
 --- !u!1 &268348805078034998
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,6 +689,7 @@ GameObject:
   - component: {fileID: 8967025027976393485}
   - component: {fileID: 5519608299788751251}
   - component: {fileID: 6817831982210697045}
+  - component: {fileID: 2339522153426450779}
   m_Layer: 0
   m_Name: Event
   m_TagString: Untagged
@@ -783,6 +798,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2339522153426450779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928080030235924874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openEvent
 --- !u!1 &2361149732978966299
 GameObject:
   m_ObjectHideFlags: 0
@@ -870,6 +898,7 @@ GameObject:
   - component: {fileID: 3721695549695801121}
   - component: {fileID: 3141337353223944733}
   - component: {fileID: 7044330359018103301}
+  - component: {fileID: 8774549371632371786}
   m_Layer: 0
   m_Name: Atk
   m_TagString: Untagged
@@ -979,6 +1008,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8774549371632371786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2730780819692054041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/attack
 --- !u!1 &2858980145849129387
 GameObject:
   m_ObjectHideFlags: 0
@@ -1279,6 +1321,7 @@ GameObject:
   - component: {fileID: 432193463553829685}
   - component: {fileID: 2990124583858808527}
   - component: {fileID: 665793472490363699}
+  - component: {fileID: 5106020955802221992}
   m_Layer: 0
   m_Name: Run
   m_TagString: Untagged
@@ -1388,6 +1431,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5106020955802221992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3148655084785112582}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/toggleSprint
 --- !u!1 &3346186547307957643
 GameObject:
   m_ObjectHideFlags: 0
@@ -1400,6 +1456,7 @@ GameObject:
   - component: {fileID: 3663222325698065807}
   - component: {fileID: 7230176756749474172}
   - component: {fileID: 39261519771295415}
+  - component: {fileID: 8767808267025708253}
   m_Layer: 0
   m_Name: MiniMap
   m_TagString: Untagged
@@ -1508,6 +1565,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8767808267025708253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3346186547307957643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openMiniMap
 --- !u!1 &3409029194532509527
 GameObject:
   m_ObjectHideFlags: 0
@@ -1693,6 +1763,7 @@ GameObject:
   - component: {fileID: 191846536241541986}
   - component: {fileID: 6736116898896409535}
   - component: {fileID: 163567210953798474}
+  - component: {fileID: 2932657835820220616}
   m_Layer: 0
   m_Name: Jump
   m_TagString: Untagged
@@ -1802,6 +1873,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2932657835820220616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3588429004128345856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/jump
 --- !u!1 &3627255888703342319
 GameObject:
   m_ObjectHideFlags: 0
@@ -1998,6 +2082,7 @@ GameObject:
   - component: {fileID: 4553201367119700723}
   - component: {fileID: 8252946244749955275}
   - component: {fileID: 3670308720219407651}
+  - component: {fileID: 7527909252534800585}
   m_Layer: 0
   m_Name: Skill
   m_TagString: Untagged
@@ -2122,6 +2207,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Runtime::Xuan.Prometheus.CdMono
   cooldownImg: {fileID: 4961754515658653470}
   cooldownTxt: {fileID: 208018087426289508}
+--- !u!114 &7527909252534800585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3761387782057539660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/skill
 --- !u!1 &3793981548140894600
 GameObject:
   m_ObjectHideFlags: 0
@@ -2288,7 +2386,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3793981548140894600}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: caddabd7632fa5d4193e3b20ffeb8e1a, type: 3}
   m_Name: 
@@ -2430,6 +2528,7 @@ GameObject:
   - component: {fileID: 6960908013582532146}
   - component: {fileID: 3658582038939129120}
   - component: {fileID: 5537883775646598260}
+  - component: {fileID: 1751055466296341352}
   m_Layer: 0
   m_Name: Quest
   m_TagString: Untagged
@@ -2538,6 +2637,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1751055466296341352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4229990234984219366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openQuest
 --- !u!1 &4371861993017937328
 GameObject:
   m_ObjectHideFlags: 0
@@ -2550,6 +2662,7 @@ GameObject:
   - component: {fileID: 5446819295416174981}
   - component: {fileID: 3051581763450114025}
   - component: {fileID: 6413647856079661690}
+  - component: {fileID: 4369783179641255691}
   m_Layer: 0
   m_Name: CharacterButton
   m_TagString: Untagged
@@ -2658,6 +2771,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4369783179641255691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4371861993017937328}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openCharacter
 --- !u!1 &4421096624339293573
 GameObject:
   m_ObjectHideFlags: 0
@@ -2670,6 +2796,7 @@ GameObject:
   - component: {fileID: 7986153461421405216}
   - component: {fileID: 3710340741081168745}
   - component: {fileID: 2445741323891839660}
+  - component: {fileID: 7784624789367919753}
   m_Layer: 0
   m_Name: Lottery
   m_TagString: Untagged
@@ -2778,6 +2905,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7784624789367919753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4421096624339293573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openLottery
 --- !u!1 &4459372267608501028
 GameObject:
   m_ObjectHideFlags: 0
@@ -2981,6 +3121,7 @@ GameObject:
   - component: {fileID: 5212996388905639463}
   - component: {fileID: 4896827089097990929}
   - component: {fileID: 1055170007391677458}
+  - component: {fileID: 7426308848754805960}
   m_Layer: 0
   m_Name: Dodge
   m_TagString: Untagged
@@ -3090,6 +3231,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7426308848754805960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5005114583124572734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/dodge
 --- !u!1 &5269101914219572769
 GameObject:
   m_ObjectHideFlags: 0
@@ -3500,6 +3654,7 @@ GameObject:
   - component: {fileID: 5735099991269062943}
   - component: {fileID: 3493897069090570332}
   - component: {fileID: 204239320189399824}
+  - component: {fileID: 1348408097944705218}
   m_Layer: 0
   m_Name: Stick
   m_TagString: Untagged
@@ -3608,6 +3763,43 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1348408097944705218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5559903635364102578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9d677f1681015749b15c436eec6d880, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenStick
+  m_MovementRange: 160
+  m_DynamicOriginRange: 100
+  m_ControlPath: <PrometheusVirtualInput>/move
+  m_Behaviour: 0
+  m_UseIsolatedInputActions: 0
+  m_PointerDownAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: b7c7396e-f23f-42e0-9172-ca6cf9bd1a81
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+    m_Priority: 0
+  m_PointerMoveAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: a85d47af-cc4d-45de-97bc-b8bd58913ddc
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+    m_Priority: 0
 --- !u!1 &5673591664586035986
 GameObject:
   m_ObjectHideFlags: 0
@@ -3770,6 +3962,7 @@ GameObject:
   - component: {fileID: 61748591819586787}
   - component: {fileID: 1575548806778888079}
   - component: {fileID: 1285810132342359356}
+  - component: {fileID: 6479258855867678901}
   m_Layer: 0
   m_Name: Walk
   m_TagString: Untagged
@@ -3879,6 +4072,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6479258855867678901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5993495151958486530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/toggleWalk
 --- !u!1 &6079720702809368731
 GameObject:
   m_ObjectHideFlags: 0
@@ -4497,6 +4703,7 @@ GameObject:
   - component: {fileID: 2526551728104761889}
   - component: {fileID: 3896232080076369169}
   - component: {fileID: 2645376325640855829}
+  - component: {fileID: 3924464470699079743}
   m_Layer: 0
   m_Name: BagButton
   m_TagString: Untagged
@@ -4605,6 +4812,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3924464470699079743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7365165806323190203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openBag
 --- !u!1 &7682004290102666792
 GameObject:
   m_ObjectHideFlags: 0
@@ -4684,6 +4904,7 @@ GameObject:
   - component: {fileID: 6257232842703903758}
   - component: {fileID: 2352979163942766458}
   - component: {fileID: 6468592291086982960}
+  - component: {fileID: 6861266751461220580}
   m_Layer: 0
   m_Name: Menu
   m_TagString: Untagged
@@ -4792,6 +5013,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6861266751461220580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7723475864072436336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openMenu
 --- !u!1 &7734721146126967030
 GameObject:
   m_ObjectHideFlags: 0
@@ -5155,6 +5389,7 @@ GameObject:
   - component: {fileID: 4994702941810916485}
   - component: {fileID: 1951555712811455518}
   - component: {fileID: 9073682519561220545}
+  - component: {fileID: 5920955676121540590}
   m_Layer: 0
   m_Name: Guide
   m_TagString: Untagged
@@ -5263,6 +5498,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5920955676121540590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8793407222301216604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d54531977ecb194c95e2d3aa7a5d72a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.OnScreen.OnScreenButton
+  m_ControlPath: <PrometheusVirtualInput>/openGuide
 --- !u!1 &9014861906176305639
 GameObject:
   m_ObjectHideFlags: 0

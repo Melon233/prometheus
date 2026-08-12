@@ -26,5 +26,8 @@ namespace Xuan.Prometheus
         public float gravity;
         public float coreEnergyLimit;
         public float ultEnergyLimit;
+        public float walkEdge = 0.2f;
+        public float sprintEdge = 0.7f;
+        public float damp = 0.05f;
     }
 }

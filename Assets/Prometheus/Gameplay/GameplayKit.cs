@@ -210,7 +210,7 @@ namespace Xuan.Prometheus
                 throw new InvalidOperationException("GameplayKit can only be configured once.");
             }
 
-            AddSystem(new InputSystem(new UnityLegacyInputSource()));
+            AddSystem(new InputSystem(new UnityInputActionSource()));
             AddSystem(new EffectSystem(library: options.EffectLibrary, traceEnabled: true));
             AddSystem(new ListenSystem());
             teamSystem = new TeamSystem();

@@ -7,7 +7,7 @@ namespace Xuan.Prometheus.Logic
     public sealed class GroundMoveLogic : Logic
     {
         private SpineComponent spineComponent;
-        private InputComponent inputComponent;
+        private InputComponent inputComp;
         private MotionComponent motionComponent;
         private PropertyComponent propertyComponent;
 
@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Logic
             OrderTag = OrderTag.Gameplay;
             ControlRequirement = LogicControlRequirement.Move;
             Entity.TryGetComp(out spineComponent);
-            Entity.TryGetComp(out inputComponent);
+            Entity.TryGetComp(out inputComp);
             Entity.TryGetComp(out motionComponent);
             Entity.TryGetComp(out propertyComponent);
             SetMoveMode(MoveMode.Run);
@@ -24,7 +24,7 @@ namespace Xuan.Prometheus.Logic
 
         public override bool CanEnable()
         {
-            return motionComponent.cc.isGrounded && inputComponent.moveDir != Vector2.zero;
+            return motionComponent.cc.isGrounded && inputComp.moveDir != Vector2.zero;
         }
 
         public override bool CanDisable()
@@ -48,15 +48,26 @@ namespace Xuan.Prometheus.Logic
         public override void OnUpdate(float dt)
         {
             MoveMode currentMoveMode = motionComponent.moveMode;
-            if (inputComponent.wasToggleSprintPressedThisFrame)
+            if (inputComp.wasToggleSprintPressedThisFrame)
             {
                 SetMoveMode(currentMoveMode == MoveMode.Sprint ? MoveMode.Run : MoveMode.Sprint);
             }
-            else if (inputComponent.wasToggleWalkPressedThisFrame)
+            else if (inputComp.wasToggleWalkPressedThisFrame)
             {
                 SetMoveMode(currentMoveMode == MoveMode.Walk ? MoveMode.Run : MoveMode.Walk);
             }
-            motionComponent.curVelo = new Vector3(inputComponent.moveDir.x, -2f, inputComponent.moveDir.y) * propertyComponent.MoveSpeed;
+            var safeMoveVec = Vector2.ClampMagnitude(inputComp.moveDir, 1f);
+            var norSpd = safeMoveVec.magnitude;
+
+            var config = motionComponent.propertyConfig;
+            if ((motionComponent.moveMode == MoveMode.Walk && norSpd > config.walkEdge + config.damp) || (motionComponent.moveMode == MoveMode.Sprint && norSpd < config.sprintEdge - config.damp))
+                SetMoveMode(MoveMode.Run);
+            else if (motionComponent.moveMode == MoveMode.Run)
+            {
+                if (norSpd < config.walkEdge - config.damp) SetMoveMode(MoveMode.Walk);
+                else if (norSpd > config.sprintEdge + config.damp) SetMoveMode(MoveMode.Sprint);
+            }
+            motionComponent.curVelo = new Vector3(safeMoveVec.x, -2f, safeMoveVec.y) * propertyComponent.MoveSpeed;
             GroundMoveExecutor configuration = spineComponent.animationLib.groundMoveExecutor;
             spineComponent.TryPlay(configuration.GetSemantic(motionComponent.moveMode), AnimationOwner.GroundMove, AnimationPriority.Locomotion, true);
         }

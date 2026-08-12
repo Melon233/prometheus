@@ -122,87 +122,7 @@ namespace Xuan.Prometheus
         protected global::Xuan.Prometheus.CdMono Skill { get; private set; }
 
         /// <summary>
-        /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnLotteryButtonClick();
-
-        /// <summary>
-        /// 处理 StickButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnStickButtonClick();
-
-        /// <summary>
-        /// 处理 UltButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnUltButtonClick();
-
-        /// <summary>
-        /// 处理 MiniMapButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnMiniMapButtonClick();
-
-        /// <summary>
-        /// 处理 QuestButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnQuestButtonClick();
-
-        /// <summary>
-        /// 处理 MenuButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnMenuButtonClick();
-
-        /// <summary>
-        /// 处理 JumpButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnJumpButtonClick();
-
-        /// <summary>
-        /// 处理 AtkButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnAtkButtonClick();
-
-        /// <summary>
-        /// 处理 DodgeButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnDodgeButtonClick();
-
-        /// <summary>
-        /// 处理 SkillButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnSkillButtonClick();
-
-        /// <summary>
-        /// 处理 WalkButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnWalkButtonClick();
-
-        /// <summary>
-        /// 处理 RunButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnRunButtonClick();
-
-        /// <summary>
-        /// 处理 GuideButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnGuideButtonClick();
-
-        /// <summary>
-        /// 处理 EventButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnEventButtonClick();
-
-        /// <summary>
-        /// 处理 CharacterButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnCharacterButtonClick();
-
-        /// <summary>
-        /// 处理 BagButton 的点击事件；按钮监听由生成基类自动注册和移除。
-        /// </summary>
-        protected abstract void OnBagButtonClick();
-
-        /// <summary>
-        /// 按 Binder 表中的稳定索引和名称绑定全部强类型组件字段，并为所有 Button 自动注册点击监听。
+        /// 按 Binder 表中的稳定索引和名称绑定全部强类型组件字段，并为没有接入 Input System 屏幕控件的 Button 注册点击监听。
         /// </summary>
         protected override void BindComponents(UIComponentBinder binder)
         {
@@ -229,47 +149,13 @@ namespace Xuan.Prometheus
             Ult = binder.Get<global::Xuan.Prometheus.UltMono>(20, "Ult");
             BuffList = binder.Get<global::SuperScrollView.LoopListView2>(21, "BuffList");
             Skill = binder.Get<global::Xuan.Prometheus.CdMono>(22, "Skill");
-
-            LotteryButton.onClick.AddListener(OnLotteryButtonClick);
-            StickButton.onClick.AddListener(OnStickButtonClick);
-            UltButton.onClick.AddListener(OnUltButtonClick);
-            MiniMapButton.onClick.AddListener(OnMiniMapButtonClick);
-            QuestButton.onClick.AddListener(OnQuestButtonClick);
-            MenuButton.onClick.AddListener(OnMenuButtonClick);
-            JumpButton.onClick.AddListener(OnJumpButtonClick);
-            AtkButton.onClick.AddListener(OnAtkButtonClick);
-            DodgeButton.onClick.AddListener(OnDodgeButtonClick);
-            SkillButton.onClick.AddListener(OnSkillButtonClick);
-            WalkButton.onClick.AddListener(OnWalkButtonClick);
-            RunButton.onClick.AddListener(OnRunButtonClick);
-            GuideButton.onClick.AddListener(OnGuideButtonClick);
-            EventButton.onClick.AddListener(OnEventButtonClick);
-            CharacterButton.onClick.AddListener(OnCharacterButtonClick);
-            BagButton.onClick.AddListener(OnBagButtonClick);
         }
 
         /// <summary>
-        /// 在面板最终释放时移除全部 Button 点击监听并清空组件引用，避免事件或控制器延长 Unity 对象生命周期。
+        /// 在面板最终释放时移除生成器托管的 Button 点击监听并清空组件引用，避免事件或控制器延长 Unity 对象生命周期。
         /// </summary>
         protected override void UnbindComponents()
         {
-            LotteryButton.onClick.RemoveListener(OnLotteryButtonClick);
-            StickButton.onClick.RemoveListener(OnStickButtonClick);
-            UltButton.onClick.RemoveListener(OnUltButtonClick);
-            MiniMapButton.onClick.RemoveListener(OnMiniMapButtonClick);
-            QuestButton.onClick.RemoveListener(OnQuestButtonClick);
-            MenuButton.onClick.RemoveListener(OnMenuButtonClick);
-            JumpButton.onClick.RemoveListener(OnJumpButtonClick);
-            AtkButton.onClick.RemoveListener(OnAtkButtonClick);
-            DodgeButton.onClick.RemoveListener(OnDodgeButtonClick);
-            SkillButton.onClick.RemoveListener(OnSkillButtonClick);
-            WalkButton.onClick.RemoveListener(OnWalkButtonClick);
-            RunButton.onClick.RemoveListener(OnRunButtonClick);
-            GuideButton.onClick.RemoveListener(OnGuideButtonClick);
-            EventButton.onClick.RemoveListener(OnEventButtonClick);
-            CharacterButton.onClick.RemoveListener(OnCharacterButtonClick);
-            BagButton.onClick.RemoveListener(OnBagButtonClick);
-
             LotteryButton = null;
             StickButton = null;
             UltButton = null;

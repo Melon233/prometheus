@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using SuperScrollView;
 using UnityEngine;
+using UnityEngine.UI;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus
@@ -12,7 +14,7 @@ namespace Xuan.Prometheus
     /// Hud 面板业务控制器，用于验证 UIKit 的类型扫描、Prefab 加载、组件绑定、打开生命周期和关闭缓存能力。
     /// </summary>
     [UIPanelConfig("Prefabs_HudPanel", UIPanelLayer.Normal, UIPanelClosePolicy.Cache)]
-    public sealed class HudPanel : HudPanelBase
+    public sealed class HudPanel : HudPanelBase, IInputReceiver
     {
         /// <summary>保存当前 HUD 实际订阅的事件总线实例，确保最终解绑时移除同一条监听。</summary>
         private IEventKit eventKit;
@@ -31,6 +33,12 @@ namespace Xuan.Prometheus
 
         /// <summary>标记当前缓存面板是否正在显示，关闭期间只记录目标编号而不持有字段监听。</summary>
         private bool isObserving;
+
+        /// <summary>保存当前 HUD 绑定到的集中式输入系统，供 HUD 命令与玩法输入共用同一套 Action 仲裁。</summary>
+        private InputSystem inputSystem;
+
+        /// <summary>保存 HUD 自有导航动作的独占控制租约，关闭缓存面板时立即释放。</summary>
+        private ControlLease hudCommandLease;
 
         /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 ListenSystem 观察。</summary>
         protected override void OnBind()
@@ -76,6 +84,8 @@ namespace Xuan.Prometheus
             IGameplayKit gameplayKit = Core.Gameplay ?? throw new InvalidOperationException($"{nameof(HudPanel)} requires GameplayKit before opening.");
             if (!gameplayKit.TryGetSystem(out listenSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(ListenSystem)}.");
             if (!gameplayKit.TryGetSystem(out TeamSystem teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
+            if (!gameplayKit.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
+            AcquireInputBindings();
             isObserving = true;
             BindObservedEntity(teamSystem.ActiveEntityId);
         }
@@ -83,6 +93,7 @@ namespace Xuan.Prometheus
         /// <summary>面板进入缓存关闭状态时释放字段监听，重新打开时会从当前值立即恢复。</summary>
         protected override void OnClose()
         {
+            ReleaseInputBindings();
             isObserving = false;
             ReleaseValueListeners();
         }
@@ -153,101 +164,105 @@ namespace Xuan.Prometheus
         /// <summary>HUD 最终释放前移除小队监听和全部字段监听，避免事件总线或属性继续持有失效控制器。</summary>
         protected override void OnUnbind()
         {
+            ReleaseInputBindings();
             ReleaseValueListeners();
             if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
             eventKit = null;
+            inputSystem = null;
             listenSystem = null;
             observedEntityId = 0;
             isObserving = false;
         }
 
-        /// <summary>
-        /// 响应摇杆按钮点击；监听的注册和移除由 HudPanelBase 自动管理。
-        /// </summary>
-        protected override void OnStickButtonClick()
+        /// <summary>为 HUD 自有命令申请普通控制权；玩法按钮继续由当前角色已有的控制租约消费。</summary>
+        private void AcquireInputBindings()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} StickButton clicked.", Root);
+            ReleaseInputBindings();
+            hudCommandLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.HudCommands, InputContexts.Gameplay);
         }
 
-        /// <summary>
-        /// 响应攻击按钮点击；监听的注册和移除由 HudPanelBase 自动管理。
-        /// </summary>
-        protected override void OnAtkButtonClick()
+        /// <summary>幂等释放 HUD 命令租约，避免缓存关闭后快捷键继续触发隐藏按钮。</summary>
+        private void ReleaseInputBindings()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} AtkButton clicked.", Root);
+            hudCommandLease?.Dispose();
+            hudCommandLease = null;
         }
 
-        /// <summary>
-        /// 响应闪避按钮点击；监听的注册和移除由 HudPanelBase 自动管理。
-        /// </summary>
-        protected override void OnDodgeButtonClick()
+        /// <inheritdoc />
+        bool IInputReceiver.IsAlive => Root != null;
+
+        /// <inheritdoc />
+        void IInputReceiver.ResetInput()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} DodgeButton clicked.", Root);
         }
 
-        protected override void OnMiniMapButtonClick()
+        /// <inheritdoc />
+        void IInputReceiver.ReceiveInput(in InputFrame frame, InputActionMask actions)
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} MiniMapButton clicked.", Root);
+            if (!IsOpen) return;
+            TriggerButtonAction(actions, InputActionMask.OpenLottery, frame.OpenLottery, LotteryButton, HandleLotteryAction);
+            TriggerButtonAction(actions, InputActionMask.OpenMiniMap, frame.OpenMiniMap, MiniMapButton, HandleMiniMapAction);
+            TriggerButtonAction(actions, InputActionMask.OpenQuest, frame.OpenQuest, QuestButton, HandleQuestAction);
+            TriggerButtonAction(actions, InputActionMask.OpenMenu, frame.OpenMenu, MenuButton, HandleMenuAction);
+            TriggerButtonAction(actions, InputActionMask.OpenGuide, frame.OpenGuide, GuideButton, HandleGuideAction);
+            TriggerButtonAction(actions, InputActionMask.OpenEvent, frame.OpenEvent, EventButton, HandleEventAction);
+            TriggerButtonAction(actions, InputActionMask.OpenCharacter, frame.OpenCharacter, CharacterButton, HandleCharacterAction);
+            TriggerButtonAction(actions, InputActionMask.OpenBag, frame.OpenBag, BagButton, HandleBagAction);
         }
 
-        protected override void OnQuestButtonClick()
+        /// <summary>仅在动作本帧按下且对应按钮可见、可交互时执行统一按钮行为。</summary>
+        private static void TriggerButtonAction(InputActionMask deliveredActions, InputActionMask expectedAction, InputButtonState buttonState, Button button, Action handler)
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} QuestButton clicked.", Root);
+            if ((deliveredActions & expectedAction) == 0 || !buttonState.PressedThisFrame || button == null || !button.IsActive() || !button.IsInteractable()) return;
+            handler();
         }
 
-        protected override void OnMenuButtonClick()
+        /// <summary>执行打开小地图动作的 HUD 业务入口。</summary>
+        private void HandleMiniMapAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} MenuButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenMiniMap triggered.", Root);
         }
 
-        protected override void OnSkillButtonClick()
+        /// <summary>执行打开任务动作的 HUD 业务入口。</summary>
+        private void HandleQuestAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} SkillButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenQuest triggered.", Root);
         }
 
-        protected override void OnUltButtonClick()
+        /// <summary>执行打开菜单动作的 HUD 业务入口。</summary>
+        private void HandleMenuAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} UltButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenMenu triggered.", Root);
         }
 
-        protected override void OnWalkButtonClick()
+        /// <summary>执行打开活动动作的 HUD 业务入口。</summary>
+        private void HandleEventAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} WalkButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenEvent triggered.", Root);
         }
 
-        protected override void OnRunButtonClick()
+        /// <summary>执行打开抽奖动作的 HUD 业务入口。</summary>
+        private void HandleLotteryAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} RunButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenLottery triggered.", Root);
         }
 
-        protected override void OnJumpButtonClick()
+        /// <summary>执行打开引导动作的 HUD 业务入口。</summary>
+        private void HandleGuideAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} JumpButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenGuide triggered.", Root);
         }
 
-        protected override void OnEventButtonClick()
+        /// <summary>执行打开角色动作的 HUD 业务入口。</summary>
+        private void HandleCharacterAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} EventButton clicked.", Root);
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenCharacter triggered.", Root);
         }
 
-        protected override void OnLotteryButtonClick()
+        /// <summary>执行打开背包动作的 HUD 业务入口。</summary>
+        private void HandleBagAction()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} LotteryButton clicked.", Root);
-        }
-
-        protected override void OnGuideButtonClick()
-        {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} GuideButton clicked.", Root);
-        }
-
-        protected override void OnCharacterButtonClick()
-        {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} CharacterButton clicked.", Root);
-        }
-
-        protected override void OnBagButtonClick()
-        {
-            throw new System.NotImplementedException();
+            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenBag triggered.", Root);
         }
     }
 }

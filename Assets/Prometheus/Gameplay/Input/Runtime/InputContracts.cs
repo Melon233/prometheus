@@ -26,11 +26,30 @@ namespace Xuan.Prometheus.Input
         SelectTeamMember2 = 1 << 13,
         /// <summary>选择第三个固定小队槽位。</summary>
         SelectTeamMember3 = 1 << 14,
+        /// <summary>打开抽奖界面。</summary>
+        OpenLottery = 1 << 15,
+        // 位 16 由已移除的 ToggleStick 保留，避免后续动作的数值发生变化。
+        /// <summary>打开小地图界面。</summary>
+        OpenMiniMap = 1 << 17,
+        /// <summary>打开任务界面。</summary>
+        OpenQuest = 1 << 18,
+        /// <summary>打开主菜单界面。</summary>
+        OpenMenu = 1 << 19,
+        /// <summary>打开引导界面。</summary>
+        OpenGuide = 1 << 20,
+        /// <summary>打开活动界面。</summary>
+        OpenEvent = 1 << 21,
+        /// <summary>打开角色界面。</summary>
+        OpenCharacter = 1 << 22,
+        /// <summary>打开背包界面。</summary>
+        OpenBag = 1 << 23,
         Gameplay = Move | Attack | Skill | Ultimate | Dodge | Jump | SpecialAttack | ToggleSprint | ToggleWalk,
         Navigation = Navigate | Submit | Cancel,
         /// <summary>组合全部小队槽位选择动作，供 TeamSystem 申请独立控制权。</summary>
         TeamSelection = SelectTeamMember1 | SelectTeamMember2 | SelectTeamMember3,
-        All = Gameplay | Navigation | TeamSelection
+        /// <summary>组合只由 HUD 自身消费的界面按钮动作。</summary>
+        HudCommands = OpenLottery | OpenMiniMap | OpenQuest | OpenMenu | OpenGuide | OpenEvent | OpenCharacter | OpenBag,
+        All = Gameplay | Navigation | TeamSelection | HudCommands
     }
 
     /// <summary>定义同一输入动作在相同仲裁层级中的分发方式。</summary>
@@ -135,7 +154,7 @@ namespace Xuan.Prometheus.Input
     public readonly struct InputFrame
     {
         /// <summary>创建包含玩法与界面动作的完整输入快照。</summary>
-        public InputFrame(long frameId, Vector2 move, Vector2 navigate, InputButtonState attack, InputButtonState skill, InputButtonState ultimate, InputButtonState dodge, InputButtonState jump, InputButtonState specialAttack, InputButtonState toggleSprint, InputButtonState toggleWalk, InputButtonState submit, InputButtonState cancel, InputButtonState selectTeamMember1, InputButtonState selectTeamMember2, InputButtonState selectTeamMember3)
+        public InputFrame(long frameId, Vector2 move, Vector2 navigate, InputButtonState attack, InputButtonState skill, InputButtonState ultimate, InputButtonState dodge, InputButtonState jump, InputButtonState specialAttack, InputButtonState toggleSprint, InputButtonState toggleWalk, InputButtonState submit, InputButtonState cancel, InputButtonState selectTeamMember1, InputButtonState selectTeamMember2, InputButtonState selectTeamMember3, InputButtonState openLottery = default, InputButtonState openMiniMap = default, InputButtonState openQuest = default, InputButtonState openMenu = default, InputButtonState openGuide = default, InputButtonState openEvent = default, InputButtonState openCharacter = default, InputButtonState openBag = default)
         {
             FrameId = frameId;
             Move = move;
@@ -153,6 +172,14 @@ namespace Xuan.Prometheus.Input
             SelectTeamMember1 = selectTeamMember1;
             SelectTeamMember2 = selectTeamMember2;
             SelectTeamMember3 = selectTeamMember3;
+            OpenLottery = openLottery;
+            OpenMiniMap = openMiniMap;
+            OpenQuest = openQuest;
+            OpenMenu = openMenu;
+            OpenGuide = openGuide;
+            OpenEvent = openEvent;
+            OpenCharacter = openCharacter;
+            OpenBag = openBag;
         }
 
         /// <summary>获取由 InputSystem 分配的单调递增帧编号。</summary>
@@ -203,6 +230,30 @@ namespace Xuan.Prometheus.Input
         /// <summary>获取选择第三个小队成员按钮的状态。</summary>
         public InputButtonState SelectTeamMember3 { get; }
 
+        /// <summary>获取打开抽奖界面按钮的状态。</summary>
+        public InputButtonState OpenLottery { get; }
+
+        /// <summary>获取打开小地图界面按钮的状态。</summary>
+        public InputButtonState OpenMiniMap { get; }
+
+        /// <summary>获取打开任务界面按钮的状态。</summary>
+        public InputButtonState OpenQuest { get; }
+
+        /// <summary>获取打开主菜单界面按钮的状态。</summary>
+        public InputButtonState OpenMenu { get; }
+
+        /// <summary>获取打开引导界面按钮的状态。</summary>
+        public InputButtonState OpenGuide { get; }
+
+        /// <summary>获取打开活动界面按钮的状态。</summary>
+        public InputButtonState OpenEvent { get; }
+
+        /// <summary>获取打开角色界面按钮的状态。</summary>
+        public InputButtonState OpenCharacter { get; }
+
+        /// <summary>获取打开背包界面按钮的状态。</summary>
+        public InputButtonState OpenBag { get; }
+
         /// <summary>判断指定动作集合在当前快照中是否包含有效输入。</summary>
         public bool HasAny(InputActionMask actions)
         {
@@ -220,8 +271,17 @@ namespace Xuan.Prometheus.Input
             if ((actions & InputActionMask.Cancel) != 0 && Cancel.IsActive) return true;
             if ((actions & InputActionMask.SelectTeamMember1) != 0 && SelectTeamMember1.IsActive) return true;
             if ((actions & InputActionMask.SelectTeamMember2) != 0 && SelectTeamMember2.IsActive) return true;
-            return (actions & InputActionMask.SelectTeamMember3) != 0 && SelectTeamMember3.IsActive;
+            if ((actions & InputActionMask.SelectTeamMember3) != 0 && SelectTeamMember3.IsActive) return true;
+            if ((actions & InputActionMask.OpenLottery) != 0 && OpenLottery.IsActive) return true;
+            if ((actions & InputActionMask.OpenMiniMap) != 0 && OpenMiniMap.IsActive) return true;
+            if ((actions & InputActionMask.OpenQuest) != 0 && OpenQuest.IsActive) return true;
+            if ((actions & InputActionMask.OpenMenu) != 0 && OpenMenu.IsActive) return true;
+            if ((actions & InputActionMask.OpenGuide) != 0 && OpenGuide.IsActive) return true;
+            if ((actions & InputActionMask.OpenEvent) != 0 && OpenEvent.IsActive) return true;
+            if ((actions & InputActionMask.OpenCharacter) != 0 && OpenCharacter.IsActive) return true;
+            return (actions & InputActionMask.OpenBag) != 0 && OpenBag.IsActive;
         }
+
     }
 
     /// <summary>抽象一个可由 InputSystem 每帧采样一次的输入设备或输入数据流。</summary>
