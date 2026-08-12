@@ -1,0 +1,20 @@
+{
+    "name": "Prometheus.Fmod.Editor",
+    "rootNamespace": "Xuan.Prometheus.Editor",
+    "references": [
+        "GUID:16e57f450b7e31a40b7cc5d986111bbb",
+        "GUID:aab3caaf43456d6449a3e035348ff798",
+        "GUID:0c752da273b17c547ae705acf0f2adf2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

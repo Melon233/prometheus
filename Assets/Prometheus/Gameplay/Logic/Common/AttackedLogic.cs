@@ -61,7 +61,6 @@ namespace Xuan.Prometheus
             playback = newPlayback;
             playback.Finished += OnAnimationFinished;
             EnterAttackedState();
-            if (configuration.AudioClip != null) AudioKit.Ins.Play(configuration.AudioClip);
         }
 
         /// <summary>只处理当前会话的结束；连续受击替换产生的 Interrupted 回调保留原有受击状态。</summary>

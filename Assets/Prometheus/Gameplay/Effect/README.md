@@ -59,6 +59,8 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 - 子信号必须保留 SignalChainId 并增加 ChainDepth，以便 OncePerSignalChain 和递归上限生效。
 - `Caster` 始终表示直接释放当前行为的实体，`Source` 始终表示整条因果链的实际源头实体。
 - 表现层应监听结果信号播放 VFX、音效和飘字，不应反向修改效果运行时。
+- `CombatAudioPresentationSystem` 统一消费实际值大于零的 `DamageApplied` 并在信号世界坐标播放命中音效；普通、周期和致命伤害都不依赖受击动画，受击 AnimationLine 不得重复绑定同一命中事件。
+- `SignalProcessed` 的只读观察者异常会被逐个隔离并写入 Effect trace，表现故障不得中断战斗结算或阻止其他表现模块收到同一事实。
 
 ## 控制状态
 
@@ -82,3 +84,9 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 重复施加持续效果时，层数变化与时长刷新分别产生 `EffectStacked` 和 `EffectRefreshed`。`RefreshDuration` 不执行 On Stack；`AddStackAndRefreshDuration` 未满层时同时执行 On Stack 与 On Refresh，满层后只执行 On Refresh；刷新 `ElapsedTime` 时保留 `TickElapsedTime`，避免改变周期效果的既有结算节奏。
 
 Effect Id 和 Trigger Id 都提供 `Automatic` 与 `Custom` 两种模式；Automatic 分别使用资产名和 Signal Type，减少手写标识符错误。新增 `Property Modifier` 时会自动展开 `valuePerStack`，其默认公式为 `One × 0 + 0`。`Key Policy` 默认使用 `Automatic`，按 `PropertyType + PropertyModifierMode` 生成实例资源键；只有同一效果需要多条相同属性和相同模式的独立 Modifier 时才选择 `Custom`。在任意 `PropertyModifierOperation` 配置框内点击鼠标右键，可以复制完整配置并粘贴到其他 Property Modifier。
+
+`EffectValueFormula` 的 Property 来源由 `EffectValueEntity + EffectPropertyValue` 正交组成，因此 Caster、Target、Source 都能自由读取任意运行时属性。`Hp/CoreEnergy/UltEnergy` 表示当前资源，`MaxHp/CoreEnergyLimit/UltEnergyLimit` 表示可被运行时 Modifier 或基础值入口更新的上限副本；公式只读取 `PropertyComponent`，不会在战斗过程中回读 `PropertyConfig`。旧版 `CasterAttack/TargetAttack/CasterMaxHp/TargetMaxHp/CasterCoreEnergy` 的序列化整数会在反序列化时自动迁移到新结构。
+
+`CoreEnergyGainOperation` 接受有符号公式结果：正数增加核心能量，负数扣除核心能量，最终值统一限制在 `0～CoreEnergyLimit`。因此满能量后的清空可以直接配置为运行时能量（或等值上限）乘以 `-1`，无需额外清空操作。
+
+正式资产集成测试必须从当前 `EffectDefinition`、`EffectTriggerSet` 或其他被测资产读取配置并独立计算预期结果，不得在断言中复制增量、阈值、持续时间等配置常量；只有使用测试内存对象验证纯算法边界时，才应显式写出输入和对应期望值。

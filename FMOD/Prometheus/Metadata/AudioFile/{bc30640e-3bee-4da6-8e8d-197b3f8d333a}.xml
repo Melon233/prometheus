@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{bc30640e-3bee-4da6-8e8d-197b3f8d333a}">
+		<property name="assetPath">
+			<value>较脆的爆炸－YS070523.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>1.7182766439909296</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{4bafa767-afb8-4480-8f30-ec50f126cb09}</destination>
+		</relationship>
+	</object>
+</objects>

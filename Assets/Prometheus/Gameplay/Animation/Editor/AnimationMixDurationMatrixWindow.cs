@@ -13,13 +13,30 @@ namespace Xuan.Prometheus.Editor
         private const float CellHeight = 22f;
         private const float HeaderHeight = 104f;
 
-        private static readonly AnimationSemantic[] Semantics = (AnimationSemantic[])Enum.GetValues(typeof(AnimationSemantic));
+        private static readonly AnimationSemantic[] Semantics = CreateAlphabeticallySortedSemantics();
         private static readonly Color OverrideFieldBackgroundColor = new Color(0.48f, 0.82f, 0.55f, 1f);
 
         [NonSerialized] private GUIStyle headerStyle;
         private float cellWidth;
         private Vector2 scrollPosition;
         private AnimationLibrary selectedLibrary;
+
+        /// <summary>按照动画语义的显示名称创建忽略大小写的稳定字母序列表，确保矩阵行列始终使用一致且易查找的排列。</summary>
+        private static AnimationSemantic[] CreateAlphabeticallySortedSemantics()
+        {
+            AnimationSemantic[] semantics = (AnimationSemantic[])Enum.GetValues(typeof(AnimationSemantic));
+            Array.Sort(semantics, CompareSemanticsByDisplayName);
+            return semantics;
+        }
+
+        /// <summary>先按忽略大小写的完整显示名称排序，再用区分大小写的名称消除比较相等时的不确定性。</summary>
+        private static int CompareSemanticsByDisplayName(AnimationSemantic left, AnimationSemantic right)
+        {
+            string leftName = left.ToString();
+            string rightName = right.ToString();
+            int ignoreCaseComparison = StringComparer.OrdinalIgnoreCase.Compare(leftName, rightName);
+            return ignoreCaseComparison != 0 ? ignoreCaseComparison : StringComparer.Ordinal.Compare(leftName, rightName);
+        }
 
         /// <summary>从 Tools 菜单打开矩阵窗口，并优先使用 Project 当前选中的 AnimationLibrary。</summary>
         [MenuItem("Tools/Prometheus/Animation/Open MixDuration Matrix")]

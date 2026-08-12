@@ -4,16 +4,14 @@ using UnityEngine;
 
 namespace Xuan.Prometheus
 {
-    /// <summary>保存终结技 AnimationLine、音效和特效配置，不持有 UltimateComponent。</summary>
+    /// <summary>保存终结技 AnimationLine 和特效配置；音效由 AnimationLine 的 FMOD 绑定负责。</summary>
     [Serializable]
     public sealed class UltimateExecutor
     {
         [SerializeField] private AnimationLine ultimateLine;
-        [SerializeField] private AudioClip ultimateAudio;
         [SerializeField] private YefaVfx ultVfx;
 
         public AnimationSemantic Semantic => ultimateLine == null ? AnimationSemantic.None : ultimateLine.Semantic;
-        public AudioClip AudioClip => ultimateAudio;
         public YefaVfx Vfx => ultVfx;
 
         /// <summary>收集终结技 AnimationLine，供 AnimationLibrary 建立语义索引。</summary>

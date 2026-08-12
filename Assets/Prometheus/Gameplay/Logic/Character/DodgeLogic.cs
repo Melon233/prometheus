@@ -9,6 +9,8 @@ namespace Xuan.Prometheus.Logic
         private InputComponent inputComponent;
         private SpineComponent spineComponent;
         private DodgeComponent dodgeComponent;
+        /// <summary>保存水平速度运行态；闪避开始时只清除水平分量，竖直分量继续由 GravityLogic 更新。</summary>
+        private MotionComponent motionComponent;
 
         public override void AfterNew()
         {
@@ -17,6 +19,7 @@ namespace Xuan.Prometheus.Logic
             Entity.TryGetComp(out inputComponent);
             Entity.TryGetComp(out spineComponent);
             Entity.TryGetComp(out dodgeComponent);
+            Entity.TryGetComp(out motionComponent);
         }
 
         public override bool CanEnable()
@@ -34,8 +37,9 @@ namespace Xuan.Prometheus.Logic
             dodgeComponent.isDodging = true;
             Entity.BlockLogic<RotateLogic>();
             Entity.BlockLogic<GroundMoveLogic>();
-            Entity.BlockLogic<MotionLogic>();
             Entity.BlockLogic<AirMoveLogic>();
+            motionComponent.curVelo.x = 0f;
+            motionComponent.curVelo.z = 0f;
             DodgeExecutor configuration = spineComponent.animationLib.dodgeExecutor;
             playback = spineComponent.TryPlay(configuration.GetSemantic(inputComponent.moveDir.x != 0f), AnimationOwner.Dodge, AnimationPriority.Dodge, false);
             if (playback == null)
@@ -64,7 +68,6 @@ namespace Xuan.Prometheus.Logic
             dodgeComponent.isDodging = false;
             Entity.UnBlockLogic<GroundMoveLogic>();
             Entity.UnBlockLogic<RotateLogic>();
-            Entity.UnBlockLogic<MotionLogic>();
             Entity.UnBlockLogic<AirMoveLogic>();
         }
 
@@ -79,6 +82,7 @@ namespace Xuan.Prometheus.Logic
                 playback.Finished -= OnAnimationFinished;
             }
             playback = null;
+            motionComponent = null;
         }
     }
 }

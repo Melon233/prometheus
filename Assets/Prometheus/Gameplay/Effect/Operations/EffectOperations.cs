@@ -559,35 +559,38 @@ namespace Xuan.Prometheus.Effects
             property.RemoveControlStateModifier(modifier);
         }
     }
+
+    /// <summary>按照配置公式调整目标核心能量；正数增加、负数扣除，最终值由 PropertyComponent 约束到运行时范围。</summary>
     [Serializable]
     public sealed class CoreEnergyGainOperation : EffectOperation
     {
+        /// <summary>保存本次核心能量有符号变化量的计算公式。</summary>
         [SerializeField] private EffectValueFormula amount = new EffectValueFormula();
 
         /// <summary>
-        /// 创建默认核心能量增加操作，供 Unity 序列化器使用。
+        /// 创建默认核心能量变化操作，供 Unity 序列化器使用。
         /// </summary>
         public CoreEnergyGainOperation()
         {
         }
 
         /// <summary>
-        /// 创建使用指定数值公式和标签的核心能量增加操作。
+        /// 创建使用指定数值公式的核心能量变化操作；公式可以返回正数或负数。
         /// </summary>
-        public CoreEnergyGainOperation(EffectValueFormula gainAmount)
+        public CoreEnergyGainOperation(EffectValueFormula changeAmount)
         {
-            amount = gainAmount ?? EffectValueFormula.Constant(0f);
+            amount = changeAmount ?? EffectValueFormula.Constant(0f);
         }
 
         /// <summary>
-        /// 对目标结算核心能量增加，ModifiableProperty 会在最终值实际变化时通知监听方。
+        /// 对目标结算有符号核心能量变化，PropertyComponent 会将结果约束在零到运行时上限之间。
         /// </summary>
         public override void Execute(EffectOperationContext context)
         {
             if (context.Target == null) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
-            float requestedGain = Mathf.Max(0f, amount.Evaluate(context));
-            property.OnGainCoreEnergy(requestedGain);
+            float requestedChange = amount.Evaluate(context);
+            property.OnGainCoreEnergy(requestedChange);
         }
 
     }

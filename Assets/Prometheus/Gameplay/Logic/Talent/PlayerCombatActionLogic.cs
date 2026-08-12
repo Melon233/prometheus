@@ -52,7 +52,6 @@ namespace Xuan.Prometheus.Logic
         private ControlStateModifier movementLockModifier;
         private AnimationPlayback activePlayback;
         private PlayerCombatHitContext activeHitContext;
-        private AudioClip activeAudio;
         private YefaVfx activeVfx;
         private bool activeHasVfx;
         private bool isHitWindowOpen;
@@ -160,16 +159,15 @@ namespace Xuan.Prometheus.Logic
         }
 
         /// <summary>在动画已经成功取得主轨所有权后建立一次动作上下文，并锁定移动与转向。</summary>
-        protected bool BeginAction(AnimationPlayback playback, PlayerCombatHitContext hitContext, AudioClip audioClip, bool hasVfx, YefaVfx vfx)
+        protected bool BeginAction(AnimationPlayback playback, PlayerCombatHitContext hitContext, bool hasVfx, YefaVfx vfx)
         {
             if (playback == null) return false;
             CloseAllBoundHitboxes();
             activePlayback = playback;
             activeHitContext = hitContext;
-            activeAudio = audioClip;
             activeHasVfx = hasVfx;
             activeVfx = vfx;
-            playback.EventReceived += OnAnimationEvent;
+            playback.CommandReceived += OnAnimationCommand;
             playback.Finished += OnAnimationFinished;
             AcquireMovementLock();
             AcquireRotationLock();
@@ -200,19 +198,18 @@ namespace Xuan.Prometheus.Logic
         {
         }
 
-        /// <summary>解释公共命中窗口事件，并使用当前动作独立配置的碰撞体、音效和特效。</summary>
-        private void OnAnimationEvent(AnimationPlayback source, Spine.Event animationEvent)
+        /// <summary>解释当前 AnimationLine 的强类型命中窗口命令，并使用当前动作独立配置的碰撞体和特效。</summary>
+        private void OnAnimationCommand(AnimationPlayback source, AnimationLineEventCommand command)
         {
-            if (!ReferenceEquals(source, activePlayback) || animationEvent == null || animationEvent.Data == null) return;
-            if (animationEvent.Data.Name == SpineComponent.animationLib.hitStart)
+            if (!ReferenceEquals(source, activePlayback)) return;
+            if (command == AnimationLineEventCommand.EnableHitbox)
             {
                 CloseAllBoundHitboxes();
                 SetHitboxEnabled(activeHitContext.ColliderProxy, true);
                 isHitWindowOpen = true;
                 if (activeHasVfx) VfxComponent.Play(activeVfx);
-                if (activeAudio != null) AudioKit.Ins.Play(activeAudio);
             }
-            else if (animationEvent.Data.Name == SpineComponent.animationLib.hitEnd)
+            else if (command == AnimationLineEventCommand.DisableHitbox)
             {
                 CloseAllBoundHitboxes();
                 OnHitWindowClosed();
@@ -247,11 +244,10 @@ namespace Xuan.Prometheus.Logic
             if (!ReferenceEquals(playback, activePlayback)) return;
             CloseAllBoundHitboxes();
             if (reason != AnimationEndReason.Completed && activeHasVfx && VfxComponent != null) VfxComponent.Stop(activeVfx);
-            playback.EventReceived -= OnAnimationEvent;
+            playback.CommandReceived -= OnAnimationCommand;
             playback.Finished -= OnAnimationFinished;
             activePlayback = null;
             activeHitContext = default;
-            activeAudio = null;
             activeHasVfx = false;
             activeVfx = default;
             ReleaseMovementLock();

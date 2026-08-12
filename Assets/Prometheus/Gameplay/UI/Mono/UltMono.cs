@@ -21,8 +21,10 @@ namespace Xuan.Prometheus
         {
             if (cooldownImg == null || energyImg == null || cooldownTxt == null) throw new System.InvalidOperationException($"{nameof(UltMono)} on '{name}' requires cooldownImg, energyImg and cooldownTxt references.");
             energyImg.fillAmount = maxEnergy > 0f ? Mathf.Clamp01(currentEnergy / maxEnergy) : 0f;
+            var c = energyImg.color;
             cooldownImg.fillAmount = cooldownDuration > 0f ? Mathf.Clamp01(cooldownRemaining / cooldownDuration) : 0f;
             cooldownTxt.text = cooldownRemaining > 0f ? $"{cooldownRemaining:0.0}" : string.Empty;
+            energyImg.color = energyImg.fillAmount == 1f && cooldownImg.fillAmount == 0f ? new(c.r, c.g, c.b, 1f) : new(c.r, c.g, c.b, 100f / 255f);
         }
     }
 }

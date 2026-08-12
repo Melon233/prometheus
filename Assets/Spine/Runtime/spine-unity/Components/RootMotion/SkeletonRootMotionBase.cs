@@ -240,7 +240,8 @@ namespace Spine.Unity {
 			ApplyRootMotion(skeletonDelta, parentBoneScale);
 		}
 
-		void ApplyRootMotion (Vector2 skeletonDelta, Vector2 parentBoneScale) {
+		/// <summary>Applies the evaluated root-motion delta and remains overridable so gameplay integrations can route movement through their authoritative controller.</summary>
+		protected virtual void ApplyRootMotion (Vector2 skeletonDelta, Vector2 parentBoneScale) {
 			// Apply root motion to Transform or RigidBody;
 			if (UsesRigidbody) {
 				rigidbodyDisplacement += (Vector2)transform.TransformVector(skeletonDelta);
@@ -315,7 +316,8 @@ namespace Spine.Unity {
 			}
 		}
 
-		void ClearEffectiveBoneOffsets (Vector2 parentBoneScale) {
+		/// <summary>Clears root-bone visual offsets after an integration has consumed the evaluated movement delta.</summary>
+		protected void ClearEffectiveBoneOffsets (Vector2 parentBoneScale) {
 			SetEffectiveBoneOffsetsTo(Vector2.zero, parentBoneScale);
 		}
 	}

@@ -52,7 +52,7 @@ namespace Xuan.Prometheus.Logic
             TalentAbilityValues values = specialAttackComponent.TalentConfig.SpecialAttack.Ability;
             AnimationPlayback playback = SpineComponent.TryPlay(configuration.Semantic, ActionOwner, AnimationPriority.SpecialAttack, false, values.AnimationSpeed, true);
             PlayerCombatHitContext hitContext = new PlayerCombatHitContext(specialAttackComponent.ColliderProxy, values.DamageMultiplier, values.DamageOffset, EffectTag.Attack | EffectTag.SpecialAttack, specialAttackComponent.AbilityId, DamageActionType.SpecialAttack);
-            BeginAction(playback, hitContext, configuration.AudioClip, true, configuration.Vfx);
+            BeginAction(playback, hitContext, true, configuration.Vfx);
         }
 
         /// <summary>实体回收时丢弃特殊攻击组件引用。</summary>

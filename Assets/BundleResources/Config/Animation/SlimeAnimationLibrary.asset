@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: SlimeAnimationLibrary
   m_EditorClassIdentifier: 
   skeletonDataAsset: {fileID: 11400000, guid: 49c2de8d7a2f07e45bfd2a4b94b03b3b, type: 2}
-  hitStart: hit_start
-  hitEnd: hit_end
   mixDurationMatrix:
     defaultDuration: 0.2
     overrides: []
@@ -22,7 +20,6 @@ MonoBehaviour:
     attacks:
     - animationLine: {fileID: 11400000, guid: c72be6ae45e1c034db00df66daeb2339, type: 2}
       movingAnimationLine: {fileID: 0}
-      audioClip: {fileID: 8300000, guid: e2d52f76071edce43b9bbd04ca6eaef4, type: 3}
       hasVfx: 0
       vfx: 0
   idleExecutor:
@@ -42,20 +39,16 @@ MonoBehaviour:
   hasTalent: 0
   ultimateExecutor:
     ultimateLine: {fileID: 11400000, guid: 2d4acdcf5a9a2e74bb3c88f491107ac6, type: 2}
-    ultimateAudio: {fileID: 8300000, guid: 329278a9a60ea7641a22379c6bccbaba, type: 3}
     ultVfx: 5
   skillExecutor:
     skillStartLine: {fileID: 11400000, guid: f8616e2cb1adc254394074be73ada172, type: 2}
     skillLine: {fileID: 11400000, guid: 6bb08bddb9060e94aa0f253e585d1767, type: 2}
-    skillAudio: {fileID: 8300000, guid: 4e529cc69e89e1f4dbed8cb0097f44c1, type: 3}
     skillVfx: 4
   specialAttackExecutor:
     specialAttackLine: {fileID: 11400000, guid: 431f08b4fb8730142b7edf5957144b13, type: 2}
-    specialAttackAudio: {fileID: 0}
     specialAttackVfx: 0
   attackedExecutor:
     attackedLine: {fileID: 11400000, guid: bd73b05db86848e4497a769ad1d06c09, type: 2}
-    attackedSfx: {fileID: 8300000, guid: 74d1ee2c4cf2c45479bd1aceec8ccb3e, type: 3}
     nextAttackedLine: {fileID: 11400000, guid: 4c6757a27c5f49d0a8713f92ff9d9e5b, type: 2}
   dieExecutor:
     dieLine: {fileID: 11400000, guid: dc1e74643dbf1434f98eb2b4ee85e130, type: 2}

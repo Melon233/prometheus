@@ -328,7 +328,7 @@ namespace Xuan.Prometheus.Effects.Editor
         private const float ColumnSpacing = 4f;
 
         /// <summary>
-        /// 按折叠状态绘制公式，并将 Base Value Source、Multiplier 和 Offset 放在同一行。
+        /// 按折叠状态绘制公式；Property 来源额外展示可自由组合的 Entity 与 Property 字段。
         /// </summary>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -357,19 +357,47 @@ namespace Xuan.Prometheus.Effects.Editor
         }
 
         /// <summary>
-        /// 按基础值来源占一半、倍率和偏移各占四分之一的比例绘制公式三列。
+        /// 普通来源绘制来源、倍率和偏移三列，Property 来源绘制来源、实体、属性、倍率和偏移五列。
         /// </summary>
         private static void DrawFormulaFields(Rect position, SerializedProperty property)
         {
+            SerializedProperty baseValueSource = property.FindPropertyRelative("baseValueSource");
+            if ((EffectValueSource)baseValueSource.intValue == EffectValueSource.Property)
+            {
+                DrawPropertyFormulaFields(position, property, baseValueSource);
+                return;
+            }
             float availableWidth = position.width - ColumnSpacing * 2f;
             float sourceWidth = availableWidth * 0.5f;
             float multiplierWidth = availableWidth * 0.25f;
             Rect sourceRect = new Rect(position.x, position.y, sourceWidth, position.height);
             Rect multiplierRect = new Rect(sourceRect.xMax + ColumnSpacing, position.y, multiplierWidth, position.height);
             Rect offsetRect = new Rect(multiplierRect.xMax + ColumnSpacing, position.y, position.xMax - multiplierRect.xMax - ColumnSpacing, position.height);
-            DrawCompactField(sourceRect, property.FindPropertyRelative("baseValueSource"), new GUIContent("Base Value Source"), 105f);
+            DrawCompactField(sourceRect, baseValueSource, new GUIContent("Base Value Source"), 105f);
             DrawCompactField(multiplierRect, property.FindPropertyRelative("multiplier"), new GUIContent("Multiplier"), 64f);
             DrawCompactField(offsetRect, property.FindPropertyRelative("offset"), new GUIContent("Offset"), 38f);
+        }
+
+        /// <summary>
+        /// 在单行中绘制正交的 Property 公式字段，使 Caster、Target、Source 可以与任意运行时属性自由组合。
+        /// </summary>
+        private static void DrawPropertyFormulaFields(Rect position, SerializedProperty property, SerializedProperty baseValueSource)
+        {
+            float availableWidth = position.width - ColumnSpacing * 4f;
+            float sourceWidth = availableWidth * 0.17f;
+            float entityWidth = availableWidth * 0.16f;
+            float propertyWidth = availableWidth * 0.27f;
+            float multiplierWidth = availableWidth * 0.2f;
+            Rect sourceRect = new Rect(position.x, position.y, sourceWidth, position.height);
+            Rect entityRect = new Rect(sourceRect.xMax + ColumnSpacing, position.y, entityWidth, position.height);
+            Rect propertyRect = new Rect(entityRect.xMax + ColumnSpacing, position.y, propertyWidth, position.height);
+            Rect multiplierRect = new Rect(propertyRect.xMax + ColumnSpacing, position.y, multiplierWidth, position.height);
+            Rect offsetRect = new Rect(multiplierRect.xMax + ColumnSpacing, position.y, position.xMax - multiplierRect.xMax - ColumnSpacing, position.height);
+            DrawCompactField(sourceRect, baseValueSource, new GUIContent("Source"), 42f);
+            DrawCompactField(entityRect, property.FindPropertyRelative("propertyEntity"), new GUIContent("Entity"), 38f);
+            DrawCompactField(propertyRect, property.FindPropertyRelative("propertyValue"), new GUIContent("Property"), 48f);
+            DrawCompactField(multiplierRect, property.FindPropertyRelative("multiplier"), new GUIContent("×"), 12f);
+            DrawCompactField(offsetRect, property.FindPropertyRelative("offset"), new GUIContent("+"), 12f);
         }
 
         /// <summary>

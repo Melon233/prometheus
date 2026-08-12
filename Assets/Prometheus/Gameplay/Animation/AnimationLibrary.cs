@@ -16,8 +16,6 @@ namespace Xuan.Prometheus
         [NonSerialized] private HashSet<Spine.Animation> runtimeAnimationConflicts;
 
         [SerializeField] public SkeletonDataAsset skeletonDataAsset;
-        [SerializeField, SpineEvent(dataField = "skeletonDataAsset")] public string hitStart = "hit_start";
-        [SerializeField, SpineEvent(dataField = "skeletonDataAsset")] public string hitEnd = "hit_end";
         [SerializeField, Tooltip("配置任意两个动画语义之间的混合时长；未覆盖单元格使用矩阵默认值。")]
         private AnimationMixDurationMatrix mixDurationMatrix = new AnimationMixDurationMatrix();
         [SerializeField] public AttackExecutor atkExecutor = new AttackExecutor();
@@ -188,11 +186,9 @@ namespace Xuan.Prometheus
             InvalidateSemanticIndex();
         }
 
-        /// <summary>规范化公共事件名，避免空白配置让所有命中窗口静默失效。</summary>
+        /// <summary>规范化混合矩阵并使运行时语义索引失效，保证 Inspector 修改后读取最新配置。</summary>
         private void OnValidate()
         {
-            hitStart = string.IsNullOrWhiteSpace(hitStart) ? "hit_start" : hitStart.Trim();
-            hitEnd = string.IsNullOrWhiteSpace(hitEnd) ? "hit_end" : hitEnd.Trim();
             MixDurationMatrix.Normalize();
             InvalidateSemanticIndex();
         }

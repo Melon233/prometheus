@@ -75,6 +75,9 @@ namespace Xuan.Prometheus
         /// <summary>当任意序列片段触发 Spine Event 时发布，并由持有该会话的 Logic 处理玩法行为。</summary>
         public event Action<AnimationPlayback, Spine.Event> EventReceived;
 
+        /// <summary>当 AnimationLine 时间轴触发强类型玩法命令时发布，碰撞盒等行为不需要解释 Spine 事件名称。</summary>
+        public event Action<AnimationPlayback, AnimationLineEventCommand> CommandReceived;
+
         /// <summary>在自然完成、被抢占、主动停止或组件释放时恰好发布一次。</summary>
         public event Action<AnimationPlayback, AnimationEndReason> Finished;
 
@@ -137,6 +140,7 @@ namespace Xuan.Prometheus
             Action<AnimationPlayback, AnimationEndReason> callback = Finished;
             Finished = null;
             EventReceived = null;
+            CommandReceived = null;
             callback?.Invoke(this, reason);
         }
 
@@ -144,6 +148,12 @@ namespace Xuan.Prometheus
         private void OnTrackEvent(TrackEntry entry, Spine.Event animationEvent)
         {
             if (finished || animationEvent == null) return;
+            if (ownerComponent != null && FmodAudioRuntime.TryConsumeAnimationMarker(animationEvent, ownerComponent.transform.position)) return;
+            if (AnimationLine.TryResolveCommand(animationEvent, out AnimationLineEventCommand command))
+            {
+                CommandReceived?.Invoke(this, command);
+                return;
+            }
             EventReceived?.Invoke(this, animationEvent);
         }
 

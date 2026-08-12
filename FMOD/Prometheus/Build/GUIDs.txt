@@ -1,0 +1,15 @@
+{f3128bf1-5261-4699-bc20-c1fc7d71fd33} bank:/Combat
+{57ed03f3-5ff4-4ec6-9296-a02fe4ae6ff1} bank:/Master
+{cff02327-2e8f-0284-14df-2ad1155d6969} bank:/Master.strings
+{c6b0bfad-de9a-4b3d-a0f2-31eb78fe72c2} bus:/
+{c1f129d5-9468-4abf-b172-7bd0402140a4} bus:/Reverb
+{1f102b68-374f-423b-8e2a-c24475629a53} event:/Combat/Enemy/Slime_Attack
+{7e7d6f5b-724e-4f25-958b-e28eee1e9e5d} event:/Combat/Library/Sword_Whoosh
+{22fffe36-e783-40bf-82f1-023c7a8fab36} event:/Combat/Player/Normal_Attack_01
+{bde9a01f-5297-4dec-8812-1786edf1ca41} event:/Combat/Player/Normal_Attack_02
+{e3946e40-24eb-49c2-aa3a-a018a5bd1d5b} event:/Combat/Player/Normal_Attack_03
+{9070b3f7-3944-411a-838d-1187d2753d32} event:/Combat/Player/Normal_Attack_04
+{d887d307-037a-4e2e-83a8-fade89e87b38} event:/Combat/Player/Skill
+{93118349-0afa-4b60-8c23-20071733b8b0} event:/Combat/Player/Special_Attack
+{79016c6a-06bf-418f-aa0e-5be65a2ba67a} event:/Combat/Player/Ultimate
+{522f8de3-3d2a-4070-95e9-4b9a2cab3f3b} event:/Combat/Shared/Hit_Flesh

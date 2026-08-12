@@ -1,0 +1,6 @@
+# FMOD Studio regenerates these machine-local caches and UI preferences.
+.cache/
+.user/
+
+# This folder was produced by the initial template output setting; the Unity integration consumes the authoritative Build directory instead.
+StreamingAssets/

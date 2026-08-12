@@ -23,6 +23,32 @@ namespace Xuan.Prometheus.Effects
         CoreEnergyGain = 9,
         /// <summary>持续效果被重复施加并成功刷新有限持续时间。</summary>
         EffectRefreshed = 10,
+        /// <summary>最终攻击力产生正向变化。</summary>
+        AtkGain = 11,
+        /// <summary>最终防御力产生正向变化。</summary>
+        DefGain = 12,
+        /// <summary>最终攻击速度产生正向变化。</summary>
+        AtkSpeedGain = 13,
+        /// <summary>最终暴击率产生正向变化。</summary>
+        CritRateGain = 14,
+        /// <summary>最终暴击伤害产生正向变化。</summary>
+        CritDmgGain = 15,
+        /// <summary>当前生命值产生正向变化；与 Healed 并存以支持统一的属性 Gain 路由。</summary>
+        HpGain = 16,
+        /// <summary>运行时最大生命值产生正向变化。</summary>
+        MaxHpGain = 17,
+        /// <summary>运行时核心能量上限产生正向变化。</summary>
+        CoreEnergyLimitGain = 18,
+        /// <summary>当前大招能量产生正向变化。</summary>
+        UltEnergyGain = 19,
+        /// <summary>运行时大招能量上限产生正向变化。</summary>
+        UltEnergyLimitGain = 20,
+        /// <summary>最终韧性产生正向变化。</summary>
+        ToughnessGain = 21,
+        /// <summary>最终出伤加成产生正向变化。</summary>
+        DamageBoostGain = 22,
+        /// <summary>最终受伤加成产生正向变化。</summary>
+        DamageTakenBoostGain = 23,
     }
 
     /// <summary>
@@ -50,6 +76,30 @@ namespace Xuan.Prometheus.Effects
         SpecialAttack = 1 << 14,
         /// <summary>标识大招产生的信号；追加位保证已有标签掩码保持稳定。</summary>
         Ultimate = 1 << 15,
+        /// <summary>标识攻击力 Gain；追加位保证已有标签掩码保持稳定。</summary>
+        AtkGain = 1 << 16,
+        /// <summary>标识防御力 Gain；追加位保证已有标签掩码保持稳定。</summary>
+        DefGain = 1 << 17,
+        /// <summary>标识攻击速度 Gain；追加位保证已有标签掩码保持稳定。</summary>
+        AtkSpeedGain = 1 << 18,
+        /// <summary>标识暴击率 Gain；追加位保证已有标签掩码保持稳定。</summary>
+        CritRateGain = 1 << 19,
+        /// <summary>标识暴击伤害 Gain；追加位保证已有标签掩码保持稳定。</summary>
+        CritDmgGain = 1 << 20,
+        /// <summary>标识当前生命值 Gain；Healing 继续描述治疗语义，本标签描述统一属性变化语义。</summary>
+        HpGain = 1 << 21,
+        /// <summary>标识运行时最大生命值 Gain。</summary>
+        MaxHpGain = 1 << 22,
+        /// <summary>标识运行时核心能量上限 Gain。</summary>
+        CoreEnergyLimitGain = 1 << 23,
+        /// <summary>标识运行时大招能量上限 Gain。</summary>
+        UltEnergyLimitGain = 1 << 24,
+        /// <summary>标识韧性 Gain。</summary>
+        ToughnessGain = 1 << 25,
+        /// <summary>标识出伤加成 Gain。</summary>
+        DamageBoostGain = 1 << 26,
+        /// <summary>标识受伤加成 Gain。</summary>
+        DamageTakenBoostGain = 1 << 27,
     }
 
     /// <summary>
@@ -132,18 +182,74 @@ namespace Xuan.Prometheus.Effects
     }
 
     /// <summary>
-    /// 指定数值公式读取的基础数据来源。
+    /// 指定数值公式读取常量、信号数据还是实体运行时属性；实体角色与具体属性由独立枚举组合。
     /// </summary>
     public enum EffectValueSource
     {
-        One,
-        SignalValue,
-        SignalRequestedValue,
-        CasterAttack,
-        TargetAttack,
-        CasterMaxHp,
-        TargetMaxHp,
-        CasterCoreEnergy,
+        /// <summary>使用常量一作为基础值。</summary>
+        One = 0,
+        /// <summary>读取当前信号的最终实际数值。</summary>
+        SignalValue = 1,
+        /// <summary>读取当前信号的结算前请求数值。</summary>
+        SignalRequestedValue = 2,
+        /// <summary>按照 EffectValueEntity 与 EffectPropertyValue 读取实体的运行时属性。</summary>
+        Property = 8,
+    }
+
+    /// <summary>
+    /// 指定属性公式读取直接释放者、效果目标还是整条因果链的实际源头。
+    /// </summary>
+    public enum EffectValueEntity
+    {
+        /// <summary>读取直接释放当前效果的实体。</summary>
+        Caster = 0,
+        /// <summary>读取当前效果的目标实体。</summary>
+        Target = 1,
+        /// <summary>读取整条因果链的实际源头实体。</summary>
+        Source = 2,
+    }
+
+    /// <summary>
+    /// 标识 Effect 公式可读取的全部 PropertyComponent 运行时数值，包含战斗属性、当前资源与对应上限。
+    /// </summary>
+    public enum EffectPropertyValue
+    {
+        /// <summary>最终攻击力。</summary>
+        Atk = 0,
+        /// <summary>最终防御力。</summary>
+        Def = 1,
+        /// <summary>当前移动速度。</summary>
+        MoveSpeed = 2,
+        /// <summary>最终攻击速度。</summary>
+        AtkSpeed = 3,
+        /// <summary>最终暴击率。</summary>
+        CritRate = 4,
+        /// <summary>最终暴击伤害。</summary>
+        CritDmg = 5,
+        /// <summary>当前生命值。</summary>
+        Hp = 6,
+        /// <summary>运行时最大生命值。</summary>
+        MaxHp = 7,
+        /// <summary>空中移动速度。</summary>
+        AirMoveSpeed = 8,
+        /// <summary>跳跃速度。</summary>
+        JumpSpeed = 9,
+        /// <summary>重力加速度。</summary>
+        Gravity = 10,
+        /// <summary>当前核心能量。</summary>
+        CoreEnergy = 11,
+        /// <summary>运行时核心能量上限。</summary>
+        CoreEnergyLimit = 12,
+        /// <summary>当前大招能量。</summary>
+        UltEnergy = 13,
+        /// <summary>运行时大招能量上限。</summary>
+        UltEnergyLimit = 14,
+        /// <summary>最终韧性。</summary>
+        Toughness = 15,
+        /// <summary>最终出伤加成。</summary>
+        DamageBoost = 16,
+        /// <summary>最终受伤加成。</summary>
+        DamageTakenBoost = 17,
     }
 
     /// <summary>
@@ -273,10 +379,28 @@ namespace Xuan.Prometheus.Effects
     /// 可序列化数值公式通过固定数据源、倍率和偏移值组合常见战斗数值，避免解析字符串表达式。
     /// </summary>
     [Serializable]
-    public sealed class EffectValueFormula
+    public sealed class EffectValueFormula : ISerializationCallbackReceiver
     {
+        /// <summary>旧版 CasterAttack 的序列化整数，仅用于无损迁移已有 Effect 资产。</summary>
+        private const int LegacyCasterAttackSource = 3;
+        /// <summary>旧版 TargetAttack 的序列化整数，仅用于无损迁移已有 Effect 资产。</summary>
+        private const int LegacyTargetAttackSource = 4;
+        /// <summary>旧版 CasterMaxHp 的序列化整数，仅用于无损迁移已有 Effect 资产。</summary>
+        private const int LegacyCasterMaxHpSource = 5;
+        /// <summary>旧版 TargetMaxHp 的序列化整数，仅用于无损迁移已有 Effect 资产。</summary>
+        private const int LegacyTargetMaxHpSource = 6;
+        /// <summary>旧版 CasterCoreEnergy 的序列化整数，仅用于无损迁移已有 Effect 资产。</summary>
+        private const int LegacyCasterCoreEnergySource = 7;
+
+        /// <summary>配置公式使用常量、信号数值还是实体运行时属性。</summary>
         [SerializeField, FormerlySerializedAs("source")] private EffectValueSource baseValueSource = EffectValueSource.One;
+        /// <summary>仅在 Property 来源下生效，独立选择 Caster、Target 或 Source。</summary>
+        [SerializeField] private EffectValueEntity propertyEntity = EffectValueEntity.Caster;
+        /// <summary>仅在 Property 来源下生效，独立选择需要读取的运行时属性。</summary>
+        [SerializeField] private EffectPropertyValue propertyValue = EffectPropertyValue.Atk;
+        /// <summary>配置基础值的乘算系数。</summary>
         [SerializeField] private float multiplier;
+        /// <summary>配置完成乘算后追加的固定偏移。</summary>
         [SerializeField, FormerlySerializedAs("additive")] private float offset;
 
         /// <summary>
@@ -292,7 +416,15 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         public static EffectValueFormula CasterAttack(float multiplier = 1f, float offset = 0f)
         {
-            return new EffectValueFormula { baseValueSource = EffectValueSource.CasterAttack, multiplier = multiplier, offset = offset };
+            return Property(EffectValueEntity.Caster, EffectPropertyValue.Atk, multiplier, offset);
+        }
+
+        /// <summary>
+        /// 创建按实体角色与运行时属性自由组合的公式；所有当前资源和运行时上限均通过此入口读取。
+        /// </summary>
+        public static EffectValueFormula Property(EffectValueEntity entity, EffectPropertyValue value, float multiplier = 1f, float offset = 0f)
+        {
+            return new EffectValueFormula { baseValueSource = EffectValueSource.Property, propertyEntity = entity, propertyValue = value, multiplier = multiplier, offset = offset };
         }
 
         /// <summary>
@@ -330,23 +462,102 @@ namespace Xuan.Prometheus.Effects
                 case EffectValueSource.One: return 1f;
                 case EffectValueSource.SignalValue: return context.Signal.Value;
                 case EffectValueSource.SignalRequestedValue: return context.Signal.RequestedValue;
-                case EffectValueSource.CasterAttack: return ReadProperty(context.Caster, property => property.Atk);
-                case EffectValueSource.TargetAttack: return ReadProperty(context.Target, property => property.Atk);
-                case EffectValueSource.CasterMaxHp: return ReadProperty(context.Caster, property => property.MaxHp);
-                case EffectValueSource.TargetMaxHp: return ReadProperty(context.Target, property => property.MaxHp);
-                case EffectValueSource.CasterCoreEnergy: return ReadProperty(context.Caster, property => property.CoreEnergy);
+                case EffectValueSource.Property: return ReadProperty(SelectPropertyEntity(context), propertyValue);
+                default: return ResolveLegacyPropertyValue(context);
+            }
+        }
+
+        /// <summary>
+        /// 根据独立实体枚举选择公式需要读取的上下文角色。
+        /// </summary>
+        private Entity SelectPropertyEntity(EffectOperationContext context)
+        {
+            switch (propertyEntity)
+            {
+                case EffectValueEntity.Caster: return context.Caster;
+                case EffectValueEntity.Target: return context.Target;
+                case EffectValueEntity.Source: return context.Source;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// 安全读取实体的 PropertyComponent 运行时副本；缺少实体或组件时返回零，且不会回读 PropertyConfig。
+        /// </summary>
+        private static float ReadProperty(Entity entity, EffectPropertyValue value)
+        {
+            if (entity == null) return 0f;
+            if (!entity.TryGetComp(out PropertyComponent property)) return 0f;
+            switch (value)
+            {
+                case EffectPropertyValue.Atk: return property.Atk;
+                case EffectPropertyValue.Def: return property.Def;
+                case EffectPropertyValue.MoveSpeed: return property.MoveSpeed;
+                case EffectPropertyValue.AtkSpeed: return property.AtkSpeed;
+                case EffectPropertyValue.CritRate: return property.CritRate;
+                case EffectPropertyValue.CritDmg: return property.CritDmg;
+                case EffectPropertyValue.Hp: return property.Hp;
+                case EffectPropertyValue.MaxHp: return property.MaxHp;
+                case EffectPropertyValue.AirMoveSpeed: return property.AirMoveSpeed;
+                case EffectPropertyValue.JumpSpeed: return property.JumpSpeed;
+                case EffectPropertyValue.Gravity: return property.Gravity;
+                case EffectPropertyValue.CoreEnergy: return property.CoreEnergy;
+                case EffectPropertyValue.CoreEnergyLimit: return property.CoreEnergyLimit;
+                case EffectPropertyValue.UltEnergy: return property.UltEnergy;
+                case EffectPropertyValue.UltEnergyLimit: return property.UltEnergyLimit;
+                case EffectPropertyValue.Toughness: return property.Toughness;
+                case EffectPropertyValue.DamageBoost: return property.DamageBonus;
+                case EffectPropertyValue.DamageTakenBoost: return property.DamageTakenBonus;
                 default: return 0f;
             }
         }
 
         /// <summary>
-        /// 安全读取实体的 PropertyComponent；缺少实体时返回零，缺少组件时沿用框架现有错误日志。
+        /// 在尚未触发 Unity 反序列化回调的旧 JSON 或旧资产上即时解释组合式来源，避免迁移窗口产生零值。
         /// </summary>
-        private static float ReadProperty(Entity entity, Func<PropertyComponent, float> reader)
+        private float ResolveLegacyPropertyValue(EffectOperationContext context)
         {
-            if (entity == null) return 0f;
-            if (!entity.TryGetComp(out PropertyComponent property)) return 0f;
-            return reader(property);
+            switch ((int)baseValueSource)
+            {
+                case LegacyCasterAttackSource: return ReadProperty(context.Caster, EffectPropertyValue.Atk);
+                case LegacyTargetAttackSource: return ReadProperty(context.Target, EffectPropertyValue.Atk);
+                case LegacyCasterMaxHpSource: return ReadProperty(context.Caster, EffectPropertyValue.MaxHp);
+                case LegacyTargetMaxHpSource: return ReadProperty(context.Target, EffectPropertyValue.MaxHp);
+                case LegacyCasterCoreEnergySource: return ReadProperty(context.Caster, EffectPropertyValue.CoreEnergy);
+                default: return 0f;
+            }
+        }
+
+        /// <summary>
+        /// 序列化前不修改公式；迁移只在读取旧数据后执行，避免污染新资产的稳定字段。
+        /// </summary>
+        public void OnBeforeSerialize()
+        {
+        }
+
+        /// <summary>
+        /// 将旧版组合枚举 3–7 拆解为 Property、实体角色与属性三个正交字段，保证已有资产无损升级。
+        /// </summary>
+        public void OnAfterDeserialize()
+        {
+            switch ((int)baseValueSource)
+            {
+                case LegacyCasterAttackSource: SetMigratedPropertySource(EffectValueEntity.Caster, EffectPropertyValue.Atk); break;
+                case LegacyTargetAttackSource: SetMigratedPropertySource(EffectValueEntity.Target, EffectPropertyValue.Atk); break;
+                case LegacyCasterMaxHpSource: SetMigratedPropertySource(EffectValueEntity.Caster, EffectPropertyValue.MaxHp); break;
+                case LegacyTargetMaxHpSource: SetMigratedPropertySource(EffectValueEntity.Target, EffectPropertyValue.MaxHp); break;
+                case LegacyCasterCoreEnergySource: SetMigratedPropertySource(EffectValueEntity.Caster, EffectPropertyValue.CoreEnergy); break;
+            }
+        }
+
+        /// <summary>
+        /// 原子写入迁移后的三个正交配置字段，使后续保存统一使用新版结构。
+        /// </summary>
+        private void SetMigratedPropertySource(EffectValueEntity entity, EffectPropertyValue value)
+        {
+            baseValueSource = EffectValueSource.Property;
+            propertyEntity = entity;
+            propertyValue = value;
         }
     }
 

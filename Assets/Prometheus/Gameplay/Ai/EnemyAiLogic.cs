@@ -194,7 +194,7 @@ namespace Xuan.Prometheus.Ai
             attackPlayback = newPlayback;
             attackFinished = onFinished;
             hitTargets.Clear();
-            newPlayback.EventReceived += OnAttackAnimationEvent;
+            newPlayback.CommandReceived += OnAttackAnimationCommand;
             newPlayback.Finished += OnAttackFinished;
             return true;
         }
@@ -249,20 +249,19 @@ namespace Xuan.Prometheus.Ai
             else brain.Suspend();
         }
 
-        /// <summary>解释敌人攻击 AnimationLine 事件，命中窗口与音效特效都由当前 Logic 控制。</summary>
-        private void OnAttackAnimationEvent(AnimationPlayback source, Spine.Event animationEvent)
+        /// <summary>解释敌人攻击 AnimationLine 的强类型命令并控制命中窗口与特效，不再读取 AnimationLibrary 事件名。</summary>
+        private void OnAttackAnimationCommand(AnimationPlayback source, AnimationLineEventCommand command)
         {
             if (!ReferenceEquals(source, attackPlayback)) return;
-            if (animationEvent.Data.Name == spineComponent.animationLib.hitStart)
+            if (command == AnimationLineEventCommand.EnableHitbox)
             {
                 if (attackComponent.PrimaryHitbox != null && attackComponent.PrimaryHitbox.cod != null) attackComponent.PrimaryHitbox.cod.enabled = true;
                 if (spineComponent.animationLib.atkExecutor.TryGetSelection(0, false, out AttackAnimationSelection selection))
                 {
                     if (selection.HasVfx) vfxComponent.Play(selection.Vfx);
-                    if (selection.AudioClip != null) AudioKit.Ins.Play(selection.AudioClip);
                 }
             }
-            else if (animationEvent.Data.Name == spineComponent.animationLib.hitEnd)
+            else if (command == AnimationLineEventCommand.DisableHitbox)
             {
                 DisableAttackCollider();
             }
@@ -288,7 +287,7 @@ namespace Xuan.Prometheus.Ai
             if (attackComponent != null && attackComponent.PrimaryHitbox != null && attackComponent.PrimaryHitbox.cod != null) attackComponent.PrimaryHitbox.cod.enabled = false;
         }
 
-        /// <summary>仅清除 AI 管理的水平速度，保留 EnemyAirMoveLogic 持有的竖直重力速度。</summary>
+        /// <summary>仅清除 AI 管理的水平速度，保留 GravityLogic 持有的竖直重力速度。</summary>
         private void StopHorizontalMotion()
         {
             if (motionComponent == null) return;

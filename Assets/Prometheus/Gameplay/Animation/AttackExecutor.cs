@@ -4,13 +4,12 @@ using UnityEngine;
 
 namespace Xuan.Prometheus
 {
-    /// <summary>把一段普通攻击的原地动画、移动动画、音效和特效组合为不可错位的配置行。</summary>
+    /// <summary>把一段普通攻击的原地动画、移动动画和特效组合为不可错位的配置行；音效由 AnimationLine 的 FMOD 绑定负责。</summary>
     [Serializable]
     public sealed class AttackAnimationDefinition
     {
         [SerializeField] private AnimationLine animationLine;
         [SerializeField] private AnimationLine movingAnimationLine;
-        [SerializeField] private AudioClip audioClip;
         [SerializeField] private bool hasVfx;
         [SerializeField] private YefaVfx vfx;
 
@@ -28,9 +27,6 @@ namespace Xuan.Prometheus
             if (movingAnimationLine != null && movingAnimationLine != animationLine) destination.Add(movingAnimationLine);
         }
 
-        /// <summary>获取攻击命中窗口开始时播放的音效。</summary>
-        public AudioClip AudioClip => audioClip;
-
         /// <summary>获取本段攻击是否配置特效。</summary>
         public bool HasVfx => hasVfx;
 
@@ -38,20 +34,18 @@ namespace Xuan.Prometheus
         public YefaVfx Vfx => vfx;
     }
 
-    /// <summary>表示一次已经解析完成的攻击表现配置，Logic 使用它驱动播放、命中盒、音效和特效。</summary>
+    /// <summary>表示一次已经解析完成的攻击表现配置，Logic 使用它驱动播放、命中盒和特效。</summary>
     public readonly struct AttackAnimationSelection
     {
         /// <summary>创建一份攻击表现选择结果。</summary>
-        public AttackAnimationSelection(AnimationSemantic semantic, AudioClip audioClip, bool hasVfx, YefaVfx vfx)
+        public AttackAnimationSelection(AnimationSemantic semantic, bool hasVfx, YefaVfx vfx)
         {
             Semantic = semantic;
-            AudioClip = audioClip;
             HasVfx = hasVfx;
             Vfx = vfx;
         }
 
         public AnimationSemantic Semantic { get; }
-        public AudioClip AudioClip { get; }
         public bool HasVfx { get; }
         public YefaVfx Vfx { get; }
     }
@@ -80,7 +74,7 @@ namespace Xuan.Prometheus
                 selection = default;
                 return false;
             }
-            selection = new AttackAnimationSelection(semantic, definition.AudioClip, definition.HasVfx, definition.Vfx);
+            selection = new AttackAnimationSelection(semantic, definition.HasVfx, definition.Vfx);
             return true;
         }
 

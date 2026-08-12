@@ -3,7 +3,7 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    /// <summary>负责空中速度与下落循环动画；落地时主动释放空中动画所有权。</summary>
+    /// <summary>负责空中水平控制与下落循环动画；竖直加速度和落地判定统一由 GravityLogic 处理。</summary>
     public sealed class AirMoveLogic : Logic
     {
         private SpineComponent spineComponent;
@@ -58,7 +58,6 @@ namespace Xuan.Prometheus.Logic
         public override void OnUpdate(float dt)
         {
             if (teamMemberComponent != null && !teamMemberComponent.IsOnField) return;
-            motionComponent.curVelo.y -= propertyComponent.Gravity * dt;
             if (propertyComponent.CanAct && motionComponent.curVelo.y < 0f)
             {
                 AirMoveExecutor configuration = spineComponent.animationLib.airMoveExecutor;

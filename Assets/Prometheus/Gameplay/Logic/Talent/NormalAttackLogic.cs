@@ -43,7 +43,7 @@ namespace Xuan.Prometheus.Logic
             }
             AnimationPlayback playback = SpineComponent.TryPlay(animationSelection.Semantic, ActionOwner, AnimationPriority.Attack, false, PropertyComponent.AtkSpeed, true);
             PlayerCombatHitContext hitContext = new PlayerCombatHitContext(hitSelection.ColliderProxy, hitSelection.DamageMultiplier, hitSelection.DamageOffset, EffectTag.Attack | EffectTag.NormalAttack | hitSelection.AdditionalTags, hitSelection.AbilityId, DamageActionType.NormalAttack);
-            if (!BeginAction(playback, hitContext, animationSelection.AudioClip, animationSelection.HasVfx, animationSelection.Vfx)) return;
+            if (!BeginAction(playback, hitContext, animationSelection.HasVfx, animationSelection.Vfx)) return;
             SpineComponent.SetFaceDir(InputComponent.moveDir);
             attackComponent.nextComboIndex++;
             int configuredStageCount = Mathf.Min(configuration.Count, Mathf.Min(attackComponent.ConfiguredHitCount, attackComponent.TalentConfig.NormalAttack.StageCount));

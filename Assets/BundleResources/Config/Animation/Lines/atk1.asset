@@ -14,4 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Runtime::Xuan.Prometheus.AnimationLine
   semantic: 100
   animationReferenceAsset: {fileID: 11400000, guid: 708e47660af050345ac8b098e9093954, type: 2}
-  events: []
+  events:
+  - time: 0
+    eventName: ''
+    intValue: 0
+    floatValue: 0
+    stringValue: ''
+    command: 1
+  - time: 0.21666667
+    eventName: ''
+    intValue: 0
+    floatValue: 0
+    stringValue: ''
+    command: 2
+  audioBindings:
+  - time: 0
+    audioEvent: 1471328291

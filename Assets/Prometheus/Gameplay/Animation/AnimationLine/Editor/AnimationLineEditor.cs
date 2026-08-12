@@ -22,8 +22,9 @@ namespace Xuan.Prometheus.Editor
         private const float TimelineRulerHeight = 20f;
         private const float SourceEventLaneHeight = 60f;
         private const float CustomEventLaneHeight = 60f;
+        private const float AudioEventLaneHeight = 60f;
         private const float TimelineDividerHeight = 1f;
-        private const float TimelineHeight = TimelineRulerHeight + SourceEventLaneHeight + TimelineDividerHeight + CustomEventLaneHeight;
+        private const float TimelineHeight = TimelineRulerHeight + SourceEventLaneHeight + TimelineDividerHeight + CustomEventLaneHeight + TimelineDividerHeight + AudioEventLaneHeight;
         private const float MarkerWidth = 5f;
         // Event labels use fixed dimensions so overlap detection matches the rectangles drawn by IMGUI.
         private const float EventLabelOffsetX = 4f;
@@ -34,12 +35,14 @@ namespace Xuan.Prometheus.Editor
         private static readonly int TimelineControlHash = "AnimationLineTimelineControl".GetHashCode();
         private static readonly Color SourceEventColor = new Color(0.35f, 0.9f, 0.45f, 1f);
         private static readonly Color CustomEventColor = new Color(0.25f, 0.8f, 1f, 1f);
+        private static readonly Color AudioEventColor = new Color(1f, 0.58f, 0.18f, 1f);
         // The cached flipped style removes right padding without modifying Unity's shared mini-label style.
         private static GUIStyle flippedEventLabelStyle;
 
         private SerializedProperty semanticProperty;
         private SerializedProperty animationReferenceAssetProperty;
         private SerializedProperty eventsProperty;
+        private SerializedProperty audioBindingsProperty;
         private UnityEditor.Editor spinePreviewEditor;
         private AnimationReferenceAsset previewAsset;
         private object spinePreview;
@@ -49,11 +52,31 @@ namespace Xuan.Prometheus.Editor
         private MethodInfo refreshPreviewMethod;
         private float insertionTime;
         private float previewFrameRate = DefaultPreviewFrameRate;
+        private AnimationLineEventCommand insertionCommand;
         private string insertionEventName = "event";
         private int insertionIntValue;
         private float insertionFloatValue;
         private string insertionStringValue = string.Empty;
+        private float insertionAudioTime;
+        private FmodAudioEvent insertionAudioEvent;
         private bool showSourceEvents = true;
+
+        /// <summary>保存一个可供 FMOD 绑定选择的既有轨道时间及其来源说明。</summary>
+        private sealed class AnimationTimeOption
+        {
+            /// <summary>创建一个轨道时间选项。</summary>
+            public AnimationTimeOption(float time, string label)
+            {
+                Time = time;
+                Label = label;
+            }
+
+            /// <summary>获取动画内的秒数时间。</summary>
+            public float Time { get; }
+
+            /// <summary>获取包含时间和事件来源的下拉框标签。</summary>
+            public string Label { get; set; }
+        }
 
         /// <summary>
         /// Caches serialized property paths used by the custom Inspector.
@@ -63,6 +86,7 @@ namespace Xuan.Prometheus.Editor
             semanticProperty = serializedObject.FindProperty("semantic");
             animationReferenceAssetProperty = serializedObject.FindProperty("animationReferenceAsset");
             eventsProperty = serializedObject.FindProperty("events");
+            audioBindingsProperty = serializedObject.FindProperty("audioBindings");
             EditorApplication.update -= HandlePreviewUpdate;
             EditorApplication.update += HandlePreviewUpdate;
         }
@@ -97,11 +121,13 @@ namespace Xuan.Prometheus.Editor
 
             float duration = animationLine.Duration;
             List<Spine.Event> sourceEvents = CollectSourceEvents(animationLine);
+            List<AnimationTimeOption> existingTimeOptions = BuildExistingTimeOptions(sourceEvents, animationLine.Events);
             using (new EditorGUI.DisabledScope(true)) EditorGUILayout.FloatField("Duration (Seconds)", duration);
             if (animationLine.AnimationReferenceAsset == null || duration <= 0f) EditorGUILayout.HelpBox("Assign a valid AnimationReferenceAsset before inserting events.", MessageType.Info);
             DrawAnimationPreview(animationLine, duration);
             DrawTimeline(animationLine, sourceEvents, duration);
             DrawSourceEventList(sourceEvents, duration);
+            DrawAudioBindingPanel(animationLine, existingTimeOptions, duration);
             DrawInsertionPanel(animationLine, duration);
             DrawEventList(animationLine, duration);
             if (serializedObject.ApplyModifiedProperties())
@@ -292,12 +318,13 @@ namespace Xuan.Prometheus.Editor
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Event Timeline", EditorStyles.boldLabel);
-            DrawTimelineLegend(sourceEvents.Count, animationLine.Events.Count);
+            DrawTimelineLegend(sourceEvents.Count, animationLine.Events.Count, animationLine.AudioBindings.Count);
             Rect timelineRect = GUILayoutUtility.GetRect(10f, TimelineHeight, GUILayout.ExpandWidth(true));
             EditorGUI.DrawRect(timelineRect, new Color(0.12f, 0.12f, 0.12f, 1f));
             DrawRuler(timelineRect, duration);
             DrawSourceEventMarkers(sourceEvents, timelineRect, duration);
             DrawCustomEventMarkers(animationLine, timelineRect, duration);
+            DrawAudioBindingMarkers(animationLine, timelineRect, duration);
             DrawInsertionCursor(timelineRect, duration);
             HandleTimelineInput(timelineRect, duration);
         }
@@ -305,12 +332,14 @@ namespace Xuan.Prometheus.Editor
         /// <summary>
         /// Draws the color legend that distinguishes imported Spine events from editable custom events.
         /// </summary>
-        private static void DrawTimelineLegend(int sourceEventCount, int customEventCount)
+        private static void DrawTimelineLegend(int sourceEventCount, int customEventCount, int audioEventCount)
         {
             EditorGUILayout.BeginHorizontal();
             DrawLegendItem(SourceEventColor, $"Spine Events ({sourceEventCount})");
             GUILayout.Space(16f);
             DrawLegendItem(CustomEventColor, $"Custom Events ({customEventCount})");
+            GUILayout.Space(16f);
+            DrawLegendItem(AudioEventColor, $"FMOD Audio ({audioEventCount})");
             EditorGUILayout.EndHorizontal();
         }
 
@@ -369,6 +398,7 @@ namespace Xuan.Prometheus.Editor
             float laneTop = timelineRect.yMin + TimelineRulerHeight + SourceEventLaneHeight + TimelineDividerHeight;
             float laneHeight = CustomEventLaneHeight;
             List<Rect> occupiedLabelRects = new List<Rect>(animationLine.Events.Count);
+            EditorGUI.DrawRect(new Rect(timelineRect.xMin, laneTop + laneHeight, timelineRect.width, TimelineDividerHeight), new Color(1f, 1f, 1f, 0.12f));
             for (int i = 0; i < animationLine.Events.Count; i++)
             {
                 AnimationLineEvent marker = animationLine.Events[i];
@@ -376,7 +406,27 @@ namespace Xuan.Prometheus.Editor
                 float x = Mathf.Lerp(timelineRect.xMin, timelineRect.xMax, normalizedTime);
                 EditorGUI.DrawRect(new Rect(x - MarkerWidth * 0.5f, laneTop, MarkerWidth, laneHeight), CustomEventColor);
                 Rect labelRect = GetEventLabelRect(x, laneTop, timelineRect.xMax, occupiedLabelRects);
-                GUI.Label(labelRect, marker.EventName, labelRect.xMax <= x ? FlippedEventLabelStyle : EditorStyles.miniLabel);
+                GUI.Label(labelRect, marker.DisplayName, labelRect.xMax <= x ? FlippedEventLabelStyle : EditorStyles.miniLabel);
+                occupiedLabelRects.Add(labelRect);
+            }
+        }
+
+        /// <summary>在第三条时间轴泳道绘制可编辑的 FMOD 音频事件绑定。</summary>
+        private static void DrawAudioBindingMarkers(AnimationLine animationLine, Rect timelineRect, float duration)
+        {
+            if (duration <= 0f) return;
+            float laneTop = timelineRect.yMin + TimelineRulerHeight + SourceEventLaneHeight + TimelineDividerHeight + CustomEventLaneHeight + TimelineDividerHeight;
+            float laneHeight = AudioEventLaneHeight;
+            List<Rect> occupiedLabelRects = new List<Rect>(animationLine.AudioBindings.Count);
+            for (int i = 0; i < animationLine.AudioBindings.Count; i++)
+            {
+                AnimationLineAudioBinding binding = animationLine.AudioBindings[i];
+                if (binding == null) continue;
+                float normalizedTime = Mathf.Clamp01(binding.Time / duration);
+                float x = Mathf.Lerp(timelineRect.xMin, timelineRect.xMax, normalizedTime);
+                EditorGUI.DrawRect(new Rect(x - MarkerWidth * 0.5f, laneTop, MarkerWidth, laneHeight), AudioEventColor);
+                Rect labelRect = GetEventLabelRect(x, laneTop, timelineRect.xMax, occupiedLabelRects);
+                GUI.Label(labelRect, binding.AudioEvent.ToString(), labelRect.xMax <= x ? FlippedEventLabelStyle : EditorStyles.miniLabel);
                 occupiedLabelRects.Add(labelRect);
             }
         }
@@ -448,6 +498,49 @@ namespace Xuan.Prometheus.Editor
             return left.Time.CompareTo(right.Time);
         }
 
+        /// <summary>汇总 Spine 原始事件和自定义事件中已经存在的唯一时间点，供 FMOD 绑定下拉框选择。</summary>
+        private static List<AnimationTimeOption> BuildExistingTimeOptions(IReadOnlyList<Spine.Event> sourceEvents, IReadOnlyList<AnimationLineEvent> customEvents)
+        {
+            List<AnimationTimeOption> options = new List<AnimationTimeOption>();
+            for (int i = 0; i < sourceEvents.Count; i++)
+            {
+                Spine.Event sourceEvent = sourceEvents[i];
+                if (sourceEvent == null) continue;
+                AddExistingTimeOption(options, sourceEvent.Time, $"Spine: {sourceEvent.Data.Name}");
+            }
+            for (int i = 0; i < customEvents.Count; i++)
+            {
+                AnimationLineEvent customEvent = customEvents[i];
+                if (customEvent == null) continue;
+                AddExistingTimeOption(options, customEvent.Time, $"Custom: {customEvent.DisplayName}");
+            }
+            options.Sort((left, right) => left.Time.CompareTo(right.Time));
+            return options;
+        }
+
+        /// <summary>加入一个轨道时间；相同时间的多个事件会合并来源标签而不会产生重复选项。</summary>
+        private static void AddExistingTimeOption(List<AnimationTimeOption> options, float time, string sourceLabel)
+        {
+            for (int i = 0; i < options.Count; i++)
+            {
+                AnimationTimeOption existing = options[i];
+                if (!Mathf.Approximately(existing.Time, time)) continue;
+                existing.Label = $"{existing.Label}, {sourceLabel}";
+                return;
+            }
+            options.Add(new AnimationTimeOption(time, $"{time:0.###}s — {sourceLabel}"));
+        }
+
+        /// <summary>返回与指定秒数一致的既有轨道时间选项下标；找不到时返回负一。</summary>
+        private static int FindExistingTimeOption(IReadOnlyList<AnimationTimeOption> options, float time)
+        {
+            for (int i = 0; i < options.Count; i++)
+            {
+                if (Mathf.Approximately(options[i].Time, time)) return i;
+            }
+            return -1;
+        }
+
         /// <summary>
         /// Draws the pending insertion position in yellow.
         /// </summary>
@@ -511,13 +604,17 @@ namespace Xuan.Prometheus.Editor
                 EditorGUI.BeginChangeCheck();
                 float selectedTime = EditorGUILayout.Slider("Time (Seconds)", Mathf.Clamp(insertionTime, 0f, Mathf.Max(0f, duration)), 0f, Mathf.Max(0f, duration));
                 if (EditorGUI.EndChangeCheck()) SeekPreview(selectedTime, true);
-                insertionEventName = EditorGUILayout.TextField("Event Name", insertionEventName);
-                insertionIntValue = EditorGUILayout.IntField("Int", insertionIntValue);
-                insertionFloatValue = EditorGUILayout.FloatField("Float", insertionFloatValue);
-                insertionStringValue = EditorGUILayout.TextField("String", insertionStringValue);
-                using (new EditorGUI.DisabledScope(string.IsNullOrWhiteSpace(insertionEventName)))
+                insertionCommand = (AnimationLineEventCommand)EditorGUILayout.EnumPopup("Gameplay Command", insertionCommand);
+                if (insertionCommand == AnimationLineEventCommand.None)
                 {
-                    if (GUILayout.Button("Insert Event At Time")) InsertEvent(animationLine);
+                    insertionEventName = EditorGUILayout.TextField("Event Name", insertionEventName);
+                    insertionIntValue = EditorGUILayout.IntField("Int", insertionIntValue);
+                    insertionFloatValue = EditorGUILayout.FloatField("Float", insertionFloatValue);
+                    insertionStringValue = EditorGUILayout.TextField("String", insertionStringValue);
+                }
+                using (new EditorGUI.DisabledScope(insertionCommand == AnimationLineEventCommand.None && string.IsNullOrWhiteSpace(insertionEventName)))
+                {
+                    if (GUILayout.Button(insertionCommand == AnimationLineEventCommand.None ? "Insert Event At Time" : "Insert Gameplay Command At Time")) InsertEvent(animationLine);
                 }
             }
         }
@@ -528,7 +625,8 @@ namespace Xuan.Prometheus.Editor
         private void InsertEvent(AnimationLine animationLine)
         {
             Undo.RecordObject(animationLine, "Insert Animation Line Event");
-            animationLine.InsertEvent(insertionTime, insertionEventName, insertionIntValue, insertionFloatValue, insertionStringValue);
+            if (insertionCommand == AnimationLineEventCommand.None) animationLine.InsertEvent(insertionTime, insertionEventName, insertionIntValue, insertionFloatValue, insertionStringValue);
+            else animationLine.InsertCommand(insertionTime, insertionCommand);
             EditorUtility.SetDirty(animationLine);
             serializedObject.Update();
         }
@@ -550,6 +648,113 @@ namespace Xuan.Prometheus.Editor
             {
                 for (int i = 0; i < sourceEvents.Count; i++) DrawSourceEvent(sourceEvents[i], i, duration);
             }
+        }
+
+        /// <summary>绘制 FMOD 音效绑定插入区和现有绑定列表；所有时间只能从既有轨道事件中选择。</summary>
+        private void DrawAudioBindingPanel(AnimationLine animationLine, List<AnimationTimeOption> existingTimeOptions, float duration)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("FMOD Audio Bindings", EditorStyles.boldLabel);
+            if (System.Enum.GetValues(typeof(FmodAudioEvent)).Length <= 1)
+            {
+                EditorGUILayout.HelpBox("当前 FMOD 事件枚举只有 None。请先在 FMOD Studio 构建 Bank，再配置 FMOD Bank Source 并重新生成事件枚举。", MessageType.Warning);
+                if (GUILayout.Button("Refresh Banks And Regenerate FMOD Event Enum")) EditorApplication.ExecuteMenuItem("Tools/Prometheus/Audio/Refresh Banks And Regenerate FMOD Event Enum");
+            }
+            if (existingTimeOptions.Count == 0) EditorGUILayout.HelpBox("当前轨道没有 Spine Event 或 Custom Event 时间点，请先添加事件时间后再绑定音效。", MessageType.Info);
+            using (new EditorGUI.DisabledScope(existingTimeOptions.Count == 0))
+            {
+                if (existingTimeOptions.Count > 0)
+                {
+                    int selectedTimeIndex = FindExistingTimeOption(existingTimeOptions, insertionAudioTime);
+                    if (selectedTimeIndex < 0)
+                    {
+                        selectedTimeIndex = 0;
+                        insertionAudioTime = existingTimeOptions[0].Time;
+                    }
+                    string[] timeLabels = CreateTimeOptionLabels(existingTimeOptions);
+                    EditorGUI.BeginChangeCheck();
+                    selectedTimeIndex = EditorGUILayout.Popup("Existing Track Time", selectedTimeIndex, timeLabels);
+                    if (EditorGUI.EndChangeCheck() && selectedTimeIndex >= 0 && selectedTimeIndex < existingTimeOptions.Count)
+                    {
+                        insertionAudioTime = existingTimeOptions[selectedTimeIndex].Time;
+                        SeekPreview(insertionAudioTime, true);
+                    }
+                }
+                insertionAudioEvent = (FmodAudioEvent)EditorGUILayout.EnumPopup("FMOD Audio Event", insertionAudioEvent);
+                using (new EditorGUI.DisabledScope(insertionAudioEvent == FmodAudioEvent.None))
+                {
+                    if (GUILayout.Button("Bind FMOD Event At Existing Time")) InsertAudioBinding(animationLine);
+                }
+            }
+            DrawAudioBindingList(animationLine, existingTimeOptions, duration);
+        }
+
+        /// <summary>创建可直接交给 IMGUI Popup 的既有轨道时间标签数组。</summary>
+        private static string[] CreateTimeOptionLabels(IReadOnlyList<AnimationTimeOption> existingTimeOptions)
+        {
+            string[] labels = new string[existingTimeOptions.Count];
+            for (int i = 0; i < existingTimeOptions.Count; i++) labels[i] = existingTimeOptions[i].Label;
+            return labels;
+        }
+
+        /// <summary>通过 AnimationLine API 写入一个音效绑定并刷新序列化列表。</summary>
+        private void InsertAudioBinding(AnimationLine animationLine)
+        {
+            Undo.RecordObject(animationLine, "Insert Animation Line FMOD Audio Binding");
+            animationLine.InsertAudioBinding(insertionAudioTime, insertionAudioEvent);
+            EditorUtility.SetDirty(animationLine);
+            serializedObject.Update();
+        }
+
+        /// <summary>绘制所有现有 FMOD 绑定，并允许把时间切换到另一个既有轨道时间或删除绑定。</summary>
+        private void DrawAudioBindingList(AnimationLine animationLine, List<AnimationTimeOption> existingTimeOptions, float duration)
+        {
+            EditorGUILayout.LabelField($"Audio Bindings ({audioBindingsProperty.arraySize})", EditorStyles.boldLabel);
+            int removeIndex = -1;
+            for (int i = 0; i < audioBindingsProperty.arraySize; i++)
+            {
+                SerializedProperty bindingProperty = audioBindingsProperty.GetArrayElementAtIndex(i);
+                SerializedProperty timeProperty = bindingProperty.FindPropertyRelative("time");
+                SerializedProperty audioEventProperty = bindingProperty.FindPropertyRelative("audioEvent");
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"{i}: {audioEventProperty.enumDisplayNames[audioEventProperty.enumValueIndex]}", EditorStyles.boldLabel);
+                if (GUILayout.Button("Remove", GUILayout.Width(72f))) removeIndex = i;
+                EditorGUILayout.EndHorizontal();
+                DrawExistingTimeProperty(timeProperty, existingTimeOptions);
+                EditorGUILayout.PropertyField(audioEventProperty, new GUIContent("FMOD Audio Event"));
+                float normalizedTime = duration <= 0f ? 0f : Mathf.Clamp01(timeProperty.floatValue / duration);
+                using (new EditorGUI.DisabledScope(true)) EditorGUILayout.FloatField("Normalized Time", normalizedTime);
+                EditorGUILayout.EndVertical();
+            }
+            if (removeIndex >= 0) RemoveAudioBinding(animationLine, removeIndex);
+        }
+
+        /// <summary>以既有时间下拉框编辑绑定时间；已经失去来源的旧时间会显示为 Missing 直到用户重新选择。</summary>
+        private static void DrawExistingTimeProperty(SerializedProperty timeProperty, IReadOnlyList<AnimationTimeOption> existingTimeOptions)
+        {
+            int currentIndex = FindExistingTimeOption(existingTimeOptions, timeProperty.floatValue);
+            bool missingTime = currentIndex < 0;
+            string[] labels = new string[existingTimeOptions.Count + (missingTime ? 1 : 0)];
+            int optionOffset = missingTime ? 1 : 0;
+            if (missingTime) labels[0] = $"{timeProperty.floatValue:0.###}s — Missing Track Time";
+            for (int i = 0; i < existingTimeOptions.Count; i++) labels[i + optionOffset] = existingTimeOptions[i].Label;
+            int displayedIndex = missingTime ? 0 : currentIndex;
+            EditorGUI.BeginChangeCheck();
+            int selectedIndex = EditorGUILayout.Popup("Existing Track Time", displayedIndex, labels);
+            if (!EditorGUI.EndChangeCheck() || selectedIndex < optionOffset) return;
+            int sourceIndex = selectedIndex - optionOffset;
+            if (sourceIndex >= 0 && sourceIndex < existingTimeOptions.Count) timeProperty.floatValue = existingTimeOptions[sourceIndex].Time;
+        }
+
+        /// <summary>通过 AnimationLine API删除一个 FMOD 音频绑定并刷新序列化列表。</summary>
+        private void RemoveAudioBinding(AnimationLine animationLine, int index)
+        {
+            serializedObject.ApplyModifiedProperties();
+            Undo.RecordObject(animationLine, "Remove Animation Line FMOD Audio Binding");
+            animationLine.RemoveAudioBindingAt(index);
+            EditorUtility.SetDirty(animationLine);
+            serializedObject.Update();
         }
 
         /// <summary>
@@ -583,16 +788,23 @@ namespace Xuan.Prometheus.Editor
                 SerializedProperty intValueProperty = markerProperty.FindPropertyRelative("intValue");
                 SerializedProperty floatValueProperty = markerProperty.FindPropertyRelative("floatValue");
                 SerializedProperty stringValueProperty = markerProperty.FindPropertyRelative("stringValue");
+                SerializedProperty commandProperty = markerProperty.FindPropertyRelative("command");
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"{i}: {eventNameProperty.stringValue}", EditorStyles.boldLabel);
+                AnimationLineEventCommand command = (AnimationLineEventCommand)commandProperty.intValue;
+                string markerLabel = command == AnimationLineEventCommand.None ? eventNameProperty.stringValue : command.ToString();
+                EditorGUILayout.LabelField($"{i}: {markerLabel}", EditorStyles.boldLabel);
                 if (GUILayout.Button("Remove", GUILayout.Width(72f))) removeIndex = i;
                 EditorGUILayout.EndHorizontal();
                 timeProperty.floatValue = EditorGUILayout.Slider("Time (Seconds)", timeProperty.floatValue, 0f, Mathf.Max(0f, duration));
-                EditorGUILayout.PropertyField(eventNameProperty, new GUIContent("Event Name"));
-                EditorGUILayout.PropertyField(intValueProperty, new GUIContent("Int"));
-                EditorGUILayout.PropertyField(floatValueProperty, new GUIContent("Float"));
-                EditorGUILayout.PropertyField(stringValueProperty, new GUIContent("String"));
+                EditorGUILayout.PropertyField(commandProperty, new GUIContent("Gameplay Command"));
+                if ((AnimationLineEventCommand)commandProperty.intValue == AnimationLineEventCommand.None)
+                {
+                    EditorGUILayout.PropertyField(eventNameProperty, new GUIContent("Event Name"));
+                    EditorGUILayout.PropertyField(intValueProperty, new GUIContent("Int"));
+                    EditorGUILayout.PropertyField(floatValueProperty, new GUIContent("Float"));
+                    EditorGUILayout.PropertyField(stringValueProperty, new GUIContent("String"));
+                }
                 float normalizedTime = duration <= 0f ? 0f : Mathf.Clamp01(timeProperty.floatValue / duration);
                 using (new EditorGUI.DisabledScope(true)) EditorGUILayout.FloatField("Normalized Time", normalizedTime);
                 EditorGUILayout.EndVertical();

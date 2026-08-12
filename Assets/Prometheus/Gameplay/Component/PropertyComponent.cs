@@ -605,13 +605,12 @@ namespace Xuan.Prometheus.Component
             if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(safeRecover, transform.position, true);
             return actualRecover;
         }
-        /// <summary>增加非负核心能量并按当前核心能量上限截断，返回本次实际增加量。</summary>
+        /// <summary>按有符号变化量调整当前核心能量并约束在零到运行时上限之间，返回本次实际变化量；负返回值表示能量被扣除。</summary>
         public float OnGainCoreEnergy(float energy)
         {
             if (isDead) return 0f;
-            float safeEnergy = Mathf.Max(0f, energy);
             float oldCoreEnergy = CoreEnergy;
-            coreEnergy.SetValue(Mathf.Min(CoreEnergyLimit, CoreEnergy + safeEnergy));
+            coreEnergy.SetValue(Mathf.Clamp(CoreEnergy + energy, 0f, Mathf.Max(0f, CoreEnergyLimit)));
             return CoreEnergy - oldCoreEnergy;
         }
 

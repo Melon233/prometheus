@@ -253,6 +253,9 @@ namespace Xuan.Prometheus.Effects
         /// <summary>当指定实体的持续 Effect 被添加、刷新、叠层、计时或移除时触发，供 EffectComponent 转换为可监听字段脏通知。</summary>
         public event Action<Entity, EffectInstance> ActiveEffectsChanged;
 
+        /// <summary>当一条不可变战斗信号完成 Trigger 路由时触发，供音频、特效等只读表现系统消费最终结算事实。</summary>
+        public event Action<EffectSignal> SignalProcessed;
+
         /// <summary>
         /// 使用确定性随机种子创建效果运行时，便于测试和战斗回放。
         /// </summary>
@@ -426,6 +429,7 @@ namespace Xuan.Prometheus.Effects
             requestQueue.Clear();
             Trace = null;
             ActiveEffectsChanged = null;
+            SignalProcessed = null;
             disposed = true;
         }
 
@@ -494,6 +498,28 @@ namespace Xuan.Prometheus.Effects
                 trigger.MarkTriggered(signal.SignalChainId);
                 foreach (EffectDefinition definition in trigger.Definition.Effects) EnqueueEffect(definition, signal.Caster, target, signal.Source, signal, trigger.Definition.Priority);
                 EmitTrace($"Signal {signal.Type} matched trigger {trigger.Definition.TriggerId} for signal chain {signal.SignalChainId}.");
+            }
+            NotifySignalProcessed(signal);
+        }
+
+        /// <summary>
+        /// 向全部只读表现观察者发布已经完成路由的事实信号，并逐个隔离观察者异常，避免音频或特效故障中断战斗事务。
+        /// </summary>
+        private void NotifySignalProcessed(EffectSignal signal)
+        {
+            Action<EffectSignal> observers = SignalProcessed;
+            if (observers == null) return;
+            Delegate[] invocationList = observers.GetInvocationList();
+            for (int index = 0; index < invocationList.Length; index++)
+            {
+                try
+                {
+                    ((Action<EffectSignal>)invocationList[index]).Invoke(signal);
+                }
+                catch (Exception exception)
+                {
+                    EmitTrace($"EffectRuntime presentation observer failed while processing {signal.Type}: {exception}");
+                }
             }
         }
 
@@ -578,7 +604,8 @@ namespace Xuan.Prometheus.Effects
             for (int i = 0; i < tickCount && instance.IsActive; i++)
             {
                 DamageAttribute inheritedDamageAttribute = instance.LastSignal == null ? DamageAttribute.Physical : instance.LastSignal.DamageAttribute;
-                EffectSignal tickSignal = new EffectSignal(EffectSignalType.PeriodicTick, instance.Caster, instance.Owner, instance.Source, instance.Stacks, instance.Stacks, instance.Definition.Tags | EffectTag.Periodic, originEffectInstanceId: instance.InstanceId, damageAttribute: inheritedDamageAttribute, damageActionType: DamageActionType.Periodic);
+                Vector3 tickPosition = instance.Owner != null && instance.Owner.bindGo != null ? instance.Owner.bindGo.transform.position : instance.LastSignal == null ? default : instance.LastSignal.Position;
+                EffectSignal tickSignal = new EffectSignal(EffectSignalType.PeriodicTick, instance.Caster, instance.Owner, instance.Source, instance.Stacks, instance.Stacks, instance.Definition.Tags | EffectTag.Periodic, originEffectInstanceId: instance.InstanceId, position: tickPosition, damageAttribute: inheritedDamageAttribute, damageActionType: DamageActionType.Periodic);
                 RunTransaction(() =>
                 {
                     EnqueueSignal(tickSignal);

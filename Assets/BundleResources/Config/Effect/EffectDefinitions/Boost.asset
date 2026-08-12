@@ -27,6 +27,7 @@ MonoBehaviour:
   - rid: 1348142047778570248
   - rid: 1348142047778570249
   - rid: 1474841158051692615
+  - rid: 1474841202804654154
   onStackOperations: []
   onRefreshOperations: []
   onTickOperations: []
@@ -65,3 +66,12 @@ MonoBehaviour:
           multiplier: 1
           offset: 666
         additionalTags: 128
+    - rid: 1474841202804654154
+      type: {class: EmitSignalOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      data:
+        signalType: 5
+        value:
+          baseValueSource: 0
+          multiplier: 0
+          offset: 0
+        additionalTags: 0

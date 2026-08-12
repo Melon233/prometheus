@@ -70,6 +70,7 @@ MonoBehaviour:
       damageAttribute: 0
     effects:
     - {fileID: 11400000, guid: b0374dce6e7be8e43bdd43c4397cd66a, type: 2}
+    - {fileID: 11400000, guid: cb1fe135013ef354d81cb30ddd00d41f, type: 2}
   - triggerId: Example.OnNormalAttackDamage.GainUltEnergy
     signalType: 2
     listenScope: 0

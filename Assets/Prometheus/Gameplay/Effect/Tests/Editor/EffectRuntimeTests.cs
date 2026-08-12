@@ -251,9 +251,17 @@ namespace Xuan.Prometheus.Effects.Tests
             int deathCount = 0;
             int hpChangedCount = 0;
             int staggeredCount = 0;
+            int fatalDamageSignalCount = 0;
+            EffectSignal fatalDamageSignal = null;
             targetEvents.AddListener<DieEvent>(_ => deathCount++);
             targetEvents.AddListener<HpChangedEvent>(_ => hpChangedCount++);
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            runtime.SignalProcessed += signal =>
+            {
+                if (signal.Type != EffectSignalType.DamageApplied || signal.Value <= 0f) return;
+                fatalDamageSignalCount++;
+                fatalDamageSignal = signal;
+            };
             CountingOperation killedCounter = new CountingOperation();
             EffectDefinition killedCounterEffect = ScriptableObject.CreateInstance<EffectDefinition>();
             killedCounterEffect.name = "Tests.KilledCounterEffect";
@@ -274,6 +282,10 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(deathCount, Is.EqualTo(1));
                 Assert.That(hpChangedCount, Is.EqualTo(1));
                 Assert.That(staggeredCount, Is.Zero, "致死伤害不得发布受击表现事件。");
+                Assert.That(fatalDamageSignalCount, Is.EqualTo(1), "首次致命伤害必须产生一条可供独立音频表现消费的实际伤害事实。");
+                Assert.That(fatalDamageSignal, Is.Not.Null);
+                Assert.That(fatalDamageSignal.WasFatal, Is.True);
+                Assert.That(fatalDamageSignal.Value, Is.EqualTo(100f).Within(0.0001f));
                 Assert.That(killedCounter.ExecutionCount, Is.EqualTo(1));
                 Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty, "致死伤害不得创建受击或控制 Effect。");
                 Assert.That(targetProperty.OnRecoverHp(50f), Is.EqualTo(0f));
@@ -379,6 +391,57 @@ namespace Xuan.Prometheus.Effects.Tests
             }
         }
 
+        /// <summary>验证 CoreEnergyGainOperation 接受负数变化量、在零处截断并正常触发运行时属性脏通知。</summary>
+        [Test]
+        public void CoreEnergyGain_NegativeValueConsumesEnergyAndClampsAtZero()
+        {
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.CoreEnergyConsume";
+            definition.ConfigureForTests("Tests.CoreEnergyConsume", EffectTag.Buff, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new CoreEnergyGainOperation(EffectValueFormula.Constant(-100f)) }, null, null, null);
+            int dirtyCount = 0;
+            ListenHandle listenHandle = null;
+            try
+            {
+                targetProperty.SetBaseValue(PropertyType.CoreEnergyLimit, 100f);
+                targetProperty.OnGainCoreEnergy(60f);
+                listenHandle = targetProperty.CoreEnergyProperty.Listen(() => dirtyCount++, false);
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, sourceEntity);
+                Assert.That(targetProperty.CoreEnergy, Is.Zero);
+                Assert.That(dirtyCount, Is.EqualTo(1));
+            }
+            finally
+            {
+                listenHandle?.Dispose();
+                UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>验证正式满核心能量链路会同时获得 Boost 并通过 EmptyCoreEnergy 清空运行时能量。</summary>
+        [Test]
+        public void PersistentCoreEnergyFlow_FullEnergyAppliesBoostAndClearsRuntimeEnergy()
+        {
+            const string libraryPath = "Assets/BundleResources/Config/Effect/EffectLibrary.asset";
+            const string boostPath = "Assets/BundleResources/Config/Effect/EffectDefinitions/Boost.asset";
+            const string energyGainPath = "Assets/BundleResources/Config/Effect/EffectDefinitions/EnergyGain.asset";
+            EffectLibrary persistentLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(libraryPath);
+            EffectDefinition boostDefinition = AssetDatabase.LoadAssetAtPath<EffectDefinition>(boostPath);
+            EffectDefinition energyGainDefinition = AssetDatabase.LoadAssetAtPath<EffectDefinition>(energyGainPath);
+            Assert.That(persistentLibrary, Is.Not.Null);
+            Assert.That(boostDefinition, Is.Not.Null);
+            Assert.That(energyGainDefinition, Is.Not.Null);
+            EffectSignal damageSignal = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack, "Tests.CoreEnergy");
+            float configuredEnergyGain = Mathf.Max(0f, ReadConfiguredOperationFormula<CoreEnergyGainOperation>(energyGainDefinition, damageSignal, "amount"));
+            float configuredFullEnergyThreshold = ReadConfiguredConditionThreshold(persistentLibrary.CombatFlowTriggers, EffectSignalType.CoreEnergyGain, EffectConditionType.ValueGreaterThanOrEqual);
+            Assert.That(configuredEnergyGain, Is.GreaterThan(0f), "正式 EnergyGain 必须配置正数核心能量增量，否则无法验证满能量链路。");
+            Assert.That(configuredFullEnergyThreshold, Is.GreaterThan(0f), "正式满核心能量触发规则必须配置正数阈值。");
+            int requiredDamageSignals = Mathf.CeilToInt(configuredFullEnergyThreshold / configuredEnergyGain);
+            registrations = runtime.RegisterTriggerSet(sourceEntity, persistentLibrary.CombatFlowTriggers);
+            sourceProperty.SetBaseValue(PropertyType.CoreEnergyLimit, configuredFullEnergyThreshold);
+            for (int index = 0; index < requiredDamageSignals; index++) runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, damageSignal.RequestedValue, damageSignal.Value, damageSignal.Tags, $"{damageSignal.AbilityId}.{index}"));
+            Assert.That(runtime.GetStackCount(sourceEntity, boostDefinition.EffectId), Is.EqualTo(1));
+            Assert.That(sourceProperty.CoreEnergy, Is.Zero);
+        }
+
         /// <summary>验证大招能量操作每次增加配置值、按上限截断，并且普通实体不依赖全局 HUD 事件。</summary>
         [Test]
         public void UltEnergyGain_UsesConfiguredAmountAndClampsToLimit()
@@ -405,21 +468,27 @@ namespace Xuan.Prometheus.Effects.Tests
             }
         }
 
-        /// <summary>验证正式 CombatFlowTriggers 仅让造成正数实际伤害的普通攻击获得五点大招能量，技能伤害不会误充能。</summary>
+        /// <summary>验证正式 CombatFlowTriggers 仅让造成正数实际伤害的普通攻击获得 UltEnergyGain 资产当前配置的能量，技能伤害不会误充能。</summary>
         [Test]
-        public void PersistentCombatFlow_NormalAttackDamageGainsFiveUltEnergyOnly()
+        public void PersistentCombatFlow_NormalAttackDamageGainsConfiguredUltEnergyOnly()
         {
             const string libraryPath = "Assets/BundleResources/Config/Effect/EffectLibrary.asset";
+            const string ultEnergyGainPath = "Assets/BundleResources/Config/Effect/EffectDefinitions/UltEnergyGain.asset";
             EffectLibrary persistentLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(libraryPath);
+            EffectDefinition ultEnergyGainDefinition = AssetDatabase.LoadAssetAtPath<EffectDefinition>(ultEnergyGainPath);
             Assert.That(persistentLibrary, Is.Not.Null);
-            registrations = runtime.RegisterTriggerSet(sourceEntity, persistentLibrary.CombatFlowTriggers);
-            sourceProperty.SetBaseValue(PropertyType.UltEnergyLimit, 100f);
+            Assert.That(ultEnergyGainDefinition, Is.Not.Null);
             EffectSignal normalAttackDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, "Tests.NormalAttack", damageActionType: DamageActionType.NormalAttack);
+            float configuredUltEnergyGain = Mathf.Max(0f, ReadConfiguredOperationFormula<UltEnergyGainOperation>(ultEnergyGainDefinition, normalAttackDamage, "amount"));
+            Assert.That(configuredUltEnergyGain, Is.GreaterThan(0f), "正式 UltEnergyGain 必须配置正数大招能量增量，否则该触发链路没有可验证结果。");
+            registrations = runtime.RegisterTriggerSet(sourceEntity, persistentLibrary.CombatFlowTriggers);
+            sourceProperty.SetBaseValue(PropertyType.UltEnergyLimit, configuredUltEnergyGain + 1f);
+            float expectedUltEnergyAfterNormalAttack = Mathf.Min(sourceProperty.UltEnergyLimit, sourceProperty.UltEnergy + configuredUltEnergyGain);
             runtime.Publish(normalAttackDamage);
-            Assert.That(sourceProperty.UltEnergy, Is.EqualTo(5f).Within(0.0001f));
+            Assert.That(sourceProperty.UltEnergy, Is.EqualTo(expectedUltEnergyAfterNormalAttack).Within(0.0001f));
             EffectSignal skillDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damageActionType: DamageActionType.Skill);
             runtime.Publish(skillDamage);
-            Assert.That(sourceProperty.UltEnergy, Is.EqualTo(5f).Within(0.0001f));
+            Assert.That(sourceProperty.UltEnergy, Is.EqualTo(expectedUltEnergyAfterNormalAttack).Within(0.0001f));
         }
 
         /// <summary>
@@ -867,7 +936,9 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(pastedElement.FindPropertyRelative("customModifierKey").stringValue, Is.EqualTo("Copied.Property"));
                 Assert.That(pastedElement.FindPropertyRelative("propertyType").enumValueIndex, Is.EqualTo((int)PropertyType.Def));
                 Assert.That(pastedElement.FindPropertyRelative("modifierMode").enumValueIndex, Is.EqualTo((int)PropertyModifierMode.Offset));
-                Assert.That(pastedValuePerStack.FindPropertyRelative("baseValueSource").enumValueIndex, Is.EqualTo((int)EffectValueSource.CasterAttack));
+                Assert.That(pastedValuePerStack.FindPropertyRelative("baseValueSource").intValue, Is.EqualTo((int)EffectValueSource.Property));
+                Assert.That(pastedValuePerStack.FindPropertyRelative("propertyEntity").enumValueIndex, Is.EqualTo((int)EffectValueEntity.Caster));
+                Assert.That(pastedValuePerStack.FindPropertyRelative("propertyValue").enumValueIndex, Is.EqualTo((int)EffectPropertyValue.Atk));
                 Assert.That(pastedValuePerStack.FindPropertyRelative("multiplier").floatValue, Is.EqualTo(2f));
                 Assert.That(pastedValuePerStack.FindPropertyRelative("offset").floatValue, Is.EqualTo(3f));
                 Assert.That(pastedValuePerStack.isExpanded, Is.True);
@@ -904,7 +975,9 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That((int)EffectStackKeyPolicy.DefinitionAndSource, Is.EqualTo(1));
                 Assert.That((int)EffectStackKeyPolicy.DefinitionAndCaster, Is.EqualTo(2));
                 Assert.That((int)EffectValueSource.One, Is.EqualTo(0));
-                Assert.That((int)EffectValueSource.CasterAttack, Is.EqualTo(3));
+                Assert.That((int)EffectValueSource.Property, Is.EqualTo(8));
+                Assert.That((int)EffectValueEntity.Caster, Is.EqualTo(0));
+                Assert.That((int)EffectValueEntity.Source, Is.EqualTo(2));
                 Assert.That((int)EffectConditionType.CasterExists, Is.EqualTo(1));
                 Assert.That((int)EffectConditionType.SourceExists, Is.EqualTo(3));
                 Assert.That((int)EffectConditionType.DamageAttributeEquals, Is.EqualTo(9));
@@ -922,6 +995,85 @@ namespace Xuan.Prometheus.Effects.Tests
             finally
             {
                 UnityEngine.Object.DestroyImmediate(definition);
+            }
+        }
+
+        /// <summary>
+        /// 验证所有战斗属性 Gain 在信号和标签枚举中成对存在，防止新增属性后只补一侧导致 Trigger 无法完整路由。
+        /// </summary>
+        [Test]
+        public void PropertyGainSignalsAndTags_CoverEveryCombatPropertyValue()
+        {
+            string[] gainNames = { nameof(EffectSignalType.AtkGain), nameof(EffectSignalType.DefGain), nameof(EffectSignalType.AtkSpeedGain), nameof(EffectSignalType.CritRateGain), nameof(EffectSignalType.CritDmgGain), nameof(EffectSignalType.HpGain), nameof(EffectSignalType.MaxHpGain), nameof(EffectSignalType.CoreEnergyGain), nameof(EffectSignalType.CoreEnergyLimitGain), nameof(EffectSignalType.UltEnergyGain), nameof(EffectSignalType.UltEnergyLimitGain), nameof(EffectSignalType.ToughnessGain), nameof(EffectSignalType.DamageBoostGain), nameof(EffectSignalType.DamageTakenBoostGain) };
+            foreach (string gainName in gainNames)
+            {
+                Assert.That(Enum.IsDefined(typeof(EffectSignalType), gainName), Is.True, $"EffectSignalType is missing '{gainName}'.");
+                Assert.That(Enum.IsDefined(typeof(EffectTag), gainName), Is.True, $"EffectTag is missing '{gainName}'.");
+            }
+            Assert.That((int)EffectSignalType.CoreEnergyGain, Is.EqualTo(9), "Existing signal serialization values must remain stable.");
+            Assert.That((int)EffectTag.CoreEnergyGain, Is.EqualTo(1 << 12), "Existing tag serialization bits must remain stable.");
+            Assert.That((int)EffectTag.UltEnergyGain, Is.EqualTo(1 << 13), "Existing tag serialization bits must remain stable.");
+            Assert.That((int)EffectTag.DamageTakenBoostGain, Is.EqualTo(1 << 27), "New Gain tags must use unique appended bits.");
+        }
+
+        /// <summary>
+        /// 验证实体来源和运行时属性可以正交组合，并覆盖 PropertyComponent 的全部最终值、当前资源和运行时上限。
+        /// </summary>
+        [Test]
+        public void EffectValueFormula_PropertySourceCombinesEveryEntityWithEveryRuntimeValue()
+        {
+            GameObject originObject = new GameObject("EffectTest.Origin");
+            PropertyConfig originConfig = ScriptableObject.CreateInstance<PropertyConfig>();
+            originConfig.atk = 301f;
+            PropertyComponent originProperty = originObject.AddComponent<PropertyComponent>();
+            originProperty.InitializeForTests(originConfig);
+            TestEntity originEntity = new TestEntity(originObject, originProperty);
+            targetProperty.SetBaseValue(PropertyType.Atk, 201f);
+            sourceProperty.SetBaseValue(PropertyType.Atk, 101f);
+            sourceProperty.SetBaseValue(PropertyType.Def, 102f);
+            sourceProperty.SetBaseValue(PropertyType.MoveSpeed, 103f);
+            sourceProperty.SetBaseValue(PropertyType.AtkSpeed, 104f);
+            sourceProperty.SetBaseValue(PropertyType.CritRate, 105f);
+            sourceProperty.SetBaseValue(PropertyType.CritDmg, 106f);
+            sourceProperty.SetBaseValue(PropertyType.MaxHp, 107f);
+            sourceProperty.SetBaseValue(PropertyType.AirMoveSpeed, 108f);
+            sourceProperty.SetBaseValue(PropertyType.JumpSpeed, 109f);
+            sourceProperty.SetBaseValue(PropertyType.Gravity, 110f);
+            sourceProperty.SetBaseValue(PropertyType.CoreEnergyLimit, 111f);
+            sourceProperty.SetBaseValue(PropertyType.UltEnergyLimit, 112f);
+            sourceProperty.SetBaseValue(PropertyType.Toughness, 113f);
+            sourceProperty.SetBaseValue(PropertyType.DamageBoost, 114f);
+            sourceProperty.SetBaseValue(PropertyType.DamageTakenBoost, 115f);
+            sourceProperty.OnGainCoreEnergy(12f);
+            sourceProperty.OnGainUltEnergy(13f);
+            EffectPropertyValue[] propertyValues = (EffectPropertyValue[])Enum.GetValues(typeof(EffectPropertyValue));
+            float[] expectedPropertyValues = { 101f, 102f, 103f, 104f, 105f, 106f, 100f, 107f, 108f, 109f, 110f, 12f, 111f, 13f, 112f, 113f, 114f, 115f };
+            EffectValueFormula[] formulas = new EffectValueFormula[propertyValues.Length + 3];
+            formulas[0] = EffectValueFormula.Property(EffectValueEntity.Caster, EffectPropertyValue.Atk);
+            formulas[1] = EffectValueFormula.Property(EffectValueEntity.Target, EffectPropertyValue.Atk);
+            formulas[2] = EffectValueFormula.Property(EffectValueEntity.Source, EffectPropertyValue.Atk);
+            for (int index = 0; index < propertyValues.Length; index++) formulas[index + 3] = EffectValueFormula.Property(EffectValueEntity.Caster, propertyValues[index]);
+            FormulaCaptureOperation capture = new FormulaCaptureOperation(formulas);
+            EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
+            definition.name = "Tests.PropertyFormulaMatrix";
+            definition.ConfigureForTests(string.Empty, EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { capture }, null, null, null);
+            try
+            {
+                runtime.ApplyEffect(definition, sourceEntity, targetEntity, originEntity);
+                Assert.That(capture.Values[0], Is.EqualTo(101f).Within(0.0001f));
+                Assert.That(capture.Values[1], Is.EqualTo(201f).Within(0.0001f));
+                Assert.That(capture.Values[2], Is.EqualTo(301f).Within(0.0001f));
+                Assert.That(capture.Values.Length, Is.EqualTo(expectedPropertyValues.Length + 3));
+                for (int index = 0; index < expectedPropertyValues.Length; index++) Assert.That(capture.Values[index + 3], Is.EqualTo(expectedPropertyValues[index]).Within(0.0001f), $"Unexpected runtime value for {propertyValues[index]}.");
+                Assert.That(sourceConfig.hp, Is.EqualTo(100f).Within(0.0001f), "The config remains an initialization seed while MaxHp is changed at runtime.");
+                Assert.That(sourceConfig.coreEnergyLimit, Is.EqualTo(0f).Within(0.0001f), "The runtime CoreEnergyLimit must not be read back from config.");
+                Assert.That(sourceConfig.ultEnergyLimit, Is.EqualTo(0f).Within(0.0001f), "The runtime UltEnergyLimit must not be read back from config.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(definition);
+                UnityEngine.Object.DestroyImmediate(originConfig);
+                UnityEngine.Object.DestroyImmediate(originObject);
             }
         }
 
@@ -1037,6 +1189,7 @@ namespace Xuan.Prometheus.Effects.Tests
                 GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRootObject.transform, persistentLibrary, "Character_Yefa", "Enemy_Slime", Array.Empty<Transform>(), 0);
                 gameplayKit.Configure(options);
                 Assert.That(gameplayKit.GetSystem<EffectSystem>().DefaultLibrary, Is.SameAs(persistentLibrary));
+                Assert.That(gameplayKit.GetSystem<CombatAudioPresentationSystem>(), Is.Not.Null, "正式 GameplayKit 必须注册单局伤害音频表现系统。");
             }
             finally
             {
@@ -1044,6 +1197,63 @@ namespace Xuan.Prometheus.Effects.Tests
                 assetKit.Dispose();
                 UnityEngine.Object.DestroyImmediate(runtimeRootObject);
             }
+        }
+
+        /// <summary>验证伤害音频表现只消费实际 DamageApplied，且致命伤害不会因死亡动画抢占受击动画而丢失音效。</summary>
+        [Test]
+        public void CombatAudioPresentation_PlaysEveryPositiveDamageIncludingFatalExactlyOnce()
+        {
+            EffectLibrary library = ScriptableObject.CreateInstance<EffectLibrary>();
+            AssetKit assetKit = new AssetKit();
+            GameplayKit gameplayKit = new GameplayKit(assetKit);
+            EffectSystem effectSystem = new EffectSystem(library);
+            int playCount = 0;
+            FmodAudioEvent playedEvent = FmodAudioEvent.None;
+            Vector3 playedPosition = default;
+            CombatAudioPresentationSystem audioSystem = new CombatAudioPresentationSystem(FmodAudioEvent.CombatSharedHit_Flesh, (audioEvent, worldPosition) =>
+            {
+                playCount++;
+                playedEvent = audioEvent;
+                playedPosition = worldPosition;
+                return true;
+            });
+            try
+            {
+                gameplayKit.AddSystem(effectSystem);
+                gameplayKit.AddSystem(audioSystem);
+                effectSystem.AfterNew(gameplayKit);
+                audioSystem.AfterNew(gameplayKit);
+                Vector3 fatalHitPosition = new Vector3(3f, 2f, 1f);
+                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 150f, 100f, EffectTag.Attack, position: fatalHitPosition, wasFatal: true));
+                Assert.That(playCount, Is.EqualTo(1), "致命实际伤害必须绕过受击动画并恰好播放一次命中音效。");
+                Assert.That(playedEvent, Is.EqualTo(FmodAudioEvent.CombatSharedHit_Flesh));
+                Assert.That(playedPosition, Is.EqualTo(fatalHitPosition));
+                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack, position: Vector3.one));
+                Assert.That(playCount, Is.EqualTo(2), "非致命实际伤害必须使用同一个表现入口且恰好播放一次。");
+                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 0f, EffectTag.Attack, position: Vector3.one));
+                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.Healed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Healing, position: Vector3.one));
+                Assert.That(playCount, Is.EqualTo(2), "零实际伤害和非伤害结果信号不得播放命中音效。");
+                audioSystem.Dispose();
+                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack, position: Vector3.one));
+                Assert.That(playCount, Is.EqualTo(2), "系统释放后必须解除 EffectRuntime 订阅。");
+            }
+            finally
+            {
+                gameplayKit.Dispose();
+                assetKit.Dispose();
+                UnityEngine.Object.DestroyImmediate(library);
+            }
+        }
+
+        /// <summary>验证只读表现观察者之间相互隔离，单个音频或特效模块异常不会中断信号事务和其他观察者。</summary>
+        [Test]
+        public void SignalProcessed_FailingPresentationObserverDoesNotBreakCombatTransaction()
+        {
+            int successfulObserverCount = 0;
+            runtime.SignalProcessed += _ => throw new InvalidOperationException("Expected presentation failure.");
+            runtime.SignalProcessed += _ => successfulObserverCount++;
+            Assert.DoesNotThrow(() => runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack)));
+            Assert.That(successfulObserverCount, Is.EqualTo(1));
         }
 
         /// <summary>
@@ -1064,19 +1274,53 @@ namespace Xuan.Prometheus.Effects.Tests
         /// </summary>
         private static float ReadConfiguredDamage(EffectDefinition definition, EffectSignal signal)
         {
+            return Mathf.Max(0f, ReadConfiguredOperationFormula<DamageOperation>(definition, signal, "amount"));
+        }
+
+        /// <summary>从正式 EffectDefinition 的指定操作读取公式并独立计算当前配置值，防止资产集成测试复制容易过期的数值常量。</summary>
+        private static float ReadConfiguredOperationFormula<TOperation>(EffectDefinition definition, EffectSignal signal, string formulaPropertyName) where TOperation : EffectOperation
+        {
+            Assert.That(definition, Is.Not.Null);
+            Assert.That(signal, Is.Not.Null);
+            Assert.That(formulaPropertyName, Is.Not.Empty);
             SerializedObject serializedDefinition = new SerializedObject(definition);
             SerializedProperty operations = serializedDefinition.FindProperty("onApplyOperations");
-            int damageOperationCount = 0;
-            float configuredDamage = 0f;
+            int matchingOperationCount = 0;
+            float configuredValue = 0f;
             for (int index = 0; index < operations.arraySize; index++)
             {
                 SerializedProperty operation = operations.GetArrayElementAtIndex(index);
-                if (!(operation.managedReferenceValue is DamageOperation)) continue;
-                damageOperationCount++;
-                configuredDamage += Mathf.Max(0f, EvaluateConfiguredFormula(operation.FindPropertyRelative("amount"), signal));
+                if (!(operation.managedReferenceValue is TOperation)) continue;
+                matchingOperationCount++;
+                configuredValue += EvaluateConfiguredFormula(operation.FindPropertyRelative(formulaPropertyName), signal);
             }
-            Assert.That(damageOperationCount, Is.EqualTo(1), $"Persistent effect '{definition.EffectId}' must contain exactly one DamageOperation in onApplyOperations.");
-            return configuredDamage;
+            Assert.That(matchingOperationCount, Is.EqualTo(1), $"Persistent effect '{definition.EffectId}' must contain exactly one {typeof(TOperation).Name} in onApplyOperations.");
+            return configuredValue;
+        }
+
+        /// <summary>从正式 TriggerSet 中读取指定信号和条件的唯一阈值，使触发次数始终根据资产当前配置推导。</summary>
+        private static float ReadConfiguredConditionThreshold(EffectTriggerSet triggerSet, EffectSignalType signalType, EffectConditionType conditionType)
+        {
+            Assert.That(triggerSet, Is.Not.Null);
+            SerializedObject serializedTriggerSet = new SerializedObject(triggerSet);
+            SerializedProperty triggers = serializedTriggerSet.FindProperty("triggers");
+            int matchingConditionCount = 0;
+            float configuredThreshold = 0f;
+            for (int triggerIndex = 0; triggerIndex < triggers.arraySize; triggerIndex++)
+            {
+                SerializedProperty trigger = triggers.GetArrayElementAtIndex(triggerIndex);
+                if ((EffectSignalType)trigger.FindPropertyRelative("signalType").intValue != signalType) continue;
+                SerializedProperty conditions = trigger.FindPropertyRelative("conditions");
+                for (int conditionIndex = 0; conditionIndex < conditions.arraySize; conditionIndex++)
+                {
+                    SerializedProperty condition = conditions.GetArrayElementAtIndex(conditionIndex);
+                    if ((EffectConditionType)condition.FindPropertyRelative("type").intValue != conditionType) continue;
+                    matchingConditionCount++;
+                    configuredThreshold = condition.FindPropertyRelative("threshold").floatValue;
+                }
+            }
+            Assert.That(matchingConditionCount, Is.EqualTo(1), $"Persistent trigger set '{triggerSet.name}' must contain exactly one {conditionType} condition for {signalType}.");
+            return configuredThreshold;
         }
 
         /// <summary>
@@ -1110,18 +1354,14 @@ namespace Xuan.Prometheus.Effects.Tests
         private static float EvaluateConfiguredFormula(SerializedProperty formula, EffectSignal signal)
         {
             Assert.That(formula, Is.Not.Null);
-            EffectValueSource baseValueSource = (EffectValueSource)formula.FindPropertyRelative("baseValueSource").enumValueIndex;
+            EffectValueSource baseValueSource = (EffectValueSource)formula.FindPropertyRelative("baseValueSource").intValue;
             float baseValue;
             switch (baseValueSource)
             {
                 case EffectValueSource.One: baseValue = 1f; break;
                 case EffectValueSource.SignalValue: baseValue = signal.Value; break;
                 case EffectValueSource.SignalRequestedValue: baseValue = signal.RequestedValue; break;
-                case EffectValueSource.CasterAttack: baseValue = ReadConfiguredProperty(signal.Caster, property => property.Atk); break;
-                case EffectValueSource.TargetAttack: baseValue = ReadConfiguredProperty(signal.Target, property => property.Atk); break;
-                case EffectValueSource.CasterMaxHp: baseValue = ReadConfiguredProperty(signal.Caster, property => property.MaxHp); break;
-                case EffectValueSource.TargetMaxHp: baseValue = ReadConfiguredProperty(signal.Target, property => property.MaxHp); break;
-                case EffectValueSource.CasterCoreEnergy: baseValue = ReadConfiguredProperty(signal.Caster, property => property.CoreEnergy); break;
+                case EffectValueSource.Property: baseValue = ReadConfiguredProperty(signal, formula); break;
                 default: baseValue = 0f; break;
             }
             float multiplier = formula.FindPropertyRelative("multiplier").floatValue;
@@ -1132,11 +1372,35 @@ namespace Xuan.Prometheus.Effects.Tests
         /// <summary>
         /// 从公式引用的测试实体读取属性组件，保持期望值计算与 EffectValueFormula 的实体来源语义一致。
         /// </summary>
-        private static float ReadConfiguredProperty(Entity entity, Func<PropertyComponent, float> reader)
+        private static float ReadConfiguredProperty(EffectSignal signal, SerializedProperty formula)
         {
+            EffectValueEntity entitySource = (EffectValueEntity)formula.FindPropertyRelative("propertyEntity").enumValueIndex;
+            EffectPropertyValue propertyValue = (EffectPropertyValue)formula.FindPropertyRelative("propertyValue").enumValueIndex;
+            Entity entity = entitySource == EffectValueEntity.Caster ? signal.Caster : entitySource == EffectValueEntity.Target ? signal.Target : signal.Source;
             if (entity == null) return 0f;
             if (!entity.TryGetComp(out PropertyComponent property)) return 0f;
-            return reader(property);
+            switch (propertyValue)
+            {
+                case EffectPropertyValue.Atk: return property.Atk;
+                case EffectPropertyValue.Def: return property.Def;
+                case EffectPropertyValue.MoveSpeed: return property.MoveSpeed;
+                case EffectPropertyValue.AtkSpeed: return property.AtkSpeed;
+                case EffectPropertyValue.CritRate: return property.CritRate;
+                case EffectPropertyValue.CritDmg: return property.CritDmg;
+                case EffectPropertyValue.Hp: return property.Hp;
+                case EffectPropertyValue.MaxHp: return property.MaxHp;
+                case EffectPropertyValue.AirMoveSpeed: return property.AirMoveSpeed;
+                case EffectPropertyValue.JumpSpeed: return property.JumpSpeed;
+                case EffectPropertyValue.Gravity: return property.Gravity;
+                case EffectPropertyValue.CoreEnergy: return property.CoreEnergy;
+                case EffectPropertyValue.CoreEnergyLimit: return property.CoreEnergyLimit;
+                case EffectPropertyValue.UltEnergy: return property.UltEnergy;
+                case EffectPropertyValue.UltEnergyLimit: return property.UltEnergyLimit;
+                case EffectPropertyValue.Toughness: return property.Toughness;
+                case EffectPropertyValue.DamageBoost: return property.DamageBonus;
+                case EffectPropertyValue.DamageTakenBoost: return property.DamageTakenBonus;
+                default: return 0f;
+            }
         }
 
         /// <summary>
@@ -1228,6 +1492,30 @@ namespace Xuan.Prometheus.Effects.Tests
                 Caster = context.Caster;
                 Target = context.Target;
                 Source = context.Source;
+            }
+        }
+
+        /// <summary>批量计算一组数值公式，用于验证实体来源与运行时属性的完整组合矩阵。</summary>
+        [Serializable]
+        private sealed class FormulaCaptureOperation : EffectOperation
+        {
+            /// <summary>保存本次测试需要依次计算的全部公式。</summary>
+            private readonly EffectValueFormula[] formulas;
+
+            /// <summary>获取最近一次执行产生的公式结果；执行前为空数组。</summary>
+            public float[] Values { get; private set; } = Array.Empty<float>();
+
+            /// <summary>创建持有指定公式快照的捕获操作，避免测试执行期间修改共享配置。</summary>
+            public FormulaCaptureOperation(EffectValueFormula[] valueFormulas)
+            {
+                formulas = valueFormulas == null ? Array.Empty<EffectValueFormula>() : (EffectValueFormula[])valueFormulas.Clone();
+            }
+
+            /// <inheritdoc />
+            public override void Execute(EffectOperationContext context)
+            {
+                Values = new float[formulas.Length];
+                for (int index = 0; index < formulas.Length; index++) Values[index] = formulas[index] == null ? 0f : formulas[index].Evaluate(context);
             }
         }
 

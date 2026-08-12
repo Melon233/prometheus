@@ -1,0 +1,387 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7903102841844061723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Normal_Attack_04
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Normal_Attack_04
+  Guid:
+    Data1: -1871662089
+    Data2: 1092237636
+    Data3: -2028892797
+    Data4: 842888658
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 628
+--- !u!114 &-5196297541702056863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Ultimate
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Ultimate
+  Guid:
+    Data1: 2030136426
+    Data2: 1099892415
+    Data3: -430240086
+    Data4: 2057710426
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 1784
+--- !u!114 &-4755347746580075584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Normal_Attack_03
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Normal_Attack_03
+  Guid:
+    Data1: -476811712
+    Data2: 1237460203
+    Data3: 413153962
+    Data4: 1528675749
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 492
+--- !u!114 &-4085632389885725815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Shared/Hit_Flesh
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Shared/Hit_Flesh
+  Guid:
+    Data1: 1378848227
+    Data2: 1081097514
+    Data3: -1706301035
+    Data4: 994028332
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 450
+--- !u!114 &-3227918304560348094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Normal_Attack_01
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Normal_Attack_01
+  Guid:
+    Data1: 587202102
+    Data2: 1086318467
+    Data3: 1006825858
+    Data4: 917213050
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 305
+--- !u!114 &-2380877564801454019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Combat.bank
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorBankRef
+  Path: FMOD/Prometheus/Build/Desktop/Combat.bank
+  Name: Combat
+  StudioPath: bank:/Combat
+  lastModified: 639221751501336120
+  FileSizes:
+  - Name: Desktop
+    Value: 74432
+  Exists: 1
+--- !u!114 &-1168869130550956485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Special_Attack
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Special_Attack
+  Guid:
+    Data1: -1827568823
+    Data2: 1264585466
+    Data3: 119546764
+    Data4: -1330105577
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 305
+--- !u!114 &-1078195216888174946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.bank
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorBankRef
+  Path: FMOD/Prometheus/Build/Desktop/Master.bank
+  Name: Master
+  StudioPath: bank:/Master
+  lastModified: 639221751501371387
+  FileSizes:
+  - Name: Desktop
+    Value: 1074
+  Exists: 1
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d32cf7c32a3ed8347bac48ef5ed56d82, type: 3}
+  m_Name: FMODStudioCache
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EventCache
+  EditorBanks:
+  - {fileID: 547329792203728243}
+  - {fileID: -2380877564801454019}
+  - {fileID: -1078195216888174946}
+  EditorEvents:
+  - {fileID: 3016830108255754865}
+  - {fileID: 720052430037140505}
+  - {fileID: -3227918304560348094}
+  - {fileID: -4755347746580075584}
+  - {fileID: -1168869130550956485}
+  - {fileID: 580343102994335063}
+  - {fileID: 7658323386353071349}
+  - {fileID: -5196297541702056863}
+  - {fileID: -4085632389885725815}
+  - {fileID: -7903102841844061723}
+  EditorParameters: []
+  MasterBanks:
+  - {fileID: -1078195216888174946}
+  StringsBanks:
+  - {fileID: 547329792203728243}
+  cacheVersion: 131859
+  cacheTime: 639221751501381489
+  SerializableEventsDict:
+  - key: event:/Combat/Player/Skill
+    index: 0
+  - key: event:/Combat/Player/Normal_Attack_02
+    index: 1
+  - key: event:/Combat/Player/Normal_Attack_01
+    index: 2
+  - key: event:/Combat/Player/Normal_Attack_03
+    index: 3
+  - key: event:/Combat/Player/Special_Attack
+    index: 4
+  - key: event:/Combat/Library/Sword_Whoosh
+    index: 5
+  - key: event:/Combat/Enemy/Slime_Attack
+    index: 6
+  - key: event:/Combat/Player/Ultimate
+    index: 7
+  - key: event:/Combat/Shared/Hit_Flesh
+    index: 8
+  - key: event:/Combat/Player/Normal_Attack_04
+    index: 9
+--- !u!114 &547329792203728243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c18180ecb35941f4682ae60107b85b7c, type: 3}
+  m_Name: bank:/Master.strings.bank
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorBankRef
+  Path: FMOD/Prometheus/Build/Desktop/Master.strings.bank
+  Name: Master.strings
+  StudioPath: bank:/Master.strings
+  lastModified: 639221751501381489
+  FileSizes:
+  - Name: Desktop
+    Value: 1250
+  Exists: 1
+--- !u!114 &580343102994335063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Library/Sword_Whoosh
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Library/Sword_Whoosh
+  Guid:
+    Data1: 2122149723
+    Data2: 1327854158
+    Data3: -1897755755
+    Data4: 1570643694
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 897
+--- !u!114 &720052430037140505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Normal_Attack_02
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Normal_Attack_02
+  Guid:
+    Data1: -1108762593
+    Data2: 1307333271
+    Data3: -2045308280
+    Data4: 1103819245
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 608
+--- !u!114 &3016830108255754865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Player/Skill
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Player/Skill
+  Guid:
+    Data1: -662187257
+    Data2: 1311638394
+    Data3: -553998205
+    Data4: 947644553
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 1718
+--- !u!114 &7658323386353071349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/Combat/Enemy/Slime_Attack
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/Combat/Enemy/Slime_Attack
+  Guid:
+    Data1: 521153384
+    Data2: 1111177039
+    Data3: 1153575566
+    Data4: 1402626677
+  Banks:
+  - {fileID: -2380877564801454019}
+  IsStream: 0
+  Is3D: 1
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 628

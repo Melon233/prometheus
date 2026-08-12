@@ -45,9 +45,6 @@ namespace Xuan.Prometheus.Animation.Tests
             Assert.That(spineComponent, Is.Not.Null, "史莱姆预制体必须包含 SpineComponent。");
             Assert.That(spineComponent.animationLib, Is.Not.Null, "史莱姆 SpineComponent 必须配置 AnimationLibrary。");
             runtimeLibrary = Object.Instantiate(spineComponent.animationLib);
-            SerializedObject serializedLibrary = new SerializedObject(runtimeLibrary);
-            serializedLibrary.FindProperty("attackedExecutor").FindPropertyRelative("attackedSfx").objectReferenceValue = null;
-            serializedLibrary.ApplyModifiedPropertiesWithoutUndo();
             runtimeLibrary.InvalidateSemanticIndex();
             spineComponent.animationLib = runtimeLibrary;
             spineComponent.spineAnimator = slimeInstance.GetComponent<Spine.Unity.SkeletonAnimation>();
@@ -141,6 +138,48 @@ namespace Xuan.Prometheus.Animation.Tests
             }
         }
 
+        /// <summary>验证全部实际攻击 AnimationLine 独立配置一对强类型碰撞盒命令，且 AnimationLibrary 不再暴露共享事件名。</summary>
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk1.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk1_move.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk2.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk2_move.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk3.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk4.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk4_move.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/atk_branch.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/heavy.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/xskill.asset")]
+        [TestCase("Assets/BundleResources/Config/Animation/Lines/skill_start.asset")]
+        public void CombatAnimationLine_ConfiguresIndependentTypedHitboxWindow(string assetPath)
+        {
+            Assert.That(typeof(AnimationLibrary).GetField("hitStart", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic), Is.Null, "AnimationLibrary 不得继续保存全角色共享的碰撞盒开启事件名。");
+            Assert.That(typeof(AnimationLibrary).GetField("hitEnd", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic), Is.Null, "AnimationLibrary 不得继续保存全角色共享的碰撞盒关闭事件名。");
+            AnimationLine line = AssetDatabase.LoadAssetAtPath<AnimationLine>(assetPath);
+            Assert.That(line, Is.Not.Null, $"无法加载正式战斗 AnimationLine：{assetPath}");
+            AnimationLineEvent enableCommand = null;
+            AnimationLineEvent disableCommand = null;
+            int enableCommandCount = 0;
+            int disableCommandCount = 0;
+            for (int index = 0; index < line.Events.Count; index++)
+            {
+                AnimationLineEvent marker = line.Events[index];
+                if (marker.Command == AnimationLineEventCommand.EnableHitbox)
+                {
+                    enableCommandCount++;
+                    enableCommand = marker;
+                }
+                else if (marker.Command == AnimationLineEventCommand.DisableHitbox)
+                {
+                    disableCommandCount++;
+                    disableCommand = marker;
+                }
+            }
+            Assert.That(enableCommandCount, Is.EqualTo(1), $"{line.name} 必须且只能配置一个 EnableHitbox 命令。");
+            Assert.That(disableCommandCount, Is.EqualTo(1), $"{line.name} 必须且只能配置一个 DisableHitbox 命令。");
+            Assert.That(enableCommand.Time, Is.LessThan(disableCommand.Time), $"{line.name} 的碰撞盒开启时间必须早于关闭时间。");
+            Assert.That(disableCommand.Time, Is.LessThanOrEqualTo(line.Duration), $"{line.name} 的碰撞盒关闭命令不得超出当前动画长度。");
+        }
+
         /// <summary>验证 Yefa 每段普通攻击只在组件保存碰撞体与 ID，并从统一 TalentConfig 读取独立倍率和偏移。</summary>
         [Test]
         public void YefaNormalAttackStages_UseIndependentHitboxesAndConfigurableDamageFormula()
@@ -204,9 +243,9 @@ namespace Xuan.Prometheus.Animation.Tests
             }
         }
 
-        /// <summary>验证 hit_end 会关闭全部普攻碰撞盒，切入第二段时也会先清除上一段泄漏再只开启当前段。</summary>
+        /// <summary>验证 AnimationLine 的 DisableHitbox 命令会关闭全部普攻碰撞盒，切入第二段时也会先清除上一段泄漏再只开启当前段。</summary>
         [Test]
-        public void NormalAttackHitWindow_HitEndAndStageSwitchCloseEveryBoundHitbox()
+        public void NormalAttackHitWindow_LineCommandsAndStageSwitchCloseEveryBoundHitbox()
         {
             GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
@@ -233,12 +272,12 @@ namespace Xuan.Prometheus.Animation.Tests
                 AnimationPlayback firstPlayback = yefaSpine.TryPlay(AnimationSemantic.Attack1, AnimationOwner.NormalAttack, AnimationPriority.Attack, false, 1f, true);
                 Assert.That(combatLogic.BeginForTests(firstPlayback, firstHit, true, YefaVfx.Atk1), Is.True);
                 AdvanceAnimation(yefaSpine, 0.1f);
-                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.True, "第一段 hit_start 后必须开启第一段碰撞盒。");
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.True, "第一段 EnableHitbox 命令后必须开启第一段碰撞盒。");
                 Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False);
                 VfxComponent yefaVfx = yefaInstance.GetComponent<VfxComponent>();
-                Assert.That(yefaVfx.vfxSlots[(int)YefaVfx.Atk1].activeSelf, Is.True, "第一段 hit_start 后必须启动第一段动作特效。");
+                Assert.That(yefaVfx.vfxSlots[(int)YefaVfx.Atk1].activeSelf, Is.True, "第一段 EnableHitbox 命令后必须启动第一段动作特效。");
                 AdvanceAnimation(yefaSpine, 0.2f);
-                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False, "第一段 hit_end 后必须关闭第一段碰撞盒。");
+                Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False, "第一段 DisableHitbox 命令后必须关闭第一段碰撞盒。");
                 Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False);
                 firstHit.ColliderProxy.cod.enabled = true;
                 AnimationPlayback secondPlayback = yefaSpine.TryPlay(AnimationSemantic.Attack2, AnimationOwner.NormalAttack, AnimationPriority.Attack, false, 1f, true);
@@ -247,10 +286,10 @@ namespace Xuan.Prometheus.Animation.Tests
                 Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False, "建立第二段动作上下文时必须立即清除上一段遗留碰撞盒。");
                 AdvanceAnimation(yefaSpine, 0.2f);
                 Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False);
-                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.True, "第二段 hit_start 后必须只开启第二段碰撞盒。");
+                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.True, "第二段 EnableHitbox 命令后必须只开启第二段碰撞盒。");
                 AdvanceAnimation(yefaSpine, 0.2f);
                 Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False);
-                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False, "第二段 hit_end 后必须关闭第二段碰撞盒。");
+                Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False, "第二段 DisableHitbox 命令后必须关闭第二段碰撞盒。");
                 Assert.That(combatLogic.HitWindowClosedCount, Is.EqualTo(2));
             }
             finally
@@ -311,6 +350,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 Assert.That(playerEntity.TryGetLogic(out SkillCooldownLogic _), Is.True);
                 Assert.That(playerEntity.TryGetLogic(out UltimateLogic _), Is.True);
                 Assert.That(playerEntity.TryGetLogic(out UltimateCooldownLogic _), Is.True);
+                Assert.That(playerEntity.TryGetLogic(out GravityLogic _), Is.True, "玩家必须使用闪避期间持续运行的统一重力逻辑。");
             }
             finally
             {
@@ -559,7 +599,7 @@ namespace Xuan.Prometheus.Animation.Tests
 
         /// <summary>验证史莱姆空中运动把 AI 水平速度与属性重力合成为一次 CharacterController 位移。</summary>
         [Test]
-        public void EnemyAirMovement_AppliesConfiguredGravityAndPreservesHorizontalMotion()
+        public void GravityLogic_AppliesConfiguredGravityAndPreservesEnemyHorizontalMotion()
         {
             motionComponent.cc.enabled = false;
             slimeInstance.transform.position = new Vector3(0f, 20f, 0f);
@@ -682,7 +722,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 AddComp<EventComponent>();
                 AddComp(bindGameObject.GetComponent<EffectComponent>());
                 AddLogic<EnemyAiLogic>();
-                AddLogic<EnemyAirMoveLogic>();
+                AddLogic<GravityLogic>();
                 AddLogic<MotionLogic>();
                 AddLogic<AttackedLogic>();
             }
@@ -717,14 +757,14 @@ namespace Xuan.Prometheus.Animation.Tests
             /// <summary>测试 Logic 复用普通攻击动画所有权。</summary>
             protected override AnimationOwner ActionOwner => AnimationOwner.NormalAttack;
 
-            /// <summary>记录正式 hit_end 事件进入派生扩展入口的次数。</summary>
+            /// <summary>记录正式 DisableHitbox 命令进入派生扩展入口的次数。</summary>
             public int HitWindowClosedCount { get; private set; }
 
             /// <summary>通过基类正式入口建立一次测试动作上下文。</summary>
             public bool BeginForTests(AnimationPlayback playback, NormalAttackHitSelection selection, bool hasVfx = false, YefaVfx vfx = default)
             {
                 PlayerCombatHitContext hitContext = new PlayerCombatHitContext(selection.ColliderProxy, selection.DamageMultiplier, selection.DamageOffset, EffectTag.Attack | EffectTag.NormalAttack, selection.AbilityId, DamageActionType.NormalAttack);
-                return BeginAction(playback, hitContext, null, hasVfx, vfx);
+                return BeginAction(playback, hitContext, hasVfx, vfx);
             }
 
             /// <summary>绑定两段碰撞盒，使基类负责其启停和回收。</summary>
@@ -734,7 +774,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 BindHitbox(secondHitbox);
             }
 
-            /// <summary>累计 hit_end 回调次数。</summary>
+            /// <summary>累计 DisableHitbox 命令回调次数。</summary>
             protected override void OnHitWindowClosed()
             {
                 HitWindowClosedCount++;
