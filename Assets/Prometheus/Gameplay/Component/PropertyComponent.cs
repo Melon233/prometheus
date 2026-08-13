@@ -104,6 +104,23 @@ namespace Xuan.Prometheus.Component
         }
     }
 
+    /// <summary>表示不依赖 PropertyType 的通用可修改数值贡献，供天赋 Component 自己持有的增益系数使用。</summary>
+    internal sealed class ModifiableValueModifier
+    {
+        /// <summary>创建一份固定模式和数值的通用 Modifier。</summary>
+        public ModifiableValueModifier(PropertyModifierMode mode, float value)
+        {
+            Mode = mode;
+            Value = value;
+        }
+
+        /// <summary>获取该 Modifier 写入 Boost 还是 Offset 通道。</summary>
+        public PropertyModifierMode Mode { get; }
+
+        /// <summary>获取该 Modifier 的稳定贡献数值。</summary>
+        public float Value { get; }
+    }
+
     /// <summary>
     /// 保存单个属性的基础值、modifier 集合与计算结果，并只在基础值或 modifier 变化时重算。
     /// </summary>
@@ -113,6 +130,9 @@ namespace Xuan.Prometheus.Component
         /// 保存当前属性持有的全部 modifier；对象身份保证移除操作不会误删同值 modifier。
         /// </summary>
         private readonly HashSet<PropertyModifier> modifiers = new HashSet<PropertyModifier>();
+
+        /// <summary>保存不绑定 PropertyType 的通用 Modifier，使其他 Component 也能复用同一可监听计算模型。</summary>
+        private readonly HashSet<ModifiableValueModifier> valueModifiers = new HashSet<ModifiableValueModifier>();
 
         /// <summary>
         /// 保存不含 modifier 的基础值。
@@ -190,6 +210,23 @@ namespace Xuan.Prometheus.Component
             return true;
         }
 
+        /// <summary>添加一份通用数值 Modifier，并返回供 EffectInstance 精确释放的对象身份句柄。</summary>
+        internal ModifiableValueModifier AddValueModifier(PropertyModifierMode mode, float value)
+        {
+            ModifiableValueModifier modifier = new ModifiableValueModifier(mode, value);
+            valueModifiers.Add(modifier);
+            Recalculate();
+            return modifier;
+        }
+
+        /// <summary>按对象身份移除通用数值 Modifier，其他同值来源不会受到影响。</summary>
+        internal bool RemoveValueModifier(ModifiableValueModifier modifier)
+        {
+            if (modifier == null || !valueModifiers.Remove(modifier)) return false;
+            Recalculate();
+            return true;
+        }
+
         /// <summary>
         /// 从有效 modifier 重新汇总 Boost 和 Offset，再按 BaseValue × Boost + Offset 更新缓存。
         /// </summary>
@@ -199,6 +236,11 @@ namespace Xuan.Prometheus.Component
             boost = 1f;
             offset = 0f;
             foreach (PropertyModifier modifier in modifiers)
+            {
+                if (modifier.Mode == PropertyModifierMode.Boost) boost += modifier.Value;
+                else offset += modifier.Value;
+            }
+            foreach (ModifiableValueModifier modifier in valueModifiers)
             {
                 if (modifier.Mode == PropertyModifierMode.Boost) boost += modifier.Value;
                 else offset += modifier.Value;

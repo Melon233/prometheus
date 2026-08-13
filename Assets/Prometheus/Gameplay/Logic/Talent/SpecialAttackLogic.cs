@@ -51,7 +51,7 @@ namespace Xuan.Prometheus.Logic
             if (configuration == null) return;
             TalentAbilityValues values = specialAttackComponent.TalentConfig.SpecialAttack.Ability;
             AnimationPlayback playback = SpineComponent.TryPlay(configuration.Semantic, ActionOwner, AnimationPriority.SpecialAttack, false, values.AnimationSpeed, true);
-            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(specialAttackComponent.ColliderProxy, values.DamageMultiplier, values.DamageOffset, EffectTag.Attack | EffectTag.SpecialAttack, specialAttackComponent.AbilityId, DamageActionType.SpecialAttack);
+            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(specialAttackComponent.ColliderProxy, values.DamageMultiplier * specialAttackComponent.TalentScale, values.DamageOffset, EffectTag.Attack | EffectTag.SpecialAttack, specialAttackComponent.AbilityId, DamageActionType.SpecialAttack);
             BeginAction(playback, hitContext, true, configuration.Vfx);
         }
 

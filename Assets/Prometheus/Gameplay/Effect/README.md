@@ -54,6 +54,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 - Trigger 只能产生 EffectRequest，不能直接递归执行效果。
 - 每个 GameplayKit 只注册一个 EffectSystem，多个单局上下文之间不共享 EffectRuntime。
 - EffectDefinition 是共享只读配置，所有层数、时间和句柄必须保存在 EffectInstance。
+- 运行时动态养成使用 `EffectDefinition.CreateRuntime` 创建带 `HideAndDontSave` 的 Entity 独占定义，仍必须经过标准 `EffectInstance` 与资源句柄生命周期；替换时先移除实例，再释放临时定义。
 - 持续属性修改必须使用实例资源句柄，实例移除时由运行时统一回滚。
 - 持续控制必须使用 `ControlStateModifierOperation`；不要再用成对的 Start/End Event 手动阻塞 Logic。
 - 子信号必须保留 SignalChainId 并增加 ChainDepth，以便 OncePerSignalChain 和递归上限生效。
@@ -61,6 +62,11 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 - 表现层应监听结果信号播放 VFX、音效和飘字，不应反向修改效果运行时。
 - `CombatAudioPresentationSystem` 统一消费实际值大于零的 `DamageApplied` 并在信号世界坐标播放命中音效；普通、周期和致命伤害都不依赖受击动画，受击 AnimationLine 不得重复绑定同一命中事件。
 - `SignalProcessed` 的只读观察者异常会被逐个隔离并写入 Effect trace，表现故障不得中断战斗结算或阻止其他表现模块收到同一事实。
+- `ShowInBuffList` 控制持续 Effect 是否允许进入 HUD Buff 快照；角色等级、天赋、装备和武器的内部永久 Effect 固定关闭该开关，并使用 `Growth` 标签供诊断与测试识别。
+
+## 角色养成投影
+
+角色养成系统不直接修改最终属性。`CharaLevelLogic`、`TalentLogic`、`EquipmentLogic` 与 `WeaponLogic` 都通过 Entity 独占的永久 Effect 投影动态结果：角色等级写入攻击力 `Offset`，装备和武器从随曲线等级成长的 `TierInstance` 按 `PropertyType + PropertyModifierMode` 汇总当前固定值与系数值，天赋使用 `TalentGainModifierOperation` 修改各技能 Component 自己持有的 `ModifiableProperty` 增益系数。完整配置、公式、Debug 数据和测试入口见 `Assets/Prometheus/Gameplay/Growth/README.md`。
 
 ## 控制状态
 

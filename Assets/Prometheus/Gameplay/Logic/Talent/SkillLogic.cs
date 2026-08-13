@@ -37,7 +37,7 @@ namespace Xuan.Prometheus.Logic
             if (configuration == null) return;
             TalentAbilityValues values = skillComponent.TalentConfig.Skill;
             AnimationPlayback playback = SpineComponent.TryPlaySequence(configuration.StartSemantic, configuration.Semantic, ActionOwner, AnimationPriority.Skill, false, values.AnimationSpeed, true);
-            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(skillComponent.ColliderProxy, values.DamageMultiplier, values.DamageOffset, EffectTag.Attack | EffectTag.Skill, skillComponent.AbilityId, DamageActionType.Skill);
+            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(skillComponent.ColliderProxy, values.DamageMultiplier * skillComponent.TalentScale, values.DamageOffset, EffectTag.Attack | EffectTag.Skill, skillComponent.AbilityId, DamageActionType.Skill);
             if (!BeginAction(playback, hitContext, true, configuration.Vfx)) return;
             skillComponent.BeginCooldown();
         }

@@ -124,7 +124,7 @@ namespace Xuan.Prometheus.Component
             effectSystem.Runtime.CopyActiveEffects(owner, activeEffectBuffer);
             foreach (EffectInstance instance in activeEffectBuffer)
             {
-                if (instance == null || !instance.IsActive || instance.Definition.DurationType == EffectDurationType.Instant) continue;
+                if (instance == null || !instance.IsActive || instance.Definition.DurationType == EffectDurationType.Instant || !instance.Definition.ShowInBuffList) continue;
                 if ((instance.Definition.Tags & EffectTag.Buff) == 0) continue;
                 buffer.Add(instance);
             }

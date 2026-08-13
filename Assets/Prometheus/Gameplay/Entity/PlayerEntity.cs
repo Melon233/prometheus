@@ -19,6 +19,10 @@ namespace Xuan.Prometheus.Logic
             AddComp<EventComponent>();
             AddComp<DodgeComponent>();
             AddComp(bindGo.GetComponent<EffectComponent>());
+            // 四种养成 Logic 的运行时数据均由预制体上的独立 Component 持有，Entity 只负责组合与生命周期。
+            AddComp(bindGo.GetComponent<CharaLevelComponent>());
+            AddComp(bindGo.GetComponent<EquipmentComponent>());
+            AddComp(bindGo.GetComponent<WeaponComponent>());
             AddComp(bindGo.GetComponent<SpineComponent>());
             AddComp(bindGo.GetComponent<VfxComponent>());
             AddComp(bindGo.GetComponent<MotionComponent>());
@@ -31,6 +35,9 @@ namespace Xuan.Prometheus.Logic
             AddLogic<GroundMoveLogic>();
             AddLogic<IdleLogic>();
             AddLogic<MotionLogic>();
+            AddLogic<CharaLevelLogic>();
+            AddLogic<EquipmentLogic>();
+            AddLogic<WeaponLogic>();
             AddLogic<TalentLogic>();
             AddLogic<SkillCooldownLogic>();
             AddLogic<UltimateCooldownLogic>();

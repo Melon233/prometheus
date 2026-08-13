@@ -35,7 +35,11 @@ namespace Xuan.Prometheus.Effects.Editor
             EditorGUILayout.PropertyField(durationType);
             EffectDurationType selectedDurationType = (EffectDurationType)durationType.intValue;
             bool isPersistent = selectedDurationType != EffectDurationType.Instant;
-            if (isPersistent) EditorGUILayout.PropertyField(serializedObject.FindProperty("buffIcon"));
+            if (isPersistent)
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("buffIcon"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("showInBuffList"));
+            }
             if (selectedDurationType == EffectDurationType.Duration) EditorGUILayout.PropertyField(serializedObject.FindProperty("duration"));
             SerializedProperty tickInterval = serializedObject.FindProperty("tickInterval");
             SerializedProperty stackPolicy = serializedObject.FindProperty("stackPolicy");

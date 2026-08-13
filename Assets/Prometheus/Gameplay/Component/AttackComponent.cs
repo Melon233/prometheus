@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Logic.Talent;
 
 namespace Xuan.Prometheus.Component
 {
@@ -53,10 +54,12 @@ namespace Xuan.Prometheus.Component
     }
 
     /// <summary>保存普通攻击场景引用和运行态；所有可调数值统一从角色 TalentConfig 读取。</summary>
-    public class AttackComponent : MonoComponent
+    public class AttackComponent : MonoComponent, ITalentGrowthComponent
     {
         [SerializeField] private TalentConfig talentConfig;
         [SerializeField] private List<NormalAttackHitBinding> attackHits = new List<NormalAttackHitBinding>();
+        /// <summary>保存普通攻击自己的 Debug 等级配置、运行时等级副本和可修改增益系数。</summary>
+        [SerializeField] private TalentGrowthState talentGrowth = new TalentGrowthState();
         [SerializeField, HideInInspector, FormerlySerializedAs("atkCollider")] private ColliderProxy legacyAttackCollider;
         [NonSerialized] public bool canCombo = true;
         [NonSerialized] public float elapsedComboTime;
@@ -65,6 +68,40 @@ namespace Xuan.Prometheus.Component
 
         /// <summary>获取当前角色全部战斗能力共享的数值配置。</summary>
         public TalentConfig TalentConfig => talentConfig;
+
+        /// <inheritdoc />
+        public TalentAbilityType TalentAbilityType => TalentAbilityType.NormalAttack;
+
+        /// <inheritdoc />
+        public int TalentLevel => talentGrowth.CurrentTalentLevel;
+
+        /// <inheritdoc />
+        public ModifiableProperty GainCoefficientProperty => talentGrowth.GainCoefficientProperty;
+
+        /// <inheritdoc />
+        public float GainCoefficient => talentGrowth.GainCoefficient;
+
+        /// <inheritdoc />
+        public float TalentScale => talentGrowth.TalentScale;
+
+        /// <inheritdoc />
+        public event Action TalentLevelChanged
+        {
+            add => talentGrowth.Changed += value;
+            remove => talentGrowth.Changed -= value;
+        }
+
+        /// <inheritdoc />
+        public void InitializeTalentGrowth(int maximumTalentLevel)
+        {
+            talentGrowth.InitializeRuntimeData(maximumTalentLevel);
+        }
+
+        /// <inheritdoc />
+        public bool TrySetTalentLevel(int level)
+        {
+            return talentGrowth.TrySetTalentLevel(level);
+        }
 
         /// <summary>获取当前显式配置的普通攻击命中段数。</summary>
         public int ConfiguredHitCount => attackHits == null ? 0 : attackHits.Count;

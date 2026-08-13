@@ -100,6 +100,8 @@ namespace Xuan.Prometheus.Effects
         DamageBoostGain = 1 << 26,
         /// <summary>标识受伤加成 Gain。</summary>
         DamageTakenBoostGain = 1 << 27,
+        /// <summary>标识角色等级、天赋、装备和武器系统生成的常驻养成效果。</summary>
+        Growth = 1 << 28,
     }
 
     /// <summary>

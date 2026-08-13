@@ -357,6 +357,14 @@ namespace Xuan.Prometheus.Effects
             return instance == null ? 0 : instance.Stacks;
         }
 
+        /// <summary>按稳定 EffectId 获取目标当前持有的活动实例，供动态养成投影精确替换自己的旧效果。</summary>
+        public EffectInstance GetActiveEffect(Entity owner, string effectId)
+        {
+            if (owner == null || string.IsNullOrWhiteSpace(effectId)) return null;
+            if (!containers.TryGetValue(owner, out EffectContainer container)) return null;
+            return container.FindByEffectId(effectId);
+        }
+
         /// <summary>
         /// 获取目标当前全部活动效果的只读快照。
         /// </summary>

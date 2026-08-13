@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace Xuan.Prometheus.Effects
         [SerializeField] private EffectTag tags;
         [SerializeField] private EffectDurationType durationType = EffectDurationType.Instant;
         [SerializeField] private Sprite buffIcon;
+        [SerializeField] private bool showInBuffList = true;
         [SerializeField, Min(0f)] private float duration;
         [SerializeField, Min(0f)] private float tickInterval;
         [SerializeField] private EffectStackPolicy stackPolicy = EffectStackPolicy.Reject;
@@ -38,6 +40,9 @@ namespace Xuan.Prometheus.Effects
 
         /// <summary>获取持续型 Buff 在 HUD 列表中显示的图标；未配置时 UI 会隐藏该实例的图标图片。</summary>
         public Sprite BuffIcon => buffIcon;
+
+        /// <summary>获取持续效果是否应该进入 HUD Buff 列表；内部养成投影会关闭该显示。</summary>
+        public bool ShowInBuffList => showInBuffList;
 
         /// <summary>获取配置持续时间。</summary>
         public float Duration => duration;
@@ -77,6 +82,42 @@ namespace Xuan.Prometheus.Effects
 
         /// <summary>获取效果存续期间授予拥有者的触发规则。</summary>
         public IReadOnlyList<EffectTriggerDefinition> GrantedTriggers => grantedTriggers;
+
+        /// <summary>创建仅属于当前 Entity 生命周期的运行时 Effect 定义，使动态养成数据仍经过标准 EffectRequest 与 EffectInstance 生命周期。</summary>
+        public static EffectDefinition CreateRuntime(string runtimeEffectId, EffectTag runtimeTags, EffectDurationType runtimeDurationType, IEnumerable<EffectOperation> applyOperations, bool runtimeShowInBuffList = false)
+        {
+            if (string.IsNullOrWhiteSpace(runtimeEffectId)) throw new ArgumentException("Runtime effect ID cannot be empty.", nameof(runtimeEffectId));
+            EffectDefinition definition = CreateInstance<EffectDefinition>();
+            definition.name = runtimeEffectId.Trim();
+            definition.hideFlags = HideFlags.HideAndDontSave;
+            definition.effectId = definition.name;
+            definition.tags = runtimeTags;
+            definition.durationType = runtimeDurationType;
+            definition.buffIcon = null;
+            definition.showInBuffList = runtimeShowInBuffList;
+            definition.duration = 0f;
+            definition.tickInterval = 0f;
+            definition.stackPolicy = EffectStackPolicy.Reject;
+            definition.stackKeyPolicy = EffectStackKeyPolicy.Definition;
+            definition.maxStacks = 1;
+            definition.phase = EffectExecutionPhase.Apply;
+            definition.priority = 0;
+            definition.onApplyOperations = applyOperations == null ? new List<EffectOperation>() : new List<EffectOperation>(applyOperations);
+            definition.onStackOperations = new List<EffectOperation>();
+            definition.onRefreshOperations = new List<EffectOperation>();
+            definition.onTickOperations = new List<EffectOperation>();
+            definition.onRemoveOperations = new List<EffectOperation>();
+            definition.grantedTriggers = new List<EffectTriggerDefinition>();
+            return definition;
+        }
+
+        /// <summary>只释放由 CreateRuntime 创建并带有 DontSave 标记的临时定义，避免误删正式配置资产。</summary>
+        public static void ReleaseRuntime(EffectDefinition definition)
+        {
+            if (definition == null || (definition.hideFlags & HideFlags.DontSave) == 0) return;
+            if (Application.isPlaying) Destroy(definition);
+            else DestroyImmediate(definition);
+        }
 
         /// <summary>
         /// 在 Inspector 修改配置时约束时间和层数，防止产生无法运行的定义。

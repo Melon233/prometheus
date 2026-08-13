@@ -4,16 +4,52 @@ using Xuan.Prometheus.Component;
 namespace Xuan.Prometheus.Logic.Talent
 {
     /// <summary>保存大招使用的静态配置、命中代理和每个玩家实体独立拥有的冷却运行态。</summary>
-    public sealed class UltimateComponent : Component.MonoComponent
+    public sealed class UltimateComponent : Component.MonoComponent, ITalentGrowthComponent
     {
         [SerializeField] private TalentConfig talentConfig;
         [SerializeField] private ColliderProxy colliderProxy;
         [SerializeField] private string abilityId = "Player.Ultimate";
+        /// <summary>保存大招自己的 Debug 等级配置、运行时等级副本和可修改增益系数。</summary>
+        [SerializeField] private TalentGrowthState talentGrowth = new TalentGrowthState();
         /// <summary>保存当前大招剩余冷却，并通过统一属性脏监听向 UI 暴露变化。</summary>
         private readonly ModifiableProperty cooldownRemaining = new ModifiableProperty();
 
         /// <summary>获取当前角色全部战斗能力共享的数值配置。</summary>
         public TalentConfig TalentConfig => talentConfig;
+
+        /// <inheritdoc />
+        public TalentAbilityType TalentAbilityType => TalentAbilityType.Ultimate;
+
+        /// <inheritdoc />
+        public int TalentLevel => talentGrowth.CurrentTalentLevel;
+
+        /// <inheritdoc />
+        public ModifiableProperty GainCoefficientProperty => talentGrowth.GainCoefficientProperty;
+
+        /// <inheritdoc />
+        public float GainCoefficient => talentGrowth.GainCoefficient;
+
+        /// <inheritdoc />
+        public float TalentScale => talentGrowth.TalentScale;
+
+        /// <inheritdoc />
+        public event System.Action TalentLevelChanged
+        {
+            add => talentGrowth.Changed += value;
+            remove => talentGrowth.Changed -= value;
+        }
+
+        /// <inheritdoc />
+        public void InitializeTalentGrowth(int maximumTalentLevel)
+        {
+            talentGrowth.InitializeRuntimeData(maximumTalentLevel);
+        }
+
+        /// <inheritdoc />
+        public bool TrySetTalentLevel(int level)
+        {
+            return talentGrowth.TrySetTalentLevel(level);
+        }
 
         /// <summary>获取大招碰撞代理。</summary>
         public ColliderProxy ColliderProxy => colliderProxy;

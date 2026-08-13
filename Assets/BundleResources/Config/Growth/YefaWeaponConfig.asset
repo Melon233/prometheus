@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1a2a85f648044db826b8f871c6cbe8c, type: 3}
+  m_Name: YefaWeaponConfig
+  m_EditorClassIdentifier: Runtime:Xuan.Prometheus.Growth:WeaponConfig
+  maximumLevel: 90
+  experienceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  maximumExperience: 8900
+  weaponTiers:
+  - isMainTier: 1
+    tierType: 0
+    tier: 1
+  tierPresets:
+  - tierType: 0
+    values:
+    - tier: 1
+      maximumOffset: 10
+      maximumCoefficient: 0.05
+    - tier: 2
+      maximumOffset: 20
+      maximumCoefficient: 0.1
+    - tier: 3
+      maximumOffset: 30
+      maximumCoefficient: 0.15
+  - tierType: 1
+    values:
+    - tier: 1
+      maximumOffset: 5
+      maximumCoefficient: 0.05
+    - tier: 2
+      maximumOffset: 10
+      maximumCoefficient: 0.1
+    - tier: 3
+      maximumOffset: 15
+      maximumCoefficient: 0.15
+  - tierType: 2
+    values:
+    - tier: 1
+      maximumOffset: 0.01
+      maximumCoefficient: 0.01
+    - tier: 2
+      maximumOffset: 0.02
+      maximumCoefficient: 0.02
+    - tier: 3
+      maximumOffset: 0.03
+      maximumCoefficient: 0.03
+  - tierType: 3
+    values:
+    - tier: 1
+      maximumOffset: 0.05
+      maximumCoefficient: 0.05
+    - tier: 2
+      maximumOffset: 0.1
+      maximumCoefficient: 0.1
+    - tier: 3
+      maximumOffset: 0.15
+      maximumCoefficient: 0.15
+  - tierType: 4
+    values:
+    - tier: 1
+      maximumOffset: 100
+      maximumCoefficient: 0.05
+    - tier: 2
+      maximumOffset: 200
+      maximumCoefficient: 0.1
+    - tier: 3
+      maximumOffset: 300
+      maximumCoefficient: 0.15

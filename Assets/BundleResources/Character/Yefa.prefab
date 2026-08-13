@@ -210,8 +210,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 06b5f60a8fa947a98f756b3ceedf0900, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3800982666993349178
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,8 +277,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 06b5f60a8fa947a98f756b3ceedf0900, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5686316864933578544
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,6 +303,9 @@ GameObject:
   - component: {fileID: 5895581109648259310}
   - component: {fileID: 6200664063791877712}
   - component: {fileID: 7984058003771753736}
+  - component: {fileID: 5159105806515104184}
+  - component: {fileID: 3924433855872551146}
+  - component: {fileID: 2471952885311846613}
   m_Layer: 6
   m_Name: Yefa
   m_TagString: Player
@@ -394,8 +397,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d247ba06193faa74d9335f5481b2b56c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   skeletonDataAsset: {fileID: 11400000, guid: 27d40a5c4b3cf944688c0b183e56f327, type: 2}
   initialSkinName: 
   initialFlipX: 0
@@ -509,6 +512,8 @@ MonoBehaviour:
     abilityId: Player.NormalAttack.3
   - colliderProxy: {fileID: 9100000000000002304}
     abilityId: Player.NormalAttack.4
+  talentGrowth:
+    debugTalentLevel: 1
   legacyAttackCollider: {fileID: 1520222618}
 --- !u!114 &256535032
 MonoBehaviour:
@@ -583,6 +588,8 @@ MonoBehaviour:
   talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
   colliderProxy: {fileID: 1339774994947632687}
   abilityId: Player.SpecialAttack
+  talentGrowth:
+    debugTalentLevel: 1
 --- !u!114 &5895581109648259310
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -598,6 +605,8 @@ MonoBehaviour:
   talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
   colliderProxy: {fileID: 2096031012208595202}
   abilityId: Player.Skill
+  talentGrowth:
+    debugTalentLevel: 1
 --- !u!114 &6200664063791877712
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613,6 +622,8 @@ MonoBehaviour:
   talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
   colliderProxy: {fileID: 7939482117543475403}
   abilityId: Player.Ultimate
+  talentGrowth:
+    debugTalentLevel: 1
 --- !u!114 &7984058003771753736
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -629,6 +640,50 @@ MonoBehaviour:
   worldOffset: {x: 0, y: 2.21, z: 0}
   hpColor: {r: 0.41010675, g: 0.69803923, b: 0.25490198, a: 1}
   chaserColor: {r: 0.3466232, g: 0.40700805, b: 0.29785088, a: 1}
+--- !u!114 &5159105806515104184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5686316864933578544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67994d696c1d47f2aaf4b10d04c67224, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.CharaLevelComponent
+  config: {fileID: 11400000, guid: 4196db8037b2e9e41ab25dbb933a4143, type: 2}
+  debugData:
+    totalExperience: 8000
+--- !u!114 &3924433855872551146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5686316864933578544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2cbc46139214f15baea7d11a7dca7d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.EquipmentComponent
+  config: {fileID: 11400000, guid: e7aac929b94c95d4a95b560e403206a5, type: 2}
+  debugEquipment: []
+--- !u!114 &2471952885311846613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5686316864933578544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d24f7df100b244dbbb49b8d1e9a73080, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.WeaponComponent
+  config: {fileID: 11400000, guid: 27a5d69abfb693649be0a81efdcbc822, type: 2}
+  debugData:
+    totalExperience: 0
 --- !u!1 &6008575996780051533
 GameObject:
   m_ObjectHideFlags: 0

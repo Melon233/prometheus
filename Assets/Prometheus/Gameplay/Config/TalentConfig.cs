@@ -117,6 +117,10 @@ namespace Xuan.Prometheus
         [SerializeField, Min(0f)] private float skillCooldown = 5f;
         [SerializeField] private TalentAbilityValues ultimate = new TalentAbilityValues();
         [SerializeField, Min(0f)] private float ultimateCooldown = 10f;
+        /// <summary>配置每提升一级天赋相对一级基础值增加的系数，例如 0.1 表示每级增加百分之十。</summary>
+        [SerializeField, Min(0f)] private float talentGrowthCoefficient = 0.1f;
+        /// <summary>配置全部玩家技能允许达到的最高天赋等级。</summary>
+        [SerializeField, Min(1)] private int maximumTalentLevel = 10;
 
         /// <summary>获取普通攻击全部数值。</summary>
         public NormalAttackTalentValues NormalAttack => normalAttack ?? (normalAttack = new NormalAttackTalentValues());
@@ -135,5 +139,18 @@ namespace Xuan.Prometheus
 
         /// <summary>获取大招成功释放后进入的非负冷却秒数。</summary>
         public float UltimateCooldown => Mathf.Max(0f, ultimateCooldown);
+
+        /// <summary>获取每个额外天赋等级贡献的非负成长系数。</summary>
+        public float TalentGrowthCoefficient => Mathf.Max(0f, talentGrowthCoefficient);
+
+        /// <summary>获取至少为一级的天赋等级上限。</summary>
+        public int MaximumTalentLevel => Mathf.Max(1, maximumTalentLevel);
+
+        /// <summary>在 Inspector 修改配置时恢复 Spec 要求的非负成长系数和正数等级上限。</summary>
+        private void OnValidate()
+        {
+            talentGrowthCoefficient = Mathf.Max(0f, talentGrowthCoefficient);
+            maximumTalentLevel = Mathf.Max(1, maximumTalentLevel);
+        }
     }
 }

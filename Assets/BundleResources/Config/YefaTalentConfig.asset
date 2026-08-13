@@ -43,3 +43,5 @@ MonoBehaviour:
     damageOffset: 0
     animationSpeed: 1
   ultimateCooldown: 10
+  talentGrowthCoefficient: 0.1
+  maximumTalentLevel: 10

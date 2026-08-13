@@ -37,7 +37,7 @@ namespace Xuan.Prometheus.Logic
             if (configuration == null) return;
             TalentAbilityValues values = ultimateComponent.TalentConfig.Ultimate;
             AnimationPlayback playback = SpineComponent.TryPlay(configuration.Semantic, ActionOwner, AnimationPriority.Ultimate, false, values.AnimationSpeed, true);
-            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(ultimateComponent.ColliderProxy, values.DamageMultiplier, values.DamageOffset, EffectTag.Attack | EffectTag.Ultimate, ultimateComponent.AbilityId, DamageActionType.Ultimate);
+            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(ultimateComponent.ColliderProxy, values.DamageMultiplier * ultimateComponent.TalentScale, values.DamageOffset, EffectTag.Attack | EffectTag.Ultimate, ultimateComponent.AbilityId, DamageActionType.Ultimate);
             if (!BeginAction(playback, hitContext, true, configuration.Vfx)) return;
             PropertyComponent.ConsumeAllUltEnergy();
             ultimateComponent.BeginCooldown();
