@@ -29,7 +29,7 @@ namespace Xuan.Prometheus.Logic
             return false;
         }
 
-        /// <summary>首次启用不需要发布快照，ListenSystem 注册时会立即同步当前冷却值。</summary>
+        /// <summary>首次启用不需要发布快照，EntitySystem 注册监听时会立即同步当前冷却值。</summary>
         public override void OnEnable()
         {
         }

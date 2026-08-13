@@ -108,7 +108,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>
-    /// 对外暴露玩法世界的只读状态和实体管理能力。
+    /// 对外暴露玩法世界的只读状态和公共 System 查询能力。
     /// </summary>
     public interface IGameplayKit
     {
@@ -123,26 +123,6 @@ namespace Xuan.Prometheus
         PlayerEntity Player { get; }
 
         /// <summary>
-        /// 注册一个已经完成构造的实体、建立所属 GameplayKit，并返回运行时编号；调用方随后才能执行 Entity.AfterNew。
-        /// </summary>
-        int AddEntity(Entity entity);
-
-        /// <summary>
-        /// 按运行时编号查询实体。
-        /// </summary>
-        bool TryGetEntity(int entityId, out Entity entity);
-
-        /// <summary>
-        /// 移除并立即释放指定实体。
-        /// </summary>
-        bool RemoveEntity(int entityId);
-
-        /// <summary>
-        /// 请求在当前帧安全边界移除指定实体，重复请求不会重复注销 Logic 或销毁场景对象。
-        /// </summary>
-        bool RequestRemoveEntity(int entityId, float destroyDelay = 0f);
-
-        /// <summary>
         /// 获取当前单局中指定类型的唯一公共 System。
         /// </summary>
         TSystem GetSystem<TSystem>() where TSystem : XSystem;
@@ -154,25 +134,21 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>
-    /// 管理玩法对象的创建、Entity 注册、逐帧更新和销毁。
+    /// 负责玩法对象创建与公共 System 生命周期编排；Entity 的注册、更新、监听和销毁统一交给 EntitySystem。
     /// 资源能力通过构造函数注入，避免 Entity、入口组件和 YooAsset 形成隐式全局依赖。
     /// </summary>
     public sealed class GameplayKit : Kit, IGameplayKit
     {
         private readonly IAssetKit assetKit;
-        private readonly XMap<int, Entity> entities = new XMap<int, Entity>();
+        /// <summary>保存当前玩法世界内建且唯一的实体系统。</summary>
+        private readonly EntitySystem entitySystem;
         private readonly XMap<Type, XSystem> systems = new XMap<Type, XSystem>();
         private readonly List<XSystem> systemInitializationOrder = new List<XSystem>();
-        private readonly Dictionary<int, float> pendingEntityRemovals = new Dictionary<int, float>();
-        private readonly List<int> pendingEntityRemovalBuffer = new List<int>();
         private GameplayStartupOptions startupOptions;
         /// <summary>保存当前单局唯一的小队系统，使 Player 属性始终解析为当前上场成员。</summary>
         private TeamSystem teamSystem;
-        private int nextEntityId = 1;
         private bool isDisposing;
         private bool isDisposed;
-        /// <summary>标记当前是否正在枚举实体，直接移除请求会在该阶段自动转为安全边界回收。</summary>
-        private bool isUpdatingEntities;
 
         /// <summary>
         /// 创建 GameplayKit，并显式声明其依赖的资源 Kit。
@@ -181,6 +157,8 @@ namespace Xuan.Prometheus
         public GameplayKit(IAssetKit assetKit)
         {
             this.assetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
+            entitySystem = new EntitySystem(this);
+            AddSystem(entitySystem);
             Core.Gameplay = this;
         }
 
@@ -213,62 +191,9 @@ namespace Xuan.Prometheus
             AddSystem(new InputSystem(new UnityInputActionSource()));
             AddSystem(new EffectSystem(library: options.EffectLibrary, traceEnabled: true));
             AddSystem(new CombatAudioPresentationSystem());
-            AddSystem(new ListenSystem());
             teamSystem = new TeamSystem();
             AddSystem(teamSystem);
             startupOptions = options;
-        }
-
-        /// <inheritdoc />
-        public int AddEntity(Entity entity)
-        {
-            ThrowIfDisposed();
-
-            if (isDisposing)
-                throw new InvalidOperationException("GameplayKit cannot register an entity while it is disposing.");
-
-            if (isUpdatingEntities)
-                throw new InvalidOperationException("GameplayKit cannot register an entity while the entity collection is updating.");
-
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            int entityId = nextEntityId++;
-            entity.BindGameplayKit(this, entityId);
-            entities.Add(entityId, entity);
-            return entityId;
-        }
-
-        /// <inheritdoc />
-        public bool TryGetEntity(int entityId, out Entity entity)
-        {
-            return entities.TryGet(entityId, out entity);
-        }
-
-        /// <inheritdoc />
-        public bool RemoveEntity(int entityId)
-        {
-            if (isUpdatingEntities) return RequestRemoveEntity(entityId, 0f);
-            if (!entities.TryGet(entityId, out Entity entity))
-                return false;
-
-            pendingEntityRemovals.Remove(entityId);
-            teamSystem?.UnregisterMember(entity);
-            entities.Remove(entityId);
-            entity.MarkDespawnRequested(0f);
-            entity.DisposeImmediately();
-            return true;
-        }
-
-        /// <inheritdoc />
-        public bool RequestRemoveEntity(int entityId, float destroyDelay = 0f)
-        {
-            if (isDisposed || isDisposing) return false;
-            if (!entities.TryGet(entityId, out Entity entity)) return false;
-            if (pendingEntityRemovals.ContainsKey(entityId)) return false;
-            if (!entity.MarkDespawnRequested(Mathf.Max(0f, destroyDelay))) return false;
-            pendingEntityRemovals.Add(entityId, Mathf.Max(0f, destroyDelay));
-            return true;
         }
 
         /// <summary>
@@ -343,46 +268,33 @@ namespace Xuan.Prometheus
             foreach (XSystem system in systemInitializationOrder)
                 system.AfterNew(this);
 
-            CreateTeam();
-            CreateEnemies();
+            entitySystem.CreateInitialEntities(assetKit, startupOptions, teamSystem);
             IsReady = true;
         }
 
         /// <summary>
-        /// 按稳定注册顺序驱动当前玩法世界中的所有实体。
+        /// 按系统阶段驱动当前玩法世界，并在前置与后置 System 之间调用 EntitySystem 更新实体。
         /// </summary>
         /// <param name="dt">当前帧增量时间。</param>
         public override void OnUpdate(float dt)
         {
             if (isDisposed) return;
-            DrainPendingEntityRemovals();
+            entitySystem.DrainPendingEntityRemovals();
             if (!IsReady) return;
 
             foreach (XSystem system in systemInitializationOrder)
                 system.BeforeEntityUpdate(dt);
 
-            DrainPendingEntityRemovals();
-
-            isUpdatingEntities = true;
-            try
-            {
-                foreach (Entity entity in entities) entity.OnUpdate(dt);
-            }
-            finally
-            {
-                isUpdatingEntities = false;
-            }
-
-            DrainPendingEntityRemovals();
+            entitySystem.UpdateEntities(dt);
 
             foreach (XSystem system in systemInitializationOrder)
                 system.OnUpdate(dt);
 
-            DrainPendingEntityRemovals();
+            entitySystem.DrainPendingEntityRemovals();
         }
 
         /// <summary>
-        /// 立即释放全部 Entity；GameCore 随后才会释放 AssetKit 句柄，保证销毁顺序安全。
+        /// 先通过 EntitySystem 释放全部 Entity，再逆序释放其他 System；GameCore 随后才会释放 AssetKit 句柄。
         /// </summary>
         public override void Dispose()
         {
@@ -393,22 +305,17 @@ namespace Xuan.Prometheus
             IsReady = false;
             try
             {
-                foreach (Entity entity in entities)
-                {
-                    entity.MarkDespawnRequested(0f);
-                    entity.DisposeImmediately();
-                }
+                entitySystem.Dispose();
             }
             finally
             {
-                pendingEntityRemovals.Clear();
-                pendingEntityRemovalBuffer.Clear();
-                isUpdatingEntities = false;
-                entities.Dispose();
                 try
                 {
                     for (int index = systemInitializationOrder.Count - 1; index >= 0; index--)
-                        systemInitializationOrder[index].Dispose();
+                    {
+                        XSystem system = systemInitializationOrder[index];
+                        if (!ReferenceEquals(system, entitySystem)) system.Dispose();
+                    }
                 }
                 finally
                 {
@@ -421,100 +328,6 @@ namespace Xuan.Prometheus
                     isDisposing = false;
                 }
             }
-        }
-
-        /// <summary>
-        /// 从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后交给 TeamSystem 原子初始化。
-        /// </summary>
-        private void CreateTeam()
-        {
-            List<Entity> createdMembers = new List<Entity>(TeamSystem.Capacity);
-            try
-            {
-                for (int slotIndex = 0; slotIndex < TeamSystem.Capacity; slotIndex++)
-                {
-                    GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], startupOptions.RuntimeRoot);
-                    int entityId = 0;
-                    try
-                    {
-                        PlayerEntity member = new PlayerEntity(playerObject);
-                        entityId = AddEntity(member);
-                        member.AfterNew();
-                        createdMembers.Add(member);
-                    }
-                    catch
-                    {
-                        if (entityId > 0) RemoveEntity(entityId);
-                        else UnityEngine.Object.Destroy(playerObject);
-                        throw;
-                    }
-                }
-                teamSystem.InitializeMembers(createdMembers);
-            }
-            catch
-            {
-                for (int index = createdMembers.Count - 1; index >= 0; index--)
-                {
-                    Entity member = createdMembers[index];
-                    if (member != null && !member.IsDespawningOrDisposed) RemoveEntity(member.EntityId);
-                }
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 遍历场景出生点创建敌人，默认兼容旧入口只创建第一个有效敌人的行为。
-        /// </summary>
-        private void CreateEnemies()
-        {
-            int createdCount = 0;
-
-            foreach (Transform spawnPoint in startupOptions.EnemySpawnPoints)
-            {
-                if (spawnPoint == null)
-                {
-                    Debug.LogWarning("GameplayKit skipped an empty enemy spawn point.");
-                    continue;
-                }
-
-                GameObject enemyObject = assetKit.InstantiateSync(startupOptions.EnemyLocation, spawnPoint.position, spawnPoint.rotation, startupOptions.RuntimeRoot);
-                int entityId = 0;
-
-                try
-                {
-                    SlimeEntity enemy = new SlimeEntity(enemyObject);
-                    entityId = AddEntity(enemy);
-                    enemy.AfterNew();
-                    createdCount++;
-                }
-                catch
-                {
-                    if (entityId > 0) RemoveEntity(entityId);
-                    else UnityEngine.Object.Destroy(enemyObject);
-                    throw;
-                }
-
-                if (startupOptions.EnemySpawnLimit > 0 && createdCount >= startupOptions.EnemySpawnLimit)
-                    break;
-            }
-        }
-
-        /// <summary>在 XMap 遍历之外处理本帧全部回收请求，避免死亡回调直接修改实体容器。</summary>
-        private void DrainPendingEntityRemovals()
-        {
-            if (pendingEntityRemovals.Count == 0) return;
-            pendingEntityRemovalBuffer.Clear();
-            foreach (int entityId in pendingEntityRemovals.Keys) pendingEntityRemovalBuffer.Add(entityId);
-            for (int index = 0; index < pendingEntityRemovalBuffer.Count; index++)
-            {
-                int entityId = pendingEntityRemovalBuffer[index];
-                pendingEntityRemovals.Remove(entityId);
-                if (!entities.TryGet(entityId, out Entity entity)) continue;
-                teamSystem?.UnregisterMember(entity);
-                entities.Remove(entityId);
-                entity.DisposeImmediately();
-            }
-            pendingEntityRemovalBuffer.Clear();
         }
 
         /// <summary>

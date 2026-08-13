@@ -767,7 +767,7 @@ namespace Xuan.Prometheus.Effects.Tests
             targetEntity.AddLogic(skillLogic);
             AssetKit lifecycleAssetKit = new AssetKit();
             GameplayKit lifecycleGameplayKit = new GameplayKit(lifecycleAssetKit);
-            lifecycleGameplayKit.AddEntity(targetEntity);
+            lifecycleGameplayKit.GetSystem<EntitySystem>().AddEntity(targetEntity);
             try
             {
                 targetEntity.AfterNew();

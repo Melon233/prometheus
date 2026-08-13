@@ -8,19 +8,21 @@ using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus.Tests
 {
-    /// <summary>验证 Entity 注册、稳定 Logic 顺序、帧内回收、异常清理和幂等释放协议。</summary>
+    /// <summary>验证 EntitySystem 注册、稳定 Logic 顺序、字段监听、帧内回收、异常清理和幂等释放协议。</summary>
     public sealed class EntityLifecycleTests
     {
         private readonly List<GameObject> cleanupObjects = new List<GameObject>();
         private AssetKit assetKit;
         private GameplayKit gameplayKit;
+        private EntitySystem entitySystem;
 
-        /// <summary>每个测试创建独立 GameplayKit，测试只使用实体管理能力而不初始化 YooAsset。</summary>
+        /// <summary>每个测试创建独立 GameplayKit，并取得其内建 EntitySystem，而不初始化 YooAsset。</summary>
         [SetUp]
         public void SetUp()
         {
             assetKit = new AssetKit();
             gameplayKit = new GameplayKit(assetKit);
+            entitySystem = gameplayKit.GetSystem<EntitySystem>();
         }
 
         /// <summary>按运行时真实依赖顺序释放 GameplayKit、AssetKit 和未被 Entity 回收的临时对象。</summary>
@@ -29,6 +31,7 @@ namespace Xuan.Prometheus.Tests
         {
             gameplayKit?.Dispose();
             gameplayKit = null;
+            entitySystem = null;
             assetKit?.Dispose();
             assetKit = null;
             for (int index = cleanupObjects.Count - 1; index >= 0; index--)
@@ -47,10 +50,31 @@ namespace Xuan.Prometheus.Tests
             SecondRecordingLogic second = new SecondRecordingLogic(calls);
             ThirdRecordingLogic third = new ThirdRecordingLogic(calls);
             TestEntity entity = CreateEntity(first, second, third);
-            gameplayKit.AddEntity(entity);
+            entitySystem.AddEntity(entity);
             entity.AfterNew();
             entity.OnUpdate(0.1f);
             CollectionAssert.AreEqual(new[] { "First.AfterNew", "Second.AfterNew", "Third.AfterNew", "First.Update", "Second.Update", "Third.Update" }, calls);
+        }
+
+        /// <summary>验证 GameplayKit 在配置前已经提供唯一 EntitySystem，且实体回收会同步释放归属于该实体的字段监听。</summary>
+        [Test]
+        public void EntitySystem_IsBuiltInAndEntityRemovalDisposesOwnedListeners()
+        {
+            Assert.That(gameplayKit.GetSystem<EntitySystem>(), Is.SameAs(entitySystem));
+            ObservableComponent component = new ObservableComponent();
+            TestEntity entity = CreateEntityWithComponent(component);
+            int entityId = entitySystem.AddEntity(entity);
+            entity.AfterNew();
+            Assert.That(entitySystem.Count, Is.EqualTo(1));
+            int dirtyCount = 0;
+            ListenHandle handle = entitySystem.Listen<ObservableComponent>(entityId, value => value.ValueProperty, _ => dirtyCount++);
+            Assert.That(dirtyCount, Is.EqualTo(1));
+            Assert.That(handle.IsDisposed, Is.False);
+            Assert.That(entitySystem.RemoveEntity(entityId), Is.True);
+            Assert.That(entitySystem.Count, Is.Zero);
+            Assert.That(handle.IsDisposed, Is.True);
+            component.ValueProperty.SetBaseValue(1f);
+            Assert.That(dirtyCount, Is.EqualTo(1), "Entity 回收后字段不得继续持有外部监听回调。");
         }
 
         /// <summary>验证首次回收请求立即停止更新，并由 GameplayKit 在安全边界执行一次禁用、注销和移除。</summary>
@@ -61,24 +85,24 @@ namespace Xuan.Prometheus.Tests
             FirstRecordingLogic logic = new FirstRecordingLogic(calls);
             RecordingComponent component = new RecordingComponent();
             TestEntity entity = CreateEntityWithComponent(component, logic);
-            int entityId = gameplayKit.AddEntity(entity);
+            int entityId = entitySystem.AddEntity(entity);
             entity.AfterNew();
             entity.OnUpdate(0.1f);
             Assert.That(entity.RequestDispose(0f), Is.True);
             Assert.That(entity.RequestDispose(0f), Is.False);
             Assert.That(entity.LifecycleState, Is.EqualTo(EntityLifecycleState.DespawnRequested));
-            Assert.That(gameplayKit.TryGetEntity(entityId, out _), Is.True);
+            Assert.That(entitySystem.TryGetEntity(entityId, out _), Is.True);
             entity.OnUpdate(0.1f);
             Assert.That(logic.UpdateCount, Is.EqualTo(1));
             gameplayKit.OnUpdate(0f);
-            Assert.That(gameplayKit.TryGetEntity(entityId, out _), Is.False);
+            Assert.That(entitySystem.TryGetEntity(entityId, out _), Is.False);
             Assert.That(entity.LifecycleState, Is.EqualTo(EntityLifecycleState.Disposed));
             Assert.That(logic.DisableCount, Is.EqualTo(1));
             Assert.That(logic.DisposeCount, Is.EqualTo(1));
             Assert.That(logic.Entity, Is.Null);
             Assert.That(component.Entity, Is.Null);
             Assert.That(entity.RequestDispose(0f), Is.False);
-            Assert.That(gameplayKit.RemoveEntity(entityId), Is.False);
+            Assert.That(entitySystem.RemoveEntity(entityId), Is.False);
         }
 
         /// <summary>验证一个 Logic 在 OnUpdate 中请求回收后，同帧后续 Logic 不会再启用或执行。</summary>
@@ -89,7 +113,7 @@ namespace Xuan.Prometheus.Tests
             DisposeRequestLogic first = new DisposeRequestLogic(calls);
             TrailingRecordingLogic trailing = new TrailingRecordingLogic(calls);
             TestEntity entity = CreateEntity(first, trailing);
-            int entityId = gameplayKit.AddEntity(entity);
+            int entityId = entitySystem.AddEntity(entity);
             entity.AfterNew();
             entity.OnUpdate(0.1f);
             Assert.That(first.UpdateCount, Is.EqualTo(1));
@@ -97,7 +121,7 @@ namespace Xuan.Prometheus.Tests
             Assert.That(trailing.UpdateCount, Is.EqualTo(0));
             Assert.That(entity.LifecycleState, Is.EqualTo(EntityLifecycleState.DespawnRequested));
             gameplayKit.OnUpdate(0f);
-            Assert.That(gameplayKit.TryGetEntity(entityId, out _), Is.False);
+            Assert.That(entitySystem.TryGetEntity(entityId, out _), Is.False);
             Assert.That(first.DisposeCount, Is.EqualTo(1));
             Assert.That(trailing.DisposeCount, Is.EqualTo(1));
         }
@@ -110,11 +134,11 @@ namespace Xuan.Prometheus.Tests
             FirstRecordingLogic first = new FirstRecordingLogic(calls);
             ThrowingInitializationLogic throwing = new ThrowingInitializationLogic(calls);
             TestEntity entity = CreateEntity(first, throwing);
-            int entityId = gameplayKit.AddEntity(entity);
+            int entityId = entitySystem.AddEntity(entity);
             Assert.Throws<InvalidOperationException>(() => entity.AfterNew());
             Assert.That(entity.LifecycleState, Is.EqualTo(EntityLifecycleState.DespawnRequested));
             gameplayKit.OnUpdate(0f);
-            Assert.That(gameplayKit.TryGetEntity(entityId, out _), Is.False);
+            Assert.That(entitySystem.TryGetEntity(entityId, out _), Is.False);
             Assert.That(first.DisposeCount, Is.EqualTo(1));
             Assert.That(throwing.DisposeCount, Is.EqualTo(1));
         }
@@ -126,7 +150,7 @@ namespace Xuan.Prometheus.Tests
             List<string> calls = new List<string>();
             ThrowingEnableLogic throwing = new ThrowingEnableLogic(calls);
             TestEntity entity = CreateEntity(throwing);
-            gameplayKit.AddEntity(entity);
+            entitySystem.AddEntity(entity);
             entity.AfterNew();
             Assert.Throws<InvalidOperationException>(() => entity.OnUpdate(0.1f));
             Assert.That(throwing.Enable, Is.False);
@@ -145,7 +169,7 @@ namespace Xuan.Prometheus.Tests
         }
 
         /// <summary>创建同时包含一个可观察组件与指定 Logic 的最小 Entity。</summary>
-        private TestEntity CreateEntityWithComponent(RecordingComponent component, params ILogic[] logics)
+        private TestEntity CreateEntityWithComponent(Component.Component component, params ILogic[] logics)
         {
             GameObject gameObject = new GameObject("EntityLifecycleTests.EntityWithComponent");
             cleanupObjects.Add(gameObject);
@@ -157,11 +181,18 @@ namespace Xuan.Prometheus.Tests
         {
         }
 
+        /// <summary>提供一个可监听字段，用于验证 EntitySystem 会随 Entity 回收对应句柄。</summary>
+        private sealed class ObservableComponent : Component.Component
+        {
+            /// <summary>获取测试使用的可监听数值字段。</summary>
+            public ModifiableProperty ValueProperty { get; } = new ModifiableProperty();
+        }
+
         /// <summary>允许测试按确定顺序组合普通 Logic，而不依赖任何场景预制体。</summary>
         private sealed class TestEntity : Entity
         {
             /// <summary>创建测试 Entity 并在注册前完成全部组件和 Logic 组合。</summary>
-            public TestEntity(GameObject gameObject, RecordingComponent component, IEnumerable<ILogic> entityLogics)
+            public TestEntity(GameObject gameObject, Component.Component component, IEnumerable<ILogic> entityLogics)
             {
                 bindGo = gameObject;
                 if (component != null) AddComp(component);

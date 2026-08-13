@@ -261,7 +261,7 @@ namespace Xuan.Prometheus
             activeMemberInputLease = ActiveMember == null ? null : inputSystem.AcquireEntityControl(ActiveEntityId, InputActionMask.Gameplay, InputContexts.Gameplay);
         }
 
-        /// <summary>通知所有观察者切换 EntityId；HUD 随后通过 ListenSystem 立即读取新成员当前字段。</summary>
+        /// <summary>通知所有观察者切换 EntityId；HUD 随后通过 EntitySystem 立即读取新成员当前字段。</summary>
         private void PublishActiveMemberTransition(int previousEntityId, int currentEntityId, int previousSlotIndex, int currentSlotIndex)
         {
             if (eventKit == null) return;

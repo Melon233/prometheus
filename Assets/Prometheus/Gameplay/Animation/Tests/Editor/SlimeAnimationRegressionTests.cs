@@ -24,7 +24,7 @@ namespace Xuan.Prometheus.Animation.Tests
         private const string SlimeHitRecoveryReferencePath = "Assets/Art/火环spine合集1/Q版小人/敌人/Enemy/slime_dark_l/Models/ReferenceAssets/leg_hitted2idle.asset";
         private AssetKit assetKit;
         private GameplayKit gameplayKit;
-        private ListenSystem listenSystem;
+        private EntitySystem entitySystem;
         private AnimationTestEntity animationEntity;
         private GameObject slimeInstance;
         private AnimationLibrary runtimeLibrary;
@@ -59,11 +59,9 @@ namespace Xuan.Prometheus.Animation.Tests
             propertyComponent.RefreshBaseValues();
             assetKit = new AssetKit();
             gameplayKit = new GameplayKit(assetKit);
-            listenSystem = new ListenSystem();
-            gameplayKit.AddSystem(listenSystem);
-            listenSystem.AfterNew(gameplayKit);
+            entitySystem = gameplayKit.GetSystem<EntitySystem>();
             animationEntity = new AnimationTestEntity(slimeInstance, spineComponent, motionComponent, propertyComponent);
-            gameplayKit.AddEntity(animationEntity);
+            entitySystem.AddEntity(animationEntity);
             animationEntity.AfterNew();
             Assert.That(animationEntity.TryGetComp(out eventComponent), Is.True, "最小测试 Entity 必须包含 EventComponent。");
         }
@@ -74,7 +72,7 @@ namespace Xuan.Prometheus.Animation.Tests
         {
             gameplayKit?.Dispose();
             gameplayKit = null;
-            listenSystem = null;
+            entitySystem = null;
             assetKit?.Dispose();
             assetKit = null;
             if (runtimeLibrary != null) Object.DestroyImmediate(runtimeLibrary);
@@ -267,7 +265,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 Assert.That(yefaAttack.TryGetHitSelection(1, out NormalAttackHitSelection secondHit), Is.True);
                 CombatHitboxTestLogic combatLogic = new CombatHitboxTestLogic(firstHit.ColliderProxy, secondHit.ColliderProxy);
                 CombatHitboxTestEntity combatEntity = new CombatHitboxTestEntity(yefaInstance, combatLogic);
-                entityId = gameplayKit.AddEntity(combatEntity);
+                entityId = entitySystem.AddEntity(combatEntity);
                 combatEntity.AfterNew();
                 AnimationPlayback firstPlayback = yefaSpine.TryPlay(AnimationSemantic.Attack1, AnimationOwner.NormalAttack, AnimationPriority.Attack, false, 1f, true);
                 Assert.That(combatLogic.BeginForTests(firstPlayback, firstHit, true, YefaVfx.Atk1), Is.True);
@@ -294,7 +292,7 @@ namespace Xuan.Prometheus.Animation.Tests
             }
             finally
             {
-                if (entityId > 0) gameplayKit.RemoveEntity(entityId);
+                if (entityId > 0) entitySystem.RemoveEntity(entityId);
                 else if (yefaInstance != null) Object.DestroyImmediate(yefaInstance);
             }
         }
@@ -358,9 +356,9 @@ namespace Xuan.Prometheus.Animation.Tests
             }
         }
 
-        /// <summary>验证 ListenSystem 会按 Entity、组件和字段立即同步，并在真实变化时回调且支持句柄精确退订。</summary>
+        /// <summary>验证 EntitySystem 会按 Entity、组件和字段立即同步，并在真实变化时回调且支持句柄精确退订。</summary>
         [Test]
-        public void ListenSystem_TracksPlayerHudFieldsAndHandleStopsCallbacks()
+        public void EntitySystem_TracksPlayerHudFieldsAndHandleStopsCallbacks()
         {
             GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
@@ -384,19 +382,19 @@ namespace Xuan.Prometheus.Animation.Tests
                 playerUltimate.InitializeRuntimeState();
                 playerUltimate.BeginCooldown();
                 HudSyncTestEntity hudEntity = new HudSyncTestEntity(yefaInstance, playerProperty, playerSkill, playerUltimate);
-                hudEntityId = gameplayKit.AddEntity(hudEntity);
+                hudEntityId = entitySystem.AddEntity(hudEntity);
                 hudEntity.AfterNew();
                 int hpCalls = 0;
                 int coreEnergyCalls = 0;
                 int ultEnergyCalls = 0;
                 int skillCooldownCalls = 0;
                 int cooldownCalls = 0;
-                ListenHandle hpHandle = listenSystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.HpProperty, _ => hpCalls++);
+                ListenHandle hpHandle = entitySystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.HpProperty, _ => hpCalls++);
                 handles.Add(hpHandle);
-                handles.Add(listenSystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.CoreEnergyProperty, _ => coreEnergyCalls++));
-                handles.Add(listenSystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.UltEnergyProperty, _ => ultEnergyCalls++));
-                handles.Add(listenSystem.Listen<SkillComponent>(hudEntity.EntityId, component => component.CooldownRemainingProperty, _ => skillCooldownCalls++));
-                handles.Add(listenSystem.Listen<UltimateComponent>(hudEntity.EntityId, component => component.CooldownRemainingProperty, _ => cooldownCalls++));
+                handles.Add(entitySystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.CoreEnergyProperty, _ => coreEnergyCalls++));
+                handles.Add(entitySystem.Listen<PropertyComponent>(hudEntity.EntityId, component => component.UltEnergyProperty, _ => ultEnergyCalls++));
+                handles.Add(entitySystem.Listen<SkillComponent>(hudEntity.EntityId, component => component.CooldownRemainingProperty, _ => skillCooldownCalls++));
+                handles.Add(entitySystem.Listen<UltimateComponent>(hudEntity.EntityId, component => component.CooldownRemainingProperty, _ => cooldownCalls++));
                 Assert.That(hpCalls, Is.EqualTo(1), "注册生命监听时必须立即同步当前值。");
                 Assert.That(coreEnergyCalls, Is.EqualTo(1), "注册核心能量监听时必须立即同步当前值。");
                 Assert.That(ultEnergyCalls, Is.EqualTo(1), "注册大招能量监听时必须立即同步当前值。");
@@ -419,7 +417,7 @@ namespace Xuan.Prometheus.Animation.Tests
             finally
             {
                 foreach (ListenHandle handle in handles) handle.Dispose();
-                if (hudEntityId > 0) gameplayKit.RemoveEntity(hudEntityId);
+                if (hudEntityId > 0) entitySystem.RemoveEntity(hudEntityId);
                 else if (yefaInstance != null) Object.DestroyImmediate(yefaInstance);
             }
         }
@@ -728,7 +726,7 @@ namespace Xuan.Prometheus.Animation.Tests
             }
         }
 
-        /// <summary>为 ListenSystem 测试提供只包含玩家属性、技能冷却与大招状态组件的最小 Entity。</summary>
+        /// <summary>为 EntitySystem 监听测试提供只包含玩家属性、技能冷却与大招状态组件的最小 Entity。</summary>
         private sealed class HudSyncTestEntity : Entity
         {
             /// <summary>注册 HUD 监听寻址所需的场景对象、属性组件、技能组件和大招组件。</summary>

@@ -22,8 +22,8 @@ namespace Xuan.Prometheus
         /// <summary>保存当前上场成员的运行时 EntityId，切人时以该编号重新建立全部字段监听。</summary>
         private int observedEntityId;
 
-        /// <summary>保存当前单局的强类型字段监听系统。</summary>
-        private ListenSystem listenSystem;
+        /// <summary>保存当前单局的实体与强类型字段监听系统。</summary>
+        private EntitySystem entitySystem;
 
         /// <summary>保存生命、上限、核心能量、技能冷却、大招状态和 Buff 列表对应的可释放监听。</summary>
         private readonly ListenHandle[] listenHandles = new ListenHandle[9];
@@ -40,7 +40,7 @@ namespace Xuan.Prometheus
         /// <summary>保存 HUD 自有导航动作的独占控制租约，关闭缓存面板时立即释放。</summary>
         private ControlLease hudCommandLease;
 
-        /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 ListenSystem 观察。</summary>
+        /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 EntitySystem 观察。</summary>
         protected override void OnBind()
         {
             eventKit = Core.Event ?? throw new System.InvalidOperationException($"{nameof(HudPanel)} requires EventKit before binding.");
@@ -82,7 +82,7 @@ namespace Xuan.Prometheus
         {
             Debug.Log($"[UIKit] {nameof(HudPanel)} opened.", Root);
             IGameplayKit gameplayKit = Core.Gameplay ?? throw new InvalidOperationException($"{nameof(HudPanel)} requires GameplayKit before opening.");
-            if (!gameplayKit.TryGetSystem(out listenSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(ListenSystem)}.");
+            if (!gameplayKit.TryGetSystem(out entitySystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(EntitySystem)}.");
             if (!gameplayKit.TryGetSystem(out TeamSystem teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
             if (!gameplayKit.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
             AcquireInputBindings();
@@ -103,22 +103,22 @@ namespace Xuan.Prometheus
         {
             ReleaseValueListeners();
             observedEntityId = entityId;
-            if (listenSystem == null || entityId <= 0) return;
-            listenHandles[0] = listenSystem.Listen<PropertyComponent>(entityId, component => component.HpProperty, ApplyHealthState);
-            listenHandles[1] = listenSystem.Listen<PropertyComponent>(entityId, component => component.MaxHpProperty, ApplyHealthState);
-            listenHandles[2] = listenSystem.Listen<PropertyComponent>(entityId, component => component.CoreEnergyProperty, ApplyCoreEnergyState);
-            listenHandles[3] = listenSystem.Listen<PropertyComponent>(entityId, component => component.CoreEnergyLimitProperty, ApplyCoreEnergyState);
-            listenHandles[4] = listenSystem.Listen<PropertyComponent>(entityId, component => component.UltEnergyProperty, _ => ApplyUltimateState(entityId));
-            listenHandles[5] = listenSystem.Listen<PropertyComponent>(entityId, component => component.UltEnergyLimitProperty, _ => ApplyUltimateState(entityId));
-            listenHandles[6] = listenSystem.Listen<UltimateComponent>(entityId, component => component.CooldownRemainingProperty, _ => ApplyUltimateState(entityId));
-            listenHandles[7] = listenSystem.Listen<SkillComponent>(entityId, component => component.CooldownRemainingProperty, ApplySkillState);
-            listenHandles[8] = listenSystem.Listen<EffectComponent>(entityId, component => component.BuffRevisionProperty, ApplyBuffState);
+            if (entitySystem == null || entityId <= 0) return;
+            listenHandles[0] = entitySystem.Listen<PropertyComponent>(entityId, component => component.HpProperty, ApplyHealthState);
+            listenHandles[1] = entitySystem.Listen<PropertyComponent>(entityId, component => component.MaxHpProperty, ApplyHealthState);
+            listenHandles[2] = entitySystem.Listen<PropertyComponent>(entityId, component => component.CoreEnergyProperty, ApplyCoreEnergyState);
+            listenHandles[3] = entitySystem.Listen<PropertyComponent>(entityId, component => component.CoreEnergyLimitProperty, ApplyCoreEnergyState);
+            listenHandles[4] = entitySystem.Listen<PropertyComponent>(entityId, component => component.UltEnergyProperty, _ => ApplyUltimateState(entityId));
+            listenHandles[5] = entitySystem.Listen<PropertyComponent>(entityId, component => component.UltEnergyLimitProperty, _ => ApplyUltimateState(entityId));
+            listenHandles[6] = entitySystem.Listen<UltimateComponent>(entityId, component => component.CooldownRemainingProperty, _ => ApplyUltimateState(entityId));
+            listenHandles[7] = entitySystem.Listen<SkillComponent>(entityId, component => component.CooldownRemainingProperty, ApplySkillState);
+            listenHandles[8] = entitySystem.Listen<EffectComponent>(entityId, component => component.BuffRevisionProperty, ApplyBuffState);
         }
 
         /// <summary>读取同一 Entity 的大招能量和冷却组件，以一次 UI 写入保持两类进度显示一致。</summary>
         private void ApplyUltimateState(int entityId)
         {
-            if (entityId != observedEntityId || Core.Gameplay == null || !Core.Gameplay.TryGetEntity(entityId, out Logic.Entity entity)) return;
+            if (entityId != observedEntityId || entitySystem == null || !entitySystem.TryGetEntity(entityId, out Logic.Entity entity)) return;
             if (!entity.TryGetComp(out PropertyComponent propertyComponent) || !entity.TryGetComp(out UltimateComponent ultimateComponent)) return;
             Ult.ApplyState(propertyComponent.UltEnergy, propertyComponent.UltEnergyLimit, ultimateComponent.CooldownRemaining, ultimateComponent.CooldownDuration);
         }
@@ -169,7 +169,7 @@ namespace Xuan.Prometheus
             if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
             eventKit = null;
             inputSystem = null;
-            listenSystem = null;
+            entitySystem = null;
             observedEntityId = 0;
             isObserving = false;
         }

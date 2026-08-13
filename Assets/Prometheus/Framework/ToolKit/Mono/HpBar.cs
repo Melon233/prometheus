@@ -34,7 +34,7 @@ namespace Xuan.Prometheus.Component
         /// <summary>记录当前血条是否已经订阅实体事件组件。</summary>
         private bool isEventBound;
 
-        /// <summary>记录当前血条是否已经通过 ListenSystem 订阅生命和生命上限字段。</summary>
+        /// <summary>记录当前血条是否已经通过 EntitySystem 订阅生命和生命上限字段。</summary>
         private bool isPropertyBound;
 
         /// <summary>保存当前生命字段的可释放监听。</summary>
@@ -172,15 +172,15 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 在属性组件完成实体绑定后通过 ListenSystem 订阅生命字段，并保留死亡事实事件用于淡出表现。
+        /// 在属性组件完成实体绑定后通过 EntitySystem 订阅生命字段，并保留死亡事实事件用于淡出表现。
         /// </summary>
         private void TryBindEvents()
         {
             if (propComp == null || propComp.Entity == null) return;
-            if (!isPropertyBound && propComp.Entity.GameplayKit.TryGetSystem(out ListenSystem listenSystem))
+            if (!isPropertyBound && propComp.Entity.GameplayKit.TryGetSystem(out EntitySystem entitySystem))
             {
-                hpListenHandle = listenSystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.HpProperty, OnHpPropertyDirty);
-                maxHpListenHandle = listenSystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.MaxHpProperty, OnHpPropertyDirty);
+                hpListenHandle = entitySystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.HpProperty, OnHpPropertyDirty);
+                maxHpListenHandle = entitySystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.MaxHpProperty, OnHpPropertyDirty);
                 isPropertyBound = true;
             }
             if (isEventBound || !propComp.Entity.TryGetComp(out EventComponent resolvedEventComponent)) return;

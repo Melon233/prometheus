@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Component
         private IDisposable attackTriggerRegistration;
         private IDisposable combatFlowTriggerRegistration;
 
-        /// <summary>保存活动 Buff 列表的变化版本，使 ListenSystem 能通过统一字段接口监听集合变化和持续时间推进。</summary>
+        /// <summary>保存活动 Buff 列表的变化版本，使 EntitySystem 能通过统一字段接口监听集合变化和持续时间推进。</summary>
         private readonly ModifiableProperty buffRevision = new ModifiableProperty();
 
         /// <summary>复用 EffectRuntime 的活动效果复制缓冲区，避免持续时间逐帧变化时产生临时数组。</summary>

@@ -124,12 +124,12 @@ namespace Xuan.Prometheus.Logic
             }
         }
 
-        /// <summary>请求 GameplayKit 在本帧安全边界移除当前实体，首次请求决定场景对象的延迟销毁时间。</summary>
+        /// <summary>请求所属 EntitySystem 在本帧安全边界移除当前实体，首次请求决定场景对象的延迟销毁时间。</summary>
         public bool RequestDispose(float delay = 2f)
         {
             if (IsDespawningOrDisposed) return false;
             float safeDelay = Mathf.Max(0f, delay);
-            if (gameplayKit != null) return gameplayKit.RequestRemoveEntity(EntityId, safeDelay);
+            if (gameplayKit != null) return gameplayKit.GetSystem<EntitySystem>().RequestRemoveEntity(EntityId, safeDelay);
             if (!MarkDespawnRequested(safeDelay)) return false;
             DisposeImmediately();
             return true;

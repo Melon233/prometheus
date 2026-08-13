@@ -28,3 +28,6 @@ MonoBehaviour:
   gravity: 9.8
   coreEnergyLimit: 100
   ultEnergyLimit: 100
+  walkEdge: 0.3
+  sprintEdge: 0.7
+  damp: 0.05

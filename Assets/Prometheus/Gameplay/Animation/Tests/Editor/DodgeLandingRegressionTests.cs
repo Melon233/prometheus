@@ -76,7 +76,7 @@ namespace Xuan.Prometheus.Animation.Tests
             assetKit = new AssetKit();
             gameplayKit = new GameplayKit(assetKit);
             entity = new DodgeLandingTestEntity(actor, spineComponent, motionComponent, propertyComponent);
-            gameplayKit.AddEntity(entity);
+            gameplayKit.GetSystem<EntitySystem>().AddEntity(entity);
             entity.AfterNew();
             Assert.That(entity.TryGetComp(out inputComponent), Is.True);
             entity.OnUpdate(0.016f);

@@ -8,12 +8,14 @@ namespace Xuan.Prometheus.Input
     public sealed class EntityInputReceiver : IInputReceiver
     {
         private readonly IGameplayKit gameplayKit;
+        private readonly EntitySystem entitySystem;
         private readonly int entityId;
 
-        /// <summary>创建一个通过 GameplayKit 和运行时编号定位 Entity 的输入接收适配器。</summary>
+        /// <summary>创建一个通过 GameplayKit 的 EntitySystem 和运行时编号定位 Entity 的输入接收适配器。</summary>
         public EntityInputReceiver(IGameplayKit gameplayKit, int entityId)
         {
             this.gameplayKit = gameplayKit ?? throw new ArgumentNullException(nameof(gameplayKit));
+            entitySystem = gameplayKit.GetSystem<EntitySystem>();
             this.entityId = entityId > 0 ? entityId : throw new ArgumentOutOfRangeException(nameof(entityId), entityId, "Entity runtime ID must be positive.");
         }
 
@@ -35,12 +37,12 @@ namespace Xuan.Prometheus.Input
             if (TryGetInputComponent(out InputComponent inputComponent)) inputComponent.ApplyInput(frame, actions);
         }
 
-        /// <summary>只在 GameplayKit 和 Entity 都处于有效运行状态时取得逐帧输入缓冲区。</summary>
+        /// <summary>只在 GameplayKit 和 EntitySystem 中的目标 Entity 都处于有效运行状态时取得逐帧输入缓冲区。</summary>
         private bool TryGetInputComponent(out InputComponent inputComponent)
         {
             inputComponent = null;
             if (!gameplayKit.IsReady) return false;
-            if (!gameplayKit.TryGetEntity(entityId, out Entity entity) || entity == null || !entity.IsActive) return false;
+            if (!entitySystem.TryGetEntity(entityId, out Entity entity) || entity == null || !entity.IsActive) return false;
             return entity.TryGetComp(out inputComponent) && inputComponent != null;
         }
     }

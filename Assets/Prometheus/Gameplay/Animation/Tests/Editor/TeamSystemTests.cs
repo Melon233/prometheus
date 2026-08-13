@@ -36,6 +36,9 @@ namespace Xuan.Prometheus.Animation.Tests
         /// <summary>保存测试独占的玩法世界与三个 Entity。</summary>
         private GameplayKit gameplayKit;
 
+        /// <summary>保存当前测试使用的实体注册、查询与监听系统。</summary>
+        private EntitySystem entitySystem;
+
         /// <summary>保存可脚本化输入源，以确定性地产生数字键和移动输入。</summary>
         private ScriptedTeamInputSource inputSource;
 
@@ -65,6 +68,7 @@ namespace Xuan.Prometheus.Animation.Tests
             eventKit = new EventKit();
             assetKit = new AssetKit();
             gameplayKit = new GameplayKit(assetKit);
+            entitySystem = gameplayKit.GetSystem<EntitySystem>();
             inputSource = new ScriptedTeamInputSource();
             inputSystem = new InputSystem(inputSource);
             effectLibrary = ScriptableObject.CreateInstance<EffectLibrary>();
@@ -96,7 +100,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 Assert.That(propertyComponent, Is.Not.Null, "正式 Yefa 预制体必须包含 PropertyComponent。");
                 InitializePropertyComponent(propertyComponent);
                 TeamTestEntity member = new TeamTestEntity(memberObject);
-                gameplayKit.AddEntity(member);
+                entitySystem.AddEntity(member);
                 member.AfterNew();
                 members[slotIndex] = member;
             }
@@ -110,6 +114,7 @@ namespace Xuan.Prometheus.Animation.Tests
         {
             gameplayKit?.Dispose();
             gameplayKit = null;
+            entitySystem = null;
             inputSystem = null;
             effectSystem = null;
             teamSystem = null;
@@ -207,7 +212,7 @@ namespace Xuan.Prometheus.Animation.Tests
             Assert.That(Vector3.Distance(incomingMember.bindGo.transform.position, transferPosition), Is.LessThan(0.0001f));
             Assert.That(Quaternion.Angle(incomingMember.bindGo.transform.rotation, transferRotation), Is.LessThan(0.0001f));
             Assert.That(incomingMotion.curVelo, Is.EqualTo(transferVelocity));
-            Assert.That(notificationOrder, Is.EqualTo(new[] { $"Member:{incomingMember.EntityId}" }), "换人只发布新 EntityId，HUD 数值由 ListenSystem 立即读取。");
+            Assert.That(notificationOrder, Is.EqualTo(new[] { $"Member:{incomingMember.EntityId}" }), "换人只发布新 EntityId，HUD 数值由 EntitySystem 立即读取。");
             inputSource.Move = Vector2.up;
             inputSource.RequestedSlotIndex = -1;
             inputSystem.BeforeEntityUpdate(0.016f);
