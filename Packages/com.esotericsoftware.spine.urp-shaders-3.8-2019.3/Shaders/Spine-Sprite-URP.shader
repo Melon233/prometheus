@@ -113,7 +113,7 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 			// Unity defined keywords
 			#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 			#pragma multi_compile _ LIGHTMAP_ON
-			#pragma multi_compile_fog
+			// Fog variants are already declared in the material keyword block above; URP 17 rejects duplicate declarations with a compiler warning.
 
 			//--------------------------------------
 			// GPU Instancing

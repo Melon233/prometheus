@@ -8,7 +8,8 @@
 	}
 
 	HLSLINCLUDE
-	#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+	// Core2D provides the SurfaceData2D and InputData2D types required by the URP 17 lighting helpers.
+	#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
 	ENDHLSL
 
 	SubShader {
@@ -58,28 +59,13 @@
 			#pragma vertex CombinedShapeLightVertex
 			#pragma fragment CombinedShapeLightFragment
 
-			#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
+			// CombinedShapeLightShared owns LightingUtility in URP 17 and must only be included once.
+			#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/CombinedShapeLightShared.hlsl"
 
 			TEXTURE2D(_MainTex);
 			SAMPLER(sampler_MainTex);
 			TEXTURE2D(_MaskTex);
 			SAMPLER(sampler_MaskTex);
-
-			#if USE_SHAPE_LIGHT_TYPE_0
-			SHAPE_LIGHT(0)
-			#endif
-
-			#if USE_SHAPE_LIGHT_TYPE_1
-			SHAPE_LIGHT(1)
-			#endif
-
-			#if USE_SHAPE_LIGHT_TYPE_2
-			SHAPE_LIGHT(2)
-			#endif
-
-			#if USE_SHAPE_LIGHT_TYPE_3
-			SHAPE_LIGHT(3)
-			#endif
 
 			Varyings CombinedShapeLightVertex(Attributes v)
 			{
@@ -93,8 +79,6 @@
 				return o;
 			}
 
-			#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/CombinedShapeLightShared.hlsl"
-
 			half4 CombinedShapeLightFragment(Varyings i) : SV_Target
 			{
 				half4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
@@ -107,7 +91,11 @@
 					return main;
 
 				half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, i.uv);
-				return CombinedShapeLightShared(main, mask, i.lightingUV);
+				SurfaceData2D surfaceData;
+				InputData2D inputData;
+				InitializeSurfaceData(main.rgb, main.a, mask, surfaceData);
+				InitializeInputData(i.uv, i.lightingUV, inputData);
+				return CombinedShapeLightShared(surfaceData, inputData);
 			}
 
 			ENDHLSL

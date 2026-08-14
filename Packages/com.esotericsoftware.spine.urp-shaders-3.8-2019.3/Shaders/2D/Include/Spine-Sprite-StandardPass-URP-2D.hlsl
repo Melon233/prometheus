@@ -1,26 +1,12 @@
 #ifndef SPRITE_STANDARD_PASS_URP_INCLUDED
 #define SPRITE_STANDARD_PASS_URP_INCLUDED
 
-#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
+// URP 17 centralizes shape-light declarations and the current 2D surface/input structures in these includes.
+#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/CombinedShapeLightShared.hlsl"
 
 #include "../Include/SpineCoreShaders/ShaderShared.cginc"
 #include "../Include/SpineCoreShaders/SpriteLighting.cginc"
-
-#if USE_SHAPE_LIGHT_TYPE_0
-SHAPE_LIGHT(0)
-#endif
-
-#if USE_SHAPE_LIGHT_TYPE_1
-SHAPE_LIGHT(1)
-#endif
-
-#if USE_SHAPE_LIGHT_TYPE_2
-SHAPE_LIGHT(2)
-#endif
-
-#if USE_SHAPE_LIGHT_TYPE_3
-SHAPE_LIGHT(3)
-#endif
 
 TEXTURE2D(_MaskTex);
 SAMPLER(sampler_MaskTex);
@@ -82,8 +68,6 @@ VertexOutputSpriteURP2D CombinedShapeLightVertex(VertexInput input)
 	return output;
 }
 
-#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/CombinedShapeLightShared.hlsl"
-
 half4 CombinedShapeLightFragment(VertexOutputSpriteURP2D input) : SV_Target
 {
 	fixed4 texureColor = calculateTexturePixel(input.texcoord.xy);
@@ -93,7 +77,11 @@ half4 CombinedShapeLightFragment(VertexOutputSpriteURP2D input) : SV_Target
 	texureColor *= input.vertexColor;
 
 	half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, input.texcoord.xy);
-	half4 pixel = CombinedShapeLightShared(texureColor, mask, input.lightingUV);
+	SurfaceData2D surfaceData;
+	InputData2D inputData;
+	InitializeSurfaceData(texureColor.rgb, texureColor.a, mask, surfaceData);
+	InitializeInputData(input.texcoord.xy, input.lightingUV, inputData);
+	half4 pixel = CombinedShapeLightShared(surfaceData, inputData);
 
 #if defined(_RIM_LIGHTING)
 	#if defined(_NORMALMAP)

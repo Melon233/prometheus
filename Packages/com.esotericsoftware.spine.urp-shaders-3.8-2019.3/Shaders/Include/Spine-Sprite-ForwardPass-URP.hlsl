@@ -73,7 +73,8 @@ half3 LightingLambertRamped(half3 lightColor, float attenuation, half3 lightDir,
 
 #if defined(SPECULAR)
 
-half4 LightweightFragmentPBRSimplified(inputComp inputComp, half4 texAlbedoAlpha, half metallic, half3 specular,
+// URP 17 replaced the legacy inputComp type with InputData while retaining the lighting fields used by Spine 3.8.
+half4 LightweightFragmentPBRSimplified(InputData inputComp, half4 texAlbedoAlpha, half metallic, half3 specular,
 	half smoothness, half3 emission, half4 vertexColor)
 {
 	half4 albedo = texAlbedoAlpha * vertexColor;
@@ -114,7 +115,8 @@ half4 LightweightFragmentPBRSimplified(inputComp inputComp, half4 texAlbedoAlpha
 
 #else // !SPECULAR
 
-half4 LightweightFragmentBlinnPhongSimplified(inputComp inputComp, half4 texDiffuseAlpha, half3 emission, half4 vertexColor)
+// Use the current URP lighting input type so non-specular Sprite variants compile on Unity 6.
+half4 LightweightFragmentBlinnPhongSimplified(InputData inputComp, half4 texDiffuseAlpha, half3 emission, half4 vertexColor)
 {
 	half4 diffuse = texDiffuseAlpha * vertexColor;
 
@@ -225,8 +227,8 @@ half4 ForwardPassFragmentSprite(VertexOutputLWRP input) : SV_Target
 	RETURN_UNLIT_IF_ADDITIVE_SLOT(texureColor, input.vertexColor) // shall be called before ALPHA_CLIP
 	ALPHA_CLIP(texureColor, input.vertexColor)
 
-	// fill out inputComp struct
-	inputComp inputComp;
+	// Fill the current URP InputData struct with the values calculated by the Spine vertex and normal paths.
+	InputData inputComp;
 #if !defined(_RECEIVE_SHADOWS_OFF)
 	#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
 		inputComp.shadowCoord = input.shadowCoord;

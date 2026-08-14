@@ -41,7 +41,8 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 	}
 
 	HLSLINCLUDE
-	#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+	// Core2D provides the SurfaceData2D and InputData2D types required by the URP 17 lighting helpers.
+	#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
 	ENDHLSL
 
 	SubShader
@@ -101,8 +102,6 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 			#define fixed4 half4
 			#define fixed3 half3
 			#define fixed half
-
-			#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
 
 			#include "../Include/Spine-Input-Sprite-URP.hlsl"
 			#include "Include/Spine-Sprite-StandardPass-URP-2D.hlsl"
