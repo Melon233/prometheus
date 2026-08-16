@@ -1,0 +1,21 @@
+{
+    "name": "Prometheus.Rendering.Editor",
+    "rootNamespace": "Xuan.Prometheus.Rendering.Editor",
+    "references": [
+        "Prometheus.Rendering.Runtime",
+        "ShinySSRR",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

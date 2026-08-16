@@ -1,0 +1,266 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d95d7e353c374e43a9e50a9077dd812, type: 3}
+  m_Name: YousaerAnimationLibrary
+  m_EditorClassIdentifier: 
+  skeletonDataAsset: {fileID: 11400000, guid: 9d3fdbb558d8ceb4cba8235c72f4820c, type: 2}
+  mixDurationMatrix:
+    defaultDuration: 0.2
+    overrides:
+    - from: 10
+      to: 100
+      duration: 0
+    - from: 10
+      to: 101
+      duration: 0
+    - from: 10
+      to: 102
+      duration: 0
+    - from: 10
+      to: 103
+      duration: 0
+    - from: 10
+      to: 104
+      duration: 0
+    - from: 10
+      to: 105
+      duration: 0
+    - from: 10
+      to: 106
+      duration: 0
+    - from: 10
+      to: 107
+      duration: 0
+    - from: 20
+      to: 100
+      duration: 0
+    - from: 20
+      to: 101
+      duration: 0
+    - from: 20
+      to: 102
+      duration: 0
+    - from: 20
+      to: 103
+      duration: 0
+    - from: 20
+      to: 104
+      duration: 0
+    - from: 20
+      to: 105
+      duration: 0
+    - from: 20
+      to: 106
+      duration: 0
+    - from: 20
+      to: 107
+      duration: 0
+    - from: 0
+      to: 41
+      duration: 0
+    - from: 31
+      to: 41
+      duration: 0
+    - from: 21
+      to: 41
+      duration: 0
+    - from: 33
+      to: 41
+      duration: 0
+    - from: 30
+      to: 41
+      duration: 0
+    - from: 10
+      to: 41
+      duration: 0
+    - from: 201
+      to: 41
+      duration: 0
+    - from: 32
+      to: 41
+      duration: 0
+    - from: 40
+      to: 41
+      duration: 0
+    - from: 41
+      to: 41
+      duration: 0
+    - from: 200
+      to: 41
+      duration: 0
+    - from: 107
+      to: 41
+      duration: 0
+    - from: 300
+      to: 41
+      duration: 0
+    - from: 106
+      to: 41
+      duration: 0
+    - from: 105
+      to: 41
+      duration: 0
+    - from: 104
+      to: 41
+      duration: 0
+    - from: 103
+      to: 41
+      duration: 0
+    - from: 102
+      to: 41
+      duration: 0
+    - from: 101
+      to: 41
+      duration: 0
+    - from: 100
+      to: 41
+      duration: 0
+    - from: 131
+      to: 41
+      duration: 0
+    - from: 130
+      to: 41
+      duration: 0
+    - from: 120
+      to: 41
+      duration: 0
+    - from: 22
+      to: 41
+      duration: 0
+    - from: 140
+      to: 41
+      duration: 0
+    - from: 20
+      to: 41
+      duration: 0
+    - from: 20
+      to: 40
+      duration: 0
+    - from: 140
+      to: 40
+      duration: 0
+    - from: 22
+      to: 40
+      duration: 0
+    - from: 131
+      to: 40
+      duration: 0
+    - from: 120
+      to: 40
+      duration: 0
+    - from: 100
+      to: 40
+      duration: 0
+    - from: 101
+      to: 40
+      duration: 0
+    - from: 105
+      to: 40
+      duration: 0
+    - from: 103
+      to: 40
+      duration: 0
+    - from: 104
+      to: 40
+      duration: 0
+    - from: 107
+      to: 40
+      duration: 0
+    - from: 41
+      to: 40
+      duration: 0
+    - from: 32
+      to: 40
+      duration: 0
+    - from: 30
+      to: 40
+      duration: 0
+    - from: 21
+      to: 40
+      duration: 0
+    - from: 31
+      to: 40
+      duration: 0
+    - from: 33
+      to: 40
+      duration: 0
+    - from: 0
+      to: 40
+      duration: 0
+    - from: 10
+      to: 40
+      duration: 0
+    - from: 200
+      to: 40
+      duration: 0
+    - from: 201
+      to: 40
+      duration: 0
+    - from: 106
+      to: 40
+      duration: 0
+    - from: 102
+      to: 40
+      duration: 0
+    - from: 300
+      to: 40
+      duration: 0
+    - from: 40
+      to: 40
+      duration: 0
+    - from: 130
+      to: 40
+      duration: 0
+  atkExecutor:
+    attacks:
+    - animationLine: {fileID: 11400000, guid: 1416daa145bb82e4e9bcaa7d9219b02b, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: 66e74c694fa105a4e9a04252828f95da, type: 2}
+      hasVfx: 1
+      vfx: 0
+    - animationLine: {fileID: 11400000, guid: 46bf4d3e85102f84ba772e732a46650d, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: 87c4aea6e2ce69b4da9fbc16600875b7, type: 2}
+      hasVfx: 1
+      vfx: 1
+    - animationLine: {fileID: 11400000, guid: 49133722a634fb14194f5e7412da53db, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: 2f2140cb2719bd642aaf76de01cdfd83, type: 2}
+      hasVfx: 1
+      vfx: 2
+  idleExecutor:
+    idleLine: {fileID: 11400000, guid: 89d21d413d759c94d8b5e72237a8522a, type: 2}
+  groundMoveExecutor:
+    walkLine: {fileID: 11400000, guid: 628d32f6d5aa3be4296153381448a73a, type: 2}
+    runLine: {fileID: 11400000, guid: 65bb56814c71c284784d2420fcf15f3a, type: 2}
+    sprintLine: {fileID: 11400000, guid: 65bb56814c71c284784d2420fcf15f3a, type: 2}
+  dodgeExecutor:
+    dodgeFrontLine: {fileID: 11400000, guid: bb60b726dc85aeb4c9025db5b40cf630, type: 2}
+    dodgeBackLine: {fileID: 11400000, guid: d1db2922f636cf747873183d8434d85e, type: 2}
+  airMoveExecutor:
+    jumpLine: {fileID: 11400000, guid: 5c91f83a857e7e043aa254ebe12b1869, type: 2}
+    riseLine: {fileID: 11400000, guid: 4f5af22d4afe9d64eaf61e3d146d5a9d, type: 2}
+    fallLine: {fileID: 11400000, guid: 95f4e2e0a55527e45984066bb2a354f1, type: 2}
+    landLine: {fileID: 11400000, guid: 013f9e37d357c594cb4343b40b1bdda4, type: 2}
+  hasTalent: 1
+  ultimateExecutor:
+    ultimateLine: {fileID: 11400000, guid: f4017cadce45ef84c8a523ff86bc47f2, type: 2}
+    ultVfx: 5
+  skillExecutor:
+    skillStartLine: {fileID: 11400000, guid: 04bd00fac9d86b544ae41d5b78eb30c4, type: 2}
+    skillLine: {fileID: 11400000, guid: 6ca5ccba3edc0c9479fc57960db0b985, type: 2}
+    skillVfx: 4
+  specialAttackExecutor:
+    specialAttackLine: {fileID: 11400000, guid: 10cdbd38625f6534d9c51ae3614f6242, type: 2}
+    specialAttackVfx: 4
+  attackedExecutor:
+    attackedLine: {fileID: 11400000, guid: 4119d5062a21f4e4491182d02d18566e, type: 2}
+    nextAttackedLine: {fileID: 11400000, guid: cfdf16aa2a9c97644a58c3685ada08f2, type: 2}
+  dieExecutor:
+    dieLine: {fileID: 11400000, guid: d694c656f5fac0147baf599e052cba3b, type: 2}

@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0c2c426b3d065a45a9c88ca76a52fca, type: 3}
+  m_Name: PrometheusRenderingSettings
+  m_EditorClassIdentifier: Prometheus.Rendering.Runtime::Xuan.Prometheus.Rendering.PrometheusRenderingSettings
+  pipelineAsset: {fileID: 11400000, guid: a98abc05c87af2e43bca206dad220d8c, type: 2}
+  defaultEnvironmentProfile: {fileID: 11400000, guid: a496d36403e1fcf49aa6830374fa64fc, type: 2}
+  startupQualityLevel: 2
+  requiresCameraDepthTexture: 1
+  requiresCameraOpaqueTexture: 1
+  useSrpBatcher: 1
+  supportsDynamicBatching: 0
+  useAdaptivePerformance: 0
+  screenSpaceReflectionsEnabledByDefault: 1
+  mainLightRenderingMode: 1
+  supportsMainLightShadows: 1
+  additionalLightsRenderingMode: 1
+  supportsAdditionalLightShadows: 1
+  supportsSoftShadows: 1
+  qualityProfiles:
+  - qualityLevel: 0
+    renderScale: 0.75
+    msaaSampleCount: 1
+    supportsHdr: 1
+    mainLightShadows: 1
+    mainLightShadowmapResolution: 1024
+    shadowDistance: 30
+    shadowCascadeCount: 2
+    maxAdditionalLightsCount: 2
+    additionalLightsShadowmapResolution: 512
+    globalTextureMipmapLimit: 1
+    lodBias: 0.75
+    maximumLodLevel: 1
+    anisotropicFiltering: 1
+    vSyncCount: 1
+    targetFrameRate: -1
+  - qualityLevel: 1
+    renderScale: 0.9
+    msaaSampleCount: 2
+    supportsHdr: 1
+    mainLightShadows: 2
+    mainLightShadowmapResolution: 2048
+    shadowDistance: 50
+    shadowCascadeCount: 2
+    maxAdditionalLightsCount: 4
+    additionalLightsShadowmapResolution: 1024
+    globalTextureMipmapLimit: 0
+    lodBias: 1
+    maximumLodLevel: 0
+    anisotropicFiltering: 1
+    vSyncCount: 1
+    targetFrameRate: -1
+  - qualityLevel: 2
+    renderScale: 1
+    msaaSampleCount: 4
+    supportsHdr: 1
+    mainLightShadows: 2
+    mainLightShadowmapResolution: 2048
+    shadowDistance: 80
+    shadowCascadeCount: 4
+    maxAdditionalLightsCount: 4
+    additionalLightsShadowmapResolution: 1024
+    globalTextureMipmapLimit: 0
+    lodBias: 1.5
+    maximumLodLevel: 0
+    anisotropicFiltering: 2
+    vSyncCount: 1
+    targetFrameRate: -1
+  - qualityLevel: 3
+    renderScale: 1
+    msaaSampleCount: 4
+    supportsHdr: 1
+    mainLightShadows: 2
+    mainLightShadowmapResolution: 4096
+    shadowDistance: 120
+    shadowCascadeCount: 4
+    maxAdditionalLightsCount: 8
+    additionalLightsShadowmapResolution: 2048
+    globalTextureMipmapLimit: 0
+    lodBias: 2
+    maximumLodLevel: 0
+    anisotropicFiltering: 2
+    vSyncCount: 1
+    targetFrameRate: -1

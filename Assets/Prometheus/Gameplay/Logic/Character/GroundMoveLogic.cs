@@ -60,13 +60,13 @@ namespace Xuan.Prometheus.Logic
             var norSpd = safeMoveVec.magnitude;
 
             var config = motionComponent.propertyConfig;
-            if ((motionComponent.moveMode == MoveMode.Walk && norSpd > config.walkEdge + config.damp) || (motionComponent.moveMode == MoveMode.Sprint && norSpd < config.sprintEdge - config.damp))
-                SetMoveMode(MoveMode.Run);
-            else if (motionComponent.moveMode == MoveMode.Run)
-            {
-                if (norSpd < config.walkEdge - config.damp) SetMoveMode(MoveMode.Walk);
-                else if (norSpd > config.sprintEdge + config.damp) SetMoveMode(MoveMode.Sprint);
-            }
+            // if ((motionComponent.moveMode == MoveMode.Walk && norSpd > config.walkEdge + config.damp) || (motionComponent.moveMode == MoveMode.Sprint && norSpd < config.sprintEdge - config.damp))
+            //     SetMoveMode(MoveMode.Run);
+            // else if (motionComponent.moveMode == MoveMode.Run)
+            // {
+            //     if (norSpd < config.walkEdge - config.damp) SetMoveMode(MoveMode.Walk);
+            //     else if (norSpd > config.sprintEdge + config.damp) SetMoveMode(MoveMode.Sprint);
+            // }
             motionComponent.curVelo = new Vector3(safeMoveVec.x, -2f, safeMoveVec.y) * propertyComponent.MoveSpeed;
             GroundMoveExecutor configuration = spineComponent.animationLib.groundMoveExecutor;
             spineComponent.TryPlay(configuration.GetSemantic(motionComponent.moveMode), AnimationOwner.GroundMove, AnimationPriority.Locomotion, true);

@@ -1,0 +1,495 @@
+using System;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Build;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using ShinySsrRendererFeature = ShinySSRR.ShinySSRR;
+using ShinySsrVolumeComponent = ShinySSRR.ShinyScreenSpaceRaytracedReflections;
+
+namespace Xuan.Prometheus.Rendering.Editor
+{
+    /// <summary>
+    /// Creates and wires the project-owned rendering assets while keeping every Unity quality level on the same serialized URP asset.
+    /// </summary>
+    public static class PrometheusRenderingAssetGenerator
+    {
+        private const string RenderingRootPath = "Assets/Prometheus/Rendering";
+        private const string PipelineFolderPath = RenderingRootPath + "/Pipeline";
+        private const string SettingsFolderPath = RenderingRootPath + "/Settings";
+        private const string ResourcesFolderPath = SettingsFolderPath + "/Resources";
+        private const string ForwardRendererDataAssetPath = PipelineFolderPath + "/PrometheusForwardRenderer.asset";
+        private const string SsgiRendererDataAssetPath = PipelineFolderPath + "/PrometheusDeferredSsgiRenderer.asset";
+        private const string PipelineAssetPath = PipelineFolderPath + "/PrometheusUniversalRenderPipeline.asset";
+        private const string EnvironmentProfileAssetPath = SettingsFolderPath + "/PrometheusEnvironmentProfile.asset";
+        private const string RenderingSettingsAssetPath = ResourcesFolderPath + "/PrometheusRenderingSettings.asset";
+        private const string SsgiExampleRendererDataAssetPath = "Assets/MF.SSGI/ExampleScene/Renderer/MF.SSGI - Example URP Renderer - SSGI.asset";
+        private const string ShinySsrExampleRendererDataAssetPath = "Assets/ShinySSRR/Pipelines/URP/ForwardRenderer.asset";
+        private const string SsgiFeatureTypeFullName = "MF.SSGI.SSGIFeature";
+        private const string SsgiVolumeComponentTypeFullName = "MF.SSGI.SSGIVolumeComponent";
+        private const string SsgiShaderSetupMenuPath = "Tools/SSGI/Add SSGI to 'Always included shaders'";
+        private const string UrpCompatibilityModeDefine = "URP_COMPATIBILITY_MODE";
+
+        /// <summary>
+        /// Character layers whose transparent Spine meshes must write Shiny's custom depth so reflections remain visible for either horizontal facing.
+        /// </summary>
+        private static readonly string[] ShinySsrTransparentDepthLayerNames =
+        {
+            "Character",
+            "Enemy"
+        };
+
+        /// <summary>
+        /// Creates missing assets, preserves existing authored values, and assigns one Prometheus pipeline asset to GraphicsSettings and every Unity quality level.
+        /// </summary>
+        [MenuItem("Prometheus/Rendering/Create Or Update Rendering Assets")]
+        public static void CreateOrUpdateRenderingAssets()
+        {
+            EnsureCurrentBuildTargetSupportsUrpCompatibilityMode();
+            EnsureFolder(PipelineFolderPath);
+            EnsureFolder(SettingsFolderPath);
+            EnsureFolder(ResourcesFolderPath);
+            UniversalRenderPipelineAsset sourcePipelineAsset = GetSourcePipelineAsset();
+            UniversalRendererData forwardRendererData = GetOrCreateForwardRendererData(sourcePipelineAsset);
+            UniversalRendererData ssgiRendererData = GetOrCreateSsgiRendererData(forwardRendererData);
+            UniversalRenderPipelineAsset pipelineAsset = GetOrCreatePipelineAsset(sourcePipelineAsset, forwardRendererData, ssgiRendererData);
+            PrometheusEnvironmentProfile environmentProfile = GetOrCreateEnvironmentProfile();
+            PrometheusRenderingSettings renderingSettings = GetOrCreateRenderingSettings(pipelineAsset, environmentProfile);
+            ConfigurePipelineRenderers(pipelineAsset, forwardRendererData, ssgiRendererData);
+            ConfigurePipelineCapabilities(pipelineAsset, renderingSettings);
+            PrometheusRenderQualityController.ApplyProfileToPipeline(renderingSettings, renderingSettings.GetQualityProfile(renderingSettings.StartupQualityLevel), pipelineAsset);
+            AssignPipelineToUnitySettings(pipelineAsset);
+            EnsureSsgiShadersAreIncludedInBuild();
+            EnsureShinySsrVolumeProfiles();
+            EditorUtility.SetDirty(forwardRendererData);
+            EditorUtility.SetDirty(ssgiRendererData);
+            EditorUtility.SetDirty(pipelineAsset);
+            EditorUtility.SetDirty(environmentProfile);
+            EditorUtility.SetDirty(renderingSettings);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Selection.activeObject = renderingSettings;
+            EditorGUIUtility.PingObject(renderingSettings);
+            Debug.Log($"Prometheus rendering now owns one pipeline asset at '{PipelineAssetPath}', the default renderer at '{ForwardRendererDataAssetPath}', the dedicated SSGI and optional Shiny SSR renderer at '{SsgiRendererDataAssetPath}', and code-driven quality profiles in '{RenderingSettingsAssetPath}'.");
+        }
+
+        /// <summary>
+        /// Adds Unity 6000.3's compile-time compatibility switch to the active build target because the serialized Compatibility Mode checkbox is ignored when this symbol is absent.
+        /// </summary>
+        private static void EnsureCurrentBuildTargetSupportsUrpCompatibilityMode()
+        {
+            BuildTargetGroup activeBuildTargetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
+            NamedBuildTarget activeNamedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(activeBuildTargetGroup);
+            string[] currentDefines = PlayerSettings.GetScriptingDefineSymbols(activeNamedBuildTarget).Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            if (currentDefines.Contains(UrpCompatibilityModeDefine, StringComparer.Ordinal))
+            {
+                return;
+            }
+
+            PlayerSettings.SetScriptingDefineSymbols(activeNamedBuildTarget, string.Join(";", currentDefines.Append(UrpCompatibilityModeDefine)));
+        }
+
+        /// <summary>
+        /// Executes MF.SSGI's documented build setup so every runtime shader resolved through Shader.Find survives player shader stripping.
+        /// </summary>
+        private static void EnsureSsgiShadersAreIncludedInBuild()
+        {
+            if (!EditorApplication.ExecuteMenuItem(SsgiShaderSetupMenuPath))
+            {
+                throw new InvalidOperationException($"MF.SSGI must expose the documented menu item '{SsgiShaderSetupMenuPath}' before Prometheus rendering assets can be generated.");
+            }
+        }
+
+        /// <summary>
+        /// Returns the currently assigned URP asset used as the serialization source for the first project-owned pipeline asset.
+        /// </summary>
+        private static UniversalRenderPipelineAsset GetSourcePipelineAsset()
+        {
+            UniversalRenderPipelineAsset sourcePipelineAsset = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
+            if (sourcePipelineAsset == null)
+            {
+                throw new InvalidOperationException("GraphicsSettings.defaultRenderPipeline must reference a URP asset before generating Prometheus rendering assets.");
+            }
+
+            return sourcePipelineAsset;
+        }
+
+        /// <summary>
+        /// Returns the existing project renderer or clones the current active forward renderer during first-time generation.
+        /// </summary>
+        private static UniversalRendererData GetOrCreateForwardRendererData(UniversalRenderPipelineAsset sourcePipelineAsset)
+        {
+            UniversalRendererData rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(ForwardRendererDataAssetPath);
+            if (rendererData != null)
+            {
+                return rendererData;
+            }
+
+            if (sourcePipelineAsset.rendererDataList.Length == 0 || sourcePipelineAsset.rendererDataList[0] is not UniversalRendererData sourceRendererData)
+            {
+                throw new InvalidOperationException($"Source pipeline '{sourcePipelineAsset.name}' must contain a UniversalRendererData at index zero.");
+            }
+
+            rendererData = UnityEngine.Object.Instantiate(sourceRendererData);
+            rendererData.name = "PrometheusForwardRenderer";
+            rendererData.hideFlags = HideFlags.None;
+            AssetDatabase.CreateAsset(rendererData, ForwardRendererDataAssetPath);
+            return rendererData;
+        }
+
+        /// <summary>
+        /// Returns the dedicated deferred renderer and guarantees that it owns one MF.SSGI feature followed by one optional Shiny SSR feature.
+        /// </summary>
+        private static UniversalRendererData GetOrCreateSsgiRendererData(UniversalRendererData forwardRendererData)
+        {
+            UniversalRendererData ssgiRendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SsgiRendererDataAssetPath);
+            if (ssgiRendererData == null)
+            {
+                ssgiRendererData = UnityEngine.Object.Instantiate(forwardRendererData);
+                ssgiRendererData.name = "PrometheusDeferredSsgiRenderer";
+                ssgiRendererData.hideFlags = HideFlags.None;
+                AssetDatabase.CreateAsset(ssgiRendererData, SsgiRendererDataAssetPath);
+            }
+
+            SerializedObject serializedRendererData = new SerializedObject(ssgiRendererData);
+            SetIntegerProperty(serializedRendererData, "m_RenderingMode", (int)RenderingMode.Deferred);
+            serializedRendererData.ApplyModifiedPropertiesWithoutUndo();
+            ScriptableRendererFeature ssgiFeature = EnsureSsgiFeature(ssgiRendererData);
+            EnsureShinySsrFeature(ssgiRendererData, ssgiFeature);
+            return ssgiRendererData;
+        }
+
+        /// <summary>
+        /// Adds the imported MF.SSGI feature as a renderer-owned sub-asset and keeps its GBuffer sampling switch aligned with the dedicated deferred renderer.
+        /// </summary>
+        private static ScriptableRendererFeature EnsureSsgiFeature(UniversalRendererData ssgiRendererData)
+        {
+            ScriptableRendererFeature ssgiFeature = ssgiRendererData.rendererFeatures.FirstOrDefault(feature => feature != null && feature.GetType().FullName == SsgiFeatureTypeFullName);
+            if (ssgiFeature == null)
+            {
+                UniversalRendererData exampleRendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SsgiExampleRendererDataAssetPath);
+                if (exampleRendererData == null)
+                {
+                    throw new InvalidOperationException($"The imported MF.SSGI example renderer is required at '{SsgiExampleRendererDataAssetPath}' before generating the dedicated project renderer.");
+                }
+
+                ScriptableRendererFeature exampleSsgiFeature = exampleRendererData.rendererFeatures.SingleOrDefault(feature => feature != null && feature.GetType().FullName == SsgiFeatureTypeFullName);
+                if (exampleSsgiFeature == null)
+                {
+                    throw new InvalidOperationException($"Renderer '{SsgiExampleRendererDataAssetPath}' must contain exactly one '{SsgiFeatureTypeFullName}' feature to seed the project-owned renderer.");
+                }
+
+                ssgiFeature = UnityEngine.Object.Instantiate(exampleSsgiFeature);
+                ssgiFeature.name = exampleSsgiFeature.name;
+                ssgiFeature.hideFlags = HideFlags.None;
+                AssetDatabase.AddObjectToAsset(ssgiFeature, ssgiRendererData);
+                ssgiRendererData.rendererFeatures.Add(ssgiFeature);
+            }
+
+            SerializedObject serializedFeature = new SerializedObject(ssgiFeature);
+            SerializedProperty settingsProperty = serializedFeature.FindProperty("settings");
+            SerializedProperty useDeferredRenderingProperty = settingsProperty?.FindPropertyRelative("UseDeferredRendering");
+            if (useDeferredRenderingProperty == null)
+            {
+                throw new InvalidOperationException($"Feature '{ssgiFeature.name}' does not expose the expected deferred-rendering serialization contract.");
+            }
+
+            useDeferredRenderingProperty.boolValue = true;
+            serializedFeature.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(ssgiFeature);
+            return ssgiFeature;
+        }
+
+        /// <summary>
+        /// Adds Shiny SSR as a renderer-owned sub-asset, enables its deferred GBuffer path, and schedules it after the current SSGI composition event.
+        /// </summary>
+        private static void EnsureShinySsrFeature(UniversalRendererData ssgiRendererData, ScriptableRendererFeature ssgiFeature)
+        {
+            ShinySsrRendererFeature[] existingShinySsrFeatures = ssgiRendererData.rendererFeatures.OfType<ShinySsrRendererFeature>().ToArray();
+            if (existingShinySsrFeatures.Length > 1)
+            {
+                throw new InvalidOperationException($"Renderer '{ssgiRendererData.name}' contains {existingShinySsrFeatures.Length} Shiny SSR features, but the project rendering chain owns exactly one optional SSR pass.");
+            }
+
+            ShinySsrRendererFeature shinySsrFeature = existingShinySsrFeatures.SingleOrDefault();
+            if (shinySsrFeature == null)
+            {
+                UniversalRendererData exampleRendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(ShinySsrExampleRendererDataAssetPath);
+                if (exampleRendererData == null)
+                {
+                    throw new InvalidOperationException($"The imported Shiny SSR example renderer is required at '{ShinySsrExampleRendererDataAssetPath}' before generating the project renderer.");
+                }
+
+                ShinySsrRendererFeature exampleShinySsrFeature = exampleRendererData.rendererFeatures.OfType<ShinySsrRendererFeature>().SingleOrDefault();
+                if (exampleShinySsrFeature == null)
+                {
+                    throw new InvalidOperationException($"Renderer '{ShinySsrExampleRendererDataAssetPath}' must contain exactly one Shiny SSR feature to seed the project-owned renderer.");
+                }
+
+                shinySsrFeature = UnityEngine.Object.Instantiate(exampleShinySsrFeature);
+                shinySsrFeature.name = exampleShinySsrFeature.name;
+                shinySsrFeature.hideFlags = HideFlags.None;
+                AssetDatabase.AddObjectToAsset(shinySsrFeature, ssgiRendererData);
+                ssgiRendererData.rendererFeatures.Add(shinySsrFeature);
+            }
+
+            SerializedProperty ssgiSettingsProperty = new SerializedObject(ssgiFeature).FindProperty("settings");
+            SerializedProperty ssgiRenderPassEventProperty = ssgiSettingsProperty?.FindPropertyRelative("RenderPassEvent");
+            if (ssgiRenderPassEventProperty == null)
+            {
+                throw new InvalidOperationException($"Feature '{ssgiFeature.name}' does not expose the expected render-pass event serialization contract.");
+            }
+
+            SerializedObject serializedShinySsrFeature = new SerializedObject(shinySsrFeature);
+            SerializedProperty useDeferredProperty = serializedShinySsrFeature.FindProperty("useDeferred");
+            SerializedProperty renderPassEventProperty = serializedShinySsrFeature.FindProperty("renderPassEvent");
+            SerializedProperty enableTransparencyDepthPrepassProperty = serializedShinySsrFeature.FindProperty("enableTransparencyDepthPrepass");
+            SerializedProperty transparencyDepthPrepassLayerMaskProperty = serializedShinySsrFeature.FindProperty("transparencyDepthPrepassLayerMask");
+            if (useDeferredProperty == null || renderPassEventProperty == null || enableTransparencyDepthPrepassProperty == null || transparencyDepthPrepassLayerMaskProperty == null)
+            {
+                throw new InvalidOperationException($"Feature '{shinySsrFeature.name}' does not expose the expected Shiny SSR serialization contract.");
+            }
+
+            useDeferredProperty.boolValue = true;
+            enableTransparencyDepthPrepassProperty.boolValue = true;
+            transparencyDepthPrepassLayerMaskProperty.intValue |= GetRequiredShinySsrTransparentDepthLayerMask();
+            if (renderPassEventProperty.intValue <= ssgiRenderPassEventProperty.intValue)
+            {
+                renderPassEventProperty.intValue = ssgiRenderPassEventProperty.intValue + 1;
+            }
+
+            serializedShinySsrFeature.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(shinySsrFeature);
+        }
+
+        /// <summary>
+        /// Resolves the authored character layer names at generation time so the serialized mask follows project layer assignments instead of fixed bit positions.
+        /// </summary>
+        private static int GetRequiredShinySsrTransparentDepthLayerMask()
+        {
+            int requiredLayerMask = 0;
+            foreach (string layerName in ShinySsrTransparentDepthLayerNames)
+            {
+                int layer = LayerMask.NameToLayer(layerName);
+                if (layer < 0)
+                {
+                    throw new InvalidOperationException($"Required Shiny SSR transparent-depth layer '{layerName}' is missing from the project layer configuration.");
+                }
+
+                requiredLayerMask |= 1 << layer;
+            }
+
+            return requiredLayerMask;
+        }
+
+        /// <summary>
+        /// Adds one active Shiny SSR Volume component to every project rendering profile that already owns MF.SSGI settings while preserving all existing authored values.
+        /// </summary>
+        private static void EnsureShinySsrVolumeProfiles()
+        {
+            VolumeProfile[] ssgiVolumeProfiles = AssetDatabase.FindAssets("t:VolumeProfile", new[] { SettingsFolderPath }).Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<VolumeProfile>).Where(profile => profile != null && profile.components.Any(component => component != null && component.GetType().FullName == SsgiVolumeComponentTypeFullName)).ToArray();
+            if (ssgiVolumeProfiles.Length == 0)
+            {
+                throw new InvalidOperationException($"Folder '{SettingsFolderPath}' must contain at least one Volume profile with '{SsgiVolumeComponentTypeFullName}' before Shiny SSR can join the SSGI rendering chain.");
+            }
+
+            foreach (VolumeProfile volumeProfile in ssgiVolumeProfiles)
+            {
+                if (volumeProfile.TryGet(out ShinySsrVolumeComponent shinySsrVolumeComponent))
+                {
+                    continue;
+                }
+
+                shinySsrVolumeComponent = volumeProfile.Add<ShinySsrVolumeComponent>(true);
+                shinySsrVolumeComponent.ApplyRaytracingPreset(ShinySSRR.RaytracingPreset.Medium);
+                shinySsrVolumeComponent.reflectionsMultiplier.Override(1f);
+                shinySsrVolumeComponent.temporalFilter.Override(false);
+                AssetDatabase.AddObjectToAsset(shinySsrVolumeComponent, volumeProfile);
+                EditorUtility.SetDirty(shinySsrVolumeComponent);
+                EditorUtility.SetDirty(volumeProfile);
+            }
+        }
+
+        /// <summary>
+        /// Returns the existing single Prometheus pipeline asset or clones the active URP asset during first-time generation.
+        /// </summary>
+        private static UniversalRenderPipelineAsset GetOrCreatePipelineAsset(UniversalRenderPipelineAsset sourcePipelineAsset, UniversalRendererData forwardRendererData, UniversalRendererData ssgiRendererData)
+        {
+            UniversalRenderPipelineAsset pipelineAsset = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelineAssetPath);
+            if (pipelineAsset != null)
+            {
+                return pipelineAsset;
+            }
+
+            pipelineAsset = UnityEngine.Object.Instantiate(sourcePipelineAsset);
+            pipelineAsset.name = "PrometheusUniversalRenderPipeline";
+            pipelineAsset.hideFlags = HideFlags.None;
+            AssetDatabase.CreateAsset(pipelineAsset, PipelineAssetPath);
+            ConfigurePipelineRenderers(pipelineAsset, forwardRendererData, ssgiRendererData);
+            return pipelineAsset;
+        }
+
+        /// <summary>
+        /// Returns the existing environment profile or creates the default daily curves and seasonal palettes through ScriptableObject field initialization.
+        /// </summary>
+        private static PrometheusEnvironmentProfile GetOrCreateEnvironmentProfile()
+        {
+            PrometheusEnvironmentProfile environmentProfile = AssetDatabase.LoadAssetAtPath<PrometheusEnvironmentProfile>(EnvironmentProfileAssetPath);
+            if (environmentProfile != null)
+            {
+                return environmentProfile;
+            }
+
+            environmentProfile = ScriptableObject.CreateInstance<PrometheusEnvironmentProfile>();
+            environmentProfile.name = "PrometheusEnvironmentProfile";
+            AssetDatabase.CreateAsset(environmentProfile, EnvironmentProfileAssetPath);
+            return environmentProfile;
+        }
+
+        /// <summary>
+        /// Returns the Resources settings asset, assigns generated assets, and creates a complete profile set only when no authored profiles exist.
+        /// </summary>
+        private static PrometheusRenderingSettings GetOrCreateRenderingSettings(UniversalRenderPipelineAsset pipelineAsset, PrometheusEnvironmentProfile environmentProfile)
+        {
+            PrometheusRenderingSettings renderingSettings = AssetDatabase.LoadAssetAtPath<PrometheusRenderingSettings>(RenderingSettingsAssetPath);
+            if (renderingSettings == null)
+            {
+                renderingSettings = ScriptableObject.CreateInstance<PrometheusRenderingSettings>();
+                renderingSettings.name = PrometheusRenderingSettings.ResourceName;
+                AssetDatabase.CreateAsset(renderingSettings, RenderingSettingsAssetPath);
+            }
+
+            renderingSettings.ConfigureAssets(pipelineAsset, environmentProfile);
+            if (renderingSettings.QualityProfiles.Count == 0)
+            {
+                renderingSettings.InitializeQualityProfiles(CreateDefaultQualityProfiles());
+            }
+
+            return renderingSettings;
+        }
+
+        /// <summary>
+        /// Creates the initial project-owned quality values; later edits remain serialized in the settings asset and are not overwritten by this generator.
+        /// </summary>
+        private static PrometheusRenderQualityProfile[] CreateDefaultQualityProfiles()
+        {
+            PrometheusRenderQualityProfile low = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.Low, 0.75f, 1, true, LightShadows.Hard, 1024, 30f, 2, 2, 512, 1, 0.75f, 1, AnisotropicFiltering.Enable, 1, -1);
+            PrometheusRenderQualityProfile medium = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.Medium, 0.9f, 2, true, LightShadows.Soft, 2048, 50f, 2, 4, 1024, 0, 1f, 0, AnisotropicFiltering.Enable, 1, -1);
+            PrometheusRenderQualityProfile high = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.High, 1f, 4, true, LightShadows.Soft, 2048, 80f, 4, 4, 1024, 0, 1.5f, 0, AnisotropicFiltering.ForceEnable, 1, -1);
+            PrometheusRenderQualityProfile ultra = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.Ultra, 1f, 4, true, LightShadows.Soft, 4096, 120f, 4, 8, 2048, 0, 2f, 0, AnisotropicFiltering.ForceEnable, 1, -1);
+            return new[] { low, medium, high, ultra };
+        }
+
+        /// <summary>
+        /// Replaces the pipeline renderer list with the default forward renderer followed by the dedicated deferred SSGI renderer through URP's serialized asset contract.
+        /// </summary>
+        private static void ConfigurePipelineRenderers(UniversalRenderPipelineAsset pipelineAsset, UniversalRendererData forwardRendererData, UniversalRendererData ssgiRendererData)
+        {
+            SerializedObject serializedPipeline = new SerializedObject(pipelineAsset);
+            SerializedProperty rendererDataList = serializedPipeline.FindProperty("m_RendererDataList");
+            SerializedProperty defaultRendererIndex = serializedPipeline.FindProperty("m_DefaultRendererIndex");
+            if (rendererDataList == null || defaultRendererIndex == null)
+            {
+                throw new InvalidOperationException($"URP asset '{pipelineAsset.name}' does not expose the expected renderer serialization contract.");
+            }
+
+            rendererDataList.arraySize = 2;
+            rendererDataList.GetArrayElementAtIndex(0).objectReferenceValue = forwardRendererData;
+            rendererDataList.GetArrayElementAtIndex(1).objectReferenceValue = ssgiRendererData;
+            defaultRendererIndex.intValue = 0;
+            serializedPipeline.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// Serializes the invariant Lit and shadow capabilities required by every runtime quality profile into the single pipeline asset.
+        /// </summary>
+        private static void ConfigurePipelineCapabilities(UniversalRenderPipelineAsset pipelineAsset, PrometheusRenderingSettings renderingSettings)
+        {
+            SerializedObject serializedPipeline = new SerializedObject(pipelineAsset);
+            SetIntegerProperty(serializedPipeline, "m_MainLightRenderingMode", (int)renderingSettings.MainLightRenderingMode);
+            SetBooleanProperty(serializedPipeline, "m_MainLightShadowsSupported", renderingSettings.SupportsMainLightShadows);
+            SetIntegerProperty(serializedPipeline, "m_AdditionalLightsRenderingMode", (int)renderingSettings.AdditionalLightsRenderingMode);
+            SetBooleanProperty(serializedPipeline, "m_AdditionalLightShadowsSupported", renderingSettings.SupportsAdditionalLightShadows);
+            SetBooleanProperty(serializedPipeline, "m_SoftShadowsSupported", renderingSettings.SupportsSoftShadows);
+            SetBooleanProperty(serializedPipeline, "m_AnyShadowsSupported", renderingSettings.SupportsMainLightShadows || renderingSettings.SupportsAdditionalLightShadows);
+            serializedPipeline.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
+        /// Writes one required integer URP serialization property and fails immediately if the installed URP version changes that contract.
+        /// </summary>
+        private static void SetIntegerProperty(SerializedObject serializedObject, string propertyName, int value)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            if (property == null)
+            {
+                throw new InvalidOperationException($"Serialized object '{serializedObject.targetObject.name}' does not expose required integer property '{propertyName}'.");
+            }
+
+            property.intValue = value;
+        }
+
+        /// <summary>
+        /// Writes one required Boolean URP serialization property and fails immediately if the installed URP version changes that contract.
+        /// </summary>
+        private static void SetBooleanProperty(SerializedObject serializedObject, string propertyName, bool value)
+        {
+            SerializedProperty property = serializedObject.FindProperty(propertyName);
+            if (property == null)
+            {
+                throw new InvalidOperationException($"Serialized object '{serializedObject.targetObject.name}' does not expose required Boolean property '{propertyName}'.");
+            }
+
+            property.boolValue = value;
+        }
+
+        /// <summary>
+        /// Assigns the single serialized Prometheus pipeline asset as the Graphics default and every legacy Unity quality-level override.
+        /// </summary>
+        private static void AssignPipelineToUnitySettings(UniversalRenderPipelineAsset pipelineAsset)
+        {
+            GraphicsSettings.defaultRenderPipeline = pipelineAsset;
+            UnityEngine.Object qualitySettingsObject = QualitySettings.GetQualitySettings();
+            SerializedObject serializedQualitySettings = new SerializedObject(qualitySettingsObject);
+            SerializedProperty qualityLevels = serializedQualitySettings.FindProperty("m_QualitySettings");
+            if (qualityLevels == null)
+            {
+                throw new InvalidOperationException("Unity QualitySettings do not expose the expected quality-level serialization contract.");
+            }
+
+            for (int qualityIndex = 0; qualityIndex < qualityLevels.arraySize; qualityIndex++)
+            {
+                SerializedProperty pipelineOverride = qualityLevels.GetArrayElementAtIndex(qualityIndex).FindPropertyRelative("customRenderPipeline");
+                if (pipelineOverride == null)
+                {
+                    throw new InvalidOperationException($"Unity quality level {qualityIndex} does not expose the expected customRenderPipeline property.");
+                }
+
+                pipelineOverride.objectReferenceValue = pipelineAsset;
+            }
+
+            serializedQualitySettings.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(qualitySettingsObject);
+        }
+
+        /// <summary>
+        /// Creates every folder segment required by an asset path while preserving existing project folders.
+        /// </summary>
+        private static void EnsureFolder(string folderPath)
+        {
+            string[] pathSegments = folderPath.Split('/');
+            string currentPath = pathSegments[0];
+            for (int segmentIndex = 1; segmentIndex < pathSegments.Length; segmentIndex++)
+            {
+                string nextPath = currentPath + "/" + pathSegments[segmentIndex];
+                if (!AssetDatabase.IsValidFolder(nextPath))
+                {
+                    AssetDatabase.CreateFolder(currentPath, pathSegments[segmentIndex]);
+                }
+
+                currentPath = nextPath;
+            }
+        }
+    }
+}

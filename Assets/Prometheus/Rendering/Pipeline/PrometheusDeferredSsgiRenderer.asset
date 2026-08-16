@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
+  m_Name: PrometheusDeferredSsgiRenderer
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalRendererData
+  debugShaders:
+    debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
+    hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
+    probeVolumeSamplingDebugComputeShader: {fileID: 7200000, guid: 53626a513ea68ce47b59dc1299fe3959, type: 3}
+  probeVolumeResources:
+    probeVolumeDebugShader: {fileID: 0}
+    probeVolumeFragmentationDebugShader: {fileID: 0}
+    probeVolumeOffsetDebugShader: {fileID: 0}
+    probeVolumeSamplingDebugShader: {fileID: 0}
+    probeSamplingDebugMesh: {fileID: 0}
+    probeSamplingDebugTexture: {fileID: 0}
+    probeVolumeBlendStatesCS: {fileID: 0}
+  m_RendererFeatures:
+  - {fileID: 1151136595599155081}
+  - {fileID: 9192176714029460181}
+  m_RendererFeatureMap: 89dfa37ca2a8f90f
+  m_UseNativeRenderPass: 0
+  xrSystemData: {fileID: 0}
+  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
+  m_AssetVersion: 3
+  m_PrepassLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_OpaqueLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_TransparentLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_DefaultStencilState:
+    overrideStencilState: 0
+    stencilReference: 0
+    stencilCompareFunction: 8
+    passOperation: 2
+    failOperation: 0
+    zFailOperation: 0
+  m_ShadowTransparentReceive: 1
+  m_RenderingMode: 1
+  m_DepthPrimingMode: 0
+  m_CopyDepthMode: 1
+  m_DepthAttachmentFormat: 0
+  m_DepthTextureFormat: 0
+  m_AccurateGbufferNormals: 0
+  m_IntermediateTextureMode: 1
+--- !u!114 &1151136595599155081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c5eb7abbe3b1ab4e8a41436b1c51f1a, type: 3}
+  m_Name: SSGIFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  showInSceneView: 1
+  showToggleIconInSceneView: 1
+  settings:
+    UseDeferredRendering: 0
+    RenderPassEvent: 450
+    SSGIRangeMin: 10
+    SSGIRangeMax: 25
+    ShadowMinDistace: 5
+    ShadowMaxDistace: 15
+    ScanDepth2DRangeFactor: 0.5
+    Orthographic2DRangeFactor: 0.15
+    Quality: {fileID: 11400000, guid: eebfd7413cfac6c4cbe43f5a0b1f27b1, type: 2}
+    Lighting: {fileID: 11400000, guid: 87a3603b30103244b85aa87abba306d3, type: 2}
+    Advanced: {fileID: 11400000, guid: e3eaae48796cb794287872d89fae0cfd, type: 2}
+    Raymarch: {fileID: 11400000, guid: 331462db27454714d9c0f2058a8e42b1, type: 2}
+    Fallback: {fileID: 11400000, guid: c1c032d085a45e7448f20146375b3565, type: 2}
+    DebugScreenCoverage: 1
+    DebugMotionVectors: 0
+    DebugReprojection: 0
+    DebugAlbedo: 0
+--- !u!114 &9192176714029460181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf716a1be50b448e7b1d1968ab734946, type: 3}
+  m_Name: ShinySSRR
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  renderPassEvent: 500
+  useDeferred: 1
+  enableScreenSpaceNormalsPass: 0
+  screenSpaceNormalsOpaques: 1
+  includeTransparentsInScreenSpaceNormals: 0
+  transparentNormalsLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enableTransparencyDepthPrepass: 1
+  transparencyDepthPrepassLayerMask:
+    serializedVersion: 2
+    m_Bits: 192
+  customSmoothnessMetallicPass: 0
+  customSmoothnessMetallicPassSource: 0
+  ignorePostProcessingOption: 1
+  cameraLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  ignoreReflectionProbes: 1

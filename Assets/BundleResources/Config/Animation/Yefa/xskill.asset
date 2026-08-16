@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08b971f5dc79c594886cca777b70b00c, type: 3}
+  m_Name: xskill
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.AnimationLine
+  semantic: 140
+  animationReferenceAsset: {fileID: 11400000, guid: 08aa1b470a795c64da25e7f952468c09, type: 2}
+  events:
+  - time: 2.0166667
+    eventName: 
+    intValue: 0
+    floatValue: 0
+    stringValue: 
+    command: 1
+  - time: 2.6666667
+    eventName: 
+    intValue: 0
+    floatValue: 0
+    stringValue: 
+    command: 2
+  audioBindings:
+  - time: 2.0166667
+    audioEvent: 1502931542

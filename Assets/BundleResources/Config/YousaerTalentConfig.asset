@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 376b597723288004f815a6a9e550d9f5, type: 3}
+  m_Name: YousaerTalentConfig
+  m_EditorClassIdentifier: 
+  normalAttack:
+    comboInterval: 2
+    stages:
+    - damageMultiplier: 0.5
+      damageOffset: 0
+      additionalTags: 0
+    - damageMultiplier: 1
+      damageOffset: 0
+      additionalTags: 0
+    - damageMultiplier: 1
+      damageOffset: 0
+      additionalTags: 0
+  specialAttack:
+    ability:
+      damageMultiplier: 1
+      damageOffset: 0
+      animationSpeed: 1
+    chargeDuration: 0.5
+  skill:
+    damageMultiplier: 1
+    damageOffset: 0
+    animationSpeed: 1
+  skillCooldown: 5
+  ultimate:
+    damageMultiplier: 1
+    damageOffset: 0
+    animationSpeed: 1
+  ultimateCooldown: 10
+  talentGrowthCoefficient: 0.1
+  maximumTalentLevel: 10

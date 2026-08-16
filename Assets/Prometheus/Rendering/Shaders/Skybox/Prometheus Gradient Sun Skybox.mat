@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Prometheus Gradient Sun Skybox
+  m_Shader: {fileID: 4800000, guid: ad1a485ca30155947831619615484ad9, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _Exposure: 1
+    - _GradientAlpha0: 1
+    - _GradientAlpha1: 1
+    - _GradientAlpha2: 1
+    - _GradientAlpha3: 1
+    - _GradientAlpha4: 1
+    - _GradientAlpha5: 1
+    - _GradientAlpha6: 1
+    - _GradientAlpha7: 1
+    - _GradientAlphaCount: 2
+    - _GradientAlphaTime0: 0
+    - _GradientAlphaTime1: 1
+    - _GradientAlphaTime2: 1
+    - _GradientAlphaTime3: 1
+    - _GradientAlphaTime4: 1
+    - _GradientAlphaTime5: 1
+    - _GradientAlphaTime6: 1
+    - _GradientAlphaTime7: 1
+    - _GradientColorCount: 2
+    - _GradientColorTime0: 0
+    - _GradientColorTime1: 1
+    - _GradientColorTime2: 1
+    - _GradientColorTime3: 1
+    - _GradientColorTime4: 1
+    - _GradientColorTime5: 1
+    - _GradientColorTime6: 1
+    - _GradientColorTime7: 1
+    - _GradientMode: 0
+    - _SunAngularDiameter: 0.53
+    - _SunGradientAxisInfluence: 0
+    - _SunHaloIntensity: 0.25
+    - _SunHaloSize: 8
+    - _SunIntensity: 4
+    m_Colors:
+    - _GradientColor0: {r: 0.08627451, g: 0.09582551, b: 0.14117648, a: 1}
+    - _GradientColor1: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _GradientColor2: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _GradientColor3: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _GradientColor4: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _GradientColor5: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _GradientColor6: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _GradientColor7: {r: 0.08, g: 0.34, b: 0.78, a: 1}
+    - _SunColor: {r: 1, g: 0.88, b: 0.65, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac518e4a241358489ae47a9688afc85, type: 3}
+  m_Name: SenyinPropertyConfig
+  m_EditorClassIdentifier: 
+  elementAttribute: 0
+  atk: 10
+  atkSpeed: 1
+  critDmg: 1
+  critRate: 0.5
+  def: 10
+  toughness: 1
+  hp: 3000
+  walkSpeed: 2
+  runSpeed: 3
+  sprintSpeed: 5
+  airMoveSpeed: 3
+  jumpSpeed: 5
+  gravity: 9.8
+  coreEnergyLimit: 100
+  ultEnergyLimit: 100
+  walkEdge: 0.3
+  sprintEdge: 0.7
+  damp: 0.05

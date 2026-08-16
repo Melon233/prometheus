@@ -1,0 +1,270 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d95d7e353c374e43a9e50a9077dd812, type: 3}
+  m_Name: SenyinAnimationLibrary
+  m_EditorClassIdentifier: 
+  skeletonDataAsset: {fileID: 11400000, guid: ec89e822ca3500e49921753b150c2131, type: 2}
+  mixDurationMatrix:
+    defaultDuration: 0.2
+    overrides:
+    - from: 10
+      to: 100
+      duration: 0
+    - from: 10
+      to: 101
+      duration: 0
+    - from: 10
+      to: 102
+      duration: 0
+    - from: 10
+      to: 103
+      duration: 0
+    - from: 10
+      to: 104
+      duration: 0
+    - from: 10
+      to: 105
+      duration: 0
+    - from: 10
+      to: 106
+      duration: 0
+    - from: 10
+      to: 107
+      duration: 0
+    - from: 20
+      to: 100
+      duration: 0
+    - from: 20
+      to: 101
+      duration: 0
+    - from: 20
+      to: 102
+      duration: 0
+    - from: 20
+      to: 103
+      duration: 0
+    - from: 20
+      to: 104
+      duration: 0
+    - from: 20
+      to: 105
+      duration: 0
+    - from: 20
+      to: 106
+      duration: 0
+    - from: 20
+      to: 107
+      duration: 0
+    - from: 0
+      to: 41
+      duration: 0
+    - from: 31
+      to: 41
+      duration: 0
+    - from: 21
+      to: 41
+      duration: 0
+    - from: 33
+      to: 41
+      duration: 0
+    - from: 30
+      to: 41
+      duration: 0
+    - from: 10
+      to: 41
+      duration: 0
+    - from: 201
+      to: 41
+      duration: 0
+    - from: 32
+      to: 41
+      duration: 0
+    - from: 40
+      to: 41
+      duration: 0
+    - from: 41
+      to: 41
+      duration: 0
+    - from: 200
+      to: 41
+      duration: 0
+    - from: 107
+      to: 41
+      duration: 0
+    - from: 300
+      to: 41
+      duration: 0
+    - from: 106
+      to: 41
+      duration: 0
+    - from: 105
+      to: 41
+      duration: 0
+    - from: 104
+      to: 41
+      duration: 0
+    - from: 103
+      to: 41
+      duration: 0
+    - from: 102
+      to: 41
+      duration: 0
+    - from: 101
+      to: 41
+      duration: 0
+    - from: 100
+      to: 41
+      duration: 0
+    - from: 131
+      to: 41
+      duration: 0
+    - from: 130
+      to: 41
+      duration: 0
+    - from: 120
+      to: 41
+      duration: 0
+    - from: 22
+      to: 41
+      duration: 0
+    - from: 140
+      to: 41
+      duration: 0
+    - from: 20
+      to: 41
+      duration: 0
+    - from: 20
+      to: 40
+      duration: 0
+    - from: 140
+      to: 40
+      duration: 0
+    - from: 22
+      to: 40
+      duration: 0
+    - from: 131
+      to: 40
+      duration: 0
+    - from: 120
+      to: 40
+      duration: 0
+    - from: 100
+      to: 40
+      duration: 0
+    - from: 101
+      to: 40
+      duration: 0
+    - from: 105
+      to: 40
+      duration: 0
+    - from: 103
+      to: 40
+      duration: 0
+    - from: 104
+      to: 40
+      duration: 0
+    - from: 107
+      to: 40
+      duration: 0
+    - from: 41
+      to: 40
+      duration: 0
+    - from: 32
+      to: 40
+      duration: 0
+    - from: 30
+      to: 40
+      duration: 0
+    - from: 21
+      to: 40
+      duration: 0
+    - from: 31
+      to: 40
+      duration: 0
+    - from: 33
+      to: 40
+      duration: 0
+    - from: 0
+      to: 40
+      duration: 0
+    - from: 10
+      to: 40
+      duration: 0
+    - from: 200
+      to: 40
+      duration: 0
+    - from: 201
+      to: 40
+      duration: 0
+    - from: 106
+      to: 40
+      duration: 0
+    - from: 102
+      to: 40
+      duration: 0
+    - from: 300
+      to: 40
+      duration: 0
+    - from: 40
+      to: 40
+      duration: 0
+    - from: 130
+      to: 40
+      duration: 0
+  atkExecutor:
+    attacks:
+    - animationLine: {fileID: 11400000, guid: 77da0848ebd50aa4c9e05f4ebfe061b5, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: 77da0848ebd50aa4c9e05f4ebfe061b5, type: 2}
+      hasVfx: 1
+      vfx: 0
+    - animationLine: {fileID: 11400000, guid: 8277de6fe56989f478297879d6758dd6, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: cd4fdf5642ea2e942977dd6675e898d3, type: 2}
+      hasVfx: 1
+      vfx: 1
+    - animationLine: {fileID: 11400000, guid: 0ca3f4c0614e38f44ba41500dc5e3be1, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: 58cae1c57f50020489a9f415bc5941a7, type: 2}
+      hasVfx: 1
+      vfx: 2
+    - animationLine: {fileID: 11400000, guid: c471e4bee73809b40a27b2c61ac6b841, type: 2}
+      movingAnimationLine: {fileID: 11400000, guid: c471e4bee73809b40a27b2c61ac6b841, type: 2}
+      hasVfx: 1
+      vfx: 3
+  idleExecutor:
+    idleLine: {fileID: 11400000, guid: 88d0163a00a643c40987e871ab4ddd5b, type: 2}
+  groundMoveExecutor:
+    walkLine: {fileID: 11400000, guid: 15e8cbdc6f0773246970b90dde187875, type: 2}
+    runLine: {fileID: 11400000, guid: 95886bc5e942f26429adb8140bc5f6bd, type: 2}
+    sprintLine: {fileID: 11400000, guid: 95886bc5e942f26429adb8140bc5f6bd, type: 2}
+  dodgeExecutor:
+    dodgeFrontLine: {fileID: 11400000, guid: 5b3945a7741adae489169ef4904a99dd, type: 2}
+    dodgeBackLine: {fileID: 11400000, guid: b21ac30456e402f40a75e59cbc59db42, type: 2}
+  airMoveExecutor:
+    jumpLine: {fileID: 11400000, guid: 440dfc13fd9833b42a92517efa5f5e64, type: 2}
+    riseLine: {fileID: 11400000, guid: 7a8b6b81dbae9ce44b0561fd8e97774e, type: 2}
+    fallLine: {fileID: 11400000, guid: e148d41fba7760d4e9e211731f5c43d5, type: 2}
+    landLine: {fileID: 11400000, guid: 55d507ce570ec4248a361c23d1589ef8, type: 2}
+  hasTalent: 1
+  ultimateExecutor:
+    ultimateLine: {fileID: 11400000, guid: bd704568f3d243e47894f8f6b29bdc5e, type: 2}
+    ultVfx: 6
+  skillExecutor:
+    skillStartLine: {fileID: 11400000, guid: 081e215687c8c0f429b2e249772090ae, type: 2}
+    skillLine: {fileID: 11400000, guid: f6b60388578d9a64d869aff1991e7c04, type: 2}
+    skillVfx: 5
+  specialAttackExecutor:
+    specialAttackLine: {fileID: 11400000, guid: 86c3026ce67466542b4435cc17f4ca96, type: 2}
+    specialAttackVfx: 4
+  attackedExecutor:
+    attackedLine: {fileID: 11400000, guid: 0b4a1ce679d18504786553656fbba1ba, type: 2}
+    nextAttackedLine: {fileID: 11400000, guid: f2cb18aee390aad468c0cfb2053a9595, type: 2}
+  dieExecutor:
+    dieLine: {fileID: 11400000, guid: cdad67f134bec8641bcb1f85f26492ee, type: 2}

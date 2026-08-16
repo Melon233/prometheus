@@ -1,0 +1,770 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8710145779022217655
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5485954d14dfb9a4c8ead8edb0ded5b1, type: 3}
+  m_Name: LiftGammaGain
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.LiftGammaGain
+  active: 0
+  lift:
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 1, z: 1, w: 0}
+  gamma:
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 1, z: 1, w: 0}
+  gain:
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 1, z: 1, w: 0}
+--- !u!114 &-5214911027779324615
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 630a38b420b39c040b1469b07a79e7d6, type: 3}
+  m_Name: SSGIVolumeComponent
+  m_EditorClassIdentifier: 
+  active: 1
+  PreMultiply:
+    m_OverrideState: 0
+    m_Value: 0
+  FinalContrast:
+    m_OverrideState: 1
+    m_Value: 1
+  FinalIntensity:
+    m_OverrideState: 1
+    m_Value: 1
+  LightFalloffDistance:
+    m_OverrideState: 1
+    m_Value: 1
+  LightIntensity:
+    m_OverrideState: 1
+    m_Value: 0.35
+  LightDirInfluence:
+    m_OverrideState: 1
+    m_Value: 0.8
+  NormalmapBoost:
+    m_OverrideState: 1
+    m_Value: 0.5
+  GITint:
+    m_OverrideState: 0
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  GIContrast:
+    m_OverrideState: 1
+    m_Value: 0.8
+  GISaturation:
+    m_OverrideState: 1
+    m_Value: 1.25
+  GIVibrance:
+    m_OverrideState: 0
+    m_Value: 0.5
+  FallbackDirectIntensity:
+    m_OverrideState: 1
+    m_Value: 0.1
+  FallbackDirectSaturation:
+    m_OverrideState: 0
+    m_Value: 1
+  FallbackDirectPower:
+    m_OverrideState: 0
+    m_Value: 2
+  SkyboxInfluence:
+    m_OverrideState: 0
+    m_Value: 1
+  ShadowIntensity:
+    m_OverrideState: 1
+    m_Value: 2.5
+  ShadowTint:
+    m_OverrideState: 0
+    m_Value: {r: 0.06, g: 0.08, b: 0.12, a: 1}
+  ShadowExponential:
+    m_OverrideState: 1
+    m_Value: 0.35
+  ShadowContrast:
+    m_OverrideState: 1
+    m_Value: 2
+  ContactShadowsRange:
+    m_OverrideState: 0
+    m_Value: 0.25
+  ContactShadowsSoftKnee:
+    m_OverrideState: 0
+    m_Value: 0.25
+  CastedShadowsIntensity:
+    m_OverrideState: 0
+    m_Value: 10
+  CastedShadowsOmniDirectional:
+    m_OverrideState: 0
+    m_Value: 0.5
+  CastedShadowsRange:
+    m_OverrideState: 0
+    m_Value: 15
+  CastedShadowsSoftKnee:
+    m_OverrideState: 0
+    m_Value: 0.85
+--- !u!114 &-5143705056771542696
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c01700fd266d6914ababb731e09af2eb, type: 3}
+  m_Name: DepthOfField
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DepthOfField
+  active: 0
+  mode:
+    m_OverrideState: 1
+    m_Value: 1
+  gaussianStart:
+    m_OverrideState: 1
+    m_Value: 25.3
+  gaussianEnd:
+    m_OverrideState: 1
+    m_Value: 38.8
+  gaussianMaxRadius:
+    m_OverrideState: 1
+    m_Value: 1
+  highQualitySampling:
+    m_OverrideState: 1
+    m_Value: 0
+  focusDistance:
+    m_OverrideState: 1
+    m_Value: 7.43
+  aperture:
+    m_OverrideState: 1
+    m_Value: 5.6
+  focalLength:
+    m_OverrideState: 1
+    m_Value: 50
+  bladeCount:
+    m_OverrideState: 1
+    m_Value: 5
+  bladeCurvature:
+    m_OverrideState: 1
+    m_Value: 1
+  bladeRotation:
+    m_OverrideState: 1
+    m_Value: 0
+--- !u!114 &-2426788225629478643
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cad00e0c748434bbb89ed2d571f9309d, type: 3}
+  m_Name: ShinyScreenSpaceRaytracedReflections
+  m_EditorClassIdentifier: ShinySSRR::ShinySSRR.ShinyScreenSpaceRaytracedReflections
+  active: 1
+  reflectionStyle:
+    m_OverrideState: 1
+    m_Value: 0
+  reflectionsMultiplier:
+    m_OverrideState: 1
+    m_Value: 1
+  showInSceneView:
+    m_OverrideState: 1
+    m_Value: 1
+  reflectionsWorkflow:
+    m_OverrideState: 1
+    m_Value: 0
+  sampleCount:
+    m_OverrideState: 1
+    m_Value: 24
+  maxRayLength:
+    m_OverrideState: 1
+    m_Value: 12
+  thickness:
+    m_OverrideState: 1
+    m_Value: 0.5
+  binarySearchIterations:
+    m_OverrideState: 1
+    m_Value: 5
+  refineThickness:
+    m_OverrideState: 1
+    m_Value: 0
+  thicknessFine:
+    m_OverrideState: 1
+    m_Value: 0.05
+  jitter:
+    m_OverrideState: 1
+    m_Value: 0.3
+  animatedJitter:
+    m_OverrideState: 1
+    m_Value: 0
+  computeBackFaces:
+    m_OverrideState: 1
+    m_Value: 0
+  thicknessMinimum:
+    m_OverrideState: 1
+    m_Value: 0.16
+  computeBackFacesLayerMask:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  downsampling:
+    m_OverrideState: 1
+    m_Value: 2
+  depthBias:
+    m_OverrideState: 1
+    m_Value: 0.03
+  temporalFilter:
+    m_OverrideState: 1
+    m_Value: 0
+  temporalFilterResponseSpeed:
+    m_OverrideState: 1
+    m_Value: 1
+  smoothnessThreshold:
+    m_OverrideState: 1
+    m_Value: 0
+  reflectionsMinIntensity:
+    m_OverrideState: 1
+    m_Value: 0
+  reflectionsMaxIntensity:
+    m_OverrideState: 1
+    m_Value: 1
+  hdrClamp:
+    m_OverrideState: 1
+    m_Value: 3
+  reflectionsIntensityCurve:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  reflectionsSmoothnessCurve:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0.166666
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.5
+        value: 0.25
+        inSlope: 0.833333
+        outSlope: 1.166666
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1.833333
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  fresnel:
+    m_OverrideState: 1
+    m_Value: 0.75
+  decay:
+    m_OverrideState: 1
+    m_Value: 2
+  metallicBoost:
+    m_OverrideState: 1
+    m_Value: 0
+  metallicBoostThreshold:
+    m_OverrideState: 1
+    m_Value: 0
+  specularControl:
+    m_OverrideState: 1
+    m_Value: 1
+  specularSoftenPower:
+    m_OverrideState: 1
+    m_Value: 15
+  skyboxReflectionMode:
+    m_OverrideState: 1
+    m_Value: 0
+  skyboxIntensity:
+    m_OverrideState: 1
+    m_Value: 0
+  skyboxResolution:
+    m_OverrideState: 1
+    m_Value: 6
+  skyboxUpdateMode:
+    m_OverrideState: 1
+    m_Value: 0
+  skyboxUpdateInterval:
+    m_OverrideState: 1
+    m_Value: 3
+  skyboxContributionPass:
+    m_OverrideState: 1
+    m_Value: 1
+  skyboxCustomCubemap:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+    dimension: 1
+  skyboxHDR:
+    m_OverrideState: 1
+    m_Value: 0
+  skyboxCullingMask:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Bits: 0
+  nearCameraAttenuationStart:
+    m_OverrideState: 1
+    m_Value: 0
+  nearCameraAttenuationRange:
+    m_OverrideState: 1
+    m_Value: 1
+  farCameraAttenuationStart:
+    m_OverrideState: 1
+    m_Value: 900
+  farCameraAttenuationRange:
+    m_OverrideState: 1
+    m_Value: 100
+  useCustomBounds:
+    m_OverrideState: 1
+    m_Value: 0
+  boundsMin:
+    m_OverrideState: 1
+    m_Value: {x: -10000, y: -10000, z: -10000}
+  boundsMax:
+    m_OverrideState: 1
+    m_Value: {x: 10000, y: 10000, z: 10000}
+  vignetteSize:
+    m_OverrideState: 1
+    m_Value: 1.1
+  vignettePower:
+    m_OverrideState: 1
+    m_Value: 1.5
+  vignetteMode:
+    m_OverrideState: 1
+    m_Value: 0
+  fuzzyness:
+    m_OverrideState: 1
+    m_Value: 0
+  contactHardening:
+    m_OverrideState: 1
+    m_Value: 0
+  minimumBlur:
+    m_OverrideState: 1
+    m_Value: 0.25
+  blurDownsampling:
+    m_OverrideState: 1
+    m_Value: 1
+  blurStrength:
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 1}
+  edgeAwareBlur:
+    m_OverrideState: 1
+    m_Value: 0
+  debugView:
+    m_OverrideState: 1
+    m_Value: 0
+  debugDepthMultiplier:
+    m_OverrideState: 1
+    m_Value: 0.1
+  depthPrecision:
+    m_OverrideState: 1
+    m_Value: 0
+  separationPos:
+    m_OverrideState: 1
+    m_Value: 0.5
+  lowPrecision:
+    m_OverrideState: 1
+    m_Value: 0
+  stopNaN:
+    m_OverrideState: 1
+    m_Value: 0
+  stencilCheck:
+    m_OverrideState: 1
+    m_Value: 0
+  stencilValue:
+    m_OverrideState: 1
+    m_Value: 1
+  stencilCompareFunction:
+    m_OverrideState: 1
+    m_Value: 6
+  useReflectionsScripts:
+    m_OverrideState: 1
+    m_Value: 0
+  reflectionsScriptsLayerMask:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  skipDeferredPass:
+    m_OverrideState: 1
+    m_Value: 0
+  opaqueReflectionsBlending:
+    m_OverrideState: 1
+    m_Value: 0
+  transparencySupport:
+    m_OverrideState: 1
+    m_Value: 0
+  transparentLayerMask:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Bits: 0
+  transparentDepthPrepass:
+    m_OverrideState: 1
+    m_Value: 0
+  transparentSmoothness:
+    m_OverrideState: 1
+    m_Value: 1
+--- !u!114 &-1439188640949195179
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2db86121404754db890f4c8dfe81b2, type: 3}
+  m_Name: Bloom
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.Bloom
+  active: 1
+  skipIterations:
+    m_OverrideState: 1
+    m_Value: 1
+  threshold:
+    m_OverrideState: 1
+    m_Value: 0.9
+  intensity:
+    m_OverrideState: 1
+    m_Value: 1
+  scatter:
+    m_OverrideState: 1
+    m_Value: 0.7
+  clamp:
+    m_OverrideState: 1
+    m_Value: 65472
+  tint:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  highQualityFiltering:
+    m_OverrideState: 1
+    m_Value: 0
+  filter:
+    m_OverrideState: 1
+    m_Value: 0
+  downscale:
+    m_OverrideState: 0
+    m_Value: 0
+  maxIterations:
+    m_OverrideState: 0
+    m_Value: 6
+  dirtTexture:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+    dimension: 1
+  dirtIntensity:
+    m_OverrideState: 1
+    m_Value: 0
+--- !u!114 &-400942781730409273
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 899c54efeace73346a0a16faa3afe726, type: 3}
+  m_Name: Vignette
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.Vignette
+  active: 0
+  color:
+    m_OverrideState: 1
+    m_Value: {r: 0, g: 0, b: 0, a: 1}
+  center:
+    m_OverrideState: 1
+    m_Value: {x: 0.5, y: 0.5}
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0
+  smoothness:
+    m_OverrideState: 1
+    m_Value: 0.2
+  rounded:
+    m_OverrideState: 1
+    m_Value: 0
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
+  m_Name: YefaScene Postprocess Volume
+  m_EditorClassIdentifier: 
+  components:
+  - {fileID: -5214911027779324615}
+  - {fileID: -2426788225629478643}
+  - {fileID: -1439188640949195179}
+  - {fileID: -400942781730409273}
+  - {fileID: 5913274393345345341}
+  - {fileID: -5143705056771542696}
+  - {fileID: 9089743070300141687}
+  - {fileID: -8710145779022217655}
+--- !u!114 &5913274393345345341
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eb4b772797da9440885e8bd939e9560, type: 3}
+  m_Name: ColorCurves
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ColorCurves
+  active: 0
+  master:
+    m_OverrideState: 1
+    m_Value:
+      <length>k__BackingField: 2
+      m_Loop: 0
+      m_ZeroValue: 0
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  red:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 2
+      m_Loop: 0
+      m_ZeroValue: 0
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  green:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 2
+      m_Loop: 0
+      m_ZeroValue: 0
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  blue:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 2
+      m_Loop: 0
+      m_ZeroValue: 0
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 1
+          outSlope: 1
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  hueVsHue:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 0
+      m_Loop: 1
+      m_ZeroValue: 0.5
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  hueVsSat:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 0
+      m_Loop: 1
+      m_ZeroValue: 0.5
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  satVsSat:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 0
+      m_Loop: 0
+      m_ZeroValue: 0.5
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  lumVsSat:
+    m_OverrideState: 0
+    m_Value:
+      <length>k__BackingField: 0
+      m_Loop: 0
+      m_ZeroValue: 0.5
+      m_Range: 1
+      m_Curve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+--- !u!114 &9089743070300141687
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66f335fb1ffd8684294ad653bf1c7564, type: 3}
+  m_Name: ColorAdjustments
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ColorAdjustments
+  active: 0
+  postExposure:
+    m_OverrideState: 1
+    m_Value: 0
+  contrast:
+    m_OverrideState: 1
+    m_Value: 0
+  colorFilter:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  hueShift:
+    m_OverrideState: 1
+    m_Value: 0
+  saturation:
+    m_OverrideState: 1
+    m_Value: 0

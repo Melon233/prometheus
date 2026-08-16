@@ -392,6 +392,98 @@ PlayerSettings:
       m_Height: 1024
       m_Kind: 4
       m_SubKind: App Store
+  - m_BuildTarget: Android
+    m_Icons:
+    - m_Textures: []
+      m_Width: 432
+      m_Height: 432
+      m_Kind: 2
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 324
+      m_Height: 324
+      m_Kind: 2
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 216
+      m_Height: 216
+      m_Kind: 2
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 162
+      m_Height: 162
+      m_Kind: 2
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 108
+      m_Height: 108
+      m_Kind: 2
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 81
+      m_Height: 81
+      m_Kind: 2
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 192
+      m_Height: 192
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 144
+      m_Height: 144
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 96
+      m_Height: 96
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 72
+      m_Height: 72
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 48
+      m_Height: 48
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 36
+      m_Height: 36
+      m_Kind: 1
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 192
+      m_Height: 192
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 144
+      m_Height: 144
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 96
+      m_Height: 96
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 72
+      m_Height: 72
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 48
+      m_Height: 48
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures: []
+      m_Width: 36
+      m_Height: 36
+      m_Kind: 0
+      m_SubKind: 
   m_BuildTargetBatching:
   - m_BuildTarget: Standalone
     m_StaticBatching: 1
@@ -745,26 +837,26 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: DOTWEEN;TextMeshPro
-    EmbeddedLinux: DOTWEEN;TextMeshPro
-    GameCoreScarlett: DOTWEEN;TextMeshPro
-    GameCoreXboxOne: DOTWEEN;TextMeshPro
-    Kepler: TextMeshPro;DOTWEEN
-    LinuxHeadlessSimulation: DOTWEEN;TextMeshPro
+    Android: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    EmbeddedLinux: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    GameCoreScarlett: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    GameCoreXboxOne: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    Kepler: TextMeshPro;DOTWEEN;KAMGAM_SKY_CLOUDS_URP
+    LinuxHeadlessSimulation: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
     Lumin: DOTWEEN
-    Nintendo Switch: DOTWEEN;TextMeshPro
-    Nintendo Switch 2: TextMeshPro;DOTWEEN
-    PS4: DOTWEEN;TextMeshPro
-    PS5: DOTWEEN;TextMeshPro
-    QNX: TextMeshPro;DOTWEEN
+    Nintendo Switch: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    Nintendo Switch 2: TextMeshPro;DOTWEEN;KAMGAM_SKY_CLOUDS_URP
+    PS4: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    PS5: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
+    QNX: TextMeshPro;DOTWEEN;KAMGAM_SKY_CLOUDS_URP
     Stadia: DOTWEEN
-    Standalone: DOTWEEN;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3;UNITASK_DOTWEEN_SUPPORT;TextMeshPro
-    VisionOS: TextMeshPro;DOTWEEN
-    WebGL: DOTWEEN;TextMeshPro
+    Standalone: DOTWEEN;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3;UNITASK_DOTWEEN_SUPPORT;TextMeshPro;COZY_WEATHER;COZY_3_AND_UP;COZY_URP;URP_COMPATIBILITY_MODE;KAMGAM_SKY_CLOUDS_URP;UNISTORM_PRESENT;VLB_URP
+    VisionOS: TextMeshPro;DOTWEEN;KAMGAM_SKY_CLOUDS_URP
+    WebGL: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
     Windows Store Apps: DOTWEEN
-    XboxOne: DOTWEEN;TextMeshPro
+    XboxOne: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
     iPhone: DOTWEEN;TextMeshPro
-    tvOS: DOTWEEN;TextMeshPro
+    tvOS: DOTWEEN;TextMeshPro;KAMGAM_SKY_CLOUDS_URP
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

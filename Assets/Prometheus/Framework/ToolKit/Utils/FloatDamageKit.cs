@@ -8,7 +8,7 @@ namespace Xuan.Prometheus
     /// </summary>
     public class FloatTextKit : MonoSingleton<FloatTextKit>
     {
-        private const string ConfigPath = "DmgConf";
+        private const string ConfigPath = "Global_DmgConf";
         private const string WorldUIAssetAddress = "Prefabs_Dmg";
 
         private FloatDamageConfig config;
