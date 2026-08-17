@@ -189,8 +189,11 @@ namespace Xuan.Prometheus
             }
 
             AddSystem(new InputSystem(new UnityInputActionSource()));
+            AddSystem(new HudCommandSystem());
             AddSystem(new EffectSystem(library: options.EffectLibrary, traceEnabled: true));
             AddSystem(new CombatAudioPresentationSystem());
+            AddSystem(new CameraSystem(options.RuntimeRoot));
+            AddSystem(new MinimapSystem());
             teamSystem = new TeamSystem();
             AddSystem(teamSystem);
             startupOptions = options;

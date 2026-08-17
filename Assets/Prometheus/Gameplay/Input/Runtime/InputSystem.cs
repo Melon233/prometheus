@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus.Input
 {
@@ -16,6 +18,8 @@ namespace Xuan.Prometheus.Input
         private readonly Dictionary<IInputReceiver, InputActionMask> deliveries = new Dictionary<IInputReceiver, InputActionMask>(InputReceiverReferenceComparer.Instance);
         private readonly List<InputBinding> routingBindings = new List<InputBinding>();
         private readonly List<IInputSource> routingSources = new List<IInputSource>();
+        /// <summary>保存 UI Button 在玩法更新之后提交的定向按钮命令，并在下一次输入阶段写入目标实体。</summary>
+        private readonly Dictionary<int, InputActionMask> queuedEntityButtonActions = new Dictionary<int, InputActionMask>();
         private IGameplayKit gameplayKit;
         private int nextBindingId = 1;
         private long nextRegistrationOrder;
@@ -90,6 +94,18 @@ namespace Xuan.Prometheus.Input
             return AcquireControl(sourceId, new EntityInputReceiver(gameplayKit, entityId), actions, context, bindingPriority, deliveryMode);
         }
 
+        /// <summary>由普通 UI Button 为指定实体提交离散玩法按钮命令；该命令不进入 InputAction 和控制权仲裁，但会在输入重置后、实体更新前可靠写入。</summary>
+        /// <param name="entityId">接收点击命令的运行时实体编号。</param>
+        /// <param name="actions">一个或多个不包含移动值的玩法按钮动作。</param>
+        public void QueueEntityButtonActions(int entityId, InputActionMask actions)
+        {
+            ThrowIfDisposed();
+            if (entityId <= 0) throw new ArgumentOutOfRangeException(nameof(entityId), entityId, "Entity runtime ID must be positive.");
+            if (actions == InputActionMask.None || (actions & ~InputActionMask.GameplayButtons) != 0) throw new ArgumentOutOfRangeException(nameof(actions), actions, "UI button actions must contain only gameplay button actions.");
+            if (queuedEntityButtonActions.TryGetValue(entityId, out InputActionMask queuedActions)) queuedEntityButtonActions[entityId] = queuedActions | actions;
+            else queuedEntityButtonActions.Add(entityId, actions);
+        }
+
         /// <summary>在 Entity Logic 执行前完成一次输入采样、状态清理、动作仲裁和分发。</summary>
         public override void BeforeEntityUpdate(float dt)
         {
@@ -109,6 +125,7 @@ namespace Xuan.Prometheus.Input
                     InputFrame frame = source.Sample(currentFrameId);
                     RouteSourceFrame(source.SourceId, frame);
                 }
+                DispatchQueuedEntityButtonActions();
             }
             finally
             {
@@ -136,6 +153,7 @@ namespace Xuan.Prometheus.Input
             deliveries.Clear();
             routingBindings.Clear();
             routingSources.Clear();
+            queuedEntityButtonActions.Clear();
             sourceOrder.Clear();
             sources.Clear();
             gameplayKit = null;
@@ -219,6 +237,20 @@ namespace Xuan.Prometheus.Input
         {
             if (deliveries.TryGetValue(receiver, out InputActionMask existingActions)) deliveries[receiver] = existingActions | action;
             else deliveries.Add(receiver, action);
+        }
+
+        /// <summary>把上一次输入阶段之后积累的 UI 点击直接写入目标实体，不让点击事件参与快捷键控制权竞争。</summary>
+        private void DispatchQueuedEntityButtonActions()
+        {
+            if (queuedEntityButtonActions.Count == 0) return;
+            EntitySystem entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            foreach (KeyValuePair<int, InputActionMask> command in queuedEntityButtonActions)
+            {
+                if (!entitySystem.TryGetEntity(command.Key, out Entity entity) || !entity.IsActive) continue;
+                if (!entity.TryGetComp(out InputComponent inputComponent)) throw new InvalidOperationException($"UI button target Entity {command.Key} requires InputComponent.");
+                inputComponent.ApplyButtonActions(command.Value);
+            }
+            queuedEntityButtonActions.Clear();
         }
 
         /// <summary>移除目标已经失效的绑定，并使对应租约立即进入已释放状态。</summary>

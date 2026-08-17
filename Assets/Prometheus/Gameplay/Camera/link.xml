@@ -1,0 +1,6 @@
+<!-- 保留通过运行时类型名添加的 SSGI 相机标记，防止 IL2CPP 托管代码裁剪移除该组件。 -->
+<linker>
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="MF.SSGI.SSGICamera" preserve="all" />
+  </assembly>
+</linker>

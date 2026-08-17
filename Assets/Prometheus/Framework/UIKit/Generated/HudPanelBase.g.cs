@@ -57,16 +57,6 @@ namespace Xuan.Prometheus
         protected global::UnityEngine.UI.Button SkillButton { get; private set; }
 
         /// <summary>
-        /// 获取 Binder 中名为 WalkButton 的强类型组件引用。
-        /// </summary>
-        protected global::UnityEngine.UI.Button WalkButton { get; private set; }
-
-        /// <summary>
-        /// 获取 Binder 中名为 RunButton 的强类型组件引用。
-        /// </summary>
-        protected global::UnityEngine.UI.Button RunButton { get; private set; }
-
-        /// <summary>
         /// 获取 Binder 中名为 GuideButton 的强类型组件引用。
         /// </summary>
         protected global::UnityEngine.UI.Button GuideButton { get; private set; }
@@ -122,7 +112,102 @@ namespace Xuan.Prometheus
         protected global::Xuan.Prometheus.CdMono Skill { get; private set; }
 
         /// <summary>
-        /// 按 Binder 表中的稳定索引和名称绑定全部强类型组件字段，并为没有接入 Input System 屏幕控件的 Button 注册点击监听。
+        /// 获取 Binder 中名为 Avatar1 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Button Avatar1 { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 Avatar2 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Button Avatar2 { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 Avatar3 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Button Avatar3 { get; private set; }
+
+        /// <summary>
+        /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnLotteryButtonClick();
+
+        /// <summary>
+        /// 处理 UltButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnUltButtonClick();
+
+        /// <summary>
+        /// 处理 MiniMapButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnMiniMapButtonClick();
+
+        /// <summary>
+        /// 处理 QuestButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnQuestButtonClick();
+
+        /// <summary>
+        /// 处理 MenuButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnMenuButtonClick();
+
+        /// <summary>
+        /// 处理 JumpButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnJumpButtonClick();
+
+        /// <summary>
+        /// 处理 AtkButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnAtkButtonClick();
+
+        /// <summary>
+        /// 处理 DodgeButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnDodgeButtonClick();
+
+        /// <summary>
+        /// 处理 SkillButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnSkillButtonClick();
+
+        /// <summary>
+        /// 处理 GuideButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnGuideButtonClick();
+
+        /// <summary>
+        /// 处理 EventButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnEventButtonClick();
+
+        /// <summary>
+        /// 处理 CharacterButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnCharacterButtonClick();
+
+        /// <summary>
+        /// 处理 BagButton 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnBagButtonClick();
+
+        /// <summary>
+        /// 处理 Avatar1 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnAvatar1Click();
+
+        /// <summary>
+        /// 处理 Avatar2 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnAvatar2Click();
+
+        /// <summary>
+        /// 处理 Avatar3 的点击事件；按钮监听由生成基类自动注册和移除。
+        /// </summary>
+        protected abstract void OnAvatar3Click();
+
+        /// <summary>
+        /// 按 Binder 表中的稳定索引和名称绑定全部强类型组件字段，并为普通 Button 注册点击监听；承担拖拽输入的 OnScreenStick 不注册点击回调。
         /// </summary>
         protected override void BindComponents(UIComponentBinder binder)
         {
@@ -136,19 +221,37 @@ namespace Xuan.Prometheus
             AtkButton = binder.Get<global::UnityEngine.UI.Button>(7, "AtkButton");
             DodgeButton = binder.Get<global::UnityEngine.UI.Button>(8, "DodgeButton");
             SkillButton = binder.Get<global::UnityEngine.UI.Button>(9, "SkillButton");
-            WalkButton = binder.Get<global::UnityEngine.UI.Button>(10, "WalkButton");
-            RunButton = binder.Get<global::UnityEngine.UI.Button>(11, "RunButton");
-            GuideButton = binder.Get<global::UnityEngine.UI.Button>(12, "GuideButton");
-            EventButton = binder.Get<global::UnityEngine.UI.Button>(13, "EventButton");
-            CharacterButton = binder.Get<global::UnityEngine.UI.Button>(14, "CharacterButton");
-            BagButton = binder.Get<global::UnityEngine.UI.Button>(15, "BagButton");
-            Hp = binder.Get<global::TMPro.TextMeshProUGUI>(16, "Hp");
-            HpBar = binder.Get<global::UnityEngine.UI.Image>(17, "HpBar");
-            EnergyFrame = binder.Get<global::UnityEngine.UI.Image>(18, "EnergyFrame");
-            EnergyImg = binder.Get<global::UnityEngine.UI.Image>(19, "EnergyImg");
-            Ult = binder.Get<global::Xuan.Prometheus.UltMono>(20, "Ult");
-            BuffList = binder.Get<global::SuperScrollView.LoopListView2>(21, "BuffList");
-            Skill = binder.Get<global::Xuan.Prometheus.CdMono>(22, "Skill");
+            GuideButton = binder.Get<global::UnityEngine.UI.Button>(10, "GuideButton");
+            EventButton = binder.Get<global::UnityEngine.UI.Button>(11, "EventButton");
+            CharacterButton = binder.Get<global::UnityEngine.UI.Button>(12, "CharacterButton");
+            BagButton = binder.Get<global::UnityEngine.UI.Button>(13, "BagButton");
+            Hp = binder.Get<global::TMPro.TextMeshProUGUI>(14, "Hp");
+            HpBar = binder.Get<global::UnityEngine.UI.Image>(15, "HpBar");
+            EnergyFrame = binder.Get<global::UnityEngine.UI.Image>(16, "EnergyFrame");
+            EnergyImg = binder.Get<global::UnityEngine.UI.Image>(17, "EnergyImg");
+            Ult = binder.Get<global::Xuan.Prometheus.UltMono>(18, "Ult");
+            BuffList = binder.Get<global::SuperScrollView.LoopListView2>(19, "BuffList");
+            Skill = binder.Get<global::Xuan.Prometheus.CdMono>(20, "Skill");
+            Avatar1 = binder.Get<global::UnityEngine.UI.Button>(21, "Avatar1");
+            Avatar2 = binder.Get<global::UnityEngine.UI.Button>(22, "Avatar2");
+            Avatar3 = binder.Get<global::UnityEngine.UI.Button>(23, "Avatar3");
+
+            LotteryButton.onClick.AddListener(OnLotteryButtonClick);
+            UltButton.onClick.AddListener(OnUltButtonClick);
+            MiniMapButton.onClick.AddListener(OnMiniMapButtonClick);
+            QuestButton.onClick.AddListener(OnQuestButtonClick);
+            MenuButton.onClick.AddListener(OnMenuButtonClick);
+            JumpButton.onClick.AddListener(OnJumpButtonClick);
+            AtkButton.onClick.AddListener(OnAtkButtonClick);
+            DodgeButton.onClick.AddListener(OnDodgeButtonClick);
+            SkillButton.onClick.AddListener(OnSkillButtonClick);
+            GuideButton.onClick.AddListener(OnGuideButtonClick);
+            EventButton.onClick.AddListener(OnEventButtonClick);
+            CharacterButton.onClick.AddListener(OnCharacterButtonClick);
+            BagButton.onClick.AddListener(OnBagButtonClick);
+            Avatar1.onClick.AddListener(OnAvatar1Click);
+            Avatar2.onClick.AddListener(OnAvatar2Click);
+            Avatar3.onClick.AddListener(OnAvatar3Click);
         }
 
         /// <summary>
@@ -156,6 +259,23 @@ namespace Xuan.Prometheus
         /// </summary>
         protected override void UnbindComponents()
         {
+            LotteryButton.onClick.RemoveListener(OnLotteryButtonClick);
+            UltButton.onClick.RemoveListener(OnUltButtonClick);
+            MiniMapButton.onClick.RemoveListener(OnMiniMapButtonClick);
+            QuestButton.onClick.RemoveListener(OnQuestButtonClick);
+            MenuButton.onClick.RemoveListener(OnMenuButtonClick);
+            JumpButton.onClick.RemoveListener(OnJumpButtonClick);
+            AtkButton.onClick.RemoveListener(OnAtkButtonClick);
+            DodgeButton.onClick.RemoveListener(OnDodgeButtonClick);
+            SkillButton.onClick.RemoveListener(OnSkillButtonClick);
+            GuideButton.onClick.RemoveListener(OnGuideButtonClick);
+            EventButton.onClick.RemoveListener(OnEventButtonClick);
+            CharacterButton.onClick.RemoveListener(OnCharacterButtonClick);
+            BagButton.onClick.RemoveListener(OnBagButtonClick);
+            Avatar1.onClick.RemoveListener(OnAvatar1Click);
+            Avatar2.onClick.RemoveListener(OnAvatar2Click);
+            Avatar3.onClick.RemoveListener(OnAvatar3Click);
+
             LotteryButton = null;
             StickButton = null;
             UltButton = null;
@@ -166,8 +286,6 @@ namespace Xuan.Prometheus
             AtkButton = null;
             DodgeButton = null;
             SkillButton = null;
-            WalkButton = null;
-            RunButton = null;
             GuideButton = null;
             EventButton = null;
             CharacterButton = null;
@@ -179,6 +297,9 @@ namespace Xuan.Prometheus
             Ult = null;
             BuffList = null;
             Skill = null;
+            Avatar1 = null;
+            Avatar2 = null;
+            Avatar3 = null;
         }
     }
 }

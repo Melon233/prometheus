@@ -73,5 +73,25 @@ namespace Xuan.Prometheus.Component
             if ((actions & InputActionMask.ToggleSprint) != 0) wasToggleSprintPressedThisFrame |= frame.ToggleSprint.PressedThisFrame;
             if ((actions & InputActionMask.ToggleWalk) != 0) wasToggleWalkPressedThisFrame |= frame.ToggleWalk.PressedThisFrame;
         }
+
+        /// <summary>把 UIKit 普通 Button 提交的离散玩法动作合并进当前帧命令；点击只表达一次按下，不表达跨帧持续或释放。</summary>
+        /// <param name="actions">一个或多个不包含移动值的玩法按钮动作。</param>
+        public void ApplyButtonActions(InputActionMask actions)
+        {
+            if (actions == InputActionMask.None || (actions & ~InputActionMask.GameplayButtons) != 0) throw new System.ArgumentOutOfRangeException(nameof(actions), actions, "UI button actions must contain only gameplay button actions.");
+            hasInputThisFrame = true;
+            if ((actions & InputActionMask.Attack) != 0)
+            {
+                wasAtkPressedThisFrame = true;
+                wasAtkPressed = true;
+            }
+            if ((actions & InputActionMask.Skill) != 0) wasSkillPressedThisFrame = true;
+            if ((actions & InputActionMask.Ultimate) != 0) wasUltPressedThisFrame = true;
+            if ((actions & InputActionMask.Dodge) != 0) wasDodgePressedThisFrame = true;
+            if ((actions & InputActionMask.Jump) != 0) wasJumpPressedThisFrame = true;
+            if ((actions & InputActionMask.SpecialAttack) != 0) wasSpecialAtkPressedThisFrame = true;
+            if ((actions & InputActionMask.ToggleSprint) != 0) wasToggleSprintPressedThisFrame = true;
+            if ((actions & InputActionMask.ToggleWalk) != 0) wasToggleWalkPressedThisFrame = true;
+        }
     }
 }

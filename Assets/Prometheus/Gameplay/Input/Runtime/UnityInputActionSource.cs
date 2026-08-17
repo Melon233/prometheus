@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace Xuan.Prometheus.Input
 {
-    /// <summary>集中定义键鼠、手柄和屏幕虚拟设备绑定，并把 Unity Input Action 状态转换为项目输入快照。</summary>
+    /// <summary>集中定义键鼠、手柄快捷键和屏幕摇杆绑定，并把 Unity Input Action 状态转换为项目输入快照。</summary>
     public sealed class UnityInputActionSource : IInputSource
     {
         /// <summary>获取当前本地混合设备输入源的稳定标识。</summary>
@@ -65,28 +65,28 @@ namespace Xuan.Prometheus.Input
             navigate = AddVectorAction("Navigate");
             navigate.AddCompositeBinding("2DVector").With("Up", "<Keyboard>/upArrow").With("Down", "<Keyboard>/downArrow").With("Left", "<Keyboard>/leftArrow").With("Right", "<Keyboard>/rightArrow");
             navigate.AddBinding("<Gamepad>/dpad");
-            attack = AddButtonAction("Attack", null, "<Gamepad>/buttonSouth", PrometheusVirtualInputDevice.AttackControl);
+            attack = AddButtonAction("Attack", null, "<Gamepad>/buttonSouth");
             pointerAttack = AddButtonAction("PointerAttack", "<Mouse>/leftButton");
-            skill = AddButtonAction("Skill", "<Keyboard>/e", "<Gamepad>/buttonWest", PrometheusVirtualInputDevice.SkillControl);
-            ultimate = AddButtonAction("Ultimate", "<Keyboard>/r", "<Gamepad>/rightShoulder", PrometheusVirtualInputDevice.UltimateControl);
-            dodge = AddButtonAction("Dodge", "<Mouse>/rightButton", "<Gamepad>/buttonEast", PrometheusVirtualInputDevice.DodgeControl);
-            jump = AddButtonAction("Jump", "<Keyboard>/space", "<Gamepad>/buttonNorth", PrometheusVirtualInputDevice.JumpControl);
-            toggleSprint = AddButtonAction("ToggleSprint", "<Keyboard>/leftShift", "<Gamepad>/leftStickPress", PrometheusVirtualInputDevice.ToggleSprintControl);
-            toggleWalk = AddButtonAction("ToggleWalk", "<Keyboard>/leftCtrl", "<Gamepad>/dpad/down", PrometheusVirtualInputDevice.ToggleWalkControl);
+            skill = AddButtonAction("Skill", "<Keyboard>/e", "<Gamepad>/buttonWest");
+            ultimate = AddButtonAction("Ultimate", "<Keyboard>/r", "<Gamepad>/rightShoulder");
+            dodge = AddButtonAction("Dodge", "<Mouse>/rightButton", "<Gamepad>/buttonEast");
+            jump = AddButtonAction("Jump", "<Keyboard>/space", "<Gamepad>/buttonNorth");
+            toggleSprint = AddButtonAction("ToggleSprint", "<Keyboard>/leftShift", "<Gamepad>/leftStickPress");
+            toggleWalk = AddButtonAction("ToggleWalk", "<Keyboard>/leftCtrl", "<Gamepad>/dpad/down");
             submit = AddButtonAction("Submit", "<Keyboard>/enter", "<Gamepad>/buttonSouth");
             submit.AddBinding("<Keyboard>/numpadEnter");
             cancel = AddButtonAction("Cancel", "<Keyboard>/escape", "<Gamepad>/buttonEast");
             selectTeamMember1 = AddButtonAction("SelectTeamMember1", "<Keyboard>/1");
             selectTeamMember2 = AddButtonAction("SelectTeamMember2", "<Keyboard>/2");
             selectTeamMember3 = AddButtonAction("SelectTeamMember3", "<Keyboard>/3");
-            openLottery = AddButtonAction("OpenLottery", "<Keyboard>/l", null, PrometheusVirtualInputDevice.OpenLotteryControl);
-            openMiniMap = AddButtonAction("OpenMiniMap", "<Keyboard>/m", null, PrometheusVirtualInputDevice.OpenMiniMapControl);
-            openQuest = AddButtonAction("OpenQuest", "<Keyboard>/j", null, PrometheusVirtualInputDevice.OpenQuestControl);
-            openMenu = AddButtonAction("OpenMenu", "<Keyboard>/p", null, PrometheusVirtualInputDevice.OpenMenuControl);
-            openGuide = AddButtonAction("OpenGuide", "<Keyboard>/g", null, PrometheusVirtualInputDevice.OpenGuideControl);
-            openEvent = AddButtonAction("OpenEvent", "<Keyboard>/f5", null, PrometheusVirtualInputDevice.OpenEventControl);
-            openCharacter = AddButtonAction("OpenCharacter", "<Keyboard>/c", null, PrometheusVirtualInputDevice.OpenCharacterControl);
-            openBag = AddButtonAction("OpenBag", "<Keyboard>/b", null, PrometheusVirtualInputDevice.OpenBagControl);
+            openLottery = AddButtonAction("OpenLottery", "<Keyboard>/l");
+            openMiniMap = AddButtonAction("OpenMiniMap", "<Keyboard>/m");
+            openQuest = AddButtonAction("OpenQuest", "<Keyboard>/j");
+            openMenu = AddButtonAction("OpenMenu", "<Keyboard>/p");
+            openGuide = AddButtonAction("OpenGuide", "<Keyboard>/g");
+            openEvent = AddButtonAction("OpenEvent", "<Keyboard>/f5");
+            openCharacter = AddButtonAction("OpenCharacter", "<Keyboard>/c");
+            openBag = AddButtonAction("OpenBag", "<Keyboard>/b");
             gameplayMap.Enable();
         }
 
@@ -119,13 +119,12 @@ namespace Xuan.Prometheus.Input
             return gameplayMap.AddAction(actionName, InputActionType.Value, expectedControlLayout: "Vector2");
         }
 
-        /// <summary>创建按钮动作，并按需绑定键鼠、手柄以及 Prometheus 屏幕虚拟设备。</summary>
-        private InputAction AddButtonAction(string actionName, string primaryPath, string secondaryPath = null, string virtualControl = null)
+        /// <summary>创建快捷键按钮动作，并按需绑定键鼠和手柄；UI Button 点击不进入 InputAction。</summary>
+        private InputAction AddButtonAction(string actionName, string primaryPath, string secondaryPath = null)
         {
             InputAction action = gameplayMap.AddAction(actionName, InputActionType.Button, expectedControlLayout: "Button");
             if (!string.IsNullOrEmpty(primaryPath)) action.AddBinding(primaryPath);
             if (!string.IsNullOrEmpty(secondaryPath)) action.AddBinding(secondaryPath);
-            if (!string.IsNullOrEmpty(virtualControl)) action.AddBinding(PrometheusVirtualInputDevice.BuildControlPath(virtualControl));
             return action;
         }
 
@@ -135,7 +134,7 @@ namespace Xuan.Prometheus.Input
             return new InputButtonState(action.WasPressedThisFrame(), action.IsPressed(), action.WasReleasedThisFrame());
         }
 
-        /// <summary>合并非指针攻击与未被 UI 消费的鼠标攻击，确保屏幕攻击按钮仍能产生一次攻击。</summary>
+        /// <summary>合并手柄攻击与未被 UI 消费的鼠标攻击，保证界面点击不会泄漏成玩法攻击。</summary>
         private InputButtonState ReadAttack()
         {
             return MergeButtonStates(ReadButton(attack), ReadPointerAttack());

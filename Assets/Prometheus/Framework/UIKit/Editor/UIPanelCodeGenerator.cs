@@ -19,7 +19,7 @@ namespace Xuan.Prometheus.Editor
         private const string GeneratedBaseDirectory = "Assets/Prometheus/Framework/UIKit/Generated";
         private const string PanelScriptDirectory = "Assets/Prometheus/Gameplay/UI";
         private const string GeneratedBindingLookupPattern = "binder\\.Get<[^>\\r\\n]+>\\((\\d+), \"((?:\\\\.|[^\"\\\\])*)\"\\);";
-        private const string OnScreenControlTypeName = "UnityEngine.InputSystem.OnScreen.OnScreenControl";
+        private const string OnScreenStickTypeName = "UnityEngine.InputSystem.OnScreen.OnScreenStick";
 
         /// <summary>
         /// 从 Project 视图当前选中的 UI Prefab 生成面板代码。
@@ -358,7 +358,7 @@ namespace Xuan.Prometheus.Editor
             }
 
             source.AppendLine("        /// <summary>");
-            source.AppendLine("        /// 按 Binder 表中的稳定索引和名称绑定全部强类型组件字段，并为没有接入 Input System 屏幕控件的 Button 注册点击监听。");
+            source.AppendLine("        /// 按 Binder 表中的稳定索引和名称绑定全部强类型组件字段，并为普通 Button 注册点击监听；承担拖拽输入的 OnScreenStick 不注册点击回调。");
             source.AppendLine("        /// </summary>");
             source.AppendLine("        protected override void BindComponents(UIComponentBinder binder)");
             source.AppendLine("        {");
@@ -441,17 +441,17 @@ namespace Xuan.Prometheus.Editor
         }
 
         /// <summary>
-        /// 判断绑定组件是否为需要生成自动点击监听的 Unity Button；Input System 屏幕控件会自行处理按下和释放状态。
+        /// 判断绑定组件是否为需要生成自动点击监听的 Unity Button；只有承担连续拖拽输入的 OnScreenStick 不属于点击按钮。
         /// </summary>
         private static bool IsButtonBinding(UIComponentBinding binding)
         {
-            return binding != null && binding.Component != null && typeof(UnityEngine.UI.Button).IsAssignableFrom(binding.Component.GetType()) && !HasOnScreenInputControl(binding.Component.gameObject);
+            return binding != null && binding.Component != null && typeof(UnityEngine.UI.Button).IsAssignableFrom(binding.Component.GetType()) && !HasOnScreenStick(binding.Component.gameObject);
         }
 
         /// <summary>
-        /// 通过类型全名识别同节点上的 OnScreenControl，避免 UIKit 编辑器程序集额外依赖 Unity Input System。
+        /// 通过类型全名识别同节点上的 OnScreenStick，避免 UIKit 编辑器程序集额外依赖 Unity Input System。
         /// </summary>
-        private static bool HasOnScreenInputControl(GameObject gameObject)
+        private static bool HasOnScreenStick(GameObject gameObject)
         {
             if (gameObject == null) return false;
             MonoBehaviour[] behaviours = gameObject.GetComponents<MonoBehaviour>();
@@ -460,7 +460,7 @@ namespace Xuan.Prometheus.Editor
                 MonoBehaviour behaviour = behaviours[behaviourIndex];
                 for (Type type = behaviour == null ? null : behaviour.GetType(); type != null; type = type.BaseType)
                 {
-                    if (string.Equals(type.FullName, OnScreenControlTypeName, StringComparison.Ordinal)) return true;
+                    if (string.Equals(type.FullName, OnScreenStickTypeName, StringComparison.Ordinal)) return true;
                 }
             }
             return false;

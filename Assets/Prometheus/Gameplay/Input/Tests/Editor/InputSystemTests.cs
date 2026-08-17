@@ -140,9 +140,9 @@ namespace Xuan.Prometheus.Input.Tests
             }
         }
 
-        /// <summary>验证屏幕虚拟设备会把摇杆和按钮完整转换为按下、持续与释放状态，而不是单帧点击脉冲。</summary>
+        /// <summary>验证屏幕虚拟设备只把 OnScreenStick 转换为连续移动值，不再承载普通 UI Button。</summary>
         [Test]
-        public void UnityInputActionSource_VirtualControlsPreserveMoveAndButtonLifecycle()
+        public void UnityInputActionSource_VirtualStickPreservesMoveLifecycle()
         {
             PrometheusVirtualInputDevice.EnsureRegistered();
             InputDevice device = UnityInputSystem.AddDevice(PrometheusVirtualInputDevice.LayoutName);
@@ -150,27 +150,17 @@ namespace Xuan.Prometheus.Input.Tests
             try
             {
                 PrometheusVirtualInputState pressedState = new PrometheusVirtualInputState { move = Vector2.right };
-                pressedState.SetButton(PrometheusVirtualInputDevice.AttackBit, true);
-                pressedState.SetButton(PrometheusVirtualInputDevice.OpenBagBit, true);
                 UnityInputSystem.QueueStateEvent(device, pressedState);
                 UnityInputSystem.Update();
                 InputFrame pressedFrame = source.Sample(1);
                 Assert.That(pressedFrame.Move, Is.EqualTo(Vector2.right));
-                Assert.That(pressedFrame.Attack.PressedThisFrame, Is.True);
-                Assert.That(pressedFrame.Attack.Held, Is.True);
-                Assert.That(pressedFrame.OpenBag.PressedThisFrame, Is.True);
                 UnityInputSystem.Update();
                 InputFrame heldFrame = source.Sample(2);
-                Assert.That(heldFrame.Attack.PressedThisFrame, Is.False);
-                Assert.That(heldFrame.Attack.Held, Is.True);
-                Assert.That(heldFrame.Attack.ReleasedThisFrame, Is.False);
+                Assert.That(heldFrame.Move, Is.EqualTo(Vector2.right));
                 UnityInputSystem.QueueStateEvent(device, default(PrometheusVirtualInputState));
                 UnityInputSystem.Update();
                 InputFrame releasedFrame = source.Sample(3);
                 Assert.That(releasedFrame.Move, Is.EqualTo(Vector2.zero));
-                Assert.That(releasedFrame.Attack.Held, Is.False);
-                Assert.That(releasedFrame.Attack.ReleasedThisFrame, Is.True);
-                Assert.That(releasedFrame.OpenBag.ReleasedThisFrame, Is.True);
             }
             finally
             {
@@ -214,31 +204,24 @@ namespace Xuan.Prometheus.Input.Tests
             }
         }
 
-        /// <summary>验证一次被 UI 命中的鼠标操作在松开前不会触发攻击，而对应虚拟按钮动作仍只产生自身语义。</summary>
+        /// <summary>验证一次被 UI 命中的鼠标操作在松开前不会触发攻击，普通 Button 点击不再通过虚拟设备写入 InputAction。</summary>
         [Test]
         public void UnityInputActionSource_UiPointerPressIsConsumedWithoutLeakingAttack()
         {
             Mouse mouse = UnityInputSystem.AddDevice<Mouse>();
-            PrometheusVirtualInputDevice.EnsureRegistered();
-            InputDevice virtualDevice = UnityInputSystem.AddDevice(PrometheusVirtualInputDevice.LayoutName);
             bool isPointerOverUi = true;
             UnityInputActionSource source = new UnityInputActionSource(() => isPointerOverUi);
             try
             {
-                PrometheusVirtualInputState bagState = default;
-                bagState.SetButton(PrometheusVirtualInputDevice.OpenBagBit, true);
                 Press(mouse.leftButton, queueEventOnly: true);
-                UnityInputSystem.QueueStateEvent(virtualDevice, bagState);
                 UnityInputSystem.Update();
                 InputFrame uiPressedFrame = source.Sample(1);
-                Assert.That(uiPressedFrame.OpenBag.PressedThisFrame, Is.True);
                 Assert.That(uiPressedFrame.Attack.IsActive, Is.False);
                 isPointerOverUi = false;
                 UnityInputSystem.Update();
                 InputFrame uiHeldFrame = source.Sample(2);
                 Assert.That(uiHeldFrame.Attack.IsActive, Is.False);
                 Release(mouse.leftButton, queueEventOnly: true);
-                UnityInputSystem.QueueStateEvent(virtualDevice, default(PrometheusVirtualInputState));
                 UnityInputSystem.Update();
                 InputFrame uiReleasedFrame = source.Sample(3);
                 Assert.That(uiReleasedFrame.Attack.IsActive, Is.False);
@@ -250,56 +233,23 @@ namespace Xuan.Prometheus.Input.Tests
             finally
             {
                 source.Dispose();
-                UnityInputSystem.RemoveDevice(virtualDevice);
                 UnityInputSystem.RemoveDevice(mouse);
             }
         }
 
-        /// <summary>验证点击屏幕攻击按钮时，鼠标指针分支被 UI 消费后仍只保留一次虚拟攻击语义。</summary>
+        /// <summary>验证 HUD Prefab 只有摇杆保留 OnScreenStick，全部普通 Button 都不再挂接 OnScreenButton。</summary>
         [Test]
-        public void UnityInputActionSource_OnScreenAttackProducesSingleMergedAttackState()
-        {
-            Mouse mouse = UnityInputSystem.AddDevice<Mouse>();
-            PrometheusVirtualInputDevice.EnsureRegistered();
-            InputDevice virtualDevice = UnityInputSystem.AddDevice(PrometheusVirtualInputDevice.LayoutName);
-            UnityInputActionSource source = new UnityInputActionSource(() => true);
-            try
-            {
-                PrometheusVirtualInputState attackState = default;
-                attackState.SetButton(PrometheusVirtualInputDevice.AttackBit, true);
-                Press(mouse.leftButton, queueEventOnly: true);
-                UnityInputSystem.QueueStateEvent(virtualDevice, attackState);
-                UnityInputSystem.Update();
-                InputFrame frame = source.Sample(1);
-                Assert.That(frame.Attack.PressedThisFrame, Is.True);
-                Assert.That(frame.Attack.Held, Is.True);
-                Assert.That(frame.Attack.ReleasedThisFrame, Is.False);
-            }
-            finally
-            {
-                source.Dispose();
-                UnityInputSystem.RemoveDevice(virtualDevice);
-                UnityInputSystem.RemoveDevice(mouse);
-            }
-        }
-
-        /// <summary>验证 HUD Prefab 的摇杆和全部按钮都只绑定一个正确的屏幕 Input System 控件。</summary>
-        [Test]
-        public void HudPanelPrefab_UsesOnScreenControlsForEveryInteractiveBinding()
+        public void HudPanelPrefab_UsesClicksForButtonsAndOnScreenControlOnlyForStick()
         {
             const string prefabPath = "Assets/BundleResources/UI/Hud/Prefabs/HudPanel.prefab";
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             Assert.That(prefab, Is.Not.Null);
             UIComponentBinder binder = prefab.GetComponent<UIComponentBinder>();
             Assert.That(binder, Is.Not.Null);
-            string[] expectedControls = { PrometheusVirtualInputDevice.OpenLotteryControl, PrometheusVirtualInputDevice.MoveControl, PrometheusVirtualInputDevice.UltimateControl, PrometheusVirtualInputDevice.OpenMiniMapControl, PrometheusVirtualInputDevice.OpenQuestControl, PrometheusVirtualInputDevice.OpenMenuControl, PrometheusVirtualInputDevice.JumpControl, PrometheusVirtualInputDevice.AttackControl, PrometheusVirtualInputDevice.DodgeControl, PrometheusVirtualInputDevice.SkillControl, PrometheusVirtualInputDevice.ToggleWalkControl, PrometheusVirtualInputDevice.ToggleSprintControl, PrometheusVirtualInputDevice.OpenGuideControl, PrometheusVirtualInputDevice.OpenEventControl, PrometheusVirtualInputDevice.OpenCharacterControl, PrometheusVirtualInputDevice.OpenBagControl };
-            for (int index = 0; index < expectedControls.Length; index++)
+            for (int index = 0; index < binder.Bindings.Count; index++)
             {
                 Button button = binder.Bindings[index].Component as Button;
-                Assert.That(button, Is.Not.Null, $"HUD binding {index} must reference a Button.");
-                Assert.That(button.GetComponents<OnScreenControl>().Length, Is.EqualTo(1), $"HUD binding {index} must contain exactly one OnScreenControl.");
-                OnScreenControl control = button.GetComponent<OnScreenControl>();
-                Assert.That(control.controlPath, Is.EqualTo(PrometheusVirtualInputDevice.BuildControlPath(expectedControls[index])));
+                if (button != null) Assert.That(button.GetComponent<OnScreenButton>(), Is.Null, $"HUD Button binding '{binder.Bindings[index].Name}' must use UIKit onClick instead of OnScreenButton.");
             }
             OnScreenStick stick = (binder.Bindings[1].Component as Button).GetComponent<OnScreenStick>();
             Assert.That(stick, Is.Not.Null);

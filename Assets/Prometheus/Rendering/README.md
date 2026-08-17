@@ -18,7 +18,7 @@ The project-owned rendering boundary is organized as follows:
 - `Runtime` contains the pre-scene quality bootstrap and the world environment controller.
 - `Editor` contains the idempotent asset generator at `Prometheus/Rendering/Create Or Update Rendering Assets`.
 - `ShaderLibrary/PrometheusEnvironment.hlsl` defines the shared time, season, sun, ambient, fog, and quality shader-global contract.
-- `Shaders/World`, `Shaders/Character`, and `Shaders/Effects` own project shader families while `Shaders/Hovl` retains migrated third-party replacements.
+- `Shaders/World`, `Shaders/Character`, `Shaders/Effects`, and `Shaders/UI` own project shader families while `Shaders/Hovl` retains migrated third-party replacements.
 
 ## Unity defaults and project takeover
 
@@ -98,6 +98,12 @@ MF.SSGI 的主要拖影来源是 Quality 资源中的跨帧重投影。当前专
 角色与敌人的 Spine Sprite 保持透明队列和 `ZWrite Off`，因此生成器会动态解析当前 `Character`、`Enemy` Layer 并把它们合入 Shiny Renderer Feature 的 Transparency Depth Prepass Layer Mask，使 SSR 射线能够命中角色而不改变正常透明绘制。角色朝向通过 `Skeleton.ScaleX` 正负值切换，会同时反转生成网格的三角形绕序；Shiny 的 Legacy Compatibility 与 RenderGraph 深度路径必须共用 `CullMode.Off` 的透明深度替换材质，否则其中一个朝向会被背面剔除并从反射中消失。该预通道只负责让角色作为反射来源参与射线命中；若未来要求角色表面本身接收 SSR，还必须为 Spine Shader 实现透明 `DepthNormals` Pass 并单独开启透明法线预通道，不能通过打开全部透明层或修改角色主材质的 ZWrite 代替。
 
 Shiny SSR 只计算屏幕内镜面反射，不会为 MF.SSGI 增加第二次漫反射弹射，也不能反射相机外物体。它适合地面、水面、金属和高 Smoothness 材质；室内暗区的稳定多次漫反射仍由烘焙 GI 或 Adaptive Probe Volumes 负责。运行时 UI 的典型绑定只需要在开关回调中调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(toggleValue)`，无需重新选择 Renderer 或替换 URP Asset。
+
+## UI alpha mask shader
+
+`Prometheus/UI/Alpha Mask` 保存在 `Shaders/UI/Resources`，保证运行时通过 `Resources.Load<Shader>("MaskUIShader")` 取得它时不会被 Player 构建裁剪。Shader 保留 Unity UI 的 Stencil、RectMask2D 与 AlphaClip 协议，不再读取外部 alpha 贴图，而是以控件中心为原点计算归一化径向距离。`_FadeStartDistance` 以内保持原始控件 alpha，`_FadeCompleteDistance` 以外透明度为零，中间固定使用五次 smootherstep `t³(t(6t-15)+10)` 并以 `1-smootherstep(t)` 作为透明度，使透明度、一阶变化率和二阶变化率在虚化区间两端连续衔接；主纹理仍只负责 RGB，顶点颜色 alpha 继续作为控件整体透明度。
+
+`_MaskUvTransform` 用于把发生平移或缩放的主纹理 UV 还原为控件局部 UV，小地图的 RawImage 每次修改 `uvRect` 后必须同步更新该参数。每个需要不同虚化距离或 UV 变换的 UI 实例必须持有独立材质，不能修改共享 Material 资产；普通 Image 或 RawImage 在主 UV 未变化时保持 `_MaskUvTransform=(1,1,0,0)` 即可。
 
 ## Adding rendering content
 

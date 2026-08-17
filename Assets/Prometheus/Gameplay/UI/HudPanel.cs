@@ -14,8 +14,14 @@ namespace Xuan.Prometheus
     /// Hud 面板业务控制器，用于验证 UIKit 的类型扫描、Prefab 加载、组件绑定、打开生命周期和关闭缓存能力。
     /// </summary>
     [UIPanelConfig("Prefabs_HudPanel", UIPanelLayer.Normal, UIPanelClosePolicy.Cache)]
-    public sealed class HudPanel : HudPanelBase, IInputReceiver
+    public sealed class HudPanel : HudPanelBase
     {
+        /// <summary>定义小地图从中心向外保持完全不透明的归一化半径。</summary>
+        private const float MinimapFadeStartDistance = 0.78f;
+
+        /// <summary>定义小地图从中心向外变为完全透明的归一化半径。</summary>
+        private const float MinimapFadeCompleteDistance = 1f;
+
         /// <summary>保存当前 HUD 实际订阅的事件总线实例，确保最终解绑时移除同一条监听。</summary>
         private IEventKit eventKit;
 
@@ -34,11 +40,23 @@ namespace Xuan.Prometheus
         /// <summary>标记当前缓存面板是否正在显示，关闭期间只记录目标编号而不持有字段监听。</summary>
         private bool isObserving;
 
-        /// <summary>保存当前 HUD 绑定到的集中式输入系统，供 HUD 命令与玩法输入共用同一套 Action 仲裁。</summary>
+        /// <summary>保存当前 HUD 绑定到的集中式输入系统，快捷键由 InputAction 仲裁，战斗按钮点击则提交定向实体命令。</summary>
         private InputSystem inputSystem;
 
-        /// <summary>保存 HUD 自有导航动作的独占控制租约，关闭缓存面板时立即释放。</summary>
-        private ControlLease hudCommandLease;
+        /// <summary>保存当前单局的小队系统，供三个头像按钮直接切换固定槽位。</summary>
+        private TeamSystem teamSystem;
+
+        /// <summary>保存独立 HUD 命令系统，普通点击只负责提交命令而不监听任何快捷键。</summary>
+        private HudCommandSystem hudCommandSystem;
+
+        /// <summary>保存当前单局的小地图系统，地图采样与玩家映射不由 UI 自行计算。</summary>
+        private MinimapSystem minimapSystem;
+
+        /// <summary>保存运行时创建在 MiniMapButton 内的地图 RawImage。</summary>
+        private RawImage minimapImage;
+
+        /// <summary>保存当前 HUD 独占的 MaskUIShader 材质，避免 uvRect 参数影响其他 UI。</summary>
+        private Material minimapMaskMaterial;
 
         /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 EntitySystem 观察。</summary>
         protected override void OnBind()
@@ -74,6 +92,7 @@ namespace Xuan.Prometheus
         protected override void OnInitialize()
         {
             BuffList.InitListView(0, OnGetBuffItemByIndex);
+            CreateMinimapView();
             Debug.Log($"[UIKit] {nameof(HudPanel)} initialized with {Binder.Count} generated component binding(s).", Root);
         }
 
@@ -83,9 +102,11 @@ namespace Xuan.Prometheus
             Debug.Log($"[UIKit] {nameof(HudPanel)} opened.", Root);
             IGameplayKit gameplayKit = Core.Gameplay ?? throw new InvalidOperationException($"{nameof(HudPanel)} requires GameplayKit before opening.");
             if (!gameplayKit.TryGetSystem(out entitySystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(EntitySystem)}.");
-            if (!gameplayKit.TryGetSystem(out TeamSystem teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
+            if (!gameplayKit.TryGetSystem(out teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
             if (!gameplayKit.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
-            AcquireInputBindings();
+            if (!gameplayKit.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(HudCommandSystem)}.");
+            if (!gameplayKit.TryGetSystem(out minimapSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(MinimapSystem)}.");
+            minimapSystem.BindView(minimapImage, minimapMaskMaterial);
             isObserving = true;
             BindObservedEntity(teamSystem.ActiveEntityId);
         }
@@ -93,9 +114,45 @@ namespace Xuan.Prometheus
         /// <summary>面板进入缓存关闭状态时释放字段监听，重新打开时会从当前值立即恢复。</summary>
         protected override void OnClose()
         {
-            ReleaseInputBindings();
+            if (minimapSystem != null) minimapSystem.UnbindView(minimapImage);
             isObserving = false;
             ReleaseValueListeners();
+        }
+
+        /// <summary>在现有 MiniMapButton 内创建静态地图图层和由代码参数控制的径向虚化材质。</summary>
+        private void CreateMinimapView()
+        {
+            Shader maskShader = Resources.Load<Shader>("MaskUIShader");
+            if (maskShader == null) throw new InvalidOperationException($"{nameof(HudPanel)} requires Resources shader 'MaskUIShader'.");
+            minimapMaskMaterial = new Material(maskShader) { name = "Hud Minimap Alpha Mask" };
+            ConfigureMinimapFade(minimapMaskMaterial, MinimapFadeStartDistance, MinimapFadeCompleteDistance);
+            GameObject mapObject = new GameObject("Map Image", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
+            mapObject.layer = MiniMapButton.gameObject.layer;
+            RectTransform mapRect = mapObject.GetComponent<RectTransform>();
+            mapRect.SetParent(MiniMapButton.transform, false);
+            // 把运行时地图固定在容器最底层，使 Prefab 中手工配置的玩家标记和其他装饰稳定显示在地图之上。
+            mapRect.SetAsFirstSibling();
+            mapRect.anchorMin = Vector2.zero;
+            mapRect.anchorMax = Vector2.one;
+            mapRect.offsetMin = new Vector2(14f, 14f);
+            mapRect.offsetMax = new Vector2(-14f, -14f);
+            minimapImage = mapObject.GetComponent<RawImage>();
+            minimapImage.color = Color.white;
+            minimapImage.material = minimapMaskMaterial;
+            minimapImage.raycastTarget = false;
+        }
+
+        /// <summary>把径向虚化区间写入当前小地图独占材质，区间内由 Shader 使用五次 smootherstep 平滑过渡。</summary>
+        /// <param name="material">使用 MaskUIShader 的小地图材质。</param>
+        /// <param name="fadeStartDistance">开始降低 alpha 的归一化半径。</param>
+        /// <param name="fadeCompleteDistance">alpha 降为零的归一化半径。</param>
+        private static void ConfigureMinimapFade(Material material, float fadeStartDistance, float fadeCompleteDistance)
+        {
+            if (material == null) throw new ArgumentNullException(nameof(material));
+            if (fadeStartDistance < 0f) throw new ArgumentOutOfRangeException(nameof(fadeStartDistance), fadeStartDistance, "Minimap fade start distance cannot be negative.");
+            if (fadeCompleteDistance <= fadeStartDistance) throw new ArgumentOutOfRangeException(nameof(fadeCompleteDistance), fadeCompleteDistance, "Minimap fade complete distance must be greater than fade start distance.");
+            material.SetFloat("_FadeStartDistance", fadeStartDistance);
+            material.SetFloat("_FadeCompleteDistance", fadeCompleteDistance);
         }
 
         /// <summary>释放旧成员监听后，为新成员的生命、核心能量、技能冷却、大招状态和 Buff 列表建立独立监听。</summary>
@@ -164,105 +221,132 @@ namespace Xuan.Prometheus
         /// <summary>HUD 最终释放前移除小队监听和全部字段监听，避免事件总线或属性继续持有失效控制器。</summary>
         protected override void OnUnbind()
         {
-            ReleaseInputBindings();
             ReleaseValueListeners();
+            if (minimapSystem != null) minimapSystem.UnbindView(minimapImage);
             if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            DestroyUiResource(minimapMaskMaterial);
             eventKit = null;
             inputSystem = null;
+            teamSystem = null;
+            hudCommandSystem = null;
+            minimapSystem = null;
             entitySystem = null;
+            minimapImage = null;
+            minimapMaskMaterial = null;
             observedEntityId = 0;
             isObserving = false;
         }
 
-        /// <summary>为 HUD 自有命令申请普通控制权；玩法按钮继续由当前角色已有的控制租约消费。</summary>
-        private void AcquireInputBindings()
+        /// <summary>按照当前 Unity 运行环境释放 HUD 独占创建的材质或纹理资源。</summary>
+        /// <param name="resource">需要释放的 Unity 对象。</param>
+        private static void DestroyUiResource(UnityEngine.Object resource)
         {
-            ReleaseInputBindings();
-            hudCommandLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.HudCommands, InputContexts.Gameplay);
+            if (resource == null) return;
+            if (Application.isPlaying) UnityEngine.Object.Destroy(resource);
+            else UnityEngine.Object.DestroyImmediate(resource);
         }
 
-        /// <summary>幂等释放 HUD 命令租约，避免缓存关闭后快捷键继续触发隐藏按钮。</summary>
-        private void ReleaseInputBindings()
+        /// <summary>把战斗按钮的一次点击定向提交给当前上场实体，并由输入阶段在实体更新前写入按钮命令。</summary>
+        private void QueueCurrentEntityButtonAction(InputActionMask action)
         {
-            hudCommandLease?.Dispose();
-            hudCommandLease = null;
+            inputSystem.QueueEntityButtonActions(observedEntityId, action);
         }
 
-        /// <inheritdoc />
-        bool IInputReceiver.IsAlive => Root != null;
-
-        /// <inheritdoc />
-        void IInputReceiver.ResetInput()
+        /// <summary>点击抽奖按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnLotteryButtonClick()
         {
+            hudCommandSystem.Execute(HudCommandType.OpenLottery);
         }
 
-        /// <inheritdoc />
-        void IInputReceiver.ReceiveInput(in InputFrame frame, InputActionMask actions)
+        /// <summary>点击大招按钮时提交一次终结技玩法命令。</summary>
+        protected override void OnUltButtonClick()
         {
-            if (!IsOpen) return;
-            TriggerButtonAction(actions, InputActionMask.OpenLottery, frame.OpenLottery, LotteryButton, HandleLotteryAction);
-            TriggerButtonAction(actions, InputActionMask.OpenMiniMap, frame.OpenMiniMap, MiniMapButton, HandleMiniMapAction);
-            TriggerButtonAction(actions, InputActionMask.OpenQuest, frame.OpenQuest, QuestButton, HandleQuestAction);
-            TriggerButtonAction(actions, InputActionMask.OpenMenu, frame.OpenMenu, MenuButton, HandleMenuAction);
-            TriggerButtonAction(actions, InputActionMask.OpenGuide, frame.OpenGuide, GuideButton, HandleGuideAction);
-            TriggerButtonAction(actions, InputActionMask.OpenEvent, frame.OpenEvent, EventButton, HandleEventAction);
-            TriggerButtonAction(actions, InputActionMask.OpenCharacter, frame.OpenCharacter, CharacterButton, HandleCharacterAction);
-            TriggerButtonAction(actions, InputActionMask.OpenBag, frame.OpenBag, BagButton, HandleBagAction);
+            QueueCurrentEntityButtonAction(InputActionMask.Ultimate);
         }
 
-        /// <summary>仅在动作本帧按下且对应按钮可见、可交互时执行统一按钮行为。</summary>
-        private static void TriggerButtonAction(InputActionMask deliveredActions, InputActionMask expectedAction, InputButtonState buttonState, Button button, Action handler)
+        /// <summary>点击小地图按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnMiniMapButtonClick()
         {
-            if ((deliveredActions & expectedAction) == 0 || !buttonState.PressedThisFrame || button == null || !button.IsActive() || !button.IsInteractable()) return;
-            handler();
+            hudCommandSystem.Execute(HudCommandType.OpenMiniMap);
         }
 
-        /// <summary>执行打开小地图动作的 HUD 业务入口。</summary>
-        private void HandleMiniMapAction()
+        /// <summary>点击任务按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnQuestButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenMiniMap triggered.", Root);
+            hudCommandSystem.Execute(HudCommandType.OpenQuest);
         }
 
-        /// <summary>执行打开任务动作的 HUD 业务入口。</summary>
-        private void HandleQuestAction()
+        /// <summary>点击菜单按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnMenuButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenQuest triggered.", Root);
+            hudCommandSystem.Execute(HudCommandType.OpenMenu);
         }
 
-        /// <summary>执行打开菜单动作的 HUD 业务入口。</summary>
-        private void HandleMenuAction()
+        /// <summary>点击跳跃按钮时提交一次跳跃玩法命令。</summary>
+        protected override void OnJumpButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenMenu triggered.", Root);
+            QueueCurrentEntityButtonAction(InputActionMask.Jump);
         }
 
-        /// <summary>执行打开活动动作的 HUD 业务入口。</summary>
-        private void HandleEventAction()
+        /// <summary>点击攻击按钮时提交一次普通攻击玩法命令。</summary>
+        protected override void OnAtkButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenEvent triggered.", Root);
+            QueueCurrentEntityButtonAction(InputActionMask.Attack);
         }
 
-        /// <summary>执行打开抽奖动作的 HUD 业务入口。</summary>
-        private void HandleLotteryAction()
+        /// <summary>点击闪避按钮时提交一次闪避玩法命令。</summary>
+        protected override void OnDodgeButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenLottery triggered.", Root);
+            QueueCurrentEntityButtonAction(InputActionMask.Dodge);
         }
 
-        /// <summary>执行打开引导动作的 HUD 业务入口。</summary>
-        private void HandleGuideAction()
+        /// <summary>点击技能按钮时提交一次技能玩法命令。</summary>
+        protected override void OnSkillButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenGuide triggered.", Root);
+            QueueCurrentEntityButtonAction(InputActionMask.Skill);
         }
 
-        /// <summary>执行打开角色动作的 HUD 业务入口。</summary>
-        private void HandleCharacterAction()
+        /// <summary>点击引导按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnGuideButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenCharacter triggered.", Root);
+            hudCommandSystem.Execute(HudCommandType.OpenGuide);
         }
 
-        /// <summary>执行打开背包动作的 HUD 业务入口。</summary>
-        private void HandleBagAction()
+        /// <summary>点击活动按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnEventButtonClick()
         {
-            Debug.Log($"[UIKit] {nameof(HudPanel)} OpenBag triggered.", Root);
+            hudCommandSystem.Execute(HudCommandType.OpenEvent);
         }
+
+        /// <summary>点击角色按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnCharacterButtonClick()
+        {
+            hudCommandSystem.Execute(HudCommandType.OpenCharacter);
+        }
+
+        /// <summary>点击背包按钮时直接执行与快捷键共用的界面业务入口。</summary>
+        protected override void OnBagButtonClick()
+        {
+            hudCommandSystem.Execute(HudCommandType.OpenBag);
+        }
+
+        /// <summary>点击第一个头像时直接切换到第一个固定小队槽位。</summary>
+        protected override void OnAvatar1Click()
+        {
+            teamSystem.SwitchToSlot(0);
+        }
+
+        /// <summary>点击第二个头像时直接切换到第二个固定小队槽位。</summary>
+        protected override void OnAvatar2Click()
+        {
+            teamSystem.SwitchToSlot(1);
+        }
+
+        /// <summary>点击第三个头像时直接切换到第三个固定小队槽位。</summary>
+        protected override void OnAvatar3Click()
+        {
+            teamSystem.SwitchToSlot(2);
+        }
+
     }
 }

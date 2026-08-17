@@ -43,7 +43,9 @@ namespace Xuan.Prometheus.Input
         OpenCharacter = 1 << 22,
         /// <summary>打开背包界面。</summary>
         OpenBag = 1 << 23,
-        Gameplay = Move | Attack | Skill | Ultimate | Dodge | Jump | SpecialAttack | ToggleSprint | ToggleWalk,
+        /// <summary>组合全部可以由离散点击提交的玩法按钮动作，不包含需要连续值的移动。</summary>
+        GameplayButtons = Attack | Skill | Ultimate | Dodge | Jump | SpecialAttack | ToggleSprint | ToggleWalk,
+        Gameplay = Move | GameplayButtons,
         Navigation = Navigate | Submit | Cancel,
         /// <summary>组合全部小队槽位选择动作，供 TeamSystem 申请独立控制权。</summary>
         TeamSelection = SelectTeamMember1 | SelectTeamMember2 | SelectTeamMember3,
