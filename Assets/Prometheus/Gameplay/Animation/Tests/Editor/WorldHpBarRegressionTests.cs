@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
 using YooAsset;
@@ -174,6 +176,18 @@ namespace Xuan.Prometheus.Animation.Tests
 
             /// <summary>当前测试不支持异步实例化。</summary>
             public IEnumerator InstantiateAsync(string location, Action<GameObject> onCompleted, Transform parent = null, bool worldPositionStays = false, bool isActive = true, Action<string> onFailed = null, uint priority = 0)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>测试资源实现始终已经完成异步初始化。</summary>
+            public UniTask WaitUntilReadyAsync()
+            {
+                return UniTask.CompletedTask;
+            }
+
+            /// <summary>当前世界 UI 测试不异步加载场景。</summary>
+            public UniTask<Scene> LoadSceneAsync(string location)
             {
                 throw new NotSupportedException();
             }

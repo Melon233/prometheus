@@ -9,7 +9,12 @@ namespace Xuan.Prometheus.Rendering
     [Serializable]
     public sealed class PrometheusRenderQualityProfile
     {
+        [SerializeField, Tooltip("Hardware family that owns this profile.")] private PrometheusRenderPlatform platform;
         [SerializeField, Tooltip("Project-owned quality identifier.")] private PrometheusRenderQualityLevel qualityLevel;
+        [SerializeField, Tooltip("Whether realtime main and additional lights are evaluated by the selected pipeline.")] private bool realtimeLightingEnabled = true;
+        [SerializeField, Tooltip("Whether cameras render realtime shadows and the world sun casts realtime shadows.")] private bool realtimeShadowsEnabled = true;
+        [SerializeField, Tooltip("Whether gameplay cameras execute URP post-processing.")] private bool postProcessingEnabled = true;
+        [SerializeField, Tooltip("Whether gameplay cameras apply color dithering after post-processing.")] private bool ditheringEnabled = true;
         [SerializeField, Range(0.5f, 2f), Tooltip("URP internal render resolution scale.")] private float renderScale = 1f;
         [SerializeField, Tooltip("URP MSAA sample count. Supported values are 1, 2, 4, and 8.")] private int msaaSampleCount = 1;
         [SerializeField, Tooltip("Whether the runtime pipeline uses an HDR color buffer.")] private bool supportsHdr = true;
@@ -27,9 +32,34 @@ namespace Xuan.Prometheus.Rendering
         [SerializeField, Tooltip("Requested application frame rate when vertical synchronization is disabled. Minus one uses the platform default.")] private int targetFrameRate = -1;
 
         /// <summary>
+        /// Gets the hardware family represented by this profile.
+        /// </summary>
+        public PrometheusRenderPlatform Platform => platform;
+
+        /// <summary>
         /// Gets the project quality identifier represented by this profile.
         /// </summary>
         public PrometheusRenderQualityLevel QualityLevel => qualityLevel;
+
+        /// <summary>
+        /// Gets whether the selected pipeline evaluates realtime lighting.
+        /// </summary>
+        public bool RealtimeLightingEnabled => realtimeLightingEnabled;
+
+        /// <summary>
+        /// Gets whether gameplay cameras and the world sun render realtime shadows.
+        /// </summary>
+        public bool RealtimeShadowsEnabled => realtimeShadowsEnabled;
+
+        /// <summary>
+        /// Gets whether gameplay cameras execute post-processing.
+        /// </summary>
+        public bool PostProcessingEnabled => postProcessingEnabled;
+
+        /// <summary>
+        /// Gets whether gameplay cameras apply color dithering.
+        /// </summary>
+        public bool DitheringEnabled => ditheringEnabled;
 
         /// <summary>
         /// Gets the internal render resolution scale.
@@ -109,9 +139,14 @@ namespace Xuan.Prometheus.Rendering
         /// <summary>
         /// Creates a complete quality profile for the asset-generation workflow.
         /// </summary>
-        internal PrometheusRenderQualityProfile(PrometheusRenderQualityLevel qualityLevel, float renderScale, int msaaSampleCount, bool supportsHdr, LightShadows mainLightShadows, int mainLightShadowmapResolution, float shadowDistance, int shadowCascadeCount, int maxAdditionalLightsCount, int additionalLightsShadowmapResolution, int globalTextureMipmapLimit, float lodBias, int maximumLodLevel, AnisotropicFiltering anisotropicFiltering, int vSyncCount, int targetFrameRate)
+        internal PrometheusRenderQualityProfile(PrometheusRenderPlatform platform, PrometheusRenderQualityLevel qualityLevel, bool realtimeLightingEnabled, bool realtimeShadowsEnabled, bool postProcessingEnabled, bool ditheringEnabled, float renderScale, int msaaSampleCount, bool supportsHdr, LightShadows mainLightShadows, int mainLightShadowmapResolution, float shadowDistance, int shadowCascadeCount, int maxAdditionalLightsCount, int additionalLightsShadowmapResolution, int globalTextureMipmapLimit, float lodBias, int maximumLodLevel, AnisotropicFiltering anisotropicFiltering, int vSyncCount, int targetFrameRate)
         {
+            this.platform = platform;
             this.qualityLevel = qualityLevel;
+            this.realtimeLightingEnabled = realtimeLightingEnabled;
+            this.realtimeShadowsEnabled = realtimeShadowsEnabled;
+            this.postProcessingEnabled = postProcessingEnabled;
+            this.ditheringEnabled = ditheringEnabled;
             this.renderScale = renderScale;
             this.msaaSampleCount = msaaSampleCount;
             this.supportsHdr = supportsHdr;

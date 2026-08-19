@@ -11,7 +11,7 @@ using ShinySsrVolumeComponent = ShinySSRR.ShinyScreenSpaceRaytracedReflections;
 namespace Xuan.Prometheus.Rendering.Editor
 {
     /// <summary>
-    /// Creates and wires the project-owned rendering assets while keeping every Unity quality level on the same serialized URP asset.
+    /// Creates and wires the project-owned desktop and mobile rendering assets without merging independent renderer paths or quality tiers.
     /// </summary>
     public static class PrometheusRenderingAssetGenerator
     {
@@ -19,9 +19,14 @@ namespace Xuan.Prometheus.Rendering.Editor
         private const string PipelineFolderPath = RenderingRootPath + "/Pipeline";
         private const string SettingsFolderPath = RenderingRootPath + "/Settings";
         private const string ResourcesFolderPath = SettingsFolderPath + "/Resources";
-        private const string ForwardRendererDataAssetPath = PipelineFolderPath + "/PrometheusForwardRenderer.asset";
-        private const string SsgiRendererDataAssetPath = PipelineFolderPath + "/PrometheusDeferredSsgiRenderer.asset";
-        private const string PipelineAssetPath = PipelineFolderPath + "/PrometheusUniversalRenderPipeline.asset";
+        private const string ForwardRendererDataAssetPath = PipelineFolderPath + "/PrometheusPcForwardRenderer.asset";
+        private const string SsgiRendererDataAssetPath = PipelineFolderPath + "/PrometheusPcDeferredMidRenderer.asset";
+        private const string PipelineAssetPath = PipelineFolderPath + "/PrometheusPcDeferredMidPipeline.asset";
+        private const string PcForwardLowPipelineAssetPath = PipelineFolderPath + "/PrometheusPcForwardLowPipeline.asset";
+        private const string PcForwardMidPipelineAssetPath = PipelineFolderPath + "/PrometheusPcForwardMidPipeline.asset";
+        private const string PcDeferredLowPipelineAssetPath = PipelineFolderPath + "/PrometheusPcDeferredLowPipeline.asset";
+        private const string MobileForwardLowPipelineAssetPath = PipelineFolderPath + "/PrometheusMobileForwardLowPipeline.asset";
+        private const string MobileForwardMidPipelineAssetPath = PipelineFolderPath + "/PrometheusMobileForwardMidPipeline.asset";
         private const string EnvironmentProfileAssetPath = SettingsFolderPath + "/PrometheusEnvironmentProfile.asset";
         private const string RenderingSettingsAssetPath = ResourcesFolderPath + "/PrometheusRenderingSettings.asset";
         private const string SsgiExampleRendererDataAssetPath = "Assets/Trd/MF.SSGI/ExampleScene/Renderer/MF.SSGI - Example URP Renderer - SSGI.asset";
@@ -41,7 +46,7 @@ namespace Xuan.Prometheus.Rendering.Editor
         };
 
         /// <summary>
-        /// Creates missing assets, preserves existing authored values, and assigns one Prometheus pipeline asset to GraphicsSettings and every Unity quality level.
+        /// Repairs all six platform, renderer-path, and quality pipeline assets while preserving authored environment and screen-space effect values.
         /// </summary>
         [MenuItem("Prometheus/Rendering/Create Or Update Rendering Assets")]
         public static void CreateOrUpdateRenderingAssets()
@@ -54,12 +59,20 @@ namespace Xuan.Prometheus.Rendering.Editor
             UniversalRendererData forwardRendererData = GetOrCreateForwardRendererData(sourcePipelineAsset);
             UniversalRendererData ssgiRendererData = GetOrCreateSsgiRendererData(forwardRendererData);
             UniversalRenderPipelineAsset pipelineAsset = GetOrCreatePipelineAsset(sourcePipelineAsset, forwardRendererData, ssgiRendererData);
+            UniversalRenderPipelineAsset pcForwardLowPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(PcForwardLowPipelineAssetPath);
+            UniversalRenderPipelineAsset pcForwardMidPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(PcForwardMidPipelineAssetPath);
+            UniversalRenderPipelineAsset pcDeferredLowPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(PcDeferredLowPipelineAssetPath);
+            UniversalRenderPipelineAsset mobileForwardLowPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(MobileForwardLowPipelineAssetPath);
+            UniversalRenderPipelineAsset mobileForwardMidPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(MobileForwardMidPipelineAssetPath);
             PrometheusEnvironmentProfile environmentProfile = GetOrCreateEnvironmentProfile();
-            PrometheusRenderingSettings renderingSettings = GetOrCreateRenderingSettings(pipelineAsset, environmentProfile);
-            ConfigurePipelineRenderers(pipelineAsset, forwardRendererData, ssgiRendererData);
-            ConfigurePipelineCapabilities(pipelineAsset, renderingSettings);
-            PrometheusRenderQualityController.ApplyProfileToPipeline(renderingSettings, renderingSettings.GetQualityProfile(renderingSettings.StartupQualityLevel), pipelineAsset);
-            AssignPipelineToUnitySettings(pipelineAsset);
+            PrometheusRenderingSettings renderingSettings = GetOrCreateRenderingSettings(pcForwardLowPipelineAsset, pcForwardMidPipelineAsset, pcDeferredLowPipelineAsset, pipelineAsset, mobileForwardLowPipelineAsset, mobileForwardMidPipelineAsset, environmentProfile);
+            ConfigurePipelineCapabilities(pcForwardLowPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Low), PrometheusRenderPath.Forward);
+            ConfigurePipelineCapabilities(pcForwardMidPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Mid), PrometheusRenderPath.Forward);
+            ConfigurePipelineCapabilities(pcDeferredLowPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Low), PrometheusRenderPath.Deferred);
+            ConfigurePipelineCapabilities(pipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Mid), PrometheusRenderPath.Deferred);
+            ConfigurePipelineCapabilities(mobileForwardLowPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Low), PrometheusRenderPath.Forward);
+            ConfigurePipelineCapabilities(mobileForwardMidPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Mid), PrometheusRenderPath.Forward);
+            AssignPipelineToUnitySettings(pcForwardLowPipelineAsset, pcForwardMidPipelineAsset);
             EnsureSsgiShadersAreIncludedInBuild();
             EnsureShinySsrVolumeProfiles();
             EditorUtility.SetDirty(forwardRendererData);
@@ -71,7 +84,17 @@ namespace Xuan.Prometheus.Rendering.Editor
             AssetDatabase.Refresh();
             Selection.activeObject = renderingSettings;
             EditorGUIUtility.PingObject(renderingSettings);
-            Debug.Log($"Prometheus rendering now owns one pipeline asset at '{PipelineAssetPath}', the default renderer at '{ForwardRendererDataAssetPath}', the dedicated SSGI and optional Shiny SSR renderer at '{SsgiRendererDataAssetPath}', and code-driven quality profiles in '{RenderingSettingsAssetPath}'.");
+            Debug.Log($"Prometheus rendering now owns PC Forward, PC Deferred, and Mobile Forward pipeline families with Low and Mid assets, plus platform quality profiles in '{RenderingSettingsAssetPath}'.");
+        }
+
+        /// <summary>
+        /// Loads one generated rendering asset and reports the exact missing path instead of silently rebuilding it from an unrelated platform preset.
+        /// </summary>
+        private static T LoadRequiredAsset<T>(string assetPath) where T : UnityEngine.Object
+        {
+            T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+            if (asset == null) throw new InvalidOperationException($"Required generated rendering asset is missing at '{assetPath}'. Restore the project-owned asset before updating rendering settings.");
+            return asset;
         }
 
         /// <summary>
@@ -132,7 +155,7 @@ namespace Xuan.Prometheus.Rendering.Editor
             }
 
             rendererData = UnityEngine.Object.Instantiate(sourceRendererData);
-            rendererData.name = "PrometheusForwardRenderer";
+            rendererData.name = "PrometheusPcForwardRenderer";
             rendererData.hideFlags = HideFlags.None;
             AssetDatabase.CreateAsset(rendererData, ForwardRendererDataAssetPath);
             return rendererData;
@@ -147,7 +170,7 @@ namespace Xuan.Prometheus.Rendering.Editor
             if (ssgiRendererData == null)
             {
                 ssgiRendererData = UnityEngine.Object.Instantiate(forwardRendererData);
-                ssgiRendererData.name = "PrometheusDeferredSsgiRenderer";
+                ssgiRendererData.name = "PrometheusPcDeferredMidRenderer";
                 ssgiRendererData.hideFlags = HideFlags.None;
                 AssetDatabase.CreateAsset(ssgiRendererData, SsgiRendererDataAssetPath);
             }
@@ -188,14 +211,18 @@ namespace Xuan.Prometheus.Rendering.Editor
             }
 
             SerializedObject serializedFeature = new SerializedObject(ssgiFeature);
+            SerializedProperty showInSceneViewProperty = serializedFeature.FindProperty("showInSceneView");
             SerializedProperty settingsProperty = serializedFeature.FindProperty("settings");
             SerializedProperty useDeferredRenderingProperty = settingsProperty?.FindPropertyRelative("UseDeferredRendering");
-            if (useDeferredRenderingProperty == null)
+            SerializedProperty debugScreenCoverageProperty = settingsProperty?.FindPropertyRelative("DebugScreenCoverage");
+            if (showInSceneViewProperty == null || useDeferredRenderingProperty == null || debugScreenCoverageProperty == null)
             {
-                throw new InvalidOperationException($"Feature '{ssgiFeature.name}' does not expose the expected deferred-rendering serialization contract.");
+                throw new InvalidOperationException($"Feature '{ssgiFeature.name}' does not expose the expected Scene View, deferred-rendering, and debug-coverage serialization contract.");
             }
 
+            showInSceneViewProperty.boolValue = false;
             useDeferredRenderingProperty.boolValue = true;
+            debugScreenCoverageProperty.floatValue = 1f;
             serializedFeature.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(ssgiFeature);
             return ssgiFeature;
@@ -323,7 +350,7 @@ namespace Xuan.Prometheus.Rendering.Editor
             }
 
             pipelineAsset = UnityEngine.Object.Instantiate(sourcePipelineAsset);
-            pipelineAsset.name = "PrometheusUniversalRenderPipeline";
+            pipelineAsset.name = "PrometheusPcDeferredMidPipeline";
             pipelineAsset.hideFlags = HideFlags.None;
             AssetDatabase.CreateAsset(pipelineAsset, PipelineAssetPath);
             ConfigurePipelineRenderers(pipelineAsset, forwardRendererData, ssgiRendererData);
@@ -350,7 +377,7 @@ namespace Xuan.Prometheus.Rendering.Editor
         /// <summary>
         /// Returns the Resources settings asset, assigns generated assets, and creates a complete profile set only when no authored profiles exist.
         /// </summary>
-        private static PrometheusRenderingSettings GetOrCreateRenderingSettings(UniversalRenderPipelineAsset pipelineAsset, PrometheusEnvironmentProfile environmentProfile)
+        private static PrometheusRenderingSettings GetOrCreateRenderingSettings(UniversalRenderPipelineAsset pcForwardLowPipelineAsset, UniversalRenderPipelineAsset pcForwardMidPipelineAsset, UniversalRenderPipelineAsset pcDeferredLowPipelineAsset, UniversalRenderPipelineAsset pcDeferredMidPipelineAsset, UniversalRenderPipelineAsset mobileForwardLowPipelineAsset, UniversalRenderPipelineAsset mobileForwardMidPipelineAsset, PrometheusEnvironmentProfile environmentProfile)
         {
             PrometheusRenderingSettings renderingSettings = AssetDatabase.LoadAssetAtPath<PrometheusRenderingSettings>(RenderingSettingsAssetPath);
             if (renderingSettings == null)
@@ -360,7 +387,7 @@ namespace Xuan.Prometheus.Rendering.Editor
                 AssetDatabase.CreateAsset(renderingSettings, RenderingSettingsAssetPath);
             }
 
-            renderingSettings.ConfigureAssets(pipelineAsset, environmentProfile);
+            renderingSettings.ConfigureAssets(pcForwardLowPipelineAsset, pcForwardMidPipelineAsset, pcDeferredLowPipelineAsset, pcDeferredMidPipelineAsset, mobileForwardLowPipelineAsset, mobileForwardMidPipelineAsset, environmentProfile);
             if (renderingSettings.QualityProfiles.Count == 0)
             {
                 renderingSettings.InitializeQualityProfiles(CreateDefaultQualityProfiles());
@@ -374,11 +401,11 @@ namespace Xuan.Prometheus.Rendering.Editor
         /// </summary>
         private static PrometheusRenderQualityProfile[] CreateDefaultQualityProfiles()
         {
-            PrometheusRenderQualityProfile low = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.Low, 0.75f, 1, true, LightShadows.Hard, 1024, 30f, 2, 2, 512, 1, 0.75f, 1, AnisotropicFiltering.Enable, 1, -1);
-            PrometheusRenderQualityProfile medium = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.Medium, 0.9f, 2, true, LightShadows.Soft, 2048, 50f, 2, 4, 1024, 0, 1f, 0, AnisotropicFiltering.Enable, 1, -1);
-            PrometheusRenderQualityProfile high = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.High, 1f, 4, true, LightShadows.Soft, 2048, 80f, 4, 4, 1024, 0, 1.5f, 0, AnisotropicFiltering.ForceEnable, 1, -1);
-            PrometheusRenderQualityProfile ultra = new PrometheusRenderQualityProfile(PrometheusRenderQualityLevel.Ultra, 1f, 4, true, LightShadows.Soft, 4096, 120f, 4, 8, 2048, 0, 2f, 0, AnisotropicFiltering.ForceEnable, 1, -1);
-            return new[] { low, medium, high, ultra };
+            PrometheusRenderQualityProfile pcLow = new PrometheusRenderQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Low, false, false, false, false, 0.75f, 1, false, LightShadows.None, 256, 0f, 1, 0, 256, 1, 0.7f, 1, AnisotropicFiltering.Disable, 0, 60);
+            PrometheusRenderQualityProfile pcMid = new PrometheusRenderQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Mid, true, true, true, true, 1f, 2, true, LightShadows.Soft, 2048, 60f, 2, 4, 512, 0, 1.2f, 0, AnisotropicFiltering.ForceEnable, 1, -1);
+            PrometheusRenderQualityProfile mobileLow = new PrometheusRenderQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Low, false, false, false, false, 0.65f, 1, false, LightShadows.None, 256, 0f, 1, 0, 256, 2, 0.5f, 1, AnisotropicFiltering.Disable, 0, 30);
+            PrometheusRenderQualityProfile mobileMid = new PrometheusRenderQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Mid, true, true, true, false, 0.85f, 2, false, LightShadows.Hard, 1024, 25f, 1, 2, 512, 1, 0.8f, 0, AnisotropicFiltering.Enable, 0, 60);
+            return new[] { pcLow, pcMid, mobileLow, mobileMid };
         }
 
         /// <summary>
@@ -402,17 +429,20 @@ namespace Xuan.Prometheus.Rendering.Editor
         }
 
         /// <summary>
-        /// Serializes the invariant Lit and shadow capabilities required by every runtime quality profile into the single pipeline asset.
+        /// Serializes the light and shadow capabilities required by one platform quality profile into its dedicated pipeline asset.
         /// </summary>
-        private static void ConfigurePipelineCapabilities(UniversalRenderPipelineAsset pipelineAsset, PrometheusRenderingSettings renderingSettings)
+        private static void ConfigurePipelineCapabilities(UniversalRenderPipelineAsset pipelineAsset, PrometheusRenderingSettings renderingSettings, PrometheusRenderQualityProfile profile, PrometheusRenderPath renderPath)
         {
+            PrometheusRenderQualityController.ApplyProfileToPipeline(renderingSettings, profile, pipelineAsset);
+            pipelineAsset.msaaSampleCount = renderPath == PrometheusRenderPath.Deferred ? 1 : profile.MsaaSampleCount;
+            pipelineAsset.supportsDynamicBatching = profile.Platform == PrometheusRenderPlatform.Mobile;
             SerializedObject serializedPipeline = new SerializedObject(pipelineAsset);
-            SetIntegerProperty(serializedPipeline, "m_MainLightRenderingMode", (int)renderingSettings.MainLightRenderingMode);
-            SetBooleanProperty(serializedPipeline, "m_MainLightShadowsSupported", renderingSettings.SupportsMainLightShadows);
-            SetIntegerProperty(serializedPipeline, "m_AdditionalLightsRenderingMode", (int)renderingSettings.AdditionalLightsRenderingMode);
-            SetBooleanProperty(serializedPipeline, "m_AdditionalLightShadowsSupported", renderingSettings.SupportsAdditionalLightShadows);
-            SetBooleanProperty(serializedPipeline, "m_SoftShadowsSupported", renderingSettings.SupportsSoftShadows);
-            SetBooleanProperty(serializedPipeline, "m_AnyShadowsSupported", renderingSettings.SupportsMainLightShadows || renderingSettings.SupportsAdditionalLightShadows);
+            SetIntegerProperty(serializedPipeline, "m_MainLightRenderingMode", profile.RealtimeLightingEnabled ? (int)renderingSettings.MainLightRenderingMode : (int)LightRenderingMode.Disabled);
+            SetBooleanProperty(serializedPipeline, "m_MainLightShadowsSupported", profile.RealtimeShadowsEnabled && renderingSettings.SupportsMainLightShadows);
+            SetIntegerProperty(serializedPipeline, "m_AdditionalLightsRenderingMode", profile.RealtimeLightingEnabled ? (int)renderingSettings.AdditionalLightsRenderingMode : (int)LightRenderingMode.Disabled);
+            SetBooleanProperty(serializedPipeline, "m_AdditionalLightShadowsSupported", profile.RealtimeShadowsEnabled && renderingSettings.SupportsAdditionalLightShadows);
+            SetBooleanProperty(serializedPipeline, "m_SoftShadowsSupported", profile.RealtimeShadowsEnabled && profile.MainLightShadows == LightShadows.Soft && renderingSettings.SupportsSoftShadows);
+            SetBooleanProperty(serializedPipeline, "m_AnyShadowsSupported", profile.RealtimeShadowsEnabled && (renderingSettings.SupportsMainLightShadows || renderingSettings.SupportsAdditionalLightShadows));
             serializedPipeline.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -445,11 +475,11 @@ namespace Xuan.Prometheus.Rendering.Editor
         }
 
         /// <summary>
-        /// Assigns the single serialized Prometheus pipeline asset as the Graphics default and every legacy Unity quality-level override.
+        /// Assigns the desktop Mid asset as the Graphics default and maps Unity's Low and Mid compatibility entries to desktop Forward assets.
         /// </summary>
-        private static void AssignPipelineToUnitySettings(UniversalRenderPipelineAsset pipelineAsset)
+        private static void AssignPipelineToUnitySettings(UniversalRenderPipelineAsset lowPipelineAsset, UniversalRenderPipelineAsset midPipelineAsset)
         {
-            GraphicsSettings.defaultRenderPipeline = pipelineAsset;
+            GraphicsSettings.defaultRenderPipeline = midPipelineAsset;
             UnityEngine.Object qualitySettingsObject = QualitySettings.GetQualitySettings();
             SerializedObject serializedQualitySettings = new SerializedObject(qualitySettingsObject);
             SerializedProperty qualityLevels = serializedQualitySettings.FindProperty("m_QualitySettings");
@@ -466,7 +496,7 @@ namespace Xuan.Prometheus.Rendering.Editor
                     throw new InvalidOperationException($"Unity quality level {qualityIndex} does not expose the expected customRenderPipeline property.");
                 }
 
-                pipelineOverride.objectReferenceValue = pipelineAsset;
+                pipelineOverride.objectReferenceValue = qualityIndex == 0 ? lowPipelineAsset : midPipelineAsset;
             }
 
             serializedQualitySettings.ApplyModifiedPropertiesWithoutUndo();

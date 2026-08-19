@@ -305,18 +305,13 @@ namespace Xuan.Prometheus
             }
         }
 
-        /// <summary>遍历场景出生点创建敌人，并按照启动参数限制有效实例数量。</summary>
+        /// <summary>遍历入口配置的世界坐标创建敌人，并按照启动参数限制有效实例数量。</summary>
         private void CreateEnemies(IAssetKit assetKit, GameplayStartupOptions startupOptions)
         {
             int createdCount = 0;
-            foreach (Transform spawnPoint in startupOptions.EnemySpawnPoints)
+            foreach (Vector3 spawnPosition in startupOptions.EnemySpawnPositions)
             {
-                if (spawnPoint == null)
-                {
-                    Debug.LogWarning("EntitySystem skipped an empty enemy spawn point.");
-                    continue;
-                }
-                GameObject enemyObject = assetKit.InstantiateSync(startupOptions.EnemyLocation, spawnPoint.position, spawnPoint.rotation, startupOptions.RuntimeRoot);
+                GameObject enemyObject = assetKit.InstantiateSync(startupOptions.EnemyLocation, spawnPosition, Quaternion.identity, startupOptions.RuntimeRoot);
                 int entityId = 0;
                 try
                 {

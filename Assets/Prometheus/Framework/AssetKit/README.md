@@ -2,7 +2,7 @@
 
 ## 当前配置
 
-项目使用 YooAsset 的 `Prometheus` Package，并通过 `Assets/BundleCollectorSetting.asset` 收集 `Assets/BundleResources` 下的运行时主资产。
+项目使用 YooAsset 的 `DefaultPackage` Package，并通过 `Assets/BundleCollectorSetting.asset` 收集 `Assets/BundleResources` 下的运行时主资产。Player Build 只直接进入 `Assets/Resources/Entry.unity`，正式玩法场景由 GameplayKit 通过 AssetKit 加载。
 
 所有启用寻址的 Collector 统一使用 `AddressByFileName`。资源 Address 等于不带扩展名的文件名，例如 `Yefa.prefab` 的 Address 为 `Yefa`，`FloatingTextConfig.asset` 的 Address 为 `FloatingTextConfig`。
 
@@ -22,6 +22,8 @@
 | 敌人 Prefab | `Enemy/Slime.prefab` | `Slime` |
 | UI Prefab | `UI/Hud/Prefabs/HudPanel.prefab` | `HudPanel` |
 | 全局配置 | `Config/Global/FloatingTextConfig.asset` | `FloatingTextConfig` |
+| 效果配置入口 | `Config/Effect/EffectLibrary.asset` | `EffectLibrary` |
+| 玩法场景 | `Scene/SampleScene.unity` | `SampleScene` |
 
 ## 旧地址迁移
 

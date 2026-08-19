@@ -1,19 +1,21 @@
 # Universal Render Pipeline
 
-## Pipeline ownership
+## 管线归属
 
-The project uses Universal Render Pipeline 17.3.0 under Unity 6000.3.10f1. Prometheus owns one serialized pipeline asset at `Assets/Prometheus/Rendering/Pipeline/PrometheusUniversalRenderPipeline.asset`, one default forward renderer at `Assets/Prometheus/Rendering/Pipeline/PrometheusForwardRenderer.asset`, and one dedicated deferred SSGI renderer at `Assets/Prometheus/Rendering/Pipeline/PrometheusDeferredSsgiRenderer.asset`. `GraphicsSettings.defaultRenderPipeline` and every legacy Unity quality-level override reference that same pipeline asset, so Unity quality names never select different rendering assets.
+项目在 Unity 6000.3.10f1 与 URP 17.3.0 下维护六份不可变的 URP Asset：PC Forward Low/Mid、PC Deferred Low/Mid、Mobile Forward Low/Mid。平台、渲染路径和画质是三个独立维度；移动端固定使用 Forward，PC 可以通过 `PrometheusRenderQualityController.ApplyRenderPath` 在 Forward 与 Deferred 之间切换，PC 和移动端都只暴露 Low 与 Mid 两档画质。
 
-`PrometheusRenderQualityController` loads `PrometheusRenderingSettings` before the first scene, clones the single serialized pipeline asset once, assigns that non-persistent clone to `QualitySettings.renderPipeline`, and applies one complete `PrometheusRenderQualityProfile`. Runtime quality changes always mutate this one runtime copy. A Unity quality-index change cannot replace it because the controller immediately reasserts the runtime copy and the current Prometheus profile.
+`PrometheusRenderQualityController` 在首个场景加载前读取 `Resources/PrometheusRenderingSettings`，根据 `Application.isMobilePlatform`、外部启动路径和启动画质直接选择对应的序列化 URP Asset。运行时不再克隆并修改共享管线，因此 Low 与 Mid 不会相互污染 RendererData，移动端也不会误用 PC Deferred Renderer。
 
-Camera Depth Texture and Camera Opaque Texture remain project-wide requirements because the migrated Hovl soft particles and refraction effects consume them. Scene cameras inherit the pipeline's default renderer unless an intentional override selects an index that currently exists in the pipeline renderer list; stale renderer indices from imported scenes are invalid because URP falls back and emits a warning every rendered frame. The SRP batcher remains enabled, dynamic batching and Adaptive Performance remain disabled, and all runtime quality profiles share per-pixel main and additional Lit lighting plus main, additional, and soft-shadow shader capabilities. Quality profiles change budgets such as render scale, MSAA, shadow atlas resolution, shadow distance, cascade count, additional-light count, texture mip limit, LOD bias, anisotropic filtering, vertical synchronization, and target frame rate; they do not remove shader capabilities and cause runtime shader-variant gaps.
+Low 是严格的最低画质：URP Asset 关闭主光源和附加实时光源、所有实时阴影、HDR、MSAA、Depth Texture、Opaque Texture 与可选 Renderer Feature；相机同步关闭后处理、抖动、实时阴影、HDR 和抗锯齿。PC Low 使用 0.75 Render Scale，Mobile Low 使用 0.65 Render Scale，并分别降低纹理和 LOD 预算。
+
+Mid 是均衡档：PC 使用 1.0 Render Scale、HDR、主光源软阴影、60 米阴影距离、2 级联和最多 4 个附加逐像素光；Forward 使用 2x MSAA，Deferred 使用 SMAA，并仅在 PC Deferred Mid 中启用 MF.SSGI 与可选 Shiny SSR。移动端使用 0.85 Render Scale、无 HDR、2x MSAA、主光源硬阴影、25 米单级联和最多 2 个附加逐像素光，保留常规后处理但不包含桌面屏幕空间 Renderer Feature。
 
 ## Asset layout
 
 The project-owned rendering boundary is organized as follows:
 
-- `Pipeline` contains the only serialized URP asset, the default forward renderer, and the dedicated deferred SSGI renderer.
-- `Settings/Resources/PrometheusRenderingSettings.asset` contains startup quality, invariant pipeline requirements, and every code-controlled quality profile.
+- `Pipeline` 包含六份 URP Asset，以及 PC Forward、PC Deferred Low、PC Deferred Mid、Mobile Forward 四份 RendererData。
+- `Settings/Resources/PrometheusRenderingSettings.asset` 保存六份管线引用、PC 启动路径、PC/Mobile 启动画质和四份平台画质配置。
 - `Settings/PrometheusEnvironmentProfile.asset` contains daily curves and the spring, summer, autumn, and winter palettes.
 - `Runtime` contains the pre-scene quality bootstrap and the world environment controller.
 - `Editor` contains the idempotent asset generator at `Prometheus/Rendering/Create Or Update Rendering Assets`.
@@ -32,9 +34,7 @@ Unity initially distributes rendering responsibility across several independent 
 6. Volumes own exposure, color grading, bloom, fog-like post effects, and other camera-local presentation values.
 7. Materials and shaders own surface inputs, lighting response, passes, depth state, culling, transparency, and project-specific visual rules.
 
-Prometheus takes over layers one through four by assigning one project pipeline everywhere, applying runtime budgets through `PrometheusRenderQualityController`, and reserving renderer features for explicitly authored project passes. Camera and Volume overrides remain available, but every use must be intentional and documented because they can otherwise bypass global quality or environment decisions. Materials remain Lit unless their function is inherently emissive, additive, UI, or another explicitly documented exception.
-
-Do not call `QualitySettings.SetQualityLevel` from game settings UI. Call `PrometheusRenderQualityController.ApplyQuality` with a `PrometheusRenderQualityLevel`. Unity quality levels remain only as platform bootstrap compatibility entries and all point to the same serialized pipeline asset.
+Prometheus 通过六份明确资产接管前三层，并由 `CameraSystem` 把第四层相机开关同步到当前档位。业务设置界面不要直接修改 URP Asset 或 RendererData；画质调用 `PrometheusRenderQualityController.ApplyQuality`，PC 渲染路径调用 `PrometheusRenderQualityController.ApplyRenderPath`。Unity 原生 QualitySettings 只保留 Low/Mid 两个兼容入口，外部调用 `QualitySettings.SetQualityLevel` 后控制器会在当前平台和当前路径内重新选择正确资产。
 
 ## Day, night, and seasons
 
@@ -73,9 +73,13 @@ The original Hovl source package remains unchanged. Materials that previously de
 
 当前导入的 `Assets/Trd/MF.SSGI` 仍实现为传统 `ScriptableRenderPass.Execute`，因此依赖 `UniversalRenderPipelineGlobalSettings.asset` 中已经启用的 URP Compatibility Mode。Unity 6000.3 还要求当前构建目标定义 `URP_COMPATIBILITY_MODE`；只有资源中的 `m_EnableRenderCompatibilityMode: 1` 而没有该编译符号时，`RenderGraphSettings.enableRenderCompatibilityMode` 会固定返回 `false`，相机继续走 `ExecuteRenderGraph`，MF.SSGI Feature 虽然存在却不会执行。其相机颜色与深度附件必须使用 URP 17 的 `RTHandle` API，并且只能在 `ScriptableRenderPass` 的执行调用链内即时取得；禁止在 `AddRenderPasses`、跨相机字段或跨帧状态中缓存相机附件。若未来关闭 Compatibility Mode，必须先将 MF.SSGI 的绘制、临时纹理和最终合成完整迁移到 `RecordRenderGraph`，不能仅关闭开关后保留当前 Pass。
 
-Prometheus 管线固定保留两类 Renderer：默认的 `PrometheusForwardRenderer` 不挂载 SSGI，供普通相机、反射探针和不需要屏幕空间间接光的视图使用；`PrometheusDeferredSsgiRenderer` 使用 Deferred 渲染并独占一个启用的 `MF.SSGI.SSGIFeature`。该 Feature 的 `UseDeferredRendering` 必须与 Renderer 的实际渲染模式一致，因为开启时 Shader 会读取 `_GBuffer0` 与 `_GBuffer1`，不能把同一配置直接挂到 Forward Renderer。
+PC Mid 管线分别使用 `PrometheusPcForwardRenderer` 和 `PrometheusPcDeferredMidRenderer`；前者不挂载 SSGI，后者使用 Deferred 并独占一个启用的 `MF.SSGI.SSGIFeature`。PC Deferred Low 使用没有 Renderer Feature 的 `PrometheusPcDeferredLowRenderer`，移动端则始终使用 `PrometheusMobileForwardRenderer`。SSGI Feature 的 `UseDeferredRendering` 必须与 Renderer 的实际模式一致，因为开启时 Shader 会读取 `_GBuffer0` 与 `_GBuffer1`。
 
-需要 SSGI 的游戏相机必须同时满足两个条件：挂载 `MF.SSGI.SSGICamera`，并在 `UniversalAdditionalCameraData` 中选择当前管线里包含 `MF.SSGI.SSGIFeature` 的 Renderer。示例场景保持 `CameraLeft` 继承默认 Forward Renderer、`CameraRight` 选择专用 SSGI Renderer 的左右对照。业务代码和测试不得写死 Renderer 下标；回归测试从当前管线的 Feature 归属动态解析 Renderer，并验证每个 `SSGICamera` 的实际选择。
+MF.SSGI 的 `showInSceneView` 固定关闭。Scene View 不具备项目游戏相机的完整深度纹理和 SSGI 输入契约，允许插件在该相机执行会产生 `_CameraDepthTexture not found`；游戏相机仍由 `SSGICamera` 和 PC Deferred Mid Renderer 正常启用该效果。
+
+MF.SSGI 的 `DebugScreenCoverage` 固定为 `1`，表示完整屏幕显示最终 SSGI 合成结果。该参数不是布尔开关；小于 `1` 时 FinalBlit Shader 会绘制原始画面与合成画面的调试分割，并在分界位置输出灰白色竖线。
+
+桌面游戏相机保留 `MF.SSGI.SSGICamera`，但始终通过 `SetRenderer(-1)` 继承当前管线唯一的默认 Renderer；只有选择 PC Deferred Mid 时，该 Renderer 才包含 SSGI。业务代码不得再写死 Renderer 下标，因为渲染路径切换现在通过更换完整 URP Asset 完成。
 
 `PrometheusRenderingAssetGenerator` 会创建或修复这两个 Renderer，将导入示例中的 SSGI Feature 克隆为项目 Renderer 的子资源，并重建管线 Renderer 列表。生成器还会为当前构建目标补齐 `URP_COMPATIBILITY_MODE`，并执行插件文档指定的 `Tools/SSGI/Add SSGI to 'Always included shaders'`，确保 `Shader.Find` 使用的运行时 Shader 不会在 Player 构建时被剥离。MF.SSGI 示例 Renderer 是生成输入而不是运行时依赖；如果插件、示例 Feature 或 Shader 安装菜单缺失，生成过程会立即失败并报告缺失资源，不能静默生成一个没有 SSGI 的 Renderer。
 
@@ -91,7 +95,7 @@ MF.SSGI 的主要拖影来源是 Quality 资源中的跨帧重投影。当前专
 
 ### Shiny SSR 可选链路
 
-`PrometheusDeferredSsgiRenderer` 同时承载 `MF.SSGI.SSGIFeature` 与 `ShinySSRR.ShinySSRR`。生成器从 Shiny 自带 Renderer 克隆一份 SSR Feature 作为项目 Renderer 的子资源，强制启用 Deferred GBuffer 路径，并根据当前 SSGI 的 `RenderPassEvent` 动态保证 SSR 排在 SSGI 合成之后，使镜面反射能够读取已经叠加间接光的相机颜色。Feature Inspector 中的 Active 勾选是资源级“能力开关”，应保持启用；业务设置不要运行时改写共享 RendererData，而应调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(bool)`。该接口映射到 Shiny 官方的 `ShinySSRR.isEnabled` Pass Gate，关闭后不再入队 SSR Pass，并通过 `ScreenSpaceReflectionsEnabled` 与 `ScreenSpaceReflectionsChanged` 暴露当前状态和变更通知。启动默认值保存在 `PrometheusRenderingSettings.screenSpaceReflectionsEnabledByDefault`，质量档切换不会擅自覆盖玩家的 SSR 选择。
+`PrometheusPcDeferredMidRenderer` 同时承载 `MF.SSGI.SSGIFeature` 与 `ShinySSRR.ShinySSRR`。生成器从 Shiny 自带 Renderer 克隆一份 SSR Feature 作为项目 Renderer 的子资源，并保证 SSR 排在 SSGI 合成之后。业务设置调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(bool)` 保存玩家意图；Low、Forward 或 Mobile 会强制关闭有效 SSR Pass，重新进入 PC Deferred Mid 后才恢复玩家选择。
 
 生成器会在每个项目自有且已经包含 MF.SSGI 的 Volume Profile 中补充一个启用的 `ShinyScreenSpaceRaytracedReflections` 组件，只在组件缺失时应用 Shiny 的 Medium 初始预设，因此后续手工调整的反射距离、步数、粗糙度和强度不会被重复生成覆盖。Renderer Feature、运行时总开关、相机 Post Processing 条件以及 Volume 的 `reflectionsMultiplier` 和 `reflectionsMaxIntensity` 必须同时允许执行，任一层关闭都会看不到 SSR。当前初始配置关闭 Shiny 的 `temporalFilter`，避免将 SSR 自身的时域拖影误认为 SSGI 拖影；确需开启时，应单独观察反射边缘并调整 Shiny 的时域响应。
 

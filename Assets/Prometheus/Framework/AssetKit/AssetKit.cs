@@ -1,13 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YooAsset;
+using SceneHandle = YooAsset.SceneHandle;
 
 namespace Xuan.Prometheus.Asset
 {
     /// <summary>
-    /// 定义 GameCore 向其他 Kit 提供的资源能力，调用方不需要直接依赖 ResourcePackage 或 AssetHandle。
+    /// 定义 Core 向其他 Kit 提供的资源能力，调用方不需要直接依赖 ResourcePackage、AssetHandle 或 SceneHandle。
     /// </summary>
     public interface IAssetKit : IDisposable
     {
@@ -51,6 +54,12 @@ namespace Xuan.Prometheus.Asset
         /// </summary>
         IEnumerator InstantiateAsync(string location, Action<GameObject> onCompleted, Transform parent = null, bool worldPositionStays = false, bool isActive = true, Action<string> onFailed = null, uint priority = 0);
 
+        /// <summary>等待 AssetKit 的 AfterNewAsync 完成资源包初始化。</summary>
+        UniTask WaitUntilReadyAsync();
+
+        /// <summary>异步加载并切换到指定 YooAsset 场景。</summary>
+        UniTask<Scene> LoadSceneAsync(string location);
+
         /// <summary>
         /// 释放指定资源地址的缓存句柄。
         /// </summary>
@@ -69,22 +78,28 @@ namespace Xuan.Prometheus.Asset
 
     /// <summary>
     /// 提供基于 YooAsset 的实例资源入口，负责默认资源包初始化、资源加载、预制体实例化和句柄释放。
-    /// 每个 GameCore 持有自己的 AssetKit 和句柄缓存，不再通过静态字段共享玩法上下文的资源状态。
+    /// 每个 Core 持有自己的 AssetKit 和句柄缓存，不再通过静态字段共享玩法上下文的资源状态。
     /// </summary>
     public sealed class AssetKit : Kit, IAssetKit
     {
         /// <summary>
         /// 项目默认资源包名称。
         /// </summary>
-        public const string DefaultPackageName = "Prometheus";
+        public const string DefaultPackageName = "DefaultPackage";
         public static IAssetKit Ins { get; private set; }
 
         /// <summary>
         /// 按资源地址缓存有效句柄，确保返回的资源对象和已实例化对象使用期间其依赖资源不会被提前卸载。
         /// </summary>
         private readonly Dictionary<string, AssetHandle> assetHandles = new Dictionary<string, AssetHandle>(StringComparer.Ordinal);
+        /// <summary>向依赖 AssetKit 的其他 Kit 广播资源包异步初始化结果。</summary>
+        private readonly UniTaskCompletionSource initializationCompletion = new UniTaskCompletionSource();
 
         private ResourcePackage defaultPackage;
+        /// <summary>持有当前通过 AssetKit 加载的场景句柄，保证场景依赖包在玩法运行期间保持有效。</summary>
+        private SceneHandle activeSceneHandle;
+        /// <summary>由 Core 在并发异步初始化开始前写入的目标资源包名称。</summary>
+        private string configuredPackageName;
         private string initializedPackageName;
         private bool isInitializing;
         private bool isDisposed;
@@ -99,6 +114,39 @@ namespace Xuan.Prometheus.Asset
         {
             Ins = this;
         }
+
+        /// <summary>在 AfterNewAsync 开始前配置当前 Core 使用的唯一 YooAsset 资源包。</summary>
+        /// <param name="packageName">需要异步初始化的资源包名称。</param>
+        public void Configure(string packageName)
+        {
+            ThrowIfDisposed();
+            ValidatePackageName(packageName);
+            if (configuredPackageName != null) throw new InvalidOperationException("AssetKit can only be configured once.");
+            configuredPackageName = packageName;
+        }
+
+        /// <summary>通过现有初始化协程异步初始化配置的资源包，并向所有依赖 Kit 传播完成或失败结果。</summary>
+        public override async UniTask AfterNewAsync()
+        {
+            if (configuredPackageName == null) throw new InvalidOperationException("AssetKit must be configured before AfterNewAsync.");
+            try
+            {
+                await Initialize(configuredPackageName).ToUniTask();
+                initializationCompletion.TrySetResult();
+            }
+            catch (Exception exception)
+            {
+                initializationCompletion.TrySetException(exception);
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public UniTask WaitUntilReadyAsync()
+        {
+            return initializationCompletion.Task;
+        }
+
         /// <summary>
         /// 初始化指定的 YooAsset 资源包，并在需要时请求版本和加载资源清单。
         /// 多个调用方同时初始化时，后续调用会等待首个初始化流程结束，不会重复创建初始化操作。
@@ -170,6 +218,29 @@ namespace Xuan.Prometheus.Asset
             {
                 isInitializing = false;
             }
+        }
+
+        /// <inheritdoc />
+        public async UniTask<Scene> LoadSceneAsync(string location)
+        {
+            ValidateLocation(location);
+            if (activeSceneHandle != null && activeSceneHandle.IsValid) throw new InvalidOperationException($"AssetKit already owns loaded scene '{activeSceneHandle.SceneName}'.");
+            SceneHandle sceneHandle = GetReadyPackage().LoadSceneAsync(location, LoadSceneMode.Single);
+            await UniTask.WaitUntil(() => sceneHandle.IsDone);
+            if (sceneHandle.Status != EOperationStatus.Succeeded)
+            {
+                string error = sceneHandle.Error;
+                sceneHandle.Release();
+                throw new InvalidOperationException($"Failed to load scene '{location}' from package '{initializedPackageName}': {error}");
+            }
+            Scene loadedScene = sceneHandle.SceneObject;
+            if (!loadedScene.IsValid() || !loadedScene.isLoaded)
+            {
+                sceneHandle.Release();
+                throw new InvalidOperationException($"YooAsset completed scene '{location}' without a valid loaded Scene.");
+            }
+            activeSceneHandle = sceneHandle;
+            return loadedScene;
         }
 
         /// <summary>
@@ -362,8 +433,11 @@ namespace Xuan.Prometheus.Asset
             if (isDisposed)
                 return;
 
+            if (activeSceneHandle != null && activeSceneHandle.IsValid) activeSceneHandle.Release();
+            activeSceneHandle = null;
             ReleaseAllAssets();
             defaultPackage = null;
+            configuredPackageName = null;
             initializedPackageName = null;
             isInitializing = false;
             isDisposed = true;
@@ -512,7 +586,7 @@ namespace Xuan.Prometheus.Asset
         }
 
         /// <summary>
-        /// 阻止已经由 GameCore 释放的 AssetKit 继续加载或释放单个资源。
+        /// 阻止已经由 Core 释放的 AssetKit 继续加载或释放单个资源。
         /// </summary>
         private void ThrowIfDisposed()
         {

@@ -17,7 +17,7 @@
 
 ## 画面与监听配置
 
-输出相机继续使用旧 Prefab 的透视参数、裁剪面、HDR、MSAA、Renderer Index 1、后处理和 Dithering。Unity `AudioListener`、FMOD `StudioListener` 与 `SSGICamera` 也迁移到系统创建的唯一输出相机，避免三名角色各自持有监听器。
+输出相机继续使用旧 Prefab 的透视参数与裁剪面，但不再写死 HDR、MSAA、Renderer Index、后处理和 Dithering。相机通过 Renderer Index `-1` 继承当前平台管线的唯一默认 Renderer，并订阅 `PrometheusRenderQualityController.QualityChanged`，在 Low/Mid 或 PC Forward/Deferred 切换后同步相机级 HDR、MSAA、阴影、后处理、SMAA 与 Dithering 开关。Unity `AudioListener` 和 FMOD `StudioListener` 始终位于唯一输出相机；`SSGICamera` 只在桌面端创建，实际 SSGI Pass 仅存在于 PC Deferred Mid 管线。
 
 `SSGICamera` 位于预定义 `Assembly-CSharp`，而 `CameraSystem` 位于项目的 `Runtime` 程序集，因此系统通过完整运行时类型名添加该组件，并由同目录 `link.xml` 明确保留它，避免 IL2CPP 构建裁剪。
 

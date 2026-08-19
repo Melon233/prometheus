@@ -12,9 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0c2c426b3d065a45a9c88ca76a52fca, type: 3}
   m_Name: PrometheusRenderingSettings
   m_EditorClassIdentifier: Prometheus.Rendering.Runtime::Xuan.Prometheus.Rendering.PrometheusRenderingSettings
-  pipelineAsset: {fileID: 11400000, guid: a98abc05c87af2e43bca206dad220d8c, type: 2}
+  pcForwardLowPipelineAsset: {fileID: 11400000, guid: ca1e5cad7ca045a997eea5fbf928010d, type: 2}
+  pcForwardMidPipelineAsset: {fileID: 11400000, guid: 6507a8d663774da2b9364009b6ebcd41, type: 2}
+  pcDeferredLowPipelineAsset: {fileID: 11400000, guid: 8e9224d6486b40b6ba150e0f17c71993, type: 2}
+  pcDeferredMidPipelineAsset: {fileID: 11400000, guid: a98abc05c87af2e43bca206dad220d8c, type: 2}
+  mobileForwardLowPipelineAsset: {fileID: 11400000, guid: 4cbd3ccf6adc4d5e884f25d08db90e55, type: 2}
+  mobileForwardMidPipelineAsset: {fileID: 11400000, guid: 733b59b7876244279c82a7fec057f082, type: 2}
   defaultEnvironmentProfile: {fileID: 11400000, guid: a496d36403e1fcf49aa6830374fa64fc, type: 2}
-  startupQualityLevel: 2
+  startupPcRenderPath: 1
+  startupPcQualityLevel: 1
+  startupMobileQualityLevel: 1
   requiresCameraDepthTexture: 1
   requiresCameraOpaqueTexture: 1
   useSrpBatcher: 1
@@ -24,70 +31,90 @@ MonoBehaviour:
   mainLightRenderingMode: 1
   supportsMainLightShadows: 1
   additionalLightsRenderingMode: 1
-  supportsAdditionalLightShadows: 1
+  supportsAdditionalLightShadows: 0
   supportsSoftShadows: 1
   qualityProfiles:
-  - qualityLevel: 0
+  - platform: 0
+    qualityLevel: 0
+    realtimeLightingEnabled: 0
+    realtimeShadowsEnabled: 0
+    postProcessingEnabled: 0
+    ditheringEnabled: 0
     renderScale: 0.75
     msaaSampleCount: 1
-    supportsHdr: 1
-    mainLightShadows: 1
-    mainLightShadowmapResolution: 1024
-    shadowDistance: 30
-    shadowCascadeCount: 2
-    maxAdditionalLightsCount: 2
-    additionalLightsShadowmapResolution: 512
+    supportsHdr: 0
+    mainLightShadows: 0
+    mainLightShadowmapResolution: 256
+    shadowDistance: 0
+    shadowCascadeCount: 1
+    maxAdditionalLightsCount: 0
+    additionalLightsShadowmapResolution: 256
     globalTextureMipmapLimit: 1
-    lodBias: 0.75
+    lodBias: 0.7
     maximumLodLevel: 1
-    anisotropicFiltering: 1
-    vSyncCount: 1
-    targetFrameRate: -1
-  - qualityLevel: 1
-    renderScale: 0.9
+    anisotropicFiltering: 0
+    vSyncCount: 0
+    targetFrameRate: 60
+  - platform: 0
+    qualityLevel: 1
+    realtimeLightingEnabled: 1
+    realtimeShadowsEnabled: 1
+    postProcessingEnabled: 1
+    ditheringEnabled: 1
+    renderScale: 1
     msaaSampleCount: 2
     supportsHdr: 1
     mainLightShadows: 2
     mainLightShadowmapResolution: 2048
-    shadowDistance: 50
+    shadowDistance: 60
     shadowCascadeCount: 2
     maxAdditionalLightsCount: 4
-    additionalLightsShadowmapResolution: 1024
+    additionalLightsShadowmapResolution: 512
     globalTextureMipmapLimit: 0
-    lodBias: 1
+    lodBias: 1.2
+    maximumLodLevel: 0
+    anisotropicFiltering: 2
+    vSyncCount: 1
+    targetFrameRate: -1
+  - platform: 1
+    qualityLevel: 0
+    realtimeLightingEnabled: 0
+    realtimeShadowsEnabled: 0
+    postProcessingEnabled: 0
+    ditheringEnabled: 0
+    renderScale: 0.65
+    msaaSampleCount: 1
+    supportsHdr: 0
+    mainLightShadows: 0
+    mainLightShadowmapResolution: 256
+    shadowDistance: 0
+    shadowCascadeCount: 1
+    maxAdditionalLightsCount: 0
+    additionalLightsShadowmapResolution: 256
+    globalTextureMipmapLimit: 2
+    lodBias: 0.5
+    maximumLodLevel: 1
+    anisotropicFiltering: 0
+    vSyncCount: 0
+    targetFrameRate: 30
+  - platform: 1
+    qualityLevel: 1
+    realtimeLightingEnabled: 1
+    realtimeShadowsEnabled: 1
+    postProcessingEnabled: 1
+    ditheringEnabled: 0
+    renderScale: 0.85
+    msaaSampleCount: 2
+    supportsHdr: 0
+    mainLightShadows: 1
+    mainLightShadowmapResolution: 1024
+    shadowDistance: 25
+    shadowCascadeCount: 1
+    maxAdditionalLightsCount: 2
+    additionalLightsShadowmapResolution: 512
+    globalTextureMipmapLimit: 1
+    lodBias: 0.8
     maximumLodLevel: 0
     anisotropicFiltering: 1
-    vSyncCount: 1
-    targetFrameRate: -1
-  - qualityLevel: 2
-    renderScale: 1
-    msaaSampleCount: 4
-    supportsHdr: 1
-    mainLightShadows: 2
-    mainLightShadowmapResolution: 2048
-    shadowDistance: 80
-    shadowCascadeCount: 4
-    maxAdditionalLightsCount: 4
-    additionalLightsShadowmapResolution: 1024
-    globalTextureMipmapLimit: 0
-    lodBias: 1.5
-    maximumLodLevel: 0
-    anisotropicFiltering: 2
-    vSyncCount: 1
-    targetFrameRate: -1
-  - qualityLevel: 3
-    renderScale: 1
-    msaaSampleCount: 4
-    supportsHdr: 1
-    mainLightShadows: 2
-    mainLightShadowmapResolution: 4096
-    shadowDistance: 120
-    shadowCascadeCount: 4
-    maxAdditionalLightsCount: 8
-    additionalLightsShadowmapResolution: 2048
-    globalTextureMipmapLimit: 0
-    lodBias: 2
-    maximumLodLevel: 0
-    anisotropicFiltering: 2
-    vSyncCount: 1
-    targetFrameRate: -1
+    vSyncCount: 0
+    targetFrameRate: 60

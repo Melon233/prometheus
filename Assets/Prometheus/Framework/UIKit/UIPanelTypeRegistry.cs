@@ -64,7 +64,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 清除静态类型配置，避免关闭当前 GameCore 后保留无意义的运行时状态。
+        /// 清除静态类型配置，避免关闭当前 Core 后保留无意义的运行时状态。
         /// </summary>
         public static void Clear()
         {

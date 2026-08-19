@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Effects;
@@ -9,41 +10,61 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus
 {
     /// <summary>
-    /// 保存一次玩法启动所需的资源地址和场景出生点。
-    /// 该对象是普通运行时参数，不依赖 MonoBehaviour，因此 GameCore 和 GameplayKit 可以独立测试和复用。
+    /// 保存一次玩法启动所需的资源地址和外部出生坐标。
+    /// 该对象是普通运行时参数，不依赖 MonoBehaviour，因此 Core 和 GameplayKit 可以独立测试和复用。
     /// </summary>
     public sealed class GameplayStartupOptions
     {
-        /// <summary>
-        /// 创建一组不可变的玩法启动参数。
-        /// </summary>
+        /// <summary>创建正式入口使用的不可变玩法启动参数，全部内容在加载玩法场景前由外部提供。</summary>
         /// <param name="packageName">YooAsset 资源包名称。</param>
-        /// <param name="runtimeRoot">承载运行时玩法对象的常驻根节点。</param>
-        /// <param name="effectLibrary">当前单局使用的持久化 Effect 配置库。</param>
-        /// <param name="playerLocation">兼容旧调用的玩家预制体资源地址，三个小队槽位都会使用该地址。</param>
-        /// <param name="enemyLocation">敌人预制体的资源地址。</param>
-        /// <param name="enemySpawnPoints">敌人出生点集合；空元素会在创建时跳过并输出警告。</param>
-        /// <param name="enemySpawnLimit">最多创建的敌人数；零表示使用全部有效出生点。</param>
+        /// <param name="runtimeRoot">承载跨场景运行时对象的常驻根节点。</param>
+        /// <param name="sceneLocation">GameplayKit 在 AfterNew 中加载的玩法场景地址。</param>
+        /// <param name="effectLibraryLocation">GameplayKit 初始化效果系统时加载的 EffectLibrary 地址。</param>
+        /// <param name="teamMemberLocations">三个固定小队槽位各自使用的玩家预制体地址。</param>
+        /// <param name="enemyLocation">敌人预制体地址。</param>
+        /// <param name="enemySpawnPositions">不依赖玩法场景对象的敌人出生世界坐标。</param>
+        /// <param name="enemySpawnLimit">最多创建的敌人数；零表示使用全部出生坐标。</param>
+        public GameplayStartupOptions(string packageName, Transform runtimeRoot, string sceneLocation, string effectLibraryLocation, IReadOnlyList<string> teamMemberLocations, string enemyLocation, IReadOnlyList<Vector3> enemySpawnPositions, int enemySpawnLimit)
+        {
+            PackageName = ValidateText(packageName, nameof(packageName));
+            RuntimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
+            SceneLocation = ValidateText(sceneLocation, nameof(sceneLocation));
+            EffectLibraryLocation = ValidateText(effectLibraryLocation, nameof(effectLibraryLocation));
+            TeamMemberLocations = ValidateTeamMemberLocations(teamMemberLocations);
+            EnemyLocation = ValidateText(enemyLocation, nameof(enemyLocation));
+            EnemySpawnPositions = CopyEnemySpawnPositions(enemySpawnPositions);
+            EnemySpawnLimit = enemySpawnLimit >= 0 ? enemySpawnLimit : throw new ArgumentOutOfRangeException(nameof(enemySpawnLimit), enemySpawnLimit, "Enemy spawn limit cannot be negative.");
+        }
+
+        /// <summary>保留测试与独立工具使用的显式 EffectLibrary 构造入口，不参与正式 Entry 启动链路。</summary>
+        /// <param name="packageName">测试资源包名称。</param>
+        /// <param name="runtimeRoot">测试运行时根节点。</param>
+        /// <param name="effectLibrary">测试显式提供的 EffectLibrary。</param>
+        /// <param name="playerLocation">三个固定小队槽位共用的玩家地址。</param>
+        /// <param name="enemyLocation">测试敌人地址。</param>
+        /// <param name="enemySpawnPoints">需要立即复制为世界坐标的测试 Transform。</param>
+        /// <param name="enemySpawnLimit">测试敌人最大生成数量。</param>
         public GameplayStartupOptions(string packageName, Transform runtimeRoot, EffectLibrary effectLibrary, string playerLocation, string enemyLocation, IReadOnlyList<Transform> enemySpawnPoints, int enemySpawnLimit) : this(packageName, runtimeRoot, effectLibrary, new[] { playerLocation, playerLocation, playerLocation }, enemyLocation, enemySpawnPoints, enemySpawnLimit)
         {
         }
 
-        /// <summary>创建一组包含固定三人小队配置的不可变玩法启动参数。</summary>
-        /// <param name="packageName">YooAsset 资源包名称。</param>
-        /// <param name="runtimeRoot">承载运行时玩法对象的常驻根节点。</param>
-        /// <param name="effectLibrary">当前单局使用的持久化 Effect 配置库。</param>
-        /// <param name="teamMemberLocations">三个固定小队槽位各自使用的玩家预制体资源地址。</param>
-        /// <param name="enemyLocation">敌人预制体的资源地址。</param>
-        /// <param name="enemySpawnPoints">敌人出生点集合。</param>
-        /// <param name="enemySpawnLimit">最多创建的敌人数；零表示使用全部有效出生点。</param>
+        /// <summary>保留测试与独立工具使用的显式 EffectLibrary 构造入口，并将 Transform 出生点立即复制为世界坐标。</summary>
+        /// <param name="packageName">测试资源包名称。</param>
+        /// <param name="runtimeRoot">测试运行时根节点。</param>
+        /// <param name="effectLibrary">测试显式提供的 EffectLibrary。</param>
+        /// <param name="teamMemberLocations">三个固定测试小队槽位的玩家地址。</param>
+        /// <param name="enemyLocation">测试敌人地址。</param>
+        /// <param name="enemySpawnPoints">需要立即复制为世界坐标的测试 Transform。</param>
+        /// <param name="enemySpawnLimit">测试敌人最大生成数量。</param>
         public GameplayStartupOptions(string packageName, Transform runtimeRoot, EffectLibrary effectLibrary, IReadOnlyList<string> teamMemberLocations, string enemyLocation, IReadOnlyList<Transform> enemySpawnPoints, int enemySpawnLimit)
         {
             PackageName = ValidateText(packageName, nameof(packageName));
             RuntimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
+            SceneLocation = "SampleScene";
             EffectLibrary = effectLibrary != null ? effectLibrary : throw new ArgumentNullException(nameof(effectLibrary));
             TeamMemberLocations = ValidateTeamMemberLocations(teamMemberLocations);
             EnemyLocation = ValidateText(enemyLocation, nameof(enemyLocation));
-            EnemySpawnPoints = enemySpawnPoints ?? Array.Empty<Transform>();
+            EnemySpawnPositions = CopyEnemySpawnPositions(enemySpawnPoints);
             EnemySpawnLimit = enemySpawnLimit >= 0 ? enemySpawnLimit : throw new ArgumentOutOfRangeException(nameof(enemySpawnLimit), enemySpawnLimit, "Enemy spawn limit cannot be negative.");
         }
 
@@ -52,14 +73,20 @@ namespace Xuan.Prometheus
         /// </summary>
         public string PackageName { get; }
 
+        /// <summary>GameplayKit 在 AfterNew 中通过 AssetKit 加载的玩法场景地址。</summary>
+        public string SceneLocation { get; }
+
         /// <summary>
-        /// 承载玩家和敌人实例的常驻根节点，确保它们与 Entry 和 GameCore 具有相同生命周期。
+        /// 承载玩家和敌人实例的常驻根节点，确保它们与 Entry 和 Core 具有相同生命周期。
         /// </summary>
         public Transform RuntimeRoot { get; }
 
         /// <summary>
-        /// 当前单局 EffectSystem 使用的持久化配置库；场景中的 Entry 必须显式提供。
+        /// 正式入口用于加载当前单局 EffectLibrary 的 YooAsset 地址。
         /// </summary>
+        public string EffectLibraryLocation { get; }
+
+        /// <summary>测试或独立工具显式提供的 EffectLibrary；正式入口始终通过 EffectLibraryLocation 加载。</summary>
         public EffectLibrary EffectLibrary { get; }
 
         /// <summary>
@@ -76,9 +103,9 @@ namespace Xuan.Prometheus
         public string EnemyLocation { get; }
 
         /// <summary>
-        /// 场景提供的敌人出生点。
+        /// 入口在玩法场景加载前提供的敌人出生世界坐标。
         /// </summary>
-        public IReadOnlyList<Transform> EnemySpawnPoints { get; }
+        public IReadOnlyList<Vector3> EnemySpawnPositions { get; }
 
         /// <summary>
         /// 最多创建的敌人数；零表示不限制数量。
@@ -104,6 +131,24 @@ namespace Xuan.Prometheus
             string[] validatedLocations = new string[TeamSystem.Capacity];
             for (int slotIndex = 0; slotIndex < validatedLocations.Length; slotIndex++) validatedLocations[slotIndex] = ValidateText(locations[slotIndex], $"{nameof(locations)}[{slotIndex}]");
             return validatedLocations;
+        }
+
+        /// <summary>复制外部配置的敌人出生坐标，避免入口列表在 GameplayKit 初始化期间变化。</summary>
+        private static IReadOnlyList<Vector3> CopyEnemySpawnPositions(IReadOnlyList<Vector3> positions)
+        {
+            if (positions == null) throw new ArgumentNullException(nameof(positions));
+            Vector3[] copiedPositions = new Vector3[positions.Count];
+            for (int index = 0; index < copiedPositions.Length; index++) copiedPositions[index] = positions[index];
+            return copiedPositions;
+        }
+
+        /// <summary>把测试或工具提供的 Transform 出生点立即转换为稳定的世界坐标。</summary>
+        private static IReadOnlyList<Vector3> CopyEnemySpawnPositions(IReadOnlyList<Transform> spawnPoints)
+        {
+            if (spawnPoints == null) throw new ArgumentNullException(nameof(spawnPoints));
+            Vector3[] copiedPositions = new Vector3[spawnPoints.Count];
+            for (int index = 0; index < copiedPositions.Length; index++) copiedPositions[index] = spawnPoints[index] != null ? spawnPoints[index].position : throw new ArgumentException($"Enemy spawn point at index {index} is null.", nameof(spawnPoints));
+            return copiedPositions;
         }
     }
 
@@ -153,13 +198,12 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 创建 GameplayKit，并显式声明其依赖的资源 Kit。
         /// </summary>
-        /// <param name="assetKit">由同一个 GameCore 持有的资源 Kit。</param>
+        /// <param name="assetKit">由同一个 Core 持有的资源 Kit。</param>
         public GameplayKit(IAssetKit assetKit)
         {
             this.assetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
             entitySystem = new EntitySystem(this);
             AddSystem(entitySystem);
-            Core.Gameplay = this;
         }
 
         /// <inheritdoc />
@@ -188,15 +232,37 @@ namespace Xuan.Prometheus
                 throw new InvalidOperationException("GameplayKit can only be configured once.");
             }
 
+            startupOptions = options;
+            if (options.EffectLibrary != null) RegisterGameplaySystems(options.EffectLibrary);
+        }
+
+        /// <summary>等待 AssetKit 初始化完成，异步加载正式 EffectLibrary 和 SampleScene，并为同步 AfterNew 准备完整玩法依赖。</summary>
+        public override async UniTask AfterNewAsync()
+        {
+            ThrowIfDisposed();
+            if (startupOptions == null) throw new InvalidOperationException("GameplayKit must be configured before AfterNewAsync.");
+            await assetKit.WaitUntilReadyAsync();
+            if (startupOptions.EffectLibrary == null)
+            {
+                EffectLibrary loadedEffectLibrary = null;
+                await assetKit.LoadAssetAsync<EffectLibrary>(startupOptions.EffectLibraryLocation, library => loadedEffectLibrary = library, error => throw new InvalidOperationException(error)).ToUniTask();
+                RegisterGameplaySystems(loadedEffectLibrary);
+            }
+            await assetKit.LoadSceneAsync(startupOptions.SceneLocation);
+        }
+
+        /// <summary>以已经取得的 EffectLibrary 注册当前单局全部公共 System，并保持 EntitySystem 为首个系统。</summary>
+        /// <param name="effectLibrary">当前单局效果系统使用的持久化配置库。</param>
+        private void RegisterGameplaySystems(EffectLibrary effectLibrary)
+        {
             AddSystem(new InputSystem(new UnityInputActionSource()));
             AddSystem(new HudCommandSystem());
-            AddSystem(new EffectSystem(library: options.EffectLibrary, traceEnabled: true));
+            AddSystem(new EffectSystem(library: effectLibrary, traceEnabled: true));
             AddSystem(new CombatAudioPresentationSystem());
-            AddSystem(new CameraSystem(options.RuntimeRoot));
+            AddSystem(new CameraSystem(startupOptions.RuntimeRoot));
             AddSystem(new MinimapSystem());
             teamSystem = new TeamSystem();
             AddSystem(teamSystem);
-            startupOptions = options;
         }
 
         /// <summary>
@@ -253,7 +319,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 在 AssetKit 完成异步初始化后创建玩家和敌人，并将它们纳入统一更新。
+        /// 在 Entry 等待全部 Kit 异步任务完成后，初始化全部玩法系统并创建初始实体。
         /// </summary>
         public override void AfterNew()
         {
@@ -265,9 +331,7 @@ namespace Xuan.Prometheus
             if (startupOptions == null)
                 throw new InvalidOperationException("GameplayKit must be configured before initialization.");
 
-            if (!assetKit.IsReady)
-                throw new InvalidOperationException("AssetKit must be ready before GameplayKit creates entities.");
-
+            if (!assetKit.IsReady) throw new InvalidOperationException("AssetKit must be ready before GameplayKit creates entities.");
             foreach (XSystem system in systemInitializationOrder)
                 system.AfterNew(this);
 
@@ -297,7 +361,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 先通过 EntitySystem 释放全部 Entity，再逆序释放其他 System；GameCore 随后才会释放 AssetKit 句柄。
+        /// 先通过 EntitySystem 释放全部 Entity，再逆序释放其他 System；Core 随后才会释放 AssetKit 句柄。
         /// </summary>
         public override void Dispose()
         {

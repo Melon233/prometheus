@@ -70,34 +70,34 @@ namespace Xuan.Prometheus.Rendering.Tests
         private const string UrpCompatibilityModeDefine = "URP_COMPATIBILITY_MODE";
 
         /// <summary>
-        /// Verifies that the Graphics default is the one serialized pipeline asset referenced by project rendering settings.
+        /// Verifies that the Graphics default is the desktop Deferred Mid pipeline selected by the external rendering settings.
         /// </summary>
         [Test]
-        public void GraphicsDefaultRenderPipelineUsesTheSinglePrometheusAsset()
+        public void GraphicsDefaultRenderPipelineUsesDesktopDeferredMid()
         {
             PrometheusRenderingSettings renderingSettings = LoadRenderingSettings();
-            Assert.That(renderingSettings.PipelineAsset, Is.Not.Null, "Prometheus rendering settings must reference the single serialized pipeline asset.");
-            Assert.That(GraphicsSettings.defaultRenderPipeline, Is.SameAs(renderingSettings.PipelineAsset), "GraphicsSettings must use the pipeline asset referenced by Prometheus rendering settings.");
+            Assert.That(renderingSettings.PipelineAsset, Is.Not.Null, "Prometheus rendering settings must reference the desktop Deferred Mid pipeline.");
+            Assert.That(GraphicsSettings.defaultRenderPipeline, Is.SameAs(renderingSettings.PipelineAsset), "GraphicsSettings must use the desktop Deferred Mid startup pipeline.");
         }
 
         /// <summary>
-        /// Dynamically reads every Unity quality level and verifies that all of them reference the same complete Prometheus pipeline asset.
+        /// Verifies that Unity exposes only Low and Mid compatibility entries while runtime platform and renderer-path selection remain project-owned.
         /// </summary>
         [Test]
-        public void EveryUnityQualityLevelUsesTheSinglePrometheusPipeline()
+        public void UnityQualityLevelsExposeLowAndMidCompatibilityPipelines()
         {
             PrometheusRenderingSettings renderingSettings = LoadRenderingSettings();
             int originalQualityLevel = QualitySettings.GetQualityLevel();
             try
             {
+                Assert.That(QualitySettings.names, Is.EqualTo(new[] { "Low", "Mid" }), "Unity QualitySettings must expose exactly the two user-facing project levels.");
                 for (int qualityIndex = 0; qualityIndex < QualitySettings.names.Length; qualityIndex++)
                 {
                     QualitySettings.SetQualityLevel(qualityIndex, false);
                     UniversalRenderPipelineAsset pipelineAsset = QualitySettings.renderPipeline as UniversalRenderPipelineAsset;
                     Assert.That(pipelineAsset, Is.Not.Null, $"Quality level '{QualitySettings.names[qualityIndex]}' must reference a UniversalRenderPipelineAsset.");
-                    Assert.That(pipelineAsset, Is.SameAs(renderingSettings.PipelineAsset), $"Quality level '{QualitySettings.names[qualityIndex]}' must reference the single Prometheus pipeline asset instead of owning another URP asset.");
-                    Assert.That(pipelineAsset.supportsCameraDepthTexture, Is.EqualTo(renderingSettings.RequiresCameraDepthTexture), $"Quality level '{QualitySettings.names[qualityIndex]}' must derive its depth texture requirement from Prometheus rendering settings.");
-                    Assert.That(pipelineAsset.supportsCameraOpaqueTexture, Is.EqualTo(renderingSettings.RequiresCameraOpaqueTexture), $"Quality level '{QualitySettings.names[qualityIndex]}' must derive its opaque texture requirement from Prometheus rendering settings.");
+                    UniversalRenderPipelineAsset expectedPipelineAsset = qualityIndex == 0 ? renderingSettings.GetPipelineAsset(PrometheusRenderPlatform.Pc, PrometheusRenderPath.Forward, PrometheusRenderQualityLevel.Low) : renderingSettings.GetPipelineAsset(PrometheusRenderPlatform.Pc, PrometheusRenderPath.Deferred, PrometheusRenderQualityLevel.Mid);
+                    Assert.That(pipelineAsset, Is.SameAs(expectedPipelineAsset), $"Quality level '{QualitySettings.names[qualityIndex]}' must reference its configured desktop compatibility pipeline.");
                     SerializedProperty rendererList = new SerializedObject(pipelineAsset).FindProperty("m_RendererDataList");
                     Assert.That(rendererList.arraySize, Is.GreaterThan(0), $"Quality level '{QualitySettings.names[qualityIndex]}' must contain a renderer data reference.");
                     Assert.That(rendererList.GetArrayElementAtIndex(0).objectReferenceValue, Is.Not.Null, $"Quality level '{QualitySettings.names[qualityIndex]}' must contain a valid default renderer data asset.");
@@ -348,17 +348,21 @@ namespace Xuan.Prometheus.Rendering.Tests
         }
 
         /// <summary>
-        /// Dynamically derives expected quality identifiers from the enum and verifies the settings asset contains exactly one profile for each identifier.
+        /// Verifies that every platform owns exactly one Low and one Mid runtime profile.
         /// </summary>
         [Test]
         public void RenderingSettingsDefineEveryProjectQualityLevelExactlyOnce()
         {
             PrometheusRenderingSettings renderingSettings = LoadRenderingSettings();
             PrometheusRenderQualityLevel[] expectedQualityLevels = Enum.GetValues(typeof(PrometheusRenderQualityLevel)).Cast<PrometheusRenderQualityLevel>().ToArray();
-            PrometheusRenderQualityLevel[] configuredQualityLevels = renderingSettings.QualityProfiles.Select(profile => profile.QualityLevel).ToArray();
-            Assert.That(configuredQualityLevels, Is.EquivalentTo(expectedQualityLevels), "Rendering settings must derive one profile from every current project quality enum value.");
-            Assert.That(configuredQualityLevels.Distinct().Count(), Is.EqualTo(configuredQualityLevels.Length), "Rendering settings must not contain duplicate project quality profiles.");
-            Assert.That(renderingSettings.GetQualityProfile(renderingSettings.StartupQualityLevel), Is.Not.Null, "Startup quality must resolve through the same dynamic profile collection.");
+            PrometheusRenderPlatform[] expectedPlatforms = Enum.GetValues(typeof(PrometheusRenderPlatform)).Cast<PrometheusRenderPlatform>().ToArray();
+            foreach (PrometheusRenderPlatform platform in expectedPlatforms)
+            {
+                PrometheusRenderQualityLevel[] configuredQualityLevels = renderingSettings.QualityProfiles.Where(profile => profile.Platform == platform).Select(profile => profile.QualityLevel).ToArray();
+                Assert.That(configuredQualityLevels, Is.EquivalentTo(expectedQualityLevels), $"Platform '{platform}' must define exactly the Low and Mid quality profiles.");
+                Assert.That(configuredQualityLevels.Distinct().Count(), Is.EqualTo(configuredQualityLevels.Length), $"Platform '{platform}' must not contain duplicate quality profiles.");
+                Assert.That(renderingSettings.GetQualityProfile(platform, renderingSettings.GetStartupQualityLevel(platform)), Is.Not.Null, $"Platform '{platform}' startup quality must resolve through its own profile collection.");
+            }
         }
 
         /// <summary>
@@ -374,8 +378,8 @@ namespace Xuan.Prometheus.Rendering.Tests
                 foreach (PrometheusRenderQualityProfile profile in renderingSettings.QualityProfiles)
                 {
                     PrometheusRenderQualityController.ApplyProfileToPipeline(renderingSettings, profile, temporaryPipelineAsset);
-                    Assert.That(temporaryPipelineAsset.supportsCameraDepthTexture, Is.EqualTo(renderingSettings.RequiresCameraDepthTexture), $"Profile '{profile.QualityLevel}' must apply the configured depth texture requirement.");
-                    Assert.That(temporaryPipelineAsset.supportsCameraOpaqueTexture, Is.EqualTo(renderingSettings.RequiresCameraOpaqueTexture), $"Profile '{profile.QualityLevel}' must apply the configured opaque texture requirement.");
+                    Assert.That(temporaryPipelineAsset.supportsCameraDepthTexture, Is.EqualTo(profile.PostProcessingEnabled && renderingSettings.RequiresCameraDepthTexture), $"Profile '{profile.Platform}/{profile.QualityLevel}' must apply its depth texture policy.");
+                    Assert.That(temporaryPipelineAsset.supportsCameraOpaqueTexture, Is.EqualTo(profile.PostProcessingEnabled && renderingSettings.RequiresCameraOpaqueTexture), $"Profile '{profile.Platform}/{profile.QualityLevel}' must apply its opaque texture policy.");
                     Assert.That(temporaryPipelineAsset.useSRPBatcher, Is.EqualTo(renderingSettings.UseSrpBatcher), $"Profile '{profile.QualityLevel}' must apply the configured SRP batcher policy.");
                     Assert.That(temporaryPipelineAsset.supportsDynamicBatching, Is.EqualTo(renderingSettings.SupportsDynamicBatching), $"Profile '{profile.QualityLevel}' must apply the configured dynamic batching policy.");
                     Assert.That(temporaryPipelineAsset.useAdaptivePerformance, Is.EqualTo(renderingSettings.UseAdaptivePerformance), $"Profile '{profile.QualityLevel}' must apply the configured Adaptive Performance policy.");

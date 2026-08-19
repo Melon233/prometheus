@@ -6,23 +6,45 @@ namespace Xuan.Prometheus.Rendering
     public enum PrometheusRenderQualityLevel
     {
         /// <summary>
-        /// Reduces resolution, shadow cost, texture detail, and additional-light cost for constrained hardware.
+        /// Uses the minimum rendering cost and disables realtime lighting, realtime shadows, HDR, anti-aliasing, post-processing, and optional screen-space effects.
         /// </summary>
         Low = 0,
 
         /// <summary>
-        /// Balances image quality and GPU cost for mainstream hardware.
+        /// Balances image quality and GPU cost with a platform-specific rendering budget.
         /// </summary>
-        Medium = 1,
+        Mid = 1
+    }
+
+    /// <summary>
+    /// Identifies the hardware family whose pipeline and quality profile must be selected.
+    /// </summary>
+    public enum PrometheusRenderPlatform
+    {
+        /// <summary>
+        /// Uses the desktop pipeline family and allows Forward or Deferred rendering.
+        /// </summary>
+        Pc = 0,
 
         /// <summary>
-        /// Preserves high-quality shadows, lighting, textures, and anti-aliasing for the intended desktop presentation.
+        /// Uses the mobile-only Forward pipeline family.
         /// </summary>
-        High = 2,
+        Mobile = 1
+    }
+
+    /// <summary>
+    /// Identifies the renderer path independently from the user-facing quality level.
+    /// </summary>
+    public enum PrometheusRenderPath
+    {
+        /// <summary>
+        /// Uses the Forward renderer and supports both desktop and mobile hardware.
+        /// </summary>
+        Forward = 0,
 
         /// <summary>
-        /// Enables the longest shadow range and highest lighting budgets for high-end hardware.
+        /// Uses the desktop-only Deferred renderer and its screen-space feature chain when the Mid quality level is active.
         /// </summary>
-        Ultra = 3
+        Deferred = 1
     }
 }

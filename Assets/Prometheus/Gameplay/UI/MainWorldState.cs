@@ -4,7 +4,7 @@ namespace Xuan.Prometheus
     {
         public override void OnEnter()
         {
-            // Ioc.AssetKit.LoadSceneSync("MainWorld");  // 加载主世界场景
+            // await Core.Asset.LoadSceneAsync("MainWorld");  // 通过当前 Core 的 AssetKit 异步加载主世界场景。
             // Ioc.UIKit.OpenPanel<HudPanel>();  // 打开HUD面板
         }
 

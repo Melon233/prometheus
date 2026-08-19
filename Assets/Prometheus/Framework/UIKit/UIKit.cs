@@ -247,7 +247,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 关闭并释放全部面板实例，随后销毁 UIKit 根节点；AssetKit 会在 GameCore 的后续逆序释放阶段统一释放资源句柄。
+        /// 关闭并释放全部面板实例，随后销毁 UIKit 根节点；AssetKit 会在 Core 的后续逆序释放阶段统一释放资源句柄。
         /// </summary>
         public override void Dispose()
         {
@@ -855,7 +855,7 @@ namespace Xuan.Prometheus
             ThrowIfDisposed();
 
             if (!isInitialized)
-                throw new InvalidOperationException("UIKit is not initialized. Let GameCore complete Initialize() before opening panels.");
+                throw new InvalidOperationException("UIKit is not initialized. Let Core complete Initialize() before opening panels.");
         }
 
         /// <summary>

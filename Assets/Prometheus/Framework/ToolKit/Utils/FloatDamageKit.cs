@@ -14,7 +14,7 @@ namespace Xuan.Prometheus
         private FloatDamageConfig config;
 
         /// <summary>
-        /// 单例创建时加载伤害飘字配置；UIKit 及其屏幕空间世界锚点 Canvas 由 GameCore 独立管理，无需在此缓存场景 Canvas。
+        /// 单例创建时加载伤害飘字配置；UIKit 及其屏幕空间世界锚点 Canvas 由 Core 独立管理，无需在此缓存场景 Canvas。
         /// </summary>
         protected override void OnAwake()
         {
@@ -47,7 +47,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 确保配置与当前 GameCore 的 UIKit 均可用；资源实例、相机、Canvas 和回收状态全部由 UIKit 统一处理。
+        /// 确保配置与当前 Core 的 UIKit 均可用；资源实例、相机、Canvas 和回收状态全部由 UIKit 统一处理。
         /// </summary>
         /// <returns>当前可以安全生成伤害飘字时返回 true。</returns>
         private bool EnsureReady()

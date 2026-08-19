@@ -6,50 +6,73 @@ using ShinySsrRendererFeature = ShinySSRR.ShinySSRR;
 namespace Xuan.Prometheus.Rendering
 {
     /// <summary>
-    /// Owns runtime quality changes by modifying one non-persistent copy of the single serialized Prometheus URP asset.
+    /// Selects one immutable platform, renderer-path, and quality-specific URP asset and applies the matching camera and Unity quality policy.
     /// </summary>
     public static class PrometheusRenderQualityController
     {
         private static readonly int QualityLevelShaderPropertyId = Shader.PropertyToID("_PrometheusQualityLevel");
         private static PrometheusRenderingSettings settings;
-        private static UniversalRenderPipelineAsset runtimePipelineAsset;
+        private static UniversalRenderPipelineAsset activePipelineAsset;
+        private static PrometheusRenderPlatform currentPlatform;
+        private static PrometheusRenderPath currentRenderPath;
         private static PrometheusRenderQualityLevel currentQualityLevel;
         private static PrometheusRenderQualityProfile currentProfile;
+        private static bool screenSpaceReflectionsRequested;
         private static bool screenSpaceReflectionsEnabled;
         private static bool initialized;
 
         /// <summary>
-        /// Raised after every complete project quality profile has been applied.
+        /// Raised after a complete platform-specific quality profile has been applied.
         /// </summary>
         public static event Action<PrometheusRenderQualityLevel> QualityChanged;
 
         /// <summary>
-        /// Raised after the project-owned Shiny SSR runtime master switch changes.
+        /// Raised after the active desktop renderer path changes.
+        /// </summary>
+        public static event Action<PrometheusRenderPath> RenderPathChanged;
+
+        /// <summary>
+        /// Raised after the effective Shiny SSR pass state changes.
         /// </summary>
         public static event Action<bool> ScreenSpaceReflectionsChanged;
 
         /// <summary>
-        /// Gets whether the pre-scene rendering bootstrap created the runtime pipeline copy.
+        /// Gets whether the pre-scene rendering bootstrap selected an active pipeline asset.
         /// </summary>
         public static bool IsInitialized => initialized;
 
         /// <summary>
-        /// Gets the currently applied project quality level.
+        /// Gets the hardware family selected for the current player.
+        /// </summary>
+        public static PrometheusRenderPlatform CurrentPlatform => currentPlatform;
+
+        /// <summary>
+        /// Gets the active renderer path.
+        /// </summary>
+        public static PrometheusRenderPath CurrentRenderPath => currentRenderPath;
+
+        /// <summary>
+        /// Gets the currently applied user-facing quality level.
         /// </summary>
         public static PrometheusRenderQualityLevel CurrentQualityLevel => currentQualityLevel;
 
         /// <summary>
-        /// Gets the complete currently applied project quality profile.
+        /// Gets the complete currently applied platform quality profile.
         /// </summary>
         public static PrometheusRenderQualityProfile CurrentProfile => currentProfile;
 
         /// <summary>
-        /// Gets the non-persistent URP asset modified by runtime quality changes.
+        /// Gets the immutable URP asset currently assigned to Unity QualitySettings.
         /// </summary>
-        public static UniversalRenderPipelineAsset RuntimePipelineAsset => runtimePipelineAsset;
+        public static UniversalRenderPipelineAsset ActivePipelineAsset => activePipelineAsset;
 
         /// <summary>
-        /// Gets whether Shiny screen-space reflections are currently allowed to enqueue their renderer passes.
+        /// Gets the active pipeline through the former property name for compatible callers.
+        /// </summary>
+        public static UniversalRenderPipelineAsset RuntimePipelineAsset => activePipelineAsset;
+
+        /// <summary>
+        /// Gets whether Shiny screen-space reflections are effectively allowed to enqueue passes.
         /// </summary>
         public static bool ScreenSpaceReflectionsEnabled => screenSpaceReflectionsEnabled;
 
@@ -61,105 +84,134 @@ namespace Xuan.Prometheus.Rendering
         {
             QualitySettings.activeQualityLevelChanged -= HandleUnityQualityLevelChanged;
             settings = null;
-            runtimePipelineAsset = null;
+            activePipelineAsset = null;
+            currentPlatform = default;
+            currentRenderPath = default;
             currentQualityLevel = default;
             currentProfile = null;
+            screenSpaceReflectionsRequested = false;
             ShinySsrRendererFeature.isEnabled = false;
             screenSpaceReflectionsEnabled = false;
             initialized = false;
             QualityChanged = null;
+            RenderPathChanged = null;
             ScreenSpaceReflectionsChanged = null;
         }
 
         /// <summary>
-        /// Loads project settings, clones the only serialized pipeline asset, and applies the startup profile before the first scene starts.
+        /// Loads external rendering settings and selects the platform startup configuration before the first scene starts.
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
             settings = Resources.Load<PrometheusRenderingSettings>(PrometheusRenderingSettings.ResourceName);
-            if (settings == null)
-            {
-                throw new InvalidOperationException($"Resources must contain '{PrometheusRenderingSettings.ResourceName}'. Run Prometheus/Rendering/Create Or Update Rendering Assets.");
-            }
-
-            if (settings.PipelineAsset == null)
-            {
-                throw new InvalidOperationException($"Rendering settings '{settings.name}' must reference the single Prometheus URP asset.");
-            }
-
-            runtimePipelineAsset = UnityEngine.Object.Instantiate(settings.PipelineAsset);
-            runtimePipelineAsset.name = $"{settings.PipelineAsset.name} (Runtime)";
-            runtimePipelineAsset.hideFlags = HideFlags.DontSave;
-            QualitySettings.renderPipeline = runtimePipelineAsset;
+            if (settings == null) throw new InvalidOperationException($"Resources must contain '{PrometheusRenderingSettings.ResourceName}'. Run Prometheus/Rendering/Create Or Update Rendering Assets.");
+            currentPlatform = Application.isMobilePlatform ? PrometheusRenderPlatform.Mobile : PrometheusRenderPlatform.Pc;
+            currentRenderPath = currentPlatform == PrometheusRenderPlatform.Mobile ? PrometheusRenderPath.Forward : settings.StartupPcRenderPath;
+            currentQualityLevel = settings.GetStartupQualityLevel(currentPlatform);
+            screenSpaceReflectionsRequested = settings.ScreenSpaceReflectionsEnabledByDefault;
             QualitySettings.activeQualityLevelChanged += HandleUnityQualityLevelChanged;
             initialized = true;
-            ApplyScreenSpaceReflectionsState(settings.ScreenSpaceReflectionsEnabledByDefault);
-            ApplyQuality(settings.StartupQualityLevel);
+            ApplyConfiguration(false, false);
         }
 
         /// <summary>
-        /// Applies a complete project quality profile to the runtime pipeline and Unity global quality values.
+        /// Applies the requested Low or Mid level within the current platform and renderer path.
         /// </summary>
         public static void ApplyQuality(PrometheusRenderQualityLevel qualityLevel)
         {
-            if (!initialized)
-            {
-                throw new InvalidOperationException("Prometheus rendering must initialize before applying a runtime quality profile.");
-            }
-
-            PrometheusRenderQualityProfile profile = settings.GetQualityProfile(qualityLevel);
-            ApplyProfileToPipeline(settings, profile, runtimePipelineAsset);
-            ApplyProfileToUnityQuality(profile);
+            if (!initialized) throw new InvalidOperationException("Prometheus rendering must initialize before applying a runtime quality profile.");
             currentQualityLevel = qualityLevel;
-            currentProfile = profile;
-            Shader.SetGlobalInteger(QualityLevelShaderPropertyId, (int)qualityLevel);
-            QualityChanged?.Invoke(qualityLevel);
+            ApplyConfiguration(true, false);
         }
 
         /// <summary>
-        /// Changes the user-facing Shiny SSR master switch without mutating the shared renderer data asset or its authored Volume parameters.
+        /// Changes the desktop renderer path while preserving the current quality level.
+        /// </summary>
+        public static void ApplyRenderPath(PrometheusRenderPath renderPath)
+        {
+            if (!initialized) throw new InvalidOperationException("Prometheus rendering must initialize before changing the renderer path.");
+            if (currentPlatform == PrometheusRenderPlatform.Mobile && renderPath != PrometheusRenderPath.Forward) throw new InvalidOperationException("Mobile rendering supports only the Forward path.");
+            bool renderPathChanged = currentRenderPath != renderPath;
+            currentRenderPath = renderPath;
+            ApplyConfiguration(false, renderPathChanged);
+        }
+
+        /// <summary>
+        /// Records the user-facing SSR preference while Low quality and non-Deferred paths continue to force the effective pass off.
         /// </summary>
         public static void SetScreenSpaceReflectionsEnabled(bool enabled)
         {
-            if (!initialized)
-            {
-                throw new InvalidOperationException("Prometheus rendering must initialize before changing the screen-space reflection state.");
-            }
-
-            ApplyScreenSpaceReflectionsState(enabled);
+            if (!initialized) throw new InvalidOperationException("Prometheus rendering must initialize before changing the screen-space reflection state.");
+            screenSpaceReflectionsRequested = enabled;
+            ApplyScreenSpaceReflectionsState(IsDeferredMidConfiguration && screenSpaceReflectionsRequested);
         }
 
         /// <summary>
-        /// Maps one project-owned SSR state to Shiny's renderer-pass gate so editor tests can validate the integration without entering Play Mode.
+        /// Applies the active rendering policy to one gameplay camera without changing its composition or culling configuration.
+        /// </summary>
+        public static void ApplyCurrentCameraQuality(Camera camera, UniversalAdditionalCameraData cameraData)
+        {
+            if (!initialized) throw new InvalidOperationException("Prometheus rendering must initialize before configuring a gameplay camera.");
+            if (camera == null) throw new ArgumentNullException(nameof(camera));
+            if (cameraData == null) throw new ArgumentNullException(nameof(cameraData));
+            camera.allowHDR = activePipelineAsset.supportsHDR;
+            camera.allowMSAA = currentRenderPath == PrometheusRenderPath.Forward && activePipelineAsset.msaaSampleCount > 1;
+            cameraData.renderShadows = currentProfile.RealtimeShadowsEnabled;
+            cameraData.renderPostProcessing = currentProfile.PostProcessingEnabled;
+            cameraData.antialiasing = IsDeferredMidConfiguration ? AntialiasingMode.SubpixelMorphologicalAntiAliasing : AntialiasingMode.None;
+            cameraData.antialiasingQuality = AntialiasingQuality.High;
+            cameraData.dithering = currentProfile.DitheringEnabled;
+        }
+
+        /// <summary>
+        /// Maps one effective SSR state to Shiny's renderer-pass gate so editor tooling can inspect the integration without entering Play Mode.
         /// </summary>
         internal static void ApplyScreenSpaceReflectionsState(bool enabled)
         {
             bool stateChanged = screenSpaceReflectionsEnabled != enabled;
             ShinySsrRendererFeature.isEnabled = enabled;
             screenSpaceReflectionsEnabled = enabled;
-            if (stateChanged)
-            {
-                ScreenSpaceReflectionsChanged?.Invoke(enabled);
-            }
+            if (stateChanged) ScreenSpaceReflectionsChanged?.Invoke(enabled);
         }
 
         /// <summary>
-        /// Reasserts the runtime pipeline copy and current Prometheus profile when external code changes Unity's legacy quality index.
+        /// Reapplies project ownership when external code changes Unity's two compatibility quality indices.
         /// </summary>
         private static void HandleUnityQualityLevelChanged(int previousQualityLevel, int currentUnityQualityLevel)
         {
-            QualitySettings.renderPipeline = runtimePipelineAsset;
-            ApplyQuality(currentQualityLevel);
+            currentQualityLevel = currentUnityQualityLevel switch { 0 => PrometheusRenderQualityLevel.Low, 1 => PrometheusRenderQualityLevel.Mid, _ => throw new InvalidOperationException($"Unity quality index '{currentUnityQualityLevel}' is outside the project-owned Low/Mid range.") };
+            ApplyConfiguration(true, false);
         }
 
         /// <summary>
-        /// Maps project-owned settings and one quality profile onto a URP asset without relying on Unity quality-level assets.
+        /// Selects the exact immutable pipeline asset and applies all non-URP quality values as one configuration transaction.
+        /// </summary>
+        private static void ApplyConfiguration(bool notifyQualityChanged, bool notifyRenderPathChanged)
+        {
+            activePipelineAsset = settings.GetPipelineAsset(currentPlatform, currentRenderPath, currentQualityLevel);
+            if (activePipelineAsset == null) throw new InvalidOperationException($"Rendering settings '{settings.name}' do not reference pipeline '{currentPlatform}/{currentRenderPath}/{currentQualityLevel}'.");
+            currentProfile = settings.GetQualityProfile(currentPlatform, currentQualityLevel);
+            QualitySettings.renderPipeline = activePipelineAsset;
+            ApplyProfileToUnityQuality(currentProfile);
+            ApplyScreenSpaceReflectionsState(IsDeferredMidConfiguration && screenSpaceReflectionsRequested);
+            Shader.SetGlobalInteger(QualityLevelShaderPropertyId, (int)currentQualityLevel);
+            if (notifyRenderPathChanged) RenderPathChanged?.Invoke(currentRenderPath);
+            if (notifyQualityChanged || notifyRenderPathChanged) QualityChanged?.Invoke(currentQualityLevel);
+        }
+
+        /// <summary>
+        /// Reports whether the expensive desktop Deferred Mid feature chain is active.
+        /// </summary>
+        private static bool IsDeferredMidConfiguration => currentPlatform == PrometheusRenderPlatform.Pc && currentRenderPath == PrometheusRenderPath.Deferred && currentQualityLevel == PrometheusRenderQualityLevel.Mid;
+
+        /// <summary>
+        /// Applies public URP quality properties for editor generation and compatibility tooling; immutable runtime assets are selected instead of mutated.
         /// </summary>
         internal static void ApplyProfileToPipeline(PrometheusRenderingSettings renderingSettings, PrometheusRenderQualityProfile profile, UniversalRenderPipelineAsset pipelineAsset)
         {
-            pipelineAsset.supportsCameraDepthTexture = renderingSettings.RequiresCameraDepthTexture;
-            pipelineAsset.supportsCameraOpaqueTexture = renderingSettings.RequiresCameraOpaqueTexture;
+            pipelineAsset.supportsCameraDepthTexture = profile.PostProcessingEnabled && renderingSettings.RequiresCameraDepthTexture;
+            pipelineAsset.supportsCameraOpaqueTexture = profile.PostProcessingEnabled && renderingSettings.RequiresCameraOpaqueTexture;
             pipelineAsset.useSRPBatcher = renderingSettings.UseSrpBatcher;
             pipelineAsset.supportsDynamicBatching = renderingSettings.SupportsDynamicBatching;
             pipelineAsset.useAdaptivePerformance = renderingSettings.UseAdaptivePerformance;

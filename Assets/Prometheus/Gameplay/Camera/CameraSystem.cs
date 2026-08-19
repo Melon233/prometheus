@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Xuan.Prometheus.Logic;
+using Xuan.Prometheus.Rendering;
 
 namespace Xuan.Prometheus
 {
@@ -21,7 +22,7 @@ namespace Xuan.Prometheus
         /// <summary>保存 SSGI 相机组件的完整运行时类型名；该插件位于预定义 Assembly-CSharp，运行时程序集不能直接建立编译期引用。</summary>
         private const string SsgiCameraTypeName = "MF.SSGI.SSGICamera, Assembly-CSharp";
 
-        /// <summary>保存玩法入口提供的常驻根节点，使相机对象与当前 GameCore 生命周期一致。</summary>
+        /// <summary>保存玩法入口提供的常驻根节点，使相机对象与当前 Core 生命周期一致。</summary>
         private readonly Transform runtimeRoot;
 
         /// <summary>保存当前系统创建的运行时根对象。</summary>
@@ -29,6 +30,9 @@ namespace Xuan.Prometheus
 
         /// <summary>保存 Cinemachine 实际驱动并负责渲染画面的 Unity Camera。</summary>
         private Camera outputCamera;
+
+        /// <summary>保存输出相机的 URP 附加数据，使画质或渲染路径切换能够立即刷新相机级开关。</summary>
+        private UniversalAdditionalCameraData outputCameraData;
 
         /// <summary>保存单局唯一的 Cinemachine Brain。</summary>
         private CinemachineBrain brain;
@@ -73,6 +77,7 @@ namespace Xuan.Prometheus
             entitySystem = gameplayKit.GetSystem<EntitySystem>();
             eventKit = Core.Event ?? throw new InvalidOperationException("CameraSystem requires EventKit.");
             CreateCameraObjects();
+            PrometheusRenderQualityController.QualityChanged += OnRenderQualityChanged;
             eventKit.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
         }
 
@@ -81,6 +86,7 @@ namespace Xuan.Prometheus
         {
             if (isDisposed) return;
             if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            PrometheusRenderQualityController.QualityChanged -= OnRenderQualityChanged;
             DestroyRuntimeObject(followTarget);
             DestroyRuntimeObject(cameraSystemRoot);
             followTarget = null;
@@ -88,6 +94,7 @@ namespace Xuan.Prometheus
             followCamera = null;
             brain = null;
             outputCamera = null;
+            outputCameraData = null;
             cameraSystemRoot = null;
             entitySystem = null;
             eventKit = null;
@@ -122,8 +129,10 @@ namespace Xuan.Prometheus
             ConfigureOutputCamera(outputCamera);
             outputCameraObject.AddComponent<AudioListener>();
             outputCameraObject.AddComponent<StudioListener>();
-            ConfigureUniversalCamera(outputCameraObject.AddComponent<UniversalAdditionalCameraData>());
-            AddSsgiCamera(outputCameraObject);
+            outputCameraData = outputCameraObject.AddComponent<UniversalAdditionalCameraData>();
+            ConfigureUniversalCamera(outputCameraData);
+            if (PrometheusRenderQualityController.CurrentPlatform == PrometheusRenderPlatform.Pc) AddSsgiCamera(outputCameraObject);
+            PrometheusRenderQualityController.ApplyCurrentCameraQuality(outputCamera, outputCameraData);
             brain = outputCameraObject.AddComponent<CinemachineBrain>();
             brain.UpdateMethod = CinemachineBrain.UpdateMethods.LateUpdate;
             brain.BlendUpdateMethod = CinemachineBrain.BrainUpdateMethods.LateUpdate;
@@ -158,8 +167,8 @@ namespace Xuan.Prometheus
             camera.renderingPath = RenderingPath.UsePlayerSettings;
             camera.targetDisplay = 0;
             camera.stereoTargetEye = StereoTargetEyeMask.Both;
-            camera.allowHDR = true;
-            camera.allowMSAA = true;
+            camera.allowHDR = false;
+            camera.allowMSAA = false;
             camera.allowDynamicResolution = false;
             camera.useOcclusionCulling = true;
             camera.focalLength = 50f;
@@ -171,20 +180,27 @@ namespace Xuan.Prometheus
         /// <param name="cameraData">输出相机上的 URP 附加数据。</param>
         private static void ConfigureUniversalCamera(UniversalAdditionalCameraData cameraData)
         {
-            cameraData.renderShadows = true;
+            cameraData.renderShadows = false;
             cameraData.requiresDepthOption = CameraOverrideOption.UsePipelineSettings;
             cameraData.requiresColorOption = CameraOverrideOption.UsePipelineSettings;
             cameraData.renderType = CameraRenderType.Base;
-            cameraData.SetRenderer(1);
+            cameraData.SetRenderer(-1);
             cameraData.volumeLayerMask = 1;
             cameraData.volumeTrigger = null;
-            cameraData.renderPostProcessing = true;
+            cameraData.renderPostProcessing = false;
             cameraData.antialiasing = AntialiasingMode.None;
             cameraData.antialiasingQuality = AntialiasingQuality.High;
             cameraData.stopNaN = false;
-            cameraData.dithering = true;
+            cameraData.dithering = false;
             cameraData.allowXRRendering = true;
             cameraData.GetComponent<Camera>().SetVolumeFrameworkUpdateMode(VolumeFrameworkUpdateMode.ViaScripting);
+        }
+
+        /// <summary>画质变化后把当前平台档位重新应用到唯一输出相机。</summary>
+        /// <param name="qualityLevel">已经由渲染控制器应用完成的新画质等级。</param>
+        private void OnRenderQualityChanged(PrometheusRenderQualityLevel qualityLevel)
+        {
+            PrometheusRenderQualityController.ApplyCurrentCameraQuality(outputCamera, outputCameraData);
         }
 
         /// <summary>创建零阻尼且完整继承目标局部坐标系的跟随设置，使 Cinemachine 行为等同旧相机父子层级。</summary>

@@ -4,7 +4,7 @@ namespace Xuan.Prometheus
     {
         public override void OnEnter()
         {
-            // Ioc.AssetKit.LoadSceneSync("Login");  // 加载登录场景
+            // await Core.Asset.LoadSceneAsync("Login");  // 通过当前 Core 的 AssetKit 异步加载登录场景。
             // Ioc.UIKit.OpenPanel<LoginPanel>();
         }
 

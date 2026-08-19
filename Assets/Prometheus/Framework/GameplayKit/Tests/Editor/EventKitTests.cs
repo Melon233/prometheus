@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace Xuan.Prometheus.Tests
 {
-    /// <summary>验证 EventKit 的多监听器路由、精确退订以及 GameCore 生命周期接入。</summary>
+    /// <summary>验证 EventKit 的多监听器路由、精确退订以及 Core 生命周期接入。</summary>
     public sealed class EventKitTests
     {
         /// <summary>保存每个测试独占的事件总线，避免静态 Core.Event 在测试之间泄漏。</summary>
@@ -60,11 +60,11 @@ namespace Xuan.Prometheus.Tests
             Assert.That(observedEvent.Is<HudPanel>(), Is.True);
         }
 
-        /// <summary>验证 GameCore 可以通过 IEventKit 获取全局事件总线，并在逆序释放时清空 Core.Event。</summary>
+        /// <summary>验证 Core 可以通过 IEventKit 获取全局事件总线，并在逆序释放时清空 Core.Event。</summary>
         [Test]
-        public void GameCore_RegistersAndDisposesEventKit()
+        public void Core_RegistersAndDisposesEventKit()
         {
-            GameCore core = new GameCore();
+            Core core = new Core();
             try
             {
                 IEventKit registeredEventKit = core.GetKit<IEventKit>();

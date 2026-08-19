@@ -1,22 +1,31 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 namespace Xuan.Prometheus
 {
     /// <summary>
-    /// 定义由 GameCore 托管模块的统一生命周期。
+    /// 定义由 Core 托管模块的统一生命周期。
     /// 无状态 Kit 可以直接继承默认实现，仅在确实需要初始化、逐帧更新或释放资源时覆写对应方法。
     /// </summary>
     public abstract class Kit : IDisposable
     {
         /// <summary>
-        /// 在 GameCore 完成全部 Kit 注册和异步前置初始化后调用。
+        /// 执行 Kit 在同步 AfterNew 前必须完成的异步初始化任务；无异步工作的 Kit 直接返回已完成任务。
+        /// </summary>
+        public virtual UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>
+        /// 在 Entry 等待全部 Kit 的 AfterNewAsync 完成后，由 Core 按注册顺序调用。
         /// </summary>
         public virtual void AfterNew()
         {
         }
 
         /// <summary>
-        /// 由 GameCore 在入口组件的 Update 中统一驱动。
+        /// 由 Core 在入口组件的 Update 中统一驱动。
         /// </summary>
         /// <param name="dt">当前帧的增量时间。</param>
         public virtual void OnUpdate(float dt)

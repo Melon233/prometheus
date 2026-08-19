@@ -184,7 +184,7 @@ namespace Xuan.Prometheus
         void Invoke<TEvent>(Event evt, TEvent eventData) where TEvent : IEvent;
     }
 
-    /// <summary>由 GameCore 托管的全局同步事件总线，负责保存事件监听并在释放时统一清理。</summary>
+    /// <summary>由 Core 托管的全局同步事件总线，负责保存事件监听并在释放时统一清理。</summary>
     public sealed class EventKit : Kit, IEventKit
     {
         /// <summary>按全局事件类型保存当前注册的委托链。</summary>
@@ -193,7 +193,7 @@ namespace Xuan.Prometheus
         /// <summary>记录事件总线是否已经释放，阻止失效实例继续收发事件。</summary>
         private bool isDisposed;
 
-        /// <summary>创建事件总线并公开当前 GameCore 使用的全局事件入口。</summary>
+        /// <summary>创建事件总线并公开当前 Core 使用的全局事件入口。</summary>
         public EventKit()
         {
             Core.Event = this;

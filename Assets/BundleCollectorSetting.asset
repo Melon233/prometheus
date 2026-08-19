@@ -16,7 +16,7 @@ MonoBehaviour:
   ShowEditorAlias: 0
   UniqueBundleName: 1
   Packages:
-  - PackageName: Prometheus
+  - PackageName: DefaultPackage
     PackageDesc: 
     EnableAddressable: 1
     SupportExtensionless: 1
@@ -45,4 +45,20 @@ MonoBehaviour:
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 
+        UserData: 
+      - CollectPath: Assets/BundleResources/Scene
+        CollectorGUID: 92acc3b6a99be0a448a7eca0346601b4
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectScene
+        AssetTags: scene
+        UserData: 
+      - CollectPath: Assets/BundleResources/Config/Effect/EffectLibrary.asset
+        CollectorGUID: 4fb5c92a988435849815061125bdaabc
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: config
         UserData: 
