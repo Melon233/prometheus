@@ -2,7 +2,7 @@
 
 ## 当前配置
 
-项目使用 YooAsset 的 `Prometheus` Package，并通过 `Assets/Resources/BundleCollectorSetting.asset` 收集 `Assets/BundleResources` 下的运行时主资产。
+项目使用 YooAsset 的 `Prometheus` Package，并通过 `Assets/BundleCollectorSetting.asset` 收集 `Assets/BundleResources` 下的运行时主资产。
 
 所有启用寻址的 Collector 统一使用 `AddressByFileName`。资源 Address 等于不带扩展名的文件名，例如 `Yefa.prefab` 的 Address 为 `Yefa`，`FloatingTextConfig.asset` 的 Address 为 `FloatingTextConfig`。
 
@@ -37,3 +37,13 @@
 | `Global_FloatingTextConfig` | `FloatingTextConfig` |
 
 UI 代码生成器生成的 `UIPanelConfigAttribute` 也直接使用 Panel 文件名，确保新面板遵循同一规则。
+
+## 配置资产放置规则
+
+| 配置 | 用途 | 固定位置 | 处理原则 |
+| --- | --- | --- | --- |
+| `BundleCollectorSetting.asset` | YooAsset 编辑器收集与构建配置 | `Assets/BundleCollectorSetting.asset` | 由 YooAsset 通过 `AssetDatabase` 查找，不放入 `Resources`，也不作为运行时资产收集。 |
+| `FloatingTextConfig.asset` | 伤害飘字运行时配置 | `Assets/BundleResources/Config/Global/FloatingTextConfig.asset` | 由 AssetKit 使用地址 `FloatingTextConfig` 加载，必须保留在 YooAsset 收集目录。 |
+| `DOTweenSettings.asset` | DOTween 运行时全局配置 | `Assets/Resources/DOTweenSettings.asset` | 当前存储模式为 Resources，必须保留在 `Resources` 目录供 DOTween 自动初始化读取。 |
+| `VLBConfigOverride.asset` | Volumetric Light Beam 运行时全局配置 | `Assets/Resources/VLBConfigOverride.asset` | 插件通过 `Resources.Load` 固定加载，必须保留在 `Resources` 目录。 |
+| `SpineSettings.asset` | Spine 编辑器导入与偏好配置 | `Assets/Editor/SpineSettings.asset` | Spine 编辑器代码使用固定路径读取，不进入 Player，也不由 YooAsset 收集。 |
