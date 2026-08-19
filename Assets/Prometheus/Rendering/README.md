@@ -71,7 +71,7 @@ The original Hovl source package remains unchanged. Materials that previously de
 
 ## MF.SSGI 兼容链路
 
-当前导入的 `Assets/MF.SSGI` 仍实现为传统 `ScriptableRenderPass.Execute`，因此依赖 `UniversalRenderPipelineGlobalSettings.asset` 中已经启用的 URP Compatibility Mode。Unity 6000.3 还要求当前构建目标定义 `URP_COMPATIBILITY_MODE`；只有资源中的 `m_EnableRenderCompatibilityMode: 1` 而没有该编译符号时，`RenderGraphSettings.enableRenderCompatibilityMode` 会固定返回 `false`，相机继续走 `ExecuteRenderGraph`，MF.SSGI Feature 虽然存在却不会执行。其相机颜色与深度附件必须使用 URP 17 的 `RTHandle` API，并且只能在 `ScriptableRenderPass` 的执行调用链内即时取得；禁止在 `AddRenderPasses`、跨相机字段或跨帧状态中缓存相机附件。若未来关闭 Compatibility Mode，必须先将 MF.SSGI 的绘制、临时纹理和最终合成完整迁移到 `RecordRenderGraph`，不能仅关闭开关后保留当前 Pass。
+当前导入的 `Assets/Trd/MF.SSGI` 仍实现为传统 `ScriptableRenderPass.Execute`，因此依赖 `UniversalRenderPipelineGlobalSettings.asset` 中已经启用的 URP Compatibility Mode。Unity 6000.3 还要求当前构建目标定义 `URP_COMPATIBILITY_MODE`；只有资源中的 `m_EnableRenderCompatibilityMode: 1` 而没有该编译符号时，`RenderGraphSettings.enableRenderCompatibilityMode` 会固定返回 `false`，相机继续走 `ExecuteRenderGraph`，MF.SSGI Feature 虽然存在却不会执行。其相机颜色与深度附件必须使用 URP 17 的 `RTHandle` API，并且只能在 `ScriptableRenderPass` 的执行调用链内即时取得；禁止在 `AddRenderPasses`、跨相机字段或跨帧状态中缓存相机附件。若未来关闭 Compatibility Mode，必须先将 MF.SSGI 的绘制、临时纹理和最终合成完整迁移到 `RecordRenderGraph`，不能仅关闭开关后保留当前 Pass。
 
 Prometheus 管线固定保留两类 Renderer：默认的 `PrometheusForwardRenderer` 不挂载 SSGI，供普通相机、反射探针和不需要屏幕空间间接光的视图使用；`PrometheusDeferredSsgiRenderer` 使用 Deferred 渲染并独占一个启用的 `MF.SSGI.SSGIFeature`。该 Feature 的 `UseDeferredRendering` 必须与 Renderer 的实际渲染模式一致，因为开启时 Shader 会读取 `_GBuffer0` 与 `_GBuffer1`，不能把同一配置直接挂到 Forward Renderer。
 

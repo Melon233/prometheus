@@ -9,7 +9,7 @@ namespace Xuan.Prometheus.Logic
     public sealed class WorldHpBarLogic : Logic
     {
         /// <summary>共享世界血条 Prefab 在 AssetKit 中的资源地址。</summary>
-        private const string WorldHpBarAssetAddress = "Prefabs_WorldHpBar";
+        private const string WorldHpBarAssetAddress = "WorldHpBar";
 
         /// <summary>当前实体持有的世界血条租约。</summary>
         private WorldUIHandle worldHpBarHandle;

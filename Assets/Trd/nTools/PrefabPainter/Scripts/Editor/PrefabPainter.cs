@@ -1231,7 +1231,6 @@ namespace nTools.PrefabPainter
         PrefabPainterSceneSettings m_SceneSettings;
 
 
-        string m_WorkDirectoryPath = null;
         const string kGUIDirectoryName = "GUI";
         const string kSettingsDirectoryName = "Settings";
         const string kPresetsDirectoryName = "Presets";
@@ -1317,31 +1316,16 @@ namespace nTools.PrefabPainter
         }
 
 
+        /// <summary>
+        /// 每次根据当前脚本资源位置计算插件根目录，避免插件迁移后已打开的窗口继续使用旧目录并重新创建 Assets/nTools。
+        /// </summary>
         public string GetWorkDirectory()
         {
-            if (m_WorkDirectoryPath != null)
-                return m_WorkDirectoryPath;
-
-            MonoScript ownerScript;
-            string ownerPath;
-
-            // work dir based on PrefabPainter.cs script path.
-            // get PrefabPainter.cs script
-            if ((ownerScript = MonoScript.FromScriptableObject(this)) != null)
-            {
-                // get .../PrefabPainter/Scripts/Editor/PrefabPainter.cs
-                if ((ownerPath = AssetDatabase.GetAssetPath(ownerScript)) != null)
-                {
-                    // get .../PrefabPainter/Scripts/Editor/
-                    ownerPath = Path.GetDirectoryName(ownerPath);
-                    // get .../PrefabPainter/Scripts/
-                    ownerPath = Path.GetDirectoryName(ownerPath);
-                    // get .../PrefabPainter/
-                    m_WorkDirectoryPath = Path.GetDirectoryName(ownerPath);
-                }
-            }
-
-            return m_WorkDirectoryPath;
+            MonoScript ownerScript = MonoScript.FromScriptableObject(this);
+            string ownerPath = AssetDatabase.GetAssetPath(ownerScript);
+            string editorDirectoryPath = Path.GetDirectoryName(ownerPath);
+            string scriptsDirectoryPath = Path.GetDirectoryName(editorDirectoryPath);
+            return Path.GetDirectoryName(scriptsDirectoryPath);
         }
 
         public string GetGUIDirectory()
@@ -5259,5 +5243,4 @@ namespace nTools.PrefabPainter
 
 
 } // namespace nTools.PrefabPainter
-
 

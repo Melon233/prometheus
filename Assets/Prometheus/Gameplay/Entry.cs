@@ -15,12 +15,12 @@ namespace Xuan.Prometheus
     {
         [SerializeField] private string packageName = AssetKit.DefaultPackageName;
         /// <summary>第一个固定小队槽位使用的角色资源地址，同时保留旧场景中的 playerAddress 序列化数据。</summary>
-        [SerializeField] private string playerAddress = "Character_Yefa";
+        [SerializeField] private string playerAddress = "Yefa";
         /// <summary>第二个固定小队槽位使用的角色资源地址。</summary>
-        [SerializeField] private string secondPlayerAddress = "Character_Yousaer";
+        [SerializeField] private string secondPlayerAddress = "Yousaer";
         /// <summary>第三个固定小队槽位使用的角色资源地址。</summary>
-        [SerializeField] private string thirdPlayerAddress = "Character_Senyin";
-        [SerializeField] private string enemyAddress = "Enemy_Slime";
+        [SerializeField] private string thirdPlayerAddress = "Senyin";
+        [SerializeField] private string enemyAddress = "Slime";
         /// <summary>
         /// 正式玩法使用的持久化 Effect 配置库；修改其引用的 Effect 资产后，下次启动玩法即可生效。
         /// </summary>

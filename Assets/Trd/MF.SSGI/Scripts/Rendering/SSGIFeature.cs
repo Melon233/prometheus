@@ -99,19 +99,19 @@ namespace MF.SSGI {
             if(settings == null) { return; }
             
             if (!settings.Quality) {
-                settings.Quality = (SSGIQualitySettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/MF.SSGI/Settings/Quality - Reprojected/SSGI Reprojected - 2 - Medium Quality settings.asset", typeof(SSGIQualitySettings));
+                settings.Quality = (SSGIQualitySettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Trd/MF.SSGI/Settings/Quality - Reprojected/SSGI Reprojected - 2 - Medium Quality settings.asset", typeof(SSGIQualitySettings));
             }
             if (!settings.Lighting) {
-                settings.Lighting = (SSGILightingSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/MF.SSGI/Settings/Shared/SSGI Lighting settings.asset", typeof(SSGILightingSettings));
+                settings.Lighting = (SSGILightingSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Trd/MF.SSGI/Settings/Shared/SSGI Lighting settings.asset", typeof(SSGILightingSettings));
             }
             if (!settings.Advanced) {
-                settings.Advanced = (SSGIAdvancedSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/MF.SSGI/Settings/Shared/SSGI Advanced settings.asset", typeof(SSGIAdvancedSettings));
+                settings.Advanced = (SSGIAdvancedSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Trd/MF.SSGI/Settings/Shared/SSGI Advanced settings.asset", typeof(SSGIAdvancedSettings));
             }
             if (!settings.Raymarch) {
-                settings.Raymarch = (SSGIRaymarchSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/MF.SSGI/Settings/Shared/SSGI Raymarch settings.asset", typeof(SSGIRaymarchSettings));
+                settings.Raymarch = (SSGIRaymarchSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Trd/MF.SSGI/Settings/Shared/SSGI Raymarch settings.asset", typeof(SSGIRaymarchSettings));
             }
             if (!settings.Fallback) {
-                settings.Fallback = (SSGIFallbackSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/MF.SSGI/Settings/Shared/SSGI Fallback settings.asset", typeof(SSGIFallbackSettings));
+                settings.Fallback = (SSGIFallbackSettings)UnityEditor.AssetDatabase.LoadAssetAtPath("Assets/Trd/MF.SSGI/Settings/Shared/SSGI Fallback settings.asset", typeof(SSGIFallbackSettings));
             }
         }
 #endif

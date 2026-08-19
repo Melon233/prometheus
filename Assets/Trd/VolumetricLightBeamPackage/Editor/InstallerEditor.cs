@@ -10,10 +10,10 @@ namespace VLB_Installer
     public class InstallerEditor : Editor
     {
         readonly string CurrentVersion = "2.0.2";
-        readonly string PackagePath = "Assets/VolumetricLightBeamPackage/VolumetricLightBeam.unitypackage";
+        readonly string PackagePath = "Assets/Trd/VolumetricLightBeamPackage/VolumetricLightBeam.unitypackage";
         readonly string[] OldPluginPath = new string[]
         {
-            "Assets/VolumetricLightBeam",
+            "Assets/Trd/VolumetricLightBeam",
             "Assets/Plugins/VolumetricLightBeam"
         };
 

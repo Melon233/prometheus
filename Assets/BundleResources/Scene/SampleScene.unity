@@ -14904,10 +14904,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   packageName: Prometheus
-  playerAddress: Character_Yefa
-  secondPlayerAddress: Character_Yousaer
-  thirdPlayerAddress: Character_Senyin
-  enemyAddress: Enemy_Slime
+  playerAddress: Yefa
+  secondPlayerAddress: Yousaer
+  thirdPlayerAddress: Senyin
+  enemyAddress: Slime
   effectLibrary: {fileID: 11400000, guid: 4fb5c92a988435849815061125bdaabc, type: 2}
   enemySpawnPoints:
   - {fileID: 1921455150}

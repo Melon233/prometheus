@@ -13,7 +13,7 @@ namespace Xuan.Prometheus
     /// <summary>
     /// Hud 面板业务控制器，用于验证 UIKit 的类型扫描、Prefab 加载、组件绑定、打开生命周期和关闭缓存能力。
     /// </summary>
-    [UIPanelConfig("Prefabs_HudPanel", UIPanelLayer.Normal, UIPanelClosePolicy.Cache)]
+    [UIPanelConfig("HudPanel", UIPanelLayer.Normal, UIPanelClosePolicy.Cache)]
     public sealed class HudPanel : HudPanelBase
     {
         /// <summary>定义小地图从中心向外保持完全不透明的归一化半径。</summary>

@@ -33,7 +33,7 @@ MonoBehaviour:
       - CollectPath: Assets/BundleResources
         CollectorGUID: a656143bb527e8947ada51fe85b7a194
         CollectorType: 0
-        AddressRuleName: AddressByFolderAndFileName
+        AddressRuleName: AddressByFileName
         PackRuleName: PackSeparately
         FilterRuleName: CollectPrefab
         AssetTags: gameplay
@@ -41,7 +41,7 @@ MonoBehaviour:
       - CollectPath: Assets/BundleResources/Config/Global
         CollectorGUID: 15a70208f8d49ed48aad763bb9316dc4
         CollectorType: 0
-        AddressRuleName: AddressByFolderAndFileName
+        AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
         AssetTags: 

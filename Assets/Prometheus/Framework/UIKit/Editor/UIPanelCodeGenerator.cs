@@ -413,7 +413,7 @@ namespace Xuan.Prometheus.Editor
             source.AppendLine("    /// <summary>");
             source.AppendLine($"    /// {panelName} 的业务控制器；代码生成器只会首次创建本文件，不会覆盖后续业务修改。");
             source.AppendLine("    /// </summary>");
-            source.AppendLine($"    [UIPanelConfig(\"Prefabs_{panelName}\", UIPanelLayer.Normal, UIPanelClosePolicy.Destroy)]");
+            source.AppendLine($"    [UIPanelConfig(\"{panelName}\", UIPanelLayer.Normal, UIPanelClosePolicy.Destroy)]");
             source.AppendLine($"    public sealed class {panelName} : {panelName}Base");
             source.AppendLine("    {");
             source.AppendLine("        /// <summary>");

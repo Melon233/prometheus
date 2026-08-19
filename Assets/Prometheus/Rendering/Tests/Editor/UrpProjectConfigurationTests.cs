@@ -180,7 +180,7 @@ namespace Xuan.Prometheus.Rendering.Tests
             }
 
             int validatedSsgiCameraCount = 0;
-            string ssgiCameraScriptPath = AssetDatabase.FindAssets("t:MonoScript", new[] { "Assets/MF.SSGI" }).Select(AssetDatabase.GUIDToAssetPath).Single(scriptPath => AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath).GetClass()?.FullName == SsgiCameraTypeFullName);
+            string ssgiCameraScriptPath = AssetDatabase.FindAssets("t:MonoScript", new[] { "Assets/Trd/MF.SSGI" }).Select(AssetDatabase.GUIDToAssetPath).Single(scriptPath => AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath).GetClass()?.FullName == SsgiCameraTypeFullName);
             string[] scenePaths = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" }).Select(AssetDatabase.GUIDToAssetPath).Where(scenePath => AssetDatabase.GetDependencies(scenePath, true).Contains(ssgiCameraScriptPath)).ToArray();
             Scene originalActiveScene = SceneManager.GetActiveScene();
             foreach (string scenePath in scenePaths)

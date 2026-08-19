@@ -24,8 +24,8 @@ namespace Xuan.Prometheus.Rendering.Editor
         private const string PipelineAssetPath = PipelineFolderPath + "/PrometheusUniversalRenderPipeline.asset";
         private const string EnvironmentProfileAssetPath = SettingsFolderPath + "/PrometheusEnvironmentProfile.asset";
         private const string RenderingSettingsAssetPath = ResourcesFolderPath + "/PrometheusRenderingSettings.asset";
-        private const string SsgiExampleRendererDataAssetPath = "Assets/MF.SSGI/ExampleScene/Renderer/MF.SSGI - Example URP Renderer - SSGI.asset";
-        private const string ShinySsrExampleRendererDataAssetPath = "Assets/ShinySSRR/Pipelines/URP/ForwardRenderer.asset";
+        private const string SsgiExampleRendererDataAssetPath = "Assets/Trd/MF.SSGI/ExampleScene/Renderer/MF.SSGI - Example URP Renderer - SSGI.asset";
+        private const string ShinySsrExampleRendererDataAssetPath = "Assets/Trd/ShinySSRR/Pipelines/URP/ForwardRenderer.asset";
         private const string SsgiFeatureTypeFullName = "MF.SSGI.SSGIFeature";
         private const string SsgiVolumeComponentTypeFullName = "MF.SSGI.SSGIVolumeComponent";
         private const string SsgiShaderSetupMenuPath = "Tools/SSGI/Add SSGI to 'Always included shaders'";

@@ -1186,7 +1186,7 @@ namespace Xuan.Prometheus.Effects.Tests
             try
             {
                 Assert.That(persistentLibrary, Is.Not.Null);
-                GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRootObject.transform, persistentLibrary, "Character_Yefa", "Enemy_Slime", Array.Empty<Transform>(), 0);
+                GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRootObject.transform, persistentLibrary, "Yefa", "Slime", Array.Empty<Transform>(), 0);
                 gameplayKit.Configure(options);
                 Assert.That(gameplayKit.GetSystem<EffectSystem>().DefaultLibrary, Is.SameAs(persistentLibrary));
                 Assert.That(gameplayKit.GetSystem<CombatAudioPresentationSystem>(), Is.Not.Null, "正式 GameplayKit 必须注册单局伤害音频表现系统。");
