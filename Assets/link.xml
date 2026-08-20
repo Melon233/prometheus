@@ -1,0 +1,5 @@
+<linker>
+    <!-- 完整保留 Runtime.asmdef 生成的 Runtime 程序集，防止 Managed Stripping 删除由反射、序列化或运行时注册间接访问的类型与成员。 -->
+    <assembly fullname="Runtime" preserve="all" />
+    <assembly fullname="YooAsset" preserve="all" />
+</linker>

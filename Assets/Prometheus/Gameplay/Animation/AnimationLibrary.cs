@@ -193,13 +193,5 @@ namespace Xuan.Prometheus
             InvalidateSemanticIndex();
         }
 
-#if UNITY_EDITOR
-        /// <summary>从 Odin Inspector 打开完整的 MixDuration 行列矩阵编辑窗口。</summary>
-        [Button("打开 MixDuration 矩阵配置"), PropertyOrder(-1000)]
-        private void OpenMixDurationMatrixWindow()
-        {
-            Xuan.Prometheus.Editor.AnimationMixDurationMatrixWindow.Open(this);
-        }
-#endif
     }
 }

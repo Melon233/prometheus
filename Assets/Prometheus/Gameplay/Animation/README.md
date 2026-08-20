@@ -10,6 +10,8 @@
 - `Logic` 负责输入、状态切换、命中盒、音效、特效、伤害信号和其他玩法行为。
 - `Component` 只保存 Unity 引用与运行数据，不包含玩法流程。
 
+运行时动画代码由 `Runtime` 程序集承载；`Editor` 目录由仅在 Unity Editor 加载的 `Prometheus.Animation.Editor` 程序集承载，并单向引用 `Runtime` 与 Spine。`AnimationLibrary` 不得反向引用任何 Editor 类型。其 Inspector 由 `AnimationLibraryEditor` 在 Editor 侧扩展，保留 Odin 绘制并提供“打开 MixDuration 矩阵配置”入口；Animation EditorTests 必须显式引用该 Editor 程序集。
+
 ## 主轨优先级
 
 | 优先级 | 数值 | 用途 |

@@ -1,5 +1,11 @@
 # UIKit 面板与按钮绑定
 
+## 初始化与 EventSystem
+
+`UIKit.AfterNew` 初始化时会检查 `EventSystem.current`。场景已经存在 EventSystem 时直接沿用；场景未提供时，UIKit 动态创建包含 `EventSystem` 和 `InputSystemUIInputModule` 的 `[UIKit.EventSystem]` 节点，并通过 `DontDestroyOnLoad` 保持跨场景可用。
+
+UIKit 只记录和释放自己创建的事件系统，不接管场景预置的 EventSystem。项目启用新版 Input System，因此运行时事件系统固定使用 `InputSystemUIInputModule`，不创建旧版 `StandaloneInputModule`。
+
 ## 面板生成链路
 
 UI Prefab 根节点使用 `UIComponentBinder` 保存稳定名称和组件引用。选中 Prefab 后执行 `Tools/Prometheus/UIKit/Generate Selected Panel`，生成器会覆盖 `Assets/Prometheus/Framework/UIKit/Generated` 下的强类型 `PanelBase`，但只在业务 Panel 不存在时创建业务脚本，因此重复生成不会覆盖已经实现的界面逻辑。

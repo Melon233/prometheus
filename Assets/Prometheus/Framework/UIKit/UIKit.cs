@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using Xuan.Prometheus.Asset;
 
@@ -75,6 +77,8 @@ namespace Xuan.Prometheus
     public sealed class UIKit : Kit, IUIKit
     {
         private const string RootName = "[UIKit]";
+        /// <summary>UIKit 在场景未提供事件系统时创建的运行时节点名称。</summary>
+        private const string EventSystemName = "[UIKit.EventSystem]";
         private const string WorldRootName = "[UIKit.World]";
         /// <summary>屏幕空间世界锚点 Canvas 的运行时根节点名称。</summary>
         private const string WorldOverlayRootName = "[UIKit.WorldOverlay]";
@@ -90,6 +94,8 @@ namespace Xuan.Prometheus
         private readonly HashSet<Type> openingPanelTypes = new HashSet<Type>();
         private readonly List<WorldUIRecord> activeWorldUIRecords = new List<WorldUIRecord>();
         private readonly Dictionary<string, Stack<WorldUIRecord>> worldUIPools = new Dictionary<string, Stack<WorldUIRecord>>(StringComparer.Ordinal);
+        /// <summary>仅记录 UIKit 自己创建的事件系统，避免释放外部场景持有的 EventSystem。</summary>
+        private GameObject ownedEventSystemObject;
         private GameObject rootObject;
         private RectTransform cacheRoot;
         private GameObject worldRootObject;
@@ -125,6 +131,7 @@ namespace Xuan.Prometheus
                 return;
 
             UIPanelTypeRegistry.Rebuild();
+            CreateEventSystem();
             CreateRoot();
             CreateWorldRoot();
             CreateWorldOverlayRoot();
@@ -270,6 +277,7 @@ namespace Xuan.Prometheus
             openingPanelTypes.Clear();
             layerRoots.Clear();
             DestroyAllWorldUI();
+            DestroyUnityObject(ownedEventSystemObject);
             DestroyUnityObject(rootObject);
             DestroyUnityObject(worldRootObject);
             DestroyUnityObject(worldOverlayRootObject);
@@ -281,6 +289,7 @@ namespace Xuan.Prometheus
             worldCanvas = null;
             worldOverlayRootObject = null;
             worldOverlayCanvasRoot = null;
+            ownedEventSystemObject = null;
             worldUICamera = null;
             isInitialized = false;
             isDisposed = true;
@@ -742,6 +751,16 @@ namespace Xuan.Prometheus
             layerRoots.Add(UIPanelLayer.Popup, CreateLayer(nameof(UIPanelLayer.Popup), true));
             layerRoots.Add(UIPanelLayer.Overlay, CreateLayer(nameof(UIPanelLayer.Overlay), true));
             cacheRoot = CreateLayer("Cache", false);
+        }
+
+        /// <summary>在当前场景没有 EventSystem 时创建使用新版 Input System 的跨场景事件系统，保证动态生成的 UIKit 面板能够接收指针和导航事件。</summary>
+        private void CreateEventSystem()
+        {
+            if (EventSystem.current != null)
+                return;
+
+            ownedEventSystemObject = new GameObject(EventSystemName, typeof(EventSystem), typeof(InputSystemUIInputModule));
+            UnityEngine.Object.DontDestroyOnLoad(ownedEventSystemObject);
         }
 
         /// <summary>

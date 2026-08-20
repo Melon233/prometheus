@@ -1,0 +1,19 @@
+{
+    "name": "Prometheus.Animation.Editor",
+    "rootNamespace": "Xuan.Prometheus.Editor",
+    "references": [
+        "GUID:16e57f450b7e31a40b7cc5d986111bbb",
+        "GUID:68765d262e2128e4ab49c983f3411946"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

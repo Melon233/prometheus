@@ -131,7 +131,7 @@ namespace Xuan.Prometheus
             outputCameraObject.AddComponent<StudioListener>();
             outputCameraData = outputCameraObject.AddComponent<UniversalAdditionalCameraData>();
             ConfigureUniversalCamera(outputCameraData);
-            if (PrometheusRenderQualityController.CurrentPlatform == PrometheusRenderPlatform.Pc) AddSsgiCamera(outputCameraObject);
+            // if (PrometheusRenderQualityController.CurrentPlatform == PrometheusRenderPlatform.Pc) AddSsgiCamera(outputCameraObject);
             PrometheusRenderQualityController.ApplyCurrentCameraQuality(outputCamera, outputCameraData);
             brain = outputCameraObject.AddComponent<CinemachineBrain>();
             brain.UpdateMethod = CinemachineBrain.UpdateMethods.LateUpdate;

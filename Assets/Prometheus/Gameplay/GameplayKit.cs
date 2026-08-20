@@ -60,7 +60,7 @@ namespace Xuan.Prometheus
         {
             PackageName = ValidateText(packageName, nameof(packageName));
             RuntimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
-            SceneLocation = "SampleScene";
+            SceneLocation = "MainWorld";
             EffectLibrary = effectLibrary != null ? effectLibrary : throw new ArgumentNullException(nameof(effectLibrary));
             TeamMemberLocations = ValidateTeamMemberLocations(teamMemberLocations);
             EnemyLocation = ValidateText(enemyLocation, nameof(enemyLocation));

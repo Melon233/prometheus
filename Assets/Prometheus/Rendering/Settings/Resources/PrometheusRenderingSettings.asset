@@ -19,7 +19,7 @@ MonoBehaviour:
   mobileForwardLowPipelineAsset: {fileID: 11400000, guid: 4cbd3ccf6adc4d5e884f25d08db90e55, type: 2}
   mobileForwardMidPipelineAsset: {fileID: 11400000, guid: 733b59b7876244279c82a7fec057f082, type: 2}
   defaultEnvironmentProfile: {fileID: 11400000, guid: a496d36403e1fcf49aa6830374fa64fc, type: 2}
-  startupPcRenderPath: 1
+  startupPcRenderPath: 0
   startupPcQualityLevel: 1
   startupMobileQualityLevel: 1
   requiresCameraDepthTexture: 1
@@ -27,7 +27,7 @@ MonoBehaviour:
   useSrpBatcher: 1
   supportsDynamicBatching: 0
   useAdaptivePerformance: 0
-  screenSpaceReflectionsEnabledByDefault: 1
+  screenSpaceReflectionsEnabledByDefault: 0
   mainLightRenderingMode: 1
   supportsMainLightShadows: 1
   additionalLightsRenderingMode: 1

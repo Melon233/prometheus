@@ -209,7 +209,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   packageName: DefaultPackage
-  gameplaySceneAddress: SampleScene
+  gameplaySceneAddress: MainWorld
   effectLibraryAddress: EffectLibrary
   playerAddress: Yefa
   secondPlayerAddress: Yousaer
