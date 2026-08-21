@@ -1,5 +1,15 @@
 <linker>
     <!-- 完整保留 Runtime.asmdef 生成的 Runtime 程序集，防止 Managed Stripping 删除由反射、序列化或运行时注册间接访问的类型与成员。 -->
     <assembly fullname="Runtime" preserve="all" />
+    <!-- 完整保留 YooAsset 运行时程序集，确保资源包加载与反序列化间接访问的代码不会被 Player 裁剪。 -->
     <assembly fullname="YooAsset" preserve="all" />
+    <!-- 完整保留 Input System 运行时程序集，确保当前及未来 AssetBundle 引用的屏幕输入组件不会被 Player 裁剪。 -->
+    <assembly fullname="Unity.InputSystem" preserve="all" />
+    <!-- 保留资源包可能序列化引用的常用三维碰撞体，避免 Unity 原生组件类型被裁剪。 -->
+    <assembly fullname="UnityEngine.PhysicsModule">
+        <type fullname="UnityEngine.BoxCollider" preserve="all" />
+        <type fullname="UnityEngine.SphereCollider" preserve="all" />
+        <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+        <type fullname="UnityEngine.MeshCollider" preserve="all" />
+    </assembly>
 </linker>

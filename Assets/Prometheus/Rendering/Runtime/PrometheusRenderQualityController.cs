@@ -106,13 +106,25 @@ namespace Xuan.Prometheus.Rendering
         {
             settings = Resources.Load<PrometheusRenderingSettings>(PrometheusRenderingSettings.ResourceName);
             if (settings == null) throw new InvalidOperationException($"Resources must contain '{PrometheusRenderingSettings.ResourceName}'. Run Prometheus/Rendering/Create Or Update Rendering Assets.");
-            currentPlatform = Application.isMobilePlatform ? PrometheusRenderPlatform.Mobile : PrometheusRenderPlatform.Pc;
+            currentPlatform = ResolveRuntimePlatform();
             currentRenderPath = currentPlatform == PrometheusRenderPlatform.Mobile ? PrometheusRenderPath.Forward : settings.StartupPcRenderPath;
             currentQualityLevel = settings.GetStartupQualityLevel(currentPlatform);
             screenSpaceReflectionsRequested = settings.ScreenSpaceReflectionsEnabledByDefault;
             QualitySettings.activeQualityLevelChanged += HandleUnityQualityLevelChanged;
             initialized = true;
             ApplyConfiguration(false, false);
+        }
+
+        /// <summary>
+        /// Uses the Mobile rendering family in Editor Play Mode so local previews match Android while standalone Players still resolve from their real platform.
+        /// </summary>
+        private static PrometheusRenderPlatform ResolveRuntimePlatform()
+        {
+#if UNITY_EDITOR
+            return PrometheusRenderPlatform.Mobile;
+#else
+            return Application.isMobilePlatform ? PrometheusRenderPlatform.Mobile : PrometheusRenderPlatform.Pc;
+#endif
         }
 
         /// <summary>

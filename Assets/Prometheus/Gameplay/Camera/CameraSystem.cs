@@ -166,7 +166,7 @@ namespace Xuan.Prometheus
             camera.cullingMask = -1;
             camera.renderingPath = RenderingPath.UsePlayerSettings;
             camera.targetDisplay = 0;
-            camera.stereoTargetEye = StereoTargetEyeMask.Both;
+            // URP 不设置仅由内置渲染管线支持的 stereoTargetEye，避免每次创建游戏相机时产生无效配置警告。
             camera.allowHDR = false;
             camera.allowMSAA = false;
             camera.allowDynamicResolution = false;

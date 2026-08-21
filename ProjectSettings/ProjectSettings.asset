@@ -868,7 +868,8 @@ PlayerSettings:
     Standalone: 0
   il2cppCompilerConfiguration:
     Android: 1
-  il2cppCodeGeneration: {}
+  il2cppCodeGeneration:
+    Android: 1
   il2cppStacktraceInformation:
     Android: 0
   managedStrippingLevel:
@@ -990,6 +991,6 @@ PlayerSettings:
   insecureHttpOption: 0
   androidVulkanDenyFilterList: []
   androidVulkanAllowFilterList: []
-  androidVulkanDeviceFilterListAsset: {fileID: 0}
+  androidVulkanDeviceFilterListAsset: {fileID: 7862867394083496736, guid: 99c448f25e596e04a97a542c62f2c186, type: 2}
   d3d12DeviceFilterListAsset: {fileID: 0}
   allowedHttpConnections: 3

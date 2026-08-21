@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -72,7 +73,7 @@ namespace Xuan.Prometheus.Rendering.Editor
             ConfigurePipelineCapabilities(pipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Pc, PrometheusRenderQualityLevel.Mid), PrometheusRenderPath.Deferred);
             ConfigurePipelineCapabilities(mobileForwardLowPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Low), PrometheusRenderPath.Forward);
             ConfigurePipelineCapabilities(mobileForwardMidPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Mid), PrometheusRenderPath.Forward);
-            AssignPipelineToUnitySettings(pcForwardLowPipelineAsset, pcForwardMidPipelineAsset);
+            AssignPipelineToUnitySettings(mobileForwardLowPipelineAsset, mobileForwardMidPipelineAsset);
             EnsureSsgiShadersAreIncludedInBuild();
             EnsureShinySsrVolumeProfiles();
             EditorUtility.SetDirty(forwardRendererData);
@@ -475,11 +476,23 @@ namespace Xuan.Prometheus.Rendering.Editor
         }
 
         /// <summary>
-        /// Assigns the desktop Mid asset as the Graphics default and maps Unity's Low and Mid compatibility entries to desktop Forward assets.
+        /// Assigns Mobile Forward Mid as the editor Graphics default and maps Unity's Low and Mid compatibility entries to Mobile Forward assets.
         /// </summary>
         private static void AssignPipelineToUnitySettings(UniversalRenderPipelineAsset lowPipelineAsset, UniversalRenderPipelineAsset midPipelineAsset)
         {
             GraphicsSettings.defaultRenderPipeline = midPipelineAsset;
+            AssignQualityPipelines(lowPipelineAsset, midPipelineAsset);
+        }
+
+        /// <summary>
+        /// Maps Unity's two compatibility quality entries to the exact platform pipelines that URP must inspect during Player shader collection.
+        /// </summary>
+        /// <param name="lowPipelineAsset">Platform-specific Low pipeline included in the Player build.</param>
+        /// <param name="midPipelineAsset">Platform-specific Mid pipeline included in the Player build.</param>
+        internal static void AssignQualityPipelines(UniversalRenderPipelineAsset lowPipelineAsset, UniversalRenderPipelineAsset midPipelineAsset)
+        {
+            if (lowPipelineAsset == null) throw new ArgumentNullException(nameof(lowPipelineAsset));
+            if (midPipelineAsset == null) throw new ArgumentNullException(nameof(midPipelineAsset));
             UnityEngine.Object qualitySettingsObject = QualitySettings.GetQualitySettings();
             SerializedObject serializedQualitySettings = new SerializedObject(qualitySettingsObject);
             SerializedProperty qualityLevels = serializedQualitySettings.FindProperty("m_QualitySettings");
@@ -520,6 +533,41 @@ namespace Xuan.Prometheus.Rendering.Editor
 
                 currentPath = nextPath;
             }
+        }
+    }
+
+    /// <summary>
+    /// Selects target-platform quality pipelines before URP gathers Player shader variants, so runtime-selected mobile assets retain their lighting and shadow passes.
+    /// </summary>
+    internal sealed class PrometheusRenderingBuildPreprocessor : IPreprocessBuildWithReport
+    {
+        /// <summary>Runs at the earliest Unity build callback order, before URP's int.MinValue plus 100 pipeline collection callback.</summary>
+        public int callbackOrder => int.MinValue;
+
+        /// <summary>
+        /// Assigns Low and Mid compatibility entries for the requested Player platform without changing the desktop Graphics default.
+        /// </summary>
+        /// <param name="report">Unity build report containing the concrete Player target.</param>
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            if (report == null) throw new ArgumentNullException(nameof(report));
+            PrometheusRenderingSettings renderingSettings = Resources.Load<PrometheusRenderingSettings>(PrometheusRenderingSettings.ResourceName);
+            if (renderingSettings == null) throw new BuildFailedException($"Resources must contain '{PrometheusRenderingSettings.ResourceName}' before building a Player.");
+            PrometheusRenderPlatform platform = IsMobileBuildTarget(report.summary.platform) ? PrometheusRenderPlatform.Mobile : PrometheusRenderPlatform.Pc;
+            PrometheusRenderPath renderPath = platform == PrometheusRenderPlatform.Mobile ? PrometheusRenderPath.Forward : renderingSettings.StartupPcRenderPath;
+            UniversalRenderPipelineAsset lowPipelineAsset = renderingSettings.GetPipelineAsset(platform, renderPath, PrometheusRenderQualityLevel.Low);
+            UniversalRenderPipelineAsset midPipelineAsset = renderingSettings.GetPipelineAsset(platform, renderPath, PrometheusRenderQualityLevel.Mid);
+            PrometheusRenderingAssetGenerator.AssignQualityPipelines(lowPipelineAsset, midPipelineAsset);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Prometheus Player build '{report.summary.platform}' includes '{lowPipelineAsset.name}' and '{midPipelineAsset.name}' for Low and Mid runtime quality.");
+        }
+
+        /// <summary>Returns whether the Player target uses the runtime mobile rendering family.</summary>
+        /// <param name="buildTarget">Concrete Unity Player build target.</param>
+        /// <returns>True for Android and iOS Player builds.</returns>
+        private static bool IsMobileBuildTarget(BuildTarget buildTarget)
+        {
+            return buildTarget == BuildTarget.Android || buildTarget == BuildTarget.iOS;
         }
     }
 }

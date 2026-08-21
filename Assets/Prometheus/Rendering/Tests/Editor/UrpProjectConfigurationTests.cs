@@ -70,14 +70,15 @@ namespace Xuan.Prometheus.Rendering.Tests
         private const string UrpCompatibilityModeDefine = "URP_COMPATIBILITY_MODE";
 
         /// <summary>
-        /// Verifies that the Graphics default is the desktop Deferred Mid pipeline selected by the external rendering settings.
+        /// Verifies that the Graphics default is Mobile Forward Mid so editor rendering matches the Android Mid configuration.
         /// </summary>
         [Test]
-        public void GraphicsDefaultRenderPipelineUsesDesktopDeferredMid()
+        public void GraphicsDefaultRenderPipelineUsesMobileForwardMid()
         {
             PrometheusRenderingSettings renderingSettings = LoadRenderingSettings();
-            Assert.That(renderingSettings.PipelineAsset, Is.Not.Null, "Prometheus rendering settings must reference the desktop Deferred Mid pipeline.");
-            Assert.That(GraphicsSettings.defaultRenderPipeline, Is.SameAs(renderingSettings.PipelineAsset), "GraphicsSettings must use the desktop Deferred Mid startup pipeline.");
+            UniversalRenderPipelineAsset expectedPipelineAsset = renderingSettings.GetPipelineAsset(PrometheusRenderPlatform.Mobile, PrometheusRenderPath.Forward, PrometheusRenderQualityLevel.Mid);
+            Assert.That(expectedPipelineAsset, Is.Not.Null, "Prometheus rendering settings must reference the Mobile Forward Mid pipeline.");
+            Assert.That(GraphicsSettings.defaultRenderPipeline, Is.SameAs(expectedPipelineAsset), "GraphicsSettings must use Mobile Forward Mid for editor rendering.");
         }
 
         /// <summary>
@@ -96,8 +97,8 @@ namespace Xuan.Prometheus.Rendering.Tests
                     QualitySettings.SetQualityLevel(qualityIndex, false);
                     UniversalRenderPipelineAsset pipelineAsset = QualitySettings.renderPipeline as UniversalRenderPipelineAsset;
                     Assert.That(pipelineAsset, Is.Not.Null, $"Quality level '{QualitySettings.names[qualityIndex]}' must reference a UniversalRenderPipelineAsset.");
-                    UniversalRenderPipelineAsset expectedPipelineAsset = qualityIndex == 0 ? renderingSettings.GetPipelineAsset(PrometheusRenderPlatform.Pc, PrometheusRenderPath.Forward, PrometheusRenderQualityLevel.Low) : renderingSettings.GetPipelineAsset(PrometheusRenderPlatform.Pc, PrometheusRenderPath.Deferred, PrometheusRenderQualityLevel.Mid);
-                    Assert.That(pipelineAsset, Is.SameAs(expectedPipelineAsset), $"Quality level '{QualitySettings.names[qualityIndex]}' must reference its configured desktop compatibility pipeline.");
+                    UniversalRenderPipelineAsset expectedPipelineAsset = renderingSettings.GetPipelineAsset(PrometheusRenderPlatform.Mobile, PrometheusRenderPath.Forward, qualityIndex == 0 ? PrometheusRenderQualityLevel.Low : PrometheusRenderQualityLevel.Mid);
+                    Assert.That(pipelineAsset, Is.SameAs(expectedPipelineAsset), $"Quality level '{QualitySettings.names[qualityIndex]}' must reference its configured Mobile Forward editor pipeline.");
                     SerializedProperty rendererList = new SerializedObject(pipelineAsset).FindProperty("m_RendererDataList");
                     Assert.That(rendererList.arraySize, Is.GreaterThan(0), $"Quality level '{QualitySettings.names[qualityIndex]}' must contain a renderer data reference.");
                     Assert.That(rendererList.GetArrayElementAtIndex(0).objectReferenceValue, Is.Not.Null, $"Quality level '{QualitySettings.names[qualityIndex]}' must contain a valid default renderer data asset.");
