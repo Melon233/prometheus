@@ -32,6 +32,7 @@ namespace Xuan.Prometheus.Logic
             AddComp(bindGo.GetComponent<SpecialAttackComponent>());
             AddComp(bindGo.GetComponent<UltimateComponent>());
             AddComp<CoreTalentComponent>();
+            AddComp<InteractComponent>();
             AddLogic<GroundMoveLogic>();
             AddLogic<IdleLogic>();
             AddLogic<MotionLogic>();
@@ -55,7 +56,8 @@ namespace Xuan.Prometheus.Logic
             AddLogic<EffectLogic>();
             AddLogic<AttackedLogic>();
             AddLogic<DieLogic>();
-            AddLogic<WorldHpBarLogic>();
+            AddLogic<InteractLogic>();
+            // AddLogic<WorldHpBarLogic>();
         }
     }
 }

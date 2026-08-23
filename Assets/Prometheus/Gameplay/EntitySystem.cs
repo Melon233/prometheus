@@ -276,7 +276,9 @@ namespace Xuan.Prometheus
             {
                 for (int slotIndex = 0; slotIndex < TeamSystem.Capacity; slotIndex++)
                 {
-                    GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], startupOptions.RuntimeRoot);
+                    // GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], startupOptions.RuntimeRoot);
+                    GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], new Vector3(280.079987f, 0.949999988f, 549.880005f), Quaternion.identity, startupOptions.RuntimeRoot);
+
                     int entityId = 0;
                     try
                     {

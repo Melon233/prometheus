@@ -228,6 +228,9 @@ namespace Xuan.Prometheus.Ai
             effectComponent.Runtime.Publish(signal);
         }
 
+        /// <summary>交互感应扩展接口的空实现：敌人逻辑不处理触发离开。</summary>
+        public void OnTriggerExit(ColliderProxy source, Collider other) { }
+
         /// <summary>死亡事实发生时永久停止 Brain，确保死亡动画不再被 AI 表现覆盖。</summary>
         private void OnDie(DieEvent evt)
         {

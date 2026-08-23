@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+// 大世界 POI 客户端-服务器通信协议。
+// 传输层：TCP + 4 字节大端长度前缀 + Packet 消息体。
+// 协议修改后需手动重新生成 Go / C# 代码：在 Server/ 目录执行 gen_proto.ps1。
+
+package poi;
+
+option go_package = "prometheus/gen/protocol;protocol";
+option csharp_namespace = "Xuan.Prometheus.Protocol";
+
+// ===== 枚举 =====
+
+// POI 类型，与客户端 PoiType 数值一一对应（0..7）。
+enum PoiType {
+  POI_TYPE_TELE_ANCHOR = 0;   // 传送锚点
+  POI_TYPE_STATUE = 1;        // 七天神像
+  POI_TYPE_CHEST = 2;         // 宝箱
+  POI_TYPE_SPIRIT_CORE = 3;   // 神瞳
+  POI_TYPE_GATHERING = 4;     // 采集物
+  POI_TYPE_DUNGEON = 5;       // 副本
+  POI_TYPE_MAP_BOSS = 6;      // 地图 Boss
+  POI_TYPE_MONSTER_CAMP = 7;  // 怪物营地
+}
+
+// POI 交互操作，与客户端 PoiOp 数值一一对应（0..5）。
+enum PoiOp {
+  POI_OP_UNLOCK = 0;        // 解锁类：传送锚点 / 七天神像 / 副本
+  POI_OP_OPEN_CHEST = 1;    // 开启宝箱
+  POI_OP_COLLECT_CORE = 2;  // 收集神瞳
+  POI_OP_GATHER = 3;        // 采集（可刷新，重复成功）
+  POI_OP_DEFEAT = 4;        // 击败地图 Boss（可刷新，重复成功）
+  POI_OP_OFFER_STATUE = 5;  // 七天神像供奉：消耗风神瞳推进进度，升级发长剑
+}
+
+// ===== 状态 =====
+
+// 服务器下发的 POI 可变状态（持久化对象）。
+// id 为语义化字符串（如 "Mond_Chest_1"），同时是 MongoDB 主键与客户端同步键。
+// 位置/旋转/chunk_id 等静态定义存于导出配置，不随状态同步。
+message PoiState {
+  string id = 1;
+  PoiType poi_type = 2;
+  bool statue_unlocked = 3;        // 七天神像：是否激活
+  int32 statue_level = 4;          // 七天神像：供奉等级
+  float statue_progress = 5;       // 七天神像：供奉进度
+  bool anchor_unlocked = 6;        // 传送锚点：是否激活
+  int64 gathering_respawn_at = 7;  // 采集物：下次重生时间戳（Unix 毫秒，0=可用）
+  bool chest_opened = 8;           // 宝箱：是否已开启
+  bool dungeon_unlocked = 9;       // 副本：是否已激活
+  int64 map_boss_respawn_at = 10;  // 地图 Boss：下次重生时间戳（Unix 毫秒，0=可用）
+  bool spirit_core_collected = 11; // 神瞳：是否已收集
+}
+
+// ===== 请求 / 响应 =====
+
+// 全量同步（保留用于初始加载 / 调试）。
+message PullAllRequest {}
+
+// 全部 POI 状态快照。
+message PullAllResponse {
+  repeated PoiState states = 1;
+}
+
+// 按区块拉取：客户端在需要时（进入新 chunk）拉取指定 chunk 内的 POI 状态。
+message PullChunkRequest {
+  int32 chunk_id = 1;
+}
+
+// 指定 chunk 内的 POI 状态。
+message PullChunkResponse {
+  int32 chunk_id = 1;
+  repeated PoiState states = 2;
+}
+
+// 交互请求：按 id 定位目标，op 指明变更类型。
+message InteractRequest {
+  string id = 1;
+  PoiOp op = 2;
+}
+
+// 交互结果：success 表示服务器确认并已应用变更；state 为变更后的最新状态。
+message InteractResponse {
+  bool success = 1;
+  PoiState state = 2;
+}
+
+// ===== 背包 =====
+
+// 背包中的一条物品（按 item_id + quality 聚合为一叠）。
+message Item {
+  string item_id = 1;
+  int32 quality = 2;
+  int32 quantity = 3;
+}
+
+// 获取当前玩家全部物品。
+message GetItemsRequest {}
+
+// 当前玩家全部物品列表。
+message GetItemsResponse {
+  repeated Item items = 1;
+}
+
+// ===== 消息信封（TCP 长度前缀的帧体） =====
+message Packet {
+  oneof body {
+    PullAllRequest pull_all = 1;
+    PullAllResponse pull_all_resp = 2;
+    InteractRequest interact = 3;
+    InteractResponse interact_resp = 4;
+    PullChunkRequest pull_chunk = 5;
+    PullChunkResponse pull_chunk_resp = 6;
+    GetItemsRequest get_items = 7;
+    GetItemsResponse get_items_resp = 8;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "items": [
+    { "id": "Sword", "name": "长剑", "category": "weapon", "quality": 1 },
+    { "id": "Armor", "name": "护甲", "category": "equipment", "quality": 1 },
+    { "id": "Apple", "name": "苹果", "category": "food", "quality": 1 },
+    { "id": "Anemoculus", "name": "风神瞳", "category": "special", "quality": 1 },
+    { "id": "ExpBook", "name": "经验书", "category": "consumable", "quality": 1 }
+  ],
+  "statue": {
+    "progress_per_oculus": 1,
+    "level_threshold": 10
+  }
+}

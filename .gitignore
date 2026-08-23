@@ -105,3 +105,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+/[Aa]ssets/StreamingAssets
+
+# Go 服务器构建产物（由 Editor 进入 Play 时 go build 生成）
+/Server/bin/

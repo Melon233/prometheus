@@ -51,7 +51,7 @@ namespace Xuan.Prometheus
                 case HudCommandType.OpenGuide: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenGuide triggered."); break;
                 case HudCommandType.OpenEvent: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenEvent triggered."); break;
                 case HudCommandType.OpenCharacter: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenCharacter triggered."); break;
-                case HudCommandType.OpenBag: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenBag triggered."); break;
+                case HudCommandType.OpenBag: Core.UI.OpenPanel<BagPanel>(); break;
                 default: throw new ArgumentOutOfRangeException(nameof(command), command, "Unknown HUD command.");
             }
         }

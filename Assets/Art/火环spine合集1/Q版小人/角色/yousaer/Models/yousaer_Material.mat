@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: yousaer_Material
-  m_Shader: {fileID: 4800000, guid: 1e8a610c9e01c3648bac42585e5fc676, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8ee396b76f1828e44a4a8acc44967ff0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -31,10 +31,12 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cutoff: 0.1
+    - _DoubleSidedLighting: 0
     - _OutlineMipLevel: 0
     - _OutlineReferenceTexWidth: 1024
     - _OutlineSmoothness: 1
     - _OutlineWidth: 3
+    - _ReceiveShadows: 0
     - _StencilComp: 8
     - _StencilRef: 1
     - _StraightAlphaInput: 0

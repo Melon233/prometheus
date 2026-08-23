@@ -1,0 +1,43 @@
+# prometheus 项目本地 MongoDB 环境
+# 使用方式（在本目录下执行）：
+#   启动：docker compose up -d
+#   停止：docker compose down
+#   停止并清空数据：docker compose down -v
+#
+# 服务说明：
+#   mongo          —— MongoDB 数据库本体（游戏服务器通过 C# 驱动直连 27017）
+#   mongo-express  —— 网页管理界面，浏览器访问 http://localhost:8081
+#
+# 注意：admin/admin123 是本地开发默认凭据，如需对外请务必修改。
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: prometheus-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"                 # C# 驱动直连端口
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    volumes:
+      - mongo_data:/data/db           # 数据持久化，容器重建不丢数据
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: prometheus-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"                   # 网页 GUI 访问端口
+    environment:
+      # 与 mongo 服务里的 root 凭据保持一致
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin123
+      # 注意：容器内通过服务名 mongo 访问，不是 localhost
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin123@mongo:27017/
+      ME_CONFIG_BASICAUTH: "false"    # 本地开发关闭登录，如需可改为 true 并配置用户名密码
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:

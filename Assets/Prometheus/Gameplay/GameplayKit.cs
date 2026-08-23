@@ -261,6 +261,8 @@ namespace Xuan.Prometheus
             AddSystem(new CombatAudioPresentationSystem());
             AddSystem(new CameraSystem(startupOptions.RuntimeRoot));
             AddSystem(new MinimapSystem());
+            AddSystem(new Xuan.Prometheus.World.WorldSystem());
+            AddSystem(new BagSystem());
             teamSystem = new TeamSystem();
             AddSystem(teamSystem);
         }

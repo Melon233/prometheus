@@ -127,6 +127,11 @@ namespace Xuan.Prometheus
         protected global::UnityEngine.UI.Button Avatar3 { get; private set; }
 
         /// <summary>
+        /// 获取 Binder 中名为 InteractBar 的强类型组件引用。
+        /// </summary>
+        protected global::SuperScrollView.LoopListView2 InteractBar { get; private set; }
+
+        /// <summary>
         /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
         /// </summary>
         protected abstract void OnLotteryButtonClick();
@@ -235,6 +240,7 @@ namespace Xuan.Prometheus
             Avatar1 = binder.Get<global::UnityEngine.UI.Button>(21, "Avatar1");
             Avatar2 = binder.Get<global::UnityEngine.UI.Button>(22, "Avatar2");
             Avatar3 = binder.Get<global::UnityEngine.UI.Button>(23, "Avatar3");
+            InteractBar = binder.Get<global::SuperScrollView.LoopListView2>(24, "InteractBar");
 
             LotteryButton.onClick.AddListener(OnLotteryButtonClick);
             UltButton.onClick.AddListener(OnUltButtonClick);
@@ -300,6 +306,7 @@ namespace Xuan.Prometheus
             Avatar1 = null;
             Avatar2 = null;
             Avatar3 = null;
+            InteractBar = null;
         }
     }
 }

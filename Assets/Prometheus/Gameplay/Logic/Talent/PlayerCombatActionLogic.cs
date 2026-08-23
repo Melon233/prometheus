@@ -149,6 +149,9 @@ namespace Xuan.Prometheus.Logic
             EffectComponent.Runtime.Publish(signal);
         }
 
+        /// <summary>交互感应扩展接口的空实现：战斗动作逻辑不处理触发离开。</summary>
+        public void OnTriggerExit(ColliderProxy source, Collider other) { }
+
         /// <summary>由具体动作绑定一枚自己拥有的碰撞代理，并在初始化时确保碰撞体关闭。</summary>
         protected void BindHitbox(ColliderProxy hitbox)
         {

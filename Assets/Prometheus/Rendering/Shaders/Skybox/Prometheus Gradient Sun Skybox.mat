@@ -59,7 +59,7 @@ Material:
     - _SunHaloSize: 8
     - _SunIntensity: 4
     m_Colors:
-    - _GradientColor0: {r: 0.08627451, g: 0.09582551, b: 0.14117648, a: 1}
+    - _GradientColor0: {r: 0.11894344, g: 0.15470468, b: 0.36927217, a: 1}
     - _GradientColor1: {r: 0.08, g: 0.34, b: 0.78, a: 1}
     - _GradientColor2: {r: 0.08, g: 0.34, b: 0.78, a: 1}
     - _GradientColor3: {r: 0.08, g: 0.34, b: 0.78, a: 1}

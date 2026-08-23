@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using SuperScrollView;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,7 @@ using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic.Talent;
+using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus
 {
@@ -31,11 +33,14 @@ namespace Xuan.Prometheus
         /// <summary>保存当前单局的实体与强类型字段监听系统。</summary>
         private EntitySystem entitySystem;
 
-        /// <summary>保存生命、上限、核心能量、技能冷却、大招状态和 Buff 列表对应的可释放监听。</summary>
-        private readonly ListenHandle[] listenHandles = new ListenHandle[9];
+        /// <summary>保存生命、上限、核心能量、技能冷却、大招状态、Buff 列表和交互列表对应的可释放监听。</summary>
+        private readonly ListenHandle[] listenHandles = new ListenHandle[10];
 
         /// <summary>复用当前上场成员的持续型 Buff 快照，避免列表逐帧刷新时产生临时集合。</summary>
         private readonly List<EffectInstance> observedBuffs = new List<EffectInstance>();
+
+        /// <summary>复用当前上场成员的附近交互物快照，供交互栏列表刷新。</summary>
+        private readonly List<PoiConfig> observedInteracts = new List<PoiConfig>();
 
         /// <summary>标记当前缓存面板是否正在显示，关闭期间只记录目标编号而不持有字段监听。</summary>
         private bool isObserving;
@@ -51,6 +56,9 @@ namespace Xuan.Prometheus
 
         /// <summary>保存当前单局的小地图系统，地图采样与玩家映射不由 UI 自行计算。</summary>
         private MinimapSystem minimapSystem;
+
+        /// <summary>保存当前单局的大世界 POI 系统，交互点击由它向服务器提交请求。</summary>
+        private WorldSystem worldSystem;
 
         /// <summary>保存运行时创建在 MiniMapButton 内的地图 RawImage。</summary>
         private RawImage minimapImage;
@@ -92,6 +100,7 @@ namespace Xuan.Prometheus
         protected override void OnInitialize()
         {
             BuffList.InitListView(0, OnGetBuffItemByIndex);
+            InteractBar.InitListView(0, OnGetInteractItemByIndex);
             CreateMinimapView();
             Debug.Log($"[UIKit] {nameof(HudPanel)} initialized with {Binder.Count} generated component binding(s).", Root);
         }
@@ -106,6 +115,7 @@ namespace Xuan.Prometheus
             if (!gameplayKit.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
             if (!gameplayKit.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(HudCommandSystem)}.");
             if (!gameplayKit.TryGetSystem(out minimapSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(MinimapSystem)}.");
+            if (!gameplayKit.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(WorldSystem)}.");
             minimapSystem.BindView(minimapImage, minimapMaskMaterial);
             isObserving = true;
             BindObservedEntity(teamSystem.ActiveEntityId);
@@ -170,6 +180,7 @@ namespace Xuan.Prometheus
             listenHandles[6] = entitySystem.Listen<UltimateComponent>(entityId, component => component.CooldownRemainingProperty, _ => ApplyUltimateState(entityId));
             listenHandles[7] = entitySystem.Listen<SkillComponent>(entityId, component => component.CooldownRemainingProperty, ApplySkillState);
             listenHandles[8] = entitySystem.Listen<EffectComponent>(entityId, component => component.BuffRevisionProperty, ApplyBuffState);
+            listenHandles[9] = entitySystem.Listen<InteractComponent>(entityId, component => component.RevisionProperty, ApplyInteractState);
         }
 
         /// <summary>读取同一 Entity 的大招能量和冷却组件，以一次 UI 写入保持两类进度显示一致。</summary>
@@ -206,6 +217,34 @@ namespace Xuan.Prometheus
             return item;
         }
 
+        /// <summary>从 InteractComponent 复制附近交互物快照，并刷新可见的交互栏列表项。</summary>
+        private void ApplyInteractState(InteractComponent interactComponent)
+        {
+            interactComponent.CopyNearby(observedInteracts);
+            InteractBar.SetListItemCount(observedInteracts.Count, false);
+            InteractBar.RefreshAllShownItem();
+        }
+
+        /// <summary>按索引从复用快照创建或复用交互栏列表项，并把交互物类型与点击回调写入 InteractMono。</summary>
+        private LoopListViewItem2 OnGetInteractItemByIndex(LoopListView2 listView, int index)
+        {
+            if (index < 0 || index >= observedInteracts.Count) return null;
+            LoopListViewItem2 item = listView.NewListViewItem("Interact");
+            if (item == null) throw new InvalidOperationException("HudPanel InteractBar requires an item prefab named 'Interact'.");
+            InteractMono interactMono = item.GetComponent<InteractMono>();
+            if (interactMono == null) throw new InvalidOperationException("HudPanel InteractBar item prefab requires InteractMono.");
+            interactMono.Apply(observedInteracts[index], OnInteractClick);
+            return item;
+        }
+
+        /// <summary>交互栏点击：按交互物类型映射操作，解析实体后向大世界系统提交交互请求。</summary>
+        private void OnInteractClick(PoiConfig config)
+        {
+            if (worldSystem == null || config == null) return;
+            Debug.Log($"[交互] 点击交互 {config.Id} ({config.PoiType})");
+            if (worldSystem.TryGetPoiEntity(config.Id, out PoiEntity entity)) entity.OnInteract();
+        }
+
         /// <summary>幂等释放当前成员的全部字段监听，防止缓存面板和旧角色继续互相持有。</summary>
         private void ReleaseValueListeners()
         {
@@ -215,7 +254,9 @@ namespace Xuan.Prometheus
                 listenHandles[index] = null;
             }
             observedBuffs.Clear();
+            observedInteracts.Clear();
             if (BuffList != null) BuffList.SetListItemCount(0, false);
+            if (InteractBar != null) InteractBar.SetListItemCount(0, false);
         }
 
         /// <summary>HUD 最终释放前移除小队监听和全部字段监听，避免事件总线或属性继续持有失效控制器。</summary>
@@ -230,6 +271,7 @@ namespace Xuan.Prometheus
             teamSystem = null;
             hudCommandSystem = null;
             minimapSystem = null;
+            worldSystem = null;
             entitySystem = null;
             minimapImage = null;
             minimapMaskMaterial = null;

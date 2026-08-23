@@ -1,0 +1,412 @@
+{
+    "pois": [
+        {
+            "Id": "Mond_Statue_1",
+            "Region": "Mond",
+            "PoiType": 1,
+            "Position": {
+                "x": 293.29998779296877,
+                "y": 1.0,
+                "z": 546.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 14027,
+            "aoiExempt": true,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_SpiritCore_1",
+            "Region": "Mond",
+            "PoiType": 3,
+            "Position": {
+                "x": 285.29998779296877,
+                "y": 1.0,
+                "z": 554.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 14027,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_MapBoss_1",
+            "Region": "Mond",
+            "PoiType": 6,
+            "Position": {
+                "x": 269.29998779296877,
+                "y": 1.0,
+                "z": 546.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 13027,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_Gathering_1",
+            "Region": "Mond",
+            "PoiType": 4,
+            "Position": {
+                "x": 277.29998779296877,
+                "y": 1.0,
+                "z": 554.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 13027,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_Chest_1",
+            "Region": "Mond",
+            "PoiType": 2,
+            "Position": {
+                "x": 277.29998779296877,
+                "y": 1.0,
+                "z": 538.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 13026,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_MonsterCamp_1",
+            "Region": "Mond",
+            "PoiType": 7,
+            "Position": {
+                "x": 277.29998779296877,
+                "y": 1.0,
+                "z": 562.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 13028,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_TeleAnchor_1",
+            "Region": "Mond",
+            "PoiType": 0,
+            "Position": {
+                "x": 285.29998779296877,
+                "y": 1.0,
+                "z": 546.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 14027,
+            "aoiExempt": true,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_Statue_2",
+            "Region": "Mond",
+            "PoiType": 1,
+            "Position": {
+                "x": 289.29998779296877,
+                "y": 1.0,
+                "z": 542.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 14027,
+            "aoiExempt": true,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_TeleAnchor_2",
+            "Region": "Mond",
+            "PoiType": 0,
+            "Position": {
+                "x": 265.29998779296877,
+                "y": 1.0,
+                "z": 552.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 13027,
+            "aoiExempt": true,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_Gathering_2",
+            "Region": "Mond",
+            "PoiType": 4,
+            "Position": {
+                "x": 281.29998779296877,
+                "y": 1.0,
+                "z": 558.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 14027,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_Chest_2",
+            "Region": "Mond",
+            "PoiType": 2,
+            "Position": {
+                "x": 277.29998779296877,
+                "y": 1.0,
+                "z": 546.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 13027,
+            "aoiExempt": false,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        },
+        {
+            "Id": "Mond_Dungeon_1",
+            "Region": "Mond",
+            "PoiType": 5,
+            "Position": {
+                "x": 293.29998779296877,
+                "y": 1.0,
+                "z": 554.0999755859375
+            },
+            "Rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "ChunkId": 14027,
+            "aoiExempt": true,
+            "Statue": {},
+            "TeleAnchor": {
+                "initiallyUnlocked": false
+            },
+            "Chest": {},
+            "SpiritCore": {},
+            "Gathering": {
+                "respawnSeconds": 30.0
+            },
+            "Dungeon": {},
+            "MapBoss": {
+                "respawnSeconds": 300.0
+            },
+            "MonsterCamp": {
+                "respawnSeconds": 120.0
+            }
+        }
+    ]
+}
