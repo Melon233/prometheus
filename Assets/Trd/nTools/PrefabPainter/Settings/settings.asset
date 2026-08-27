@@ -327,7 +327,7 @@ MonoBehaviour:
       - gameObject: {fileID: 0}
       - gameObject: {fileID: 0}
       selectedSlot: 0
-      selected: 0
+      selected: 1
       colorTag: 0
       customPreviewImage: {fileID: 0}
     - name: Barrel
@@ -6312,7 +6312,7 @@ MonoBehaviour:
       - gameObject: {fileID: 0}
       - gameObject: {fileID: 0}
       selectedSlot: 0
-      selected: 1
+      selected: 0
       colorTag: 0
       customPreviewImage: {fileID: 0}
     - name: RockGrey1
@@ -56906,10 +56906,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 32
   selectBrushRadius: 5
-  selectByLayer: 0
+  selectByLayer: 1
   selectLayers:
     serializedVersion: 2
-    m_Bits: 32
+    m_Bits: 33
   modifyBrushRadius: 5
   modifyStrength: 1
   modifyByLayer: 0
@@ -56929,8 +56929,8 @@ MonoBehaviour:
   orientFlipDirection: 0
   moveSurfaceOffset: 0
   movePivotMode: 3
-  moveLockUp: 0
-  moveOrientationMode: 0
+  moveLockUp: 1
+  moveOrientationMode: 3
   maxBrushRadius: 20
   maxBrushSpacing: 5
   surfaceCoords: 0
