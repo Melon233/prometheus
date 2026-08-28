@@ -265,7 +265,7 @@ public class PoiComponent : IComponent
 | `SpiritCoreLogic` | `Collect()`（幂等） | `IsCollected` | `PoiCollectedEvent` |
 | `GatheringLogic` | `Gather()` | `Available`（重生） | `PoiGatheredEvent` |
 | `MapBossLogic` | `Defeat()` | `Available`（重生） | `PoiDefeatedEvent` |
-| `MonsterCampLogic` | 暂无交互 | 暂不跟踪史莱姆状态 | 无 |
+| `MonsterCampLogic` | 暂无交互 | 营地实体由 `WorldSystem` 维护 | 史莱姆死亡由 `Core.Event` 广播 |
 
 > 业务数据（奖励表、战斗、传送目标、副本场景）依赖尚未存在的奖励/战斗/传送系统，此处仅实现**生命周期状态、幂等切换、重生计时与事件广播**；真实业务在 `ChestLogic.Open()` 等公开方法处接入。
 
@@ -284,9 +284,9 @@ public class PoiComponent : IComponent
 | Gathering | `GatheringConfig` | `GatheringLogic` | 可刷新（重生） |
 | Dungeon | `DungeonConfig` | `DungeonLogic` | 解锁 + 进度 |
 | MapBoss | `MapBossConfig` | `MapBossLogic` | 可刷新（重生） |
-| MonsterCamp | `MonsterCampConfig` | `MonsterCampLogic` | `WorldSystem` 按每个场景营地实例一次性生成一只史莱姆，暂不处理死亡与重生 |
+| MonsterCamp | `MonsterCampConfig` | `MonsterCampLogic` | `WorldSystem` 按每个场景营地实例生成一只史莱姆；史莱姆首次致死后通过 `Core.Event` 通知并在同帧安全阶段于原营地位置补刷一只 |
 
-> 可刷新三类（采集物 / 地图 Boss / 怪物营地）已通过共享基类 `RespawnablePoiLogic` 统一重生逻辑（`Consume` → 按 `Config` 周期倒计时 → 自动重生）；重生属逻辑层，不归 `WorldSystem` 管（它只管理实体是否因距离而加载/回收）。
+> 采集物与地图 Boss 通过共享基类 `RespawnablePoiLogic` 处理周期重生；怪物营地的史莱姆由 `WorldSystem` 监听全局死亡事件后立即补刷。POI 重生属逻辑层，距离显隐仍由 `WorldSystem` 管理。
 
 ---
 

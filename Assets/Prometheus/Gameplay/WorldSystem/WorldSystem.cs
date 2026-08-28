@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.Protocol;
 
 namespace Xuan.Prometheus.World
@@ -32,6 +33,10 @@ namespace Xuan.Prometheus.World
         private readonly List<PoiEntity> allPois = new List<PoiEntity>();
         private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>();
         private readonly HashSet<int> syncedChunks = new HashSet<int>(); // 已拉取状态的 chunkId
+        /// <summary>记录每只营地史莱姆实体对应的场景营地位置，死亡通知按实体编号反查营地。</summary>
+        private readonly Dictionary<int, Vector3> monsterCampByEntityId = new Dictionary<int, Vector3>();
+        /// <summary>缓存实体更新期间收到的死亡通知，在系统更新阶段结束后逐个执行补刷。</summary>
+        private readonly Queue<Vector3> pendingMonsterCampRespawns = new Queue<Vector3>();
         private PoiNetworkClient client;
         private float tickAccumulator;
         private bool isAvailable;
@@ -52,6 +57,7 @@ namespace Xuan.Prometheus.World
         public override void AfterNew(IGameplayKit ownerGameplayKit)
         {
             gameplayKit = ownerGameplayKit;
+            if (Core.Event != null) Core.Event.AddListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
             SpawnMonsterCampEnemies();
             client = new PoiNetworkClient(ServerHost, ServerPort);
             InitializeAsync().Forget();
@@ -65,8 +71,17 @@ namespace Xuan.Prometheus.World
             foreach (PoiMono mono in monos)
             {
                 if (mono == null || mono.Config == null || mono.Config.PoiType != PoiType.MonsterCamp) continue;
-                entitySystem.SpawnEnemy(mono.transform.position);
+                SlimeEntity enemy = entitySystem.SpawnEnemy(mono.transform.position);
+                monsterCampByEntityId[enemy.EntityId] = mono.transform.position;
             }
+        }
+
+        /// <summary>接收全局实体死亡通知；仅登记属于营地的史莱姆并在本帧安全阶段补刷。</summary>
+        private void OnEntityDied(EntityDiedEvent evt)
+        {
+            if (evt == null || !monsterCampByEntityId.TryGetValue(evt.EntityId, out Vector3 campPosition)) return;
+            monsterCampByEntityId.Remove(evt.EntityId);
+            pendingMonsterCampRespawns.Enqueue(campPosition);
         }
 
         /// <summary>执行一次初始化连接检测；服务器不可用时保持系统禁用，避免后续更新与交互持续发起失败请求。</summary>
@@ -107,6 +122,7 @@ namespace Xuan.Prometheus.World
         /// <summary>低频驱动生命周期：以玩家位置刷新 AOI 显隐，并拉取附近 chunk 状态。</summary>
         public override void OnUpdate(float dt)
         {
+            RespawnPendingMonsterCampEnemies();
             if (!isAvailable || gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
             tickAccumulator += dt;
             if (tickAccumulator < TickInterval) return;
@@ -114,6 +130,19 @@ namespace Xuan.Prometheus.World
             Vector3 playerPos = gameplayKit.Player.bindGo.transform.position;
             RefreshAt(playerPos);
             SyncNearbyChunks(playerPos);
+        }
+
+        /// <summary>在 EntitySystem 完成实体遍历后执行待处理营地补刷，确保新增实体不会修改遍历集合。</summary>
+        private void RespawnPendingMonsterCampEnemies()
+        {
+            if (gameplayKit == null || pendingMonsterCampRespawns.Count == 0) return;
+            EntitySystem entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            while (pendingMonsterCampRespawns.Count > 0)
+            {
+                Vector3 campPosition = pendingMonsterCampRespawns.Dequeue();
+                SlimeEntity enemy = entitySystem.SpawnEnemy(campPosition);
+                monsterCampByEntityId[enemy.EntityId] = campPosition;
+            }
         }
 
         /// <summary>拉取玩家所在 chunk 及其 3×3 邻域内尚未同步的 chunk 状态。</summary>
@@ -250,6 +279,9 @@ namespace Xuan.Prometheus.World
         /// <summary>释放网络客户端。</summary>
         public override void Dispose()
         {
+            if (Core.Event != null) Core.Event.RemoveListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
+            monsterCampByEntityId.Clear();
+            pendingMonsterCampRespawns.Clear();
             isAvailable = false;
             client?.Dispose();
             client = null;

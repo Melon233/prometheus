@@ -18,6 +18,8 @@ namespace Xuan.Prometheus
         ActiveTeamMemberChanged,
         /// <summary>表示指定实体需要重新发布一份完整 HUD 状态快照。</summary>
         EntityHudRefreshRequested,
+        /// <summary>表示指定实体已完成首次致死结算，供营地等系统响应实体死亡。</summary>
+        EntityDied,
     }
 
     /// <summary>携带本次进入打开生命周期的具体 UI 面板类型，供玩法侧按面板类型重放当前状态。</summary>
@@ -73,6 +75,15 @@ namespace Xuan.Prometheus
             OldHp = oldHp;
             CurrentHp = currentHp;
             MaxHp = maxHp;
+        }
+    }
+
+    /// <summary>携带已死亡实体运行时编号的全局死亡通知，发布者保证同一实体只通知一次。</summary>
+    public sealed class EntityDiedEvent : EntityEvent
+    {
+        /// <summary>创建一条实体死亡通知。</summary>
+        public EntityDiedEvent(int entityId) : base(entityId)
+        {
         }
     }
 
