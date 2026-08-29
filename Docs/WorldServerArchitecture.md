@@ -9,17 +9,17 @@
 
 POI 采用**服务器权威 + chunk 分区同步**：
 
-- **身份**：语义化字符串 ID（`{Region}_{类型}_{序号}`，如 `Mond_Chest_1`），同时是 MongoDB 主键与客户端同步键。
+- **身份**：语义化字符串 ID（`{Region}_{类型}_{序号}`，如 `Mond_Chest_1`），同时是 MongoDB 文档 `_id` 与客户端同步键。
 - **空间分区**：`chunkId`（三位编码 `chunkX*1000 + chunkY`，chunk 坐标非负），用于按区块查询。
 - **通信**：裸 TCP + 4 字节大端长度前缀 + protobuf `Packet` 信封。
-- **持久化**：MongoDB（`prometheus` 库 / `poi_states` 集合，`_id` = 语义 id，`chunk_id` 建索引）。
+- **持久化**：MongoDB（`prometheus` 库，`poi_states` 与 `backpack` 集合由服务按需写入）。
 - **同步**：客户端按需拉取玩家附近 chunk 的状态（`PullChunk`），全量 `PullAll` 保留作调试。
 - **权威**：服务器是唯一权威；客户端仅在 `Interact` 返回 `success=true` 后才做表现。
 
 ```
 ┌────────────── Unity 客户端 ──────────────┐   TCP   ┌────────── Go 服务器 ──────────┐   ┌──────────┐
 │ WorldSystem ─ PoiNetworkClient           │ ──────► │ netx ─ service(PullChunk等)   │──►│ MongoDB  │
-│   扫描场景 / AOI 显隐 / chunk 按需拉取      │  9000   │   读导出→播种→按 chunk 索引     │   │ poi_states│
+│   扫描场景 / AOI 显隐 / chunk 按需拉取      │  9000   │   读导出→播种→按 chunk 索引     │   │ 两个业务集合 │
 └──────────────────────────────────────────┘        └───────────────────────────────┘   └──────────┘
 ```
 
@@ -34,8 +34,9 @@ Server/                          # Go 服务器（模块名 prometheus）
 ├── proto/poi.proto              # 协议唯一定义
 ├── gen/protocol/poi.pb.go       # protoc 生成的 Go 代码
 ├── internal/poi/                # 领域模型：Poi 记录 + 常量 + 导出读取
-├── internal/store/              # Store 接口 + MongoDB（chunk_id 索引）
-├── internal/service/            # 权威逻辑：Seed / PullAll / PullChunk / Interact
+├── internal/store/              # Store/ItemStore 接口 + MongoDB POI 与背包实现
+├── internal/room/               # 唯一默认房间与在线玩家坐标
+├── internal/service/            # 权威逻辑：Seed / Pull / Interact / Gacha / Inventory
 └── internal/netx/               # TCP 服务：编解码 + 分发
 
 Tools/protoc/                    # protoc 编译器
@@ -88,7 +89,7 @@ message PullChunkRequest { int32 chunk_id=1; }
 message PullChunkResponse { int32 chunk_id=1; repeated PoiState states=2; }
 message InteractRequest { string id=1; PoiOp op=2; }
 message InteractResponse { bool success=1; PoiState state=2; }
-message Packet { oneof body { ... pull_all / pull_all_resp / pull_chunk / pull_chunk_resp / interact / interact_resp ... } }
+message Packet { uint64 request_id=100; oneof body { ... POI / room / position / gacha requests and responses ... } }
 ```
 
 > `PoiState` 只同步可变状态 + `id`；位置/旋转/chunkId/region 属静态定义，存于导出配置（客户端从场景读取，服务器从导出读取），不随状态同步。
@@ -100,11 +101,12 @@ message Packet { oneof body { ... pull_all / pull_all_resp / pull_chunk / pull_c
 | 包 | 职责 |
 |----|------|
 | `internal/poi` | `Poi` 完整记录（Id/Region/Type/Position/Rotation/ChunkID + 状态）、类型/操作常量、`LoadExport` |
-| `internal/store` | `Store` 接口 + `MongoStore`（`_id`=语义 id，`chunk_id` 建索引） |
-| `internal/service` | `Service`：内存索引 `byID`/`byChunk`，`Seed`/`PullAll`/`PullChunk`/`Interact` |
-| `internal/netx` | TCP 服务：长度前缀编解码 + 按 oneof 分发 |
+| `internal/store` | `Store`/`ItemStore` 接口 + `MongoStore`/`ItemStore`，POI 与玩家背包持久化 |
+| `internal/room` | 唯一 `default` 房间、玩家引用计数与权威坐标快照 |
+| `internal/service` | `Service`：POI 内存索引、按玩家背包、交互掉落与抽卡 |
+| `internal/netx` | TCP 会话、长度帧、request_id 关联、广播写锁与按 oneof 分发 |
 
-**启动流程**：连 Mongo → 读 `PoiExport.json` → `Seed`（按 id 判重，新 POI 入库）→ 监听 TCP。
+**启动流程**：连 MongoDB → 加载 `config/items.json` 与默认玩家背包 → 读 `PoiExport.json` → `Seed`（按 id 判重，新 POI 入库）→ 创建唯一默认房间并监听 TCP。
 
 **权威逻辑**：一次性操作（Unlock/OpenChest/CollectCore）重复请求返回 false；可刷新（Gather/Defeat）总是成功；变更后立即 Upsert。
 
@@ -114,7 +116,7 @@ message Packet { oneof body { ... pull_all / pull_all_resp / pull_chunk / pull_c
 
 ### 6.1 启动
 
-`WorldSystem.AfterNew`：扫描场景 `PoiMono` → 绑定 `PoiEntity`（按 `Id` 建索引）→ 创建 `PoiNetworkClient`。不主动全量同步。
+`WorldSystem.AfterNew`：扫描场景 `PoiMono` → 绑定 `PoiEntity`（按 `Id` 建索引）→ 创建 `PoiNetworkClient`。兼容外观内部使用 `Framework/NetworkKit`，首次业务请求连接服务器并自动加入默认房间。
 
 ### 6.2 chunk 按需拉取
 
@@ -124,14 +126,18 @@ message Packet { oneof body { ... pull_all / pull_all_resp / pull_chunk / pull_c
 
 `TryInteractAsync(entity, op)` → `InteractAsync(id, op)` → 服务器确认后 `PoiInteractionHandler.Apply` 触发表现。
 
+### 6.4 坐标与抽卡
+
+`UploadPositionAsync(Vector3)` → `UpdatePositionRequest` → 默认房间广播 `PlayerPositionPush`（包含发送者自身）；客户端通过 `PumpEvents` 在主线程触发 `PositionReceived`。`DrawGachaAsync` → `GachaRequest` → 服务器扣除一个 `Anemoculus`，从物品配置中排除该道具后随机发放一件，并返回最新背包快照。
+
 ---
 
 ## 7. MongoDB 数据组织
 
-- **库/集合**：`prometheus` / `poi_states`。
-- **文档**：每个 POI 一条，`_id` = 语义 id（字符串），字段含 `region`/`poi_type`/`position`/`rotation`/`chunk_id` + 状态 bool。
-- **索引**：`_id`（默认）+ `chunk_id`（非唯一，多 POI 可属同 chunk）。
-- **单世界语义**：无玩家概念，状态全局共享；未来多人可加 `player_id` 扩展。
+- **数据库**：`prometheus`，Docker 使用 MongoDB 7；本地端口绑定为 `127.0.0.1:27017`。
+- **POI 集合**：`poi_states`，`_id` 为语义化字符串，`chunk_id` 建普通索引，文档保留领域状态子文档。
+- **背包集合**：`backpack`，以 `(player_id, item_id, quality)` 作为 ReplaceOne + Upsert 条件。
+- **玩家语义**：POI 状态是世界共享权威状态；背包按 `player_id` 隔离，玩家首次请求时从 MongoDB 懒加载。
 
 ---
 
@@ -141,7 +147,7 @@ message Packet { oneof body { ... pull_all / pull_all_resp / pull_chunk / pull_c
 - **手动启动**：`cd Server && go build -o bin/server.exe . && ./bin/server.exe -addr 127.0.0.1:9000 -export "../Assets/Resources/Config/PoiExport.json"`。
 - **重新生成协议**（仅 proto 变更时）：`cd Server && ./gen_proto.ps1`。
 - **导出 POI**：Unity 菜单 `Tools/World/Export POI Data (JSON)`（生成语义 Id + chunkId 并写回场景）。
-- **MongoDB**：`docker/mongo/docker-compose.yml`，GUI 见 http://localhost:8081。
+- **MongoDB**：在 `docker/mongo` 执行 `docker compose up -d`；MongoDB 与 mongo-express 仅绑定回环地址，默认服务端连接串为 `mongodb://admin:admin123@localhost:27017/?authSource=admin`。
 
 ---
 
@@ -151,5 +157,6 @@ message Packet { oneof body { ... pull_all / pull_all_resp / pull_chunk / pull_c
 2. **身份与空间分区分离**：`id`（稳定身份，含 Region+类型+序号）与 `chunkId`（空间分区，用于查询）各司其职。
 3. **chunkId 非负三位编码**：客户端只在正方向添加 chunk，无需负坐标偏移。
 4. **chunk 按需拉取替代全量**：客户端按玩家 AOI 拉取附近 chunk 状态，避免一次全量。
-5. **领域模型与协议解耦**：Go 侧 `poi.Poi`（bson 标签）与 `protocol.PoiState`（protobuf 标签）分离，`netx` 层互转。
+5. **领域模型与协议解耦**：Go 侧 `poi.Poi` 使用 BSON 标签持久化，与 `protocol.PoiState`（protobuf 类型）分离，`netx` 层互转；查询返回独立快照，避免序列化读写竞争。
 6. **枚举数值对齐**：C#/Go/proto 枚举同数值，网络边界直接 cast。
+7. **分层网络会话**：客户端按 Transport → Framing → Protocol → Session/RPC → Services 分层，服务器 `netx` 只负责会话与协议分发，业务状态由 `room`/`service` 管理。

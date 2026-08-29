@@ -31,7 +31,7 @@ func main() {
 
 	ctx := context.Background()
 
-	// 1. 连接 MongoDB
+	// 1. 连接 MongoDB。
 	st, err := store.NewMongoStore(ctx, *mongoURI, *mongoDB, *mongoColl)
 	if err != nil {
 		log.Fatalf("connect mongo: %v", err)

@@ -2,19 +2,15 @@ package store
 
 import (
 	"context"
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"prometheus/internal/item"
+	"time"
 )
 
-// ItemStore 使用 MongoDB 持久化背包物品（每叠一条文档）。
-type ItemStore struct {
-	coll *mongo.Collection
-}
+// ItemStore 使用 MongoDB 持久化背包物品。
+type ItemStore struct{ coll *mongo.Collection }
 
 // NewItemStore 连接 MongoDB 并返回背包集合。
 func NewItemStore(ctx context.Context, uri, db, coll string) (*ItemStore, error) {
@@ -42,7 +38,7 @@ func (s *ItemStore) LoadAll(ctx context.Context, playerID string) ([]*item.Stack
 	return stacks, nil
 }
 
-// Upsert 按 (player_id, item_id, quality) 写入或更新一叠物品。
+// Upsert 按玩家、物品和品质联合条件写入一叠物品。
 func (s *ItemStore) Upsert(ctx context.Context, st *item.Stack) error {
 	filter := bson.M{"player_id": st.PlayerID, "item_id": st.ItemID, "quality": st.Quality}
 	_, err := s.coll.ReplaceOne(ctx, filter, st, options.Replace().SetUpsert(true))

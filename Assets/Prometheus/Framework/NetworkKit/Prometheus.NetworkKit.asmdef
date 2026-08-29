@@ -1,0 +1,16 @@
+{
+    "name": "Prometheus.NetworkKit",
+    "rootNamespace": "Xuan.Prometheus.NetworkKit",
+    "references": [
+        "Xuan.Prometheus.Protocol"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

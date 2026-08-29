@@ -78,6 +78,7 @@ namespace Xuan.Prometheus.World
         /// <summary>低频驱动生命周期：以玩家位置刷新 AOI 显隐，并拉取附近 chunk 状态。</summary>
         public override void OnUpdate(float dt)
         {
+            client?.PumpEvents();
             if (gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
             tickAccumulator += dt;
             if (tickAccumulator < TickInterval) return;

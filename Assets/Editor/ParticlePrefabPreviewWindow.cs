@@ -27,7 +27,7 @@ public sealed class ParticlePrefabPreviewWindow : EditorWindow
     Vector3 target;
     Rect previewRect;
 
-    [MenuItem("Tools/Effects/Particle Prefab Preview")]
+    [MenuItem("Prometheus/Effects/Particle Prefab Preview")]
     static void Open()
     {
         var window = GetWindow<ParticlePrefabPreviewWindow>();

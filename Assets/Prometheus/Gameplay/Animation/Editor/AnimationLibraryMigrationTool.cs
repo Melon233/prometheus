@@ -8,7 +8,7 @@ namespace Xuan.Prometheus.Editor
     public static class AnimationLibraryMigrationTool
     {
         /// <summary>迁移全部 AnimationLibrary；重复执行保持幂等，相同 AnimationLine 的冲突语义会输出明确错误。</summary>
-        [MenuItem("Tools/Prometheus/Animation/Migrate Libraries To Semantic AnimationLine")]
+        [MenuItem("Prometheus/Animation/Migrate Libraries To Semantic AnimationLine")]
         public static void MigrateAll()
         {
             string[] libraryGuids = AssetDatabase.FindAssets("t:AnimationLibrary");

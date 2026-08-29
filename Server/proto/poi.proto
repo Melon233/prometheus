@@ -102,8 +102,57 @@ message GetItemsResponse {
   repeated Item items = 1;
 }
 
+// 加入服务器唯一默认房间；player_id 由客户端生成并在本次会话中保持不变。
+message JoinRoomRequest {
+  string player_id = 1;
+}
+
+// 默认房间加入结果；room_id 当前固定为 "default"。
+message JoinRoomResponse {
+  bool success = 1;
+  string room_id = 2;
+  string player_id = 3;
+  string error = 4;
+}
+
+// 客户端上传自身在默认房间中的世界坐标。
+message UpdatePositionRequest {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+// 服务器向默认房间广播的玩家坐标；当前会回推给发送者，便于单客户端验证。
+message PlayerPositionPush {
+  string room_id = 1;
+  string player_id = 2;
+  float x = 3;
+  float y = 4;
+  float z = 5;
+  int64 server_time_ms = 6;
+}
+
+// 坐标上传处理结果；实际坐标通过 PlayerPositionPush 广播。
+message UpdatePositionResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// 抽卡请求：消耗 1 个 Anemoculus，并从物品配置中随机获得一个非 Anemoculus 道具。
+message GachaRequest {}
+
+// 抽卡结果及最新背包快照。
+message GachaResponse {
+  bool success = 1;
+  Item reward = 2;
+  repeated Item items = 3;
+  string error = 4;
+}
+
 // ===== 消息信封（TCP 长度前缀的帧体） =====
 message Packet {
+  // 请求响应关联 ID；服务器主动推送消息使用 0。
+  uint64 request_id = 100;
   oneof body {
     PullAllRequest pull_all = 1;
     PullAllResponse pull_all_resp = 2;
@@ -113,5 +162,12 @@ message Packet {
     PullChunkResponse pull_chunk_resp = 6;
     GetItemsRequest get_items = 7;
     GetItemsResponse get_items_resp = 8;
+    JoinRoomRequest join_room = 9;
+    JoinRoomResponse join_room_resp = 10;
+    UpdatePositionRequest update_position = 11;
+    PlayerPositionPush player_position = 12;
+    GachaRequest gacha = 13;
+    GachaResponse gacha_resp = 14;
+    UpdatePositionResponse update_position_resp = 15;
   }
 }

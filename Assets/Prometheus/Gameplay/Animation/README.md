@@ -67,6 +67,6 @@ AnimationPlayback playback = spineComponent.TryPlay(AnimationSemantic.Idle, Anim
 4. 由相应 Logic 选择语义、所有者与优先级并调用 `SpineComponent.TryPlay`。
 5. 在 Logic 中处理事件和结束清理，不向 `AnimationLibrary` 或配置对象写入运行态。
 
-语义迁移入口为 `Tools/Prometheus/Animation/Migrate Libraries To Semantic AnimationLine`。迁移会按照每个动画库字段的玩法职责为正式 `AnimationLine` 写入语义，并报告未配置语义或跨动画库复用时产生的语义冲突；该操作可以安全地重复执行。
+语义迁移入口为 `Prometheus/Animation/Migrate Libraries To Semantic AnimationLine`。迁移会按照每个动画库字段的玩法职责为正式 `AnimationLine` 写入语义，并报告未配置语义或跨动画库复用时产生的语义冲突；该操作可以安全地重复执行。
 
 需要从 Spine 动画引用批量创建新资产时，在 Project 窗口中选择同一目录下的一个或多个 `AnimationReferenceAsset`，右键执行 `Prometheus/Convert to AnimationLine`。工具会在源动画目录下创建唯一的 `AnimationLines` 子目录，并按源资产文件名生成对应 `AnimationLine`；选择中混入其他资源、跨目录选择、源动画失效或任一目标路径已存在时整批取消，不覆盖已有资产，也不生成带编号副本。生成后仍需为每个 `AnimationLine` 配置唯一语义和必要的时间轴事件，再接入对应 `AnimationLibrary`。

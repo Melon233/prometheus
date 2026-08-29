@@ -24,7 +24,7 @@ namespace Xuan.Prometheus.Effects.Editor
         /// <summary>
         /// 创建或更新全部示例资产，并选中最终示例库。
         /// </summary>
-        [MenuItem("Tools/Prometheus/Effect System/Create Or Update Example Assets")]
+        [MenuItem("Prometheus/Effect System/Create Or Update Example Assets")]
         public static void CreateOrUpdate()
         {
             EnsureFolder(RootFolder);

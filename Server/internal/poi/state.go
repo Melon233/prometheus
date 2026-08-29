@@ -74,6 +74,43 @@ type Poi struct {
 	MapBoss    *MapBossState    `bson:"map_boss,omitempty"`
 }
 
+// Clone 返回完整 POI 的独立快照，避免网络序列化或调用方读取时与权威状态写入产生数据竞争。
+func (p *Poi) Clone() *Poi {
+	if p == nil {
+		return nil
+	}
+	clone := *p
+	if p.Statue != nil {
+		state := *p.Statue
+		clone.Statue = &state
+	}
+	if p.Anchor != nil {
+		state := *p.Anchor
+		clone.Anchor = &state
+	}
+	if p.Chest != nil {
+		state := *p.Chest
+		clone.Chest = &state
+	}
+	if p.SpiritCore != nil {
+		state := *p.SpiritCore
+		clone.SpiritCore = &state
+	}
+	if p.Gathering != nil {
+		state := *p.Gathering
+		clone.Gathering = &state
+	}
+	if p.Dungeon != nil {
+		state := *p.Dungeon
+		clone.Dungeon = &state
+	}
+	if p.MapBoss != nil {
+		state := *p.MapBoss
+		clone.MapBoss = &state
+	}
+	return &clone
+}
+
 // POI 类型常量，数值与客户端 PoiType 及 proto PoiType 一一对应。
 const (
 	PoiTypeTeleAnchor  int32 = 0 // 传送锚点

@@ -25,14 +25,14 @@ namespace Xuan.Prometheus.World.Editor
         [SerializeField] private string outputPath = DefaultOutputPath;
         [SerializeField] private string exportPath = DefaultExportPath;
 
-        [MenuItem("Tools/World/Bake World Regions")]
+        [MenuItem("Prometheus/World/Bake World Regions")]
         private static void Open() => GetWindow<WorldBakeWindow>("World Bake");
 
-        [MenuItem("Tools/World/Bake World Regions (Direct)")]
+        [MenuItem("Prometheus/World/Bake World Regions (Direct)")]
         private static void BakeDirect() => BakeScene(DefaultOutputPath);
 
         /// <summary>直接导出全部 POI 定义到默认 JSON 路径（供服务器入库）。</summary>
-        [MenuItem("Tools/World/Export POI Data (JSON)")]
+        [MenuItem("Prometheus/World/Export POI Data (JSON)")]
         private static void ExportDirect() => ExportPoiJsonTo(DefaultExportPath);
 
         private void OnGUI()

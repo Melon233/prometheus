@@ -18,7 +18,7 @@ namespace Xuan.Prometheus.Editor
         private static readonly HashSet<string> ReservedIdentifiers = new HashSet<string>(StringComparer.Ordinal) { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while" };
 
         /// <summary>刷新 FMOD Bank 缓存并重新生成事件枚举；音频 Bank Source 必须已在 FMOD Settings 中配置。</summary>
-        [MenuItem("Tools/Prometheus/Audio/Refresh Banks And Regenerate FMOD Event Enum")]
+        [MenuItem("Prometheus/Audio/Refresh Banks And Regenerate FMOD Event Enum")]
         public static void RefreshBanksAndGenerate()
         {
             EventManager.RefreshBanks();

@@ -83,7 +83,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 ## 重新生成示例资产
 
-在 Unity 菜单执行 `Tools/Prometheus/Effect System/Create Or Update Example Assets`。该测试工具会在 `Assets/BundleResources/Config/Effect` 中更新已有有效资产；只有检测到旧资产脚本绑定无效时才会重建该资产。
+在 Unity 菜单执行 `Prometheus/Effect System/Create Or Update Example Assets`。该测试工具会在 `Assets/BundleResources/Config/Effect` 中更新已有有效资产；只有检测到旧资产脚本绑定无效时才会重建该资产。
 
 选中任意 `EffectDefinition` 资产后，可以在自定义 Inspector 当前有效的生命周期列表中点击 `Add Operation`，直接添加伤害、属性修改、控制状态修改、二次效果或发信号操作。Instant 只显示 On Apply；Duration 才显示 Duration；持续效果按 Tick Interval 和 Stack Policy 继续显示实际会执行的配置。On Stack 只在 AddStack 类策略且 Max Stacks 大于一时显示；On Refresh 只在有限 Duration 使用 RefreshDuration 类策略时显示。
 

@@ -705,9 +705,430 @@ func (x *GetItemsResponse) GetItems() []*Item {
 	return nil
 }
 
+// 加入服务器唯一默认房间；player_id 由客户端生成并在本次会话中保持不变。
+type JoinRoomRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlayerId      string                 `protobuf:"bytes,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *JoinRoomRequest) Reset() {
+	*x = JoinRoomRequest{}
+	mi := &file_proto_poi_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *JoinRoomRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*JoinRoomRequest) ProtoMessage() {}
+
+func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use JoinRoomRequest.ProtoReflect.Descriptor instead.
+func (*JoinRoomRequest) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *JoinRoomRequest) GetPlayerId() string {
+	if x != nil {
+		return x.PlayerId
+	}
+	return ""
+}
+
+// 默认房间加入结果；room_id 当前固定为 "default"。
+type JoinRoomResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	RoomId        string                 `protobuf:"bytes,2,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	PlayerId      string                 `protobuf:"bytes,3,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	Error         string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *JoinRoomResponse) Reset() {
+	*x = JoinRoomResponse{}
+	mi := &file_proto_poi_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *JoinRoomResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*JoinRoomResponse) ProtoMessage() {}
+
+func (x *JoinRoomResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use JoinRoomResponse.ProtoReflect.Descriptor instead.
+func (*JoinRoomResponse) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *JoinRoomResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *JoinRoomResponse) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *JoinRoomResponse) GetPlayerId() string {
+	if x != nil {
+		return x.PlayerId
+	}
+	return ""
+}
+
+func (x *JoinRoomResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+// 客户端上传自身在默认房间中的世界坐标。
+type UpdatePositionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	X             float32                `protobuf:"fixed32,1,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float32                `protobuf:"fixed32,2,opt,name=y,proto3" json:"y,omitempty"`
+	Z             float32                `protobuf:"fixed32,3,opt,name=z,proto3" json:"z,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePositionRequest) Reset() {
+	*x = UpdatePositionRequest{}
+	mi := &file_proto_poi_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePositionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePositionRequest) ProtoMessage() {}
+
+func (x *UpdatePositionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePositionRequest.ProtoReflect.Descriptor instead.
+func (*UpdatePositionRequest) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UpdatePositionRequest) GetX() float32 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *UpdatePositionRequest) GetY() float32 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *UpdatePositionRequest) GetZ() float32 {
+	if x != nil {
+		return x.Z
+	}
+	return 0
+}
+
+// 服务器向默认房间广播的玩家坐标；当前会回推给发送者，便于单客户端验证。
+type PlayerPositionPush struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        string                 `protobuf:"bytes,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	PlayerId      string                 `protobuf:"bytes,2,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	X             float32                `protobuf:"fixed32,3,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float32                `protobuf:"fixed32,4,opt,name=y,proto3" json:"y,omitempty"`
+	Z             float32                `protobuf:"fixed32,5,opt,name=z,proto3" json:"z,omitempty"`
+	ServerTimeMs  int64                  `protobuf:"varint,6,opt,name=server_time_ms,json=serverTimeMs,proto3" json:"server_time_ms,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerPositionPush) Reset() {
+	*x = PlayerPositionPush{}
+	mi := &file_proto_poi_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerPositionPush) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerPositionPush) ProtoMessage() {}
+
+func (x *PlayerPositionPush) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerPositionPush.ProtoReflect.Descriptor instead.
+func (*PlayerPositionPush) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *PlayerPositionPush) GetRoomId() string {
+	if x != nil {
+		return x.RoomId
+	}
+	return ""
+}
+
+func (x *PlayerPositionPush) GetPlayerId() string {
+	if x != nil {
+		return x.PlayerId
+	}
+	return ""
+}
+
+func (x *PlayerPositionPush) GetX() float32 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *PlayerPositionPush) GetY() float32 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *PlayerPositionPush) GetZ() float32 {
+	if x != nil {
+		return x.Z
+	}
+	return 0
+}
+
+func (x *PlayerPositionPush) GetServerTimeMs() int64 {
+	if x != nil {
+		return x.ServerTimeMs
+	}
+	return 0
+}
+
+// 坐标上传处理结果；实际坐标通过 PlayerPositionPush 广播。
+type UpdatePositionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePositionResponse) Reset() {
+	*x = UpdatePositionResponse{}
+	mi := &file_proto_poi_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePositionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePositionResponse) ProtoMessage() {}
+
+func (x *UpdatePositionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePositionResponse.ProtoReflect.Descriptor instead.
+func (*UpdatePositionResponse) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *UpdatePositionResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdatePositionResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+// 抽卡请求：消耗 1 个 Anemoculus，并从物品配置中随机获得一个非 Anemoculus 道具。
+type GachaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GachaRequest) Reset() {
+	*x = GachaRequest{}
+	mi := &file_proto_poi_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GachaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GachaRequest) ProtoMessage() {}
+
+func (x *GachaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GachaRequest.ProtoReflect.Descriptor instead.
+func (*GachaRequest) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{15}
+}
+
+// 抽卡结果及最新背包快照。
+type GachaResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Reward        *Item                  `protobuf:"bytes,2,opt,name=reward,proto3" json:"reward,omitempty"`
+	Items         []*Item                `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	Error         string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GachaResponse) Reset() {
+	*x = GachaResponse{}
+	mi := &file_proto_poi_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GachaResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GachaResponse) ProtoMessage() {}
+
+func (x *GachaResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poi_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GachaResponse.ProtoReflect.Descriptor instead.
+func (*GachaResponse) Descriptor() ([]byte, []int) {
+	return file_proto_poi_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GachaResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GachaResponse) GetReward() *Item {
+	if x != nil {
+		return x.Reward
+	}
+	return nil
+}
+
+func (x *GachaResponse) GetItems() []*Item {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *GachaResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
 // ===== 消息信封（TCP 长度前缀的帧体） =====
 type Packet struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// 请求响应关联 ID；服务器主动推送消息使用 0。
+	RequestId uint64 `protobuf:"varint,100,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 	// Types that are valid to be assigned to Body:
 	//
 	//	*Packet_PullAll
@@ -718,6 +1139,13 @@ type Packet struct {
 	//	*Packet_PullChunkResp
 	//	*Packet_GetItems
 	//	*Packet_GetItemsResp
+	//	*Packet_JoinRoom
+	//	*Packet_JoinRoomResp
+	//	*Packet_UpdatePosition
+	//	*Packet_PlayerPosition
+	//	*Packet_Gacha
+	//	*Packet_GachaResp
+	//	*Packet_UpdatePositionResp
 	Body          isPacket_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -725,7 +1153,7 @@ type Packet struct {
 
 func (x *Packet) Reset() {
 	*x = Packet{}
-	mi := &file_proto_poi_proto_msgTypes[10]
+	mi := &file_proto_poi_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -737,7 +1165,7 @@ func (x *Packet) String() string {
 func (*Packet) ProtoMessage() {}
 
 func (x *Packet) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_poi_proto_msgTypes[10]
+	mi := &file_proto_poi_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -750,7 +1178,14 @@ func (x *Packet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Packet.ProtoReflect.Descriptor instead.
 func (*Packet) Descriptor() ([]byte, []int) {
-	return file_proto_poi_proto_rawDescGZIP(), []int{10}
+	return file_proto_poi_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *Packet) GetRequestId() uint64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
 }
 
 func (x *Packet) GetBody() isPacket_Body {
@@ -832,6 +1267,69 @@ func (x *Packet) GetGetItemsResp() *GetItemsResponse {
 	return nil
 }
 
+func (x *Packet) GetJoinRoom() *JoinRoomRequest {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_JoinRoom); ok {
+			return x.JoinRoom
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetJoinRoomResp() *JoinRoomResponse {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_JoinRoomResp); ok {
+			return x.JoinRoomResp
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetUpdatePosition() *UpdatePositionRequest {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_UpdatePosition); ok {
+			return x.UpdatePosition
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetPlayerPosition() *PlayerPositionPush {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_PlayerPosition); ok {
+			return x.PlayerPosition
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetGacha() *GachaRequest {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_Gacha); ok {
+			return x.Gacha
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetGachaResp() *GachaResponse {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_GachaResp); ok {
+			return x.GachaResp
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetUpdatePositionResp() *UpdatePositionResponse {
+	if x != nil {
+		if x, ok := x.Body.(*Packet_UpdatePositionResp); ok {
+			return x.UpdatePositionResp
+		}
+	}
+	return nil
+}
+
 type isPacket_Body interface {
 	isPacket_Body()
 }
@@ -868,6 +1366,34 @@ type Packet_GetItemsResp struct {
 	GetItemsResp *GetItemsResponse `protobuf:"bytes,8,opt,name=get_items_resp,json=getItemsResp,proto3,oneof"`
 }
 
+type Packet_JoinRoom struct {
+	JoinRoom *JoinRoomRequest `protobuf:"bytes,9,opt,name=join_room,json=joinRoom,proto3,oneof"`
+}
+
+type Packet_JoinRoomResp struct {
+	JoinRoomResp *JoinRoomResponse `protobuf:"bytes,10,opt,name=join_room_resp,json=joinRoomResp,proto3,oneof"`
+}
+
+type Packet_UpdatePosition struct {
+	UpdatePosition *UpdatePositionRequest `protobuf:"bytes,11,opt,name=update_position,json=updatePosition,proto3,oneof"`
+}
+
+type Packet_PlayerPosition struct {
+	PlayerPosition *PlayerPositionPush `protobuf:"bytes,12,opt,name=player_position,json=playerPosition,proto3,oneof"`
+}
+
+type Packet_Gacha struct {
+	Gacha *GachaRequest `protobuf:"bytes,13,opt,name=gacha,proto3,oneof"`
+}
+
+type Packet_GachaResp struct {
+	GachaResp *GachaResponse `protobuf:"bytes,14,opt,name=gacha_resp,json=gachaResp,proto3,oneof"`
+}
+
+type Packet_UpdatePositionResp struct {
+	UpdatePositionResp *UpdatePositionResponse `protobuf:"bytes,15,opt,name=update_position_resp,json=updatePositionResp,proto3,oneof"`
+}
+
 func (*Packet_PullAll) isPacket_Body() {}
 
 func (*Packet_PullAllResp) isPacket_Body() {}
@@ -883,6 +1409,20 @@ func (*Packet_PullChunkResp) isPacket_Body() {}
 func (*Packet_GetItems) isPacket_Body() {}
 
 func (*Packet_GetItemsResp) isPacket_Body() {}
+
+func (*Packet_JoinRoom) isPacket_Body() {}
+
+func (*Packet_JoinRoomResp) isPacket_Body() {}
+
+func (*Packet_UpdatePosition) isPacket_Body() {}
+
+func (*Packet_PlayerPosition) isPacket_Body() {}
+
+func (*Packet_Gacha) isPacket_Body() {}
+
+func (*Packet_GachaResp) isPacket_Body() {}
+
+func (*Packet_UpdatePositionResp) isPacket_Body() {}
 
 var File_proto_poi_proto protoreflect.FileDescriptor
 
@@ -923,8 +1463,37 @@ const file_proto_poi_proto_rawDesc = "" +
 	"\bquantity\x18\x03 \x01(\x05R\bquantity\"\x11\n" +
 	"\x0fGetItemsRequest\"3\n" +
 	"\x10GetItemsResponse\x12\x1f\n" +
-	"\x05items\x18\x01 \x03(\v2\t.poi.ItemR\x05items\"\xde\x03\n" +
-	"\x06Packet\x120\n" +
+	"\x05items\x18\x01 \x03(\v2\t.poi.ItemR\x05items\".\n" +
+	"\x0fJoinRoomRequest\x12\x1b\n" +
+	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\"x\n" +
+	"\x10JoinRoomResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x17\n" +
+	"\aroom_id\x18\x02 \x01(\tR\x06roomId\x12\x1b\n" +
+	"\tplayer_id\x18\x03 \x01(\tR\bplayerId\x12\x14\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\"A\n" +
+	"\x15UpdatePositionRequest\x12\f\n" +
+	"\x01x\x18\x01 \x01(\x02R\x01x\x12\f\n" +
+	"\x01y\x18\x02 \x01(\x02R\x01y\x12\f\n" +
+	"\x01z\x18\x03 \x01(\x02R\x01z\"\x9a\x01\n" +
+	"\x12PlayerPositionPush\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\tR\x06roomId\x12\x1b\n" +
+	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x12\f\n" +
+	"\x01x\x18\x03 \x01(\x02R\x01x\x12\f\n" +
+	"\x01y\x18\x04 \x01(\x02R\x01y\x12\f\n" +
+	"\x01z\x18\x05 \x01(\x02R\x01z\x12$\n" +
+	"\x0eserver_time_ms\x18\x06 \x01(\x03R\fserverTimeMs\"H\n" +
+	"\x16UpdatePositionResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\x0e\n" +
+	"\fGachaRequest\"\x83\x01\n" +
+	"\rGachaResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
+	"\x06reward\x18\x02 \x01(\v2\t.poi.ItemR\x06reward\x12\x1f\n" +
+	"\x05items\x18\x03 \x03(\v2\t.poi.ItemR\x05items\x12\x14\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\"\xad\a\n" +
+	"\x06Packet\x12\x1d\n" +
+	"\n" +
+	"request_id\x18d \x01(\x04R\trequestId\x120\n" +
 	"\bpull_all\x18\x01 \x01(\v2\x13.poi.PullAllRequestH\x00R\apullAll\x12:\n" +
 	"\rpull_all_resp\x18\x02 \x01(\v2\x14.poi.PullAllResponseH\x00R\vpullAllResp\x122\n" +
 	"\binteract\x18\x03 \x01(\v2\x14.poi.InteractRequestH\x00R\binteract\x12<\n" +
@@ -933,7 +1502,16 @@ const file_proto_poi_proto_rawDesc = "" +
 	"pull_chunk\x18\x05 \x01(\v2\x15.poi.PullChunkRequestH\x00R\tpullChunk\x12@\n" +
 	"\x0fpull_chunk_resp\x18\x06 \x01(\v2\x16.poi.PullChunkResponseH\x00R\rpullChunkResp\x123\n" +
 	"\tget_items\x18\a \x01(\v2\x14.poi.GetItemsRequestH\x00R\bgetItems\x12=\n" +
-	"\x0eget_items_resp\x18\b \x01(\v2\x15.poi.GetItemsResponseH\x00R\fgetItemsRespB\x06\n" +
+	"\x0eget_items_resp\x18\b \x01(\v2\x15.poi.GetItemsResponseH\x00R\fgetItemsResp\x123\n" +
+	"\tjoin_room\x18\t \x01(\v2\x14.poi.JoinRoomRequestH\x00R\bjoinRoom\x12=\n" +
+	"\x0ejoin_room_resp\x18\n" +
+	" \x01(\v2\x15.poi.JoinRoomResponseH\x00R\fjoinRoomResp\x12E\n" +
+	"\x0fupdate_position\x18\v \x01(\v2\x1a.poi.UpdatePositionRequestH\x00R\x0eupdatePosition\x12B\n" +
+	"\x0fplayer_position\x18\f \x01(\v2\x17.poi.PlayerPositionPushH\x00R\x0eplayerPosition\x12)\n" +
+	"\x05gacha\x18\r \x01(\v2\x11.poi.GachaRequestH\x00R\x05gacha\x123\n" +
+	"\n" +
+	"gacha_resp\x18\x0e \x01(\v2\x12.poi.GachaResponseH\x00R\tgachaResp\x12O\n" +
+	"\x14update_position_resp\x18\x0f \x01(\v2\x1b.poi.UpdatePositionResponseH\x00R\x12updatePositionRespB\x06\n" +
 	"\x04body*\xc6\x01\n" +
 	"\aPoiType\x12\x18\n" +
 	"\x14POI_TYPE_TELE_ANCHOR\x10\x00\x12\x13\n" +
@@ -965,21 +1543,28 @@ func file_proto_poi_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_poi_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_proto_poi_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_proto_poi_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_proto_poi_proto_goTypes = []any{
-	(PoiType)(0),              // 0: poi.PoiType
-	(PoiOp)(0),                // 1: poi.PoiOp
-	(*PoiState)(nil),          // 2: poi.PoiState
-	(*PullAllRequest)(nil),    // 3: poi.PullAllRequest
-	(*PullAllResponse)(nil),   // 4: poi.PullAllResponse
-	(*PullChunkRequest)(nil),  // 5: poi.PullChunkRequest
-	(*PullChunkResponse)(nil), // 6: poi.PullChunkResponse
-	(*InteractRequest)(nil),   // 7: poi.InteractRequest
-	(*InteractResponse)(nil),  // 8: poi.InteractResponse
-	(*Item)(nil),              // 9: poi.Item
-	(*GetItemsRequest)(nil),   // 10: poi.GetItemsRequest
-	(*GetItemsResponse)(nil),  // 11: poi.GetItemsResponse
-	(*Packet)(nil),            // 12: poi.Packet
+	(PoiType)(0),                   // 0: poi.PoiType
+	(PoiOp)(0),                     // 1: poi.PoiOp
+	(*PoiState)(nil),               // 2: poi.PoiState
+	(*PullAllRequest)(nil),         // 3: poi.PullAllRequest
+	(*PullAllResponse)(nil),        // 4: poi.PullAllResponse
+	(*PullChunkRequest)(nil),       // 5: poi.PullChunkRequest
+	(*PullChunkResponse)(nil),      // 6: poi.PullChunkResponse
+	(*InteractRequest)(nil),        // 7: poi.InteractRequest
+	(*InteractResponse)(nil),       // 8: poi.InteractResponse
+	(*Item)(nil),                   // 9: poi.Item
+	(*GetItemsRequest)(nil),        // 10: poi.GetItemsRequest
+	(*GetItemsResponse)(nil),       // 11: poi.GetItemsResponse
+	(*JoinRoomRequest)(nil),        // 12: poi.JoinRoomRequest
+	(*JoinRoomResponse)(nil),       // 13: poi.JoinRoomResponse
+	(*UpdatePositionRequest)(nil),  // 14: poi.UpdatePositionRequest
+	(*PlayerPositionPush)(nil),     // 15: poi.PlayerPositionPush
+	(*UpdatePositionResponse)(nil), // 16: poi.UpdatePositionResponse
+	(*GachaRequest)(nil),           // 17: poi.GachaRequest
+	(*GachaResponse)(nil),          // 18: poi.GachaResponse
+	(*Packet)(nil),                 // 19: poi.Packet
 }
 var file_proto_poi_proto_depIdxs = []int32{
 	0,  // 0: poi.PoiState.poi_type:type_name -> poi.PoiType
@@ -988,19 +1573,28 @@ var file_proto_poi_proto_depIdxs = []int32{
 	1,  // 3: poi.InteractRequest.op:type_name -> poi.PoiOp
 	2,  // 4: poi.InteractResponse.state:type_name -> poi.PoiState
 	9,  // 5: poi.GetItemsResponse.items:type_name -> poi.Item
-	3,  // 6: poi.Packet.pull_all:type_name -> poi.PullAllRequest
-	4,  // 7: poi.Packet.pull_all_resp:type_name -> poi.PullAllResponse
-	7,  // 8: poi.Packet.interact:type_name -> poi.InteractRequest
-	8,  // 9: poi.Packet.interact_resp:type_name -> poi.InteractResponse
-	5,  // 10: poi.Packet.pull_chunk:type_name -> poi.PullChunkRequest
-	6,  // 11: poi.Packet.pull_chunk_resp:type_name -> poi.PullChunkResponse
-	10, // 12: poi.Packet.get_items:type_name -> poi.GetItemsRequest
-	11, // 13: poi.Packet.get_items_resp:type_name -> poi.GetItemsResponse
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	9,  // 6: poi.GachaResponse.reward:type_name -> poi.Item
+	9,  // 7: poi.GachaResponse.items:type_name -> poi.Item
+	3,  // 8: poi.Packet.pull_all:type_name -> poi.PullAllRequest
+	4,  // 9: poi.Packet.pull_all_resp:type_name -> poi.PullAllResponse
+	7,  // 10: poi.Packet.interact:type_name -> poi.InteractRequest
+	8,  // 11: poi.Packet.interact_resp:type_name -> poi.InteractResponse
+	5,  // 12: poi.Packet.pull_chunk:type_name -> poi.PullChunkRequest
+	6,  // 13: poi.Packet.pull_chunk_resp:type_name -> poi.PullChunkResponse
+	10, // 14: poi.Packet.get_items:type_name -> poi.GetItemsRequest
+	11, // 15: poi.Packet.get_items_resp:type_name -> poi.GetItemsResponse
+	12, // 16: poi.Packet.join_room:type_name -> poi.JoinRoomRequest
+	13, // 17: poi.Packet.join_room_resp:type_name -> poi.JoinRoomResponse
+	14, // 18: poi.Packet.update_position:type_name -> poi.UpdatePositionRequest
+	15, // 19: poi.Packet.player_position:type_name -> poi.PlayerPositionPush
+	17, // 20: poi.Packet.gacha:type_name -> poi.GachaRequest
+	18, // 21: poi.Packet.gacha_resp:type_name -> poi.GachaResponse
+	16, // 22: poi.Packet.update_position_resp:type_name -> poi.UpdatePositionResponse
+	23, // [23:23] is the sub-list for method output_type
+	23, // [23:23] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_proto_poi_proto_init() }
@@ -1008,7 +1602,7 @@ func file_proto_poi_proto_init() {
 	if File_proto_poi_proto != nil {
 		return
 	}
-	file_proto_poi_proto_msgTypes[10].OneofWrappers = []any{
+	file_proto_poi_proto_msgTypes[17].OneofWrappers = []any{
 		(*Packet_PullAll)(nil),
 		(*Packet_PullAllResp)(nil),
 		(*Packet_Interact)(nil),
@@ -1017,6 +1611,13 @@ func file_proto_poi_proto_init() {
 		(*Packet_PullChunkResp)(nil),
 		(*Packet_GetItems)(nil),
 		(*Packet_GetItemsResp)(nil),
+		(*Packet_JoinRoom)(nil),
+		(*Packet_JoinRoomResp)(nil),
+		(*Packet_UpdatePosition)(nil),
+		(*Packet_PlayerPosition)(nil),
+		(*Packet_Gacha)(nil),
+		(*Packet_GachaResp)(nil),
+		(*Packet_UpdatePositionResp)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1024,7 +1625,7 @@ func file_proto_poi_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_poi_proto_rawDesc), len(file_proto_poi_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   11,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

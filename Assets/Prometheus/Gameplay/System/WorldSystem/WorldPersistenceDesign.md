@@ -20,7 +20,7 @@
 ## 一、完整工作流（4 步）
 
 ### 1. 策划端导出（编辑器）
-策划在场景摆放 `PoiMono`（挂 `PoiConfig`），执行菜单 **Tools/World/Export POI Data (JSON)**。
+策划在场景摆放 `PoiMono`（挂 `PoiConfig`），执行菜单 **Prometheus/World/Export POI Data (JSON)**。
 导出内容包括：**PoiId / PoiType / 坐标 Position / 旋转 Rotation / aoiExempt / 各类型专属配置**。
 
 - PoiId 在导出时按网格归属生成（`cellXxcellY_局部序号`）。

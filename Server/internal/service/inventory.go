@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 
 	"prometheus/internal/item"
 )
@@ -16,6 +17,7 @@ type ItemStore interface {
 
 // Inventory 维护单玩家的背包（内存索引 + 持久化）。
 type Inventory struct {
+	mu     sync.RWMutex
 	store  ItemStore
 	config *item.Config
 	player string
@@ -29,6 +31,8 @@ func NewInventory(st ItemStore, cfg *item.Config, player string) *Inventory {
 
 // Load 从存储加载已有物品到内存。
 func (inv *Inventory) Load(ctx context.Context) error {
+	inv.mu.Lock()
+	defer inv.mu.Unlock()
 	stacks, err := inv.store.LoadAll(ctx, inv.player)
 	if err != nil {
 		return err
@@ -44,6 +48,16 @@ func (inv *Inventory) Load(ctx context.Context) error {
 
 // Grant 发放指定物品（品质取自配置），并立即入库。
 func (inv *Inventory) Grant(ctx context.Context, itemID string, quantity int32) error {
+	inv.mu.Lock()
+	defer inv.mu.Unlock()
+	return inv.grantLocked(ctx, itemID, quantity)
+}
+
+// grantLocked 发放指定物品；调用方必须已经持有 inv.mu 写锁。
+func (inv *Inventory) grantLocked(ctx context.Context, itemID string, quantity int32) error {
+	if quantity <= 0 {
+		return fmt.Errorf("quantity must be positive")
+	}
 	def, ok := inv.config.FindDef(itemID)
 	if !ok {
 		return fmt.Errorf("unknown item %s", itemID)
@@ -53,14 +67,58 @@ func (inv *Inventory) Grant(ctx context.Context, itemID string, quantity int32) 
 	if st == nil {
 		st = &item.Stack{PlayerID: inv.player, ItemID: itemID, Quality: def.Quality, Quantity: quantity}
 		inv.stacks[k] = st
-	} else {
-		st.Quantity += quantity
+		if err := inv.store.Upsert(ctx, st); err != nil {
+			delete(inv.stacks, k)
+			return err
+		}
+		return nil
 	}
-	return inv.store.Upsert(ctx, st)
+	previousQuantity := st.Quantity
+	st.Quantity += quantity
+	if err := inv.store.Upsert(ctx, st); err != nil {
+		st.Quantity = previousQuantity
+		return err
+	}
+	return nil
+}
+
+// Consume 消耗指定数量的物品，并返回实际是否成功；当前抽卡等写操作使用该原子内存操作。
+func (inv *Inventory) Consume(ctx context.Context, itemID string, quantity int32) (bool, error) {
+	inv.mu.Lock()
+	defer inv.mu.Unlock()
+	if quantity <= 0 {
+		return false, fmt.Errorf("quantity must be positive")
+	}
+	def, ok := inv.config.FindDef(itemID)
+	if !ok {
+		return false, fmt.Errorf("unknown item %s", itemID)
+	}
+	key := stackKey(itemID, def.Quality)
+	stack := inv.stacks[key]
+	if stack == nil || stack.Quantity < quantity {
+		return false, nil
+	}
+	previousQuantity := stack.Quantity
+	stack.Quantity -= quantity
+	if err := inv.store.Upsert(ctx, stack); err != nil {
+		stack.Quantity = previousQuantity
+		return false, err
+	}
+	if stack.Quantity == 0 {
+		delete(inv.stacks, key)
+	}
+	return true, nil
 }
 
 // ConsumeAll 消耗某物品的全部数量，返回实际消耗数量。
 func (inv *Inventory) ConsumeAll(ctx context.Context, itemID string) (int32, error) {
+	inv.mu.Lock()
+	defer inv.mu.Unlock()
+	return inv.consumeAllLocked(ctx, itemID)
+}
+
+// consumeAllLocked 消耗某物品的全部数量；调用方必须已经持有 inv.mu 写锁。
+func (inv *Inventory) consumeAllLocked(ctx context.Context, itemID string) (int32, error) {
 	var total int32
 	for k, st := range inv.stacks {
 		if st.ItemID != itemID {
@@ -78,13 +136,28 @@ func (inv *Inventory) ConsumeAll(ctx context.Context, itemID string) (int32, err
 
 // GetAll 返回全部物品（数量大于 0）。
 func (inv *Inventory) GetAll() []*item.Stack {
+	inv.mu.RLock()
+	defer inv.mu.RUnlock()
 	out := make([]*item.Stack, 0, len(inv.stacks))
 	for _, st := range inv.stacks {
 		if st.Quantity > 0 {
-			out = append(out, st)
+			copy := *st
+			out = append(out, &copy)
 		}
 	}
 	return out
+}
+
+// Has 判断当前背包是否至少拥有指定数量的物品。
+func (inv *Inventory) Has(itemID string, quantity int32) bool {
+	inv.mu.RLock()
+	defer inv.mu.RUnlock()
+	def, ok := inv.config.FindDef(itemID)
+	if !ok {
+		return false
+	}
+	stack := inv.stacks[stackKey(itemID, def.Quality)]
+	return stack != nil && stack.Quantity >= quantity
 }
 
 // stackKey 组合 itemID 与 quality 作为内存索引键。

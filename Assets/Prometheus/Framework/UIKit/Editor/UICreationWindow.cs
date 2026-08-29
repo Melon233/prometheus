@@ -17,7 +17,7 @@ namespace Xuan.Prometheus.Editor
         /// <summary>
         /// 从 UIKit 菜单打开固定最小尺寸的创建窗口。
         /// </summary>
-        [MenuItem("Tools/Prometheus/UIKit/Create UI", false, 20)]
+        [MenuItem("Prometheus/UIKit/Create UI", false, 20)]
         private static void OpenWindow()
         {
             UICreationWindow window = GetWindow<UICreationWindow>(true, "Create UIKit UI", true);

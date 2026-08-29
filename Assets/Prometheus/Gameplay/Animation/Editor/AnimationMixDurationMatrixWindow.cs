@@ -39,7 +39,7 @@ namespace Xuan.Prometheus.Editor
         }
 
         /// <summary>从 Tools 菜单打开矩阵窗口，并优先使用 Project 当前选中的 AnimationLibrary。</summary>
-        [MenuItem("Tools/Prometheus/Animation/Open MixDuration Matrix")]
+        [MenuItem("Prometheus/Animation/Open MixDuration Matrix")]
         private static void OpenFromMenu()
         {
             Open(Selection.activeObject as AnimationLibrary);

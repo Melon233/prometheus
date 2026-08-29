@@ -5,13 +5,18 @@ import (
 	"bufio"
 	"context"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
+	"strings"
+	"sync"
+	"sync/atomic"
 
 	"google.golang.org/protobuf/proto"
 
 	"prometheus/gen/protocol"
 	"prometheus/internal/poi"
+	"prometheus/internal/room"
 	"prometheus/internal/service"
 )
 
@@ -20,13 +25,26 @@ const maxFrameBytes = 16 * 1024 * 1024
 
 // Server 是 POI TCP 服务器。
 type Server struct {
-	ctx context.Context
-	svc *service.Service
+	ctx          context.Context
+	svc          *service.Service
+	rooms        *room.Manager
+	mu           sync.RWMutex
+	sessions     map[*clientSession]struct{}
+	nextPlayerID uint64
+}
+
+// clientSession 保存一次 TCP 连接的会话身份和串行写锁，避免响应与推送交错写入同一帧。
+type clientSession struct {
+	conn     net.Conn
+	writeMu  sync.Mutex
+	playerID string
+	roomID   string
+	joined   bool
 }
 
 // New 创建 TCP 服务器。
 func New(ctx context.Context, svc *service.Service) *Server {
-	return &Server{ctx: ctx, svc: svc}
+	return &Server{ctx: ctx, svc: svc, rooms: room.New(), sessions: make(map[*clientSession]struct{})}
 }
 
 // ListenAndServe 在 addr 上监听并循环接受连接，每个连接由独立 goroutine 处理。
@@ -46,55 +64,175 @@ func (s *Server) ListenAndServe(addr string) error {
 
 // handleConn 处理单连接：循环读取帧、分发、写回响应；EOF 或错误则关闭连接。
 func (s *Server) handleConn(conn net.Conn) {
-	defer conn.Close()
+	session := &clientSession{conn: conn}
+	s.addSession(session)
+	defer func() { s.removeSession(session); conn.Close() }()
 	r := bufio.NewReader(conn)
 	for {
 		req, err := readPacket(r)
 		if err != nil {
 			return
 		}
-		resp := s.dispatch(req)
-		if resp == nil {
+		responses := s.dispatch(session, req)
+		if len(responses) == 0 {
 			continue
 		}
-		if err := writePacket(conn, resp); err != nil {
-			return
+		for _, resp := range responses {
+			if err := session.writePacket(resp); err != nil {
+				return
+			}
 		}
 	}
 }
 
-// dispatch 按请求类型调用 service 并构造响应 Packet；未知请求返回 nil 忽略。
-func (s *Server) dispatch(req *protocol.Packet) *protocol.Packet {
+// dispatch 按请求类型调用业务服务；响应携带原请求 request_id，服务器主动推送使用 request_id=0。
+func (s *Server) dispatch(session *clientSession, req *protocol.Packet) []*protocol.Packet {
 	switch body := req.Body.(type) {
 	case *protocol.Packet_PullAll:
 		resp := &protocol.PullAllResponse{}
 		for _, p := range s.svc.PullAll() {
 			resp.States = append(resp.States, toProtoState(p))
 		}
-		return &protocol.Packet{Body: &protocol.Packet_PullAllResp{PullAllResp: resp}}
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_PullAllResp{PullAllResp: resp}}}
 	case *protocol.Packet_PullChunk:
 		chunkID := body.PullChunk.ChunkId
 		resp := &protocol.PullChunkResponse{ChunkId: chunkID}
 		for _, p := range s.svc.PullChunk(chunkID) {
 			resp.States = append(resp.States, toProtoState(p))
 		}
-		return &protocol.Packet{Body: &protocol.Packet_PullChunkResp{PullChunkResp: resp}}
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_PullChunkResp{PullChunkResp: resp}}}
 	case *protocol.Packet_Interact:
-		p, ok := s.svc.Interact(s.ctx, body.Interact.Id, int32(body.Interact.Op))
+		playerID, _, _ := s.sessionState(session)
+		p, ok := s.svc.InteractForPlayer(s.ctx, playerID, body.Interact.Id, int32(body.Interact.Op))
 		resp := &protocol.InteractResponse{Success: ok}
 		if p != nil {
 			resp.State = toProtoState(p)
 		}
-		return &protocol.Packet{Body: &protocol.Packet_InteractResp{InteractResp: resp}}
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_InteractResp{InteractResp: resp}}}
 	case *protocol.Packet_GetItems:
+		playerID, _, _ := s.sessionState(session)
 		resp := &protocol.GetItemsResponse{}
-		for _, st := range s.svc.GetItems() {
+		items, err := s.svc.GetItemsForPlayer(s.ctx, playerID)
+		if err != nil {
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_GetItemsResp{GetItemsResp: resp}}}
+		}
+		for _, st := range items {
 			resp.Items = append(resp.Items, &protocol.Item{ItemId: st.ItemID, Quality: st.Quality, Quantity: st.Quantity})
 		}
-		return &protocol.Packet{Body: &protocol.Packet_GetItemsResp{GetItemsResp: resp}}
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_GetItemsResp{GetItemsResp: resp}}}
+	case *protocol.Packet_JoinRoom:
+		playerID := strings.TrimSpace(body.JoinRoom.PlayerId)
+		if playerID == "" {
+			currentPlayerID, _, joined := s.sessionState(session)
+			if joined {
+				playerID = currentPlayerID
+			} else {
+				playerID = s.newPlayerID()
+			}
+		}
+		s.mu.Lock()
+		if session.joined {
+			if session.playerID != playerID {
+				s.rooms.Leave(session.playerID)
+				session.playerID = playerID
+				session.roomID = s.rooms.Join(playerID)
+			}
+			roomID := session.roomID
+			currentPlayerID := session.playerID
+			s.mu.Unlock()
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: true, RoomId: roomID, PlayerId: currentPlayerID}}}}
+		}
+		session.playerID = playerID
+		session.roomID = s.rooms.Join(playerID)
+		session.joined = true
+		roomID := session.roomID
+		s.mu.Unlock()
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: true, RoomId: roomID, PlayerId: playerID}}}}
+	case *protocol.Packet_UpdatePosition:
+		playerID, roomID, joined := s.sessionState(session)
+		if !joined {
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_UpdatePositionResp{UpdatePositionResp: &protocol.UpdatePositionResponse{Success: false, Error: "join room first"}}}}
+		}
+		position := s.rooms.UpdatePosition(playerID, body.UpdatePosition.X, body.UpdatePosition.Y, body.UpdatePosition.Z)
+		push := &protocol.Packet{Body: &protocol.Packet_PlayerPosition{PlayerPosition: &protocol.PlayerPositionPush{RoomId: roomID, PlayerId: position.PlayerID, X: position.X, Y: position.Y, Z: position.Z, ServerTimeMs: position.ServerTimeMs}}}
+		s.broadcast(roomID, push)
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_UpdatePositionResp{UpdatePositionResp: &protocol.UpdatePositionResponse{Success: true}}}}
+	case *protocol.Packet_Gacha:
+		playerID, _, _ := s.sessionState(session)
+		reward, items, err := s.svc.Gacha(s.ctx, playerID)
+		resp := &protocol.GachaResponse{Success: err == nil, Error: errorText(err)}
+		if reward != nil {
+			resp.Reward = &protocol.Item{ItemId: reward.ItemID, Quality: reward.Quality, Quantity: reward.Quantity}
+		}
+		for _, st := range items {
+			resp.Items = append(resp.Items, &protocol.Item{ItemId: st.ItemID, Quality: st.Quality, Quantity: st.Quantity})
+		}
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_GachaResp{GachaResp: resp}}}
 	default:
 		return nil
 	}
+}
+
+// addSession 注册在线连接；房间加入完成后才会参与坐标广播。
+func (s *Server) addSession(session *clientSession) {
+	s.mu.Lock()
+	s.sessions[session] = struct{}{}
+	s.mu.Unlock()
+}
+
+// removeSession 清理连接，并移除默认房间中的在线坐标。
+func (s *Server) removeSession(session *clientSession) {
+	s.mu.Lock()
+	delete(s.sessions, session)
+	joined := session.joined
+	playerID := session.playerID
+	session.joined = false
+	s.mu.Unlock()
+	if joined {
+		s.rooms.Leave(playerID)
+	}
+}
+
+// sessionState 在服务器会话锁下读取玩家身份，避免广播协程与加入请求并发读写会话字段。
+func (s *Server) sessionState(session *clientSession) (string, string, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return session.playerID, session.roomID, session.joined
+}
+
+// newPlayerID 生成服务器侧唯一玩家 ID，客户端提供的稳定 ID 仍优先使用。
+func (s *Server) newPlayerID() string {
+	return fmt.Sprintf("player-%d", atomic.AddUint64(&s.nextPlayerID, 1))
+}
+
+// broadcast 将服务器主动推送写给同房间全部在线会话，包括发送坐标的客户端。
+func (s *Server) broadcast(roomID string, packet *protocol.Packet) {
+	s.mu.RLock()
+	sessions := make([]*clientSession, 0, len(s.sessions))
+	for session := range s.sessions {
+		if session.joined && session.roomID == roomID {
+			sessions = append(sessions, session)
+		}
+	}
+	s.mu.RUnlock()
+	for _, session := range sessions {
+		_ = session.writePacket(packet)
+	}
+}
+
+// writePacket 以连接级互斥锁串行写出一帧，保证响应和推送不会互相穿插。
+func (session *clientSession) writePacket(packet *protocol.Packet) error {
+	session.writeMu.Lock()
+	defer session.writeMu.Unlock()
+	return writePacket(session.conn, packet)
+}
+
+// errorText 将可选错误转换为协议中的稳定文本。
+func errorText(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
 }
 
 // toProtoState 把领域记录转换为 proto 状态（仅同步可变状态 + id，不含静态定义）；各类型状态子文档为 nil 时对应字段取零值。
@@ -156,11 +294,28 @@ func writePacket(w io.Writer, pkt *protocol.Packet) error {
 	if err != nil {
 		return err
 	}
+	if len(body) == 0 || len(body) > maxFrameBytes {
+		return fmt.Errorf("invalid frame length: %d", len(body))
+	}
 	var lenBuf [4]byte
 	binary.BigEndian.PutUint32(lenBuf[:], uint32(len(body)))
-	if _, err := w.Write(lenBuf[:]); err != nil {
+	if err := writeFull(w, lenBuf[:]); err != nil {
 		return err
 	}
-	_, err = w.Write(body)
-	return err
+	return writeFull(w, body)
+}
+
+// writeFull 循环写出全部字节，避免合法 Writer 返回短写导致客户端收到截断帧。
+func writeFull(w io.Writer, data []byte) error {
+	for len(data) > 0 {
+		count, err := w.Write(data)
+		if err != nil {
+			return err
+		}
+		if count <= 0 {
+			return io.ErrShortWrite
+		}
+		data = data[count:]
+	}
+	return nil
 }

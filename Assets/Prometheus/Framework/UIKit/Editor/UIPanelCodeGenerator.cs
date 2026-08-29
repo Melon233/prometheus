@@ -24,7 +24,7 @@ namespace Xuan.Prometheus.Editor
         /// <summary>
         /// 从 Project 视图当前选中的 UI Prefab 生成面板代码。
         /// </summary>
-        [MenuItem("Tools/Prometheus/UIKit/Generate Selected Panel", false, 100)]
+        [MenuItem("Prometheus/UIKit/Generate Selected Panel", false, 100)]
         public static void GenerateSelectedPanel()
         {
             GameObject selectedObject = Selection.activeObject as GameObject;
