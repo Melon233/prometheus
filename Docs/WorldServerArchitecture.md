@@ -42,7 +42,7 @@ Server/                          # Go 服务器（模块名 prometheus）
 Tools/protoc/                    # protoc 编译器
 Assets/Gen/Protocol/             # protoc 生成的 C# 代码 + 程序集定义
 Assets/Plugins/Google.Protobuf/  # Google.Protobuf 运行时 dll
-Assets/Prometheus/Gameplay/System/WorldSystem/
+Assets/Prometheus/Gameplay/WorldSystem/
 ├── WorldSystem.cs               # 客户端编排：扫描场景 + AOI + chunk 按需拉取
 ├── ChunkIdCodec.cs              # chunkId 编解码
 ├── PoiOp.cs / PoiExportList.cs
@@ -116,7 +116,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 
 ### 6.1 启动
 
-`WorldSystem.AfterNew`：扫描场景 `PoiMono` → 绑定 `PoiEntity`（按 `Id` 建索引）→ 创建 `PoiNetworkClient`。兼容外观内部使用 `Framework/NetworkKit`，首次业务请求连接服务器并自动加入默认房间。
+`WorldSystem.AfterNew`：创建 `PoiNetworkClient` 并通过 `ConnectAsync` 显式确认服务器连接；成功后扫描场景 `PoiMono` → 绑定 `PoiEntity`（按 `Id` 建索引）→ 启用 AOI 与交互。兼容外观内部使用 `Framework/NetworkKit`，NetworkKit 会话连接后自动加入默认房间。
 
 ### 6.2 chunk 按需拉取
 

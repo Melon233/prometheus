@@ -4,7 +4,7 @@ NetworkKit 将客户端网络职责分为 Transport、Framing、Protocol、Sessi
 
 `NetworkClient.ConnectAsync` 会连接服务器并加入唯一默认房间。网络接收循环可在后台运行，但坐标推送通过 `PumpEvents` 在 Unity 主线程触发，避免网络线程直接修改场景或 UI。`DefaultRoomService.UploadPositionAsync` 上传坐标，服务器会把 `PlayerPositionPush` 回推给同房间全部玩家，包括发送者，便于单客户端回环验证。
 
-现有 WorldSystem 继续通过 `PoiNetworkClient` 兼容外观访问 POI；该外观同时提供 `UploadPositionAsync(Vector3)`、`PositionReceived` 和 `DrawGachaAsync`，而框架层服务只接受三个浮点坐标，因此旧业务无需直接依赖会话、传输或帧编解码即可接入坐标同步和抽卡。
+现有 WorldSystem 继续通过 `PoiNetworkClient` 兼容外观访问 POI；该外观同时提供 `ConnectAsync`、`UploadPositionAsync(Vector3)`、`PositionReceived` 和 `DrawGachaAsync`，而框架层服务只接受三个浮点坐标，因此旧业务无需直接依赖会话、传输或帧编解码即可接入坐标同步和抽卡。WorldSystem 初始化阶段显式调用 `ConnectAsync`，连接成功后才启用场景扫描与 POI 同步。
 
 同一会话可以并行发起多个请求，`NetworkSession` 用 `request_id` 关联响应并用写锁串行化帧发送；主动推送统一进入队列，只有调用 `PumpEvents` 时才在主线程触发业务事件。
 

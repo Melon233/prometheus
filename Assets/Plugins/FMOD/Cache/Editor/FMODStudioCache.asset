@@ -150,7 +150,7 @@ MonoBehaviour:
   Path: FMOD/Prometheus/Build/Desktop/Combat.bank
   Name: Combat
   StudioPath: bank:/Combat
-  lastModified: 639221751501336120
+  lastModified: 639222147634810559
   FileSizes:
   - Name: Desktop
     Value: 74432
@@ -197,7 +197,7 @@ MonoBehaviour:
   Path: FMOD/Prometheus/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639221751501371387
+  lastModified: 639222147634810559
   FileSizes:
   - Name: Desktop
     Value: 1074
@@ -235,7 +235,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: 547329792203728243}
   cacheVersion: 131859
-  cacheTime: 639221751501381489
+  cacheTime: 639222147634830951
   SerializableEventsDict:
   - key: event:/Combat/Player/Skill
     index: 0
@@ -272,7 +272,7 @@ MonoBehaviour:
   Path: FMOD/Prometheus/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639221751501381489
+  lastModified: 639222147634830951
   FileSizes:
   - Name: Desktop
     Value: 1250

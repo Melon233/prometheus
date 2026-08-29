@@ -15,7 +15,7 @@
 
 ### 1.2 约束（本项目现状）
 - 无现成存档/序列化系统 —— 需要**自建一套轻量持久化接口**（见 §7）。
-- 已具备 `Gameplay/Entity`（实体）、`Gameplay/Config`（配置）、`Gameplay/Logic`（逻辑）、`Gameplay/Minimap`（小地图）、`Framework/*`（CoreKit/EventKit/AssetKit）等基础模块 —— 新模块应**挂靠这些体系**而非另起炉灶。
+- 已具备 `Gameplay/EntitySystem`（实体）、`Gameplay/EntitySystem/Character/Config`（配置）、`Gameplay/EntitySystem/Character/Logic`（逻辑）、`Gameplay/MapSystem`（小地图）、`Framework/*`（CoreKit/EventKit/AssetKit）等基础模块 —— 新模块应**挂靠这些体系**而非另起炉灶。
 - 数量级数百到一千：**无需**重型 BVH，用**规则格网 + 懒遍历**即可。
 
 ---
