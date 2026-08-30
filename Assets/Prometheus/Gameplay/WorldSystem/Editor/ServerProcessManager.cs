@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
@@ -10,7 +11,7 @@ namespace Xuan.Prometheus.World.Editor
     /// 进入 Play 时自动构建并启动 Go 服务器，退出 Play 时关闭。
     /// 注意：proto 的拉取/编译是手动步骤（见 Server/gen_proto.ps1），本脚本只负责 go build + run，不生成协议代码。
     /// </summary>
-    [InitializeOnLoad]
+        [InitializeOnLoad]
     public static class ServerProcessManager
     {
         /// <summary>服务器监听地址，需与 WorldSystem.ServerHost/ServerPort 及 Server/main.go 默认值一致。</summary>
@@ -27,6 +28,35 @@ namespace Xuan.Prometheus.World.Editor
         static ServerProcessManager()
         {
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        /// <summary>编辑器菜单：停止当前项目构建的 Go 服务器，即使服务器不是由本次 Unity 会话启动也可释放端口。</summary>
+        [MenuItem("Prometheus/World/Stop POI Server")]
+        private static void StopServerFromMenu()
+        {
+            StopServer();
+            string expectedPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "..", ExeRelativePath));
+            foreach (Process process in Process.GetProcessesByName("server"))
+            {
+                try
+                {
+                    if (string.Equals(process.MainModule.FileName, expectedPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        process.Kill();
+                        process.Dispose();
+                        UnityEngine.Debug.Log($"[Server] 已停止项目 POI 服务器：{expectedPath}");
+                    }
+                    else
+                    {
+                        process.Dispose();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    process.Dispose();
+                    UnityEngine.Debug.LogWarning($"[Server] 停止 POI 服务器失败：{exception.Message}");
+                }
+            }
         }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)

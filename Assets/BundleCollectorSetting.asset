@@ -38,6 +38,14 @@ MonoBehaviour:
         FilterRuleName: CollectPrefab
         AssetTags: gameplay
         UserData: 
+      - CollectPath: Assets/BundleResources/UI/Common/Atlas
+        CollectorGUID: 
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackDirectory
+        FilterRuleName: CollectAll
+        AssetTags: ui
+        UserData: 
       - CollectPath: Assets/BundleResources/Config/Global
         CollectorGUID: 15a70208f8d49ed48aad763bb9316dc4
         CollectorType: 0

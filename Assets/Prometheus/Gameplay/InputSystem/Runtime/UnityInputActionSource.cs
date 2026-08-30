@@ -145,7 +145,7 @@ namespace Xuan.Prometheus.Input
         {
             bool pressedThisFrame = pointerAttack.WasPressedThisFrame();
             bool releasedThisFrame = pointerAttack.WasReleasedThisFrame();
-            if (pressedThisFrame) isPointerPressConsumedByUi = isPointerOverUi();
+            if (pressedThisFrame) isPointerPressConsumedByUi = isPointerOverUi() || !IsPointerInsideGameView();
             if (!isPointerPressConsumedByUi) return ReadButton(pointerAttack);
             if (releasedThisFrame || !pointerAttack.IsPressed()) isPointerPressConsumedByUi = false;
             return default;
@@ -161,6 +161,14 @@ namespace Xuan.Prometheus.Input
         private static bool IsPointerOverCurrentUi()
         {
             return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        }
+
+        /// <summary>判断鼠标按下位置是否仍在运行中的 GameView 屏幕范围内，SceneView 或编辑器其他区域不应触发玩法攻击。</summary>
+        private static bool IsPointerInsideGameView()
+        {
+            if (Mouse.current == null) return false;
+            Vector2 position = Mouse.current.position.ReadValue();
+            return position.x >= 0f && position.x <= Screen.width && position.y >= 0f && position.y <= Screen.height;
         }
     }
 }

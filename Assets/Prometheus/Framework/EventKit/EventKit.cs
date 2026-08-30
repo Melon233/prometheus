@@ -20,6 +20,12 @@ namespace Xuan.Prometheus
         EntityHudRefreshRequested,
         /// <summary>表示指定实体已完成首次致死结算，供营地等系统响应实体死亡。</summary>
         EntityDied,
+        /// <summary>表示 WorldSystem 已解析当前世界的静态地图资源。</summary>
+        WorldMapReady,
+        /// <summary>表示当前上场玩家的位置已发生变化。</summary>
+        WorldMapPlayerPositionChanged,
+        /// <summary>表示地图 POI 的集合或动态状态发生变化。</summary>
+        WorldMapPoiChanged,
     }
 
     /// <summary>携带本次进入打开生命周期的具体 UI 面板类型，供玩法侧按面板类型重放当前状态。</summary>

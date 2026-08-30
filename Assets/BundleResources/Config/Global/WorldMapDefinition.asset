@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7dfe7d5c9f7e4a5fa85f7c9ebf6d1e51, type: 3}
+  m_Name: WorldMapDefinition
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.World.WorldMapDefinition
+  MapId: MainWorld
+  Origin: {x: 0, y: 0, z: 0}
+  WorldLength: 2000
+  WorldWidth: 2000
+  MapTexture: {fileID: 2800000, guid: 0a7fefd7e4446254f91bd69f028ba5e1, type: 3}
+  InitialZoom: 1

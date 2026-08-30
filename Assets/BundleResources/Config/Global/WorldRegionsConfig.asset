@@ -14,59 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Runtime::Xuan.Prometheus.World.WorldRegionsConfig
   RegionSize: 20
   Regions:
-  - RegionId: 0
+  - RegionId: 11023
     Pois:
-    - Id: Mond_Statue_1
-      Region: Mond
-      PoiType: 1
-      Position: {x: 16, y: 1, z: 0}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 1
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_SpiritCore_1
-      Region: Mond
-      PoiType: 3
-      Position: {x: 8, y: 1, z: 8}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 0
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_Gathering_1
-      Region: Mond
-      PoiType: 4
-      Position: {x: 0, y: 1, z: 8}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 0
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_MonsterCamp_1
+    - Id: 52288272f83a4556a0847350cf70ec49
       Region: Mond
       PoiType: 7
-      Position: {x: 0, y: 1, z: 16}
+      Position: {x: 235.69986, y: 1, z: 462.59973}
       Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
+      ChunkId: 11023
       aoiExempt: 0
       TeleAnchor:
         initiallyUnlocked: 0
@@ -76,106 +31,14 @@ MonoBehaviour:
         respawnSeconds: 300
       MonsterCamp:
         respawnSeconds: 120
-    - Id: Mond_TeleAnchor_1
-      Region: Mond
-      PoiType: 0
-      Position: {x: 8, y: 1, z: 0}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 1
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_Gathering_2
-      Region: Mond
-      PoiType: 4
-      Position: {x: 4, y: 1, z: 12}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 0
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_Chest_2
-      Region: Mond
-      PoiType: 2
-      Position: {x: 0, y: 1, z: 0}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 0
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_Dungeon_1
-      Region: Mond
-      PoiType: 5
-      Position: {x: 16, y: 1, z: 8}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: 0
-      aoiExempt: 1
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-  - RegionId: -1
+  - RegionId: 13053
     Pois:
-    - Id: Mond_Chest_1
-      Region: Mond
-      PoiType: 2
-      Position: {x: 0, y: 1, z: -8}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: -1
-      aoiExempt: 0
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-    - Id: Mond_Statue_2
-      Region: Mond
-      PoiType: 1
-      Position: {x: 12, y: 1, z: -4}
-      Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: -1
-      aoiExempt: 1
-      TeleAnchor:
-        initiallyUnlocked: 0
-      Gathering:
-        respawnSeconds: 30
-      MapBoss:
-        respawnSeconds: 300
-      MonsterCamp:
-        respawnSeconds: 120
-  - RegionId: -1000
-    Pois:
-    - Id: Mond_MapBoss_1
+    - Id: 3d4b4adfa50c444aaee8ec7aed085118
       Region: Mond
       PoiType: 6
-      Position: {x: -8, y: 1, z: 0}
+      Position: {x: 269.29996, y: 1, z: 1068.0999}
       Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: -1000
+      ChunkId: 13053
       aoiExempt: 0
       TeleAnchor:
         initiallyUnlocked: 0
@@ -185,13 +48,169 @@ MonoBehaviour:
         respawnSeconds: 300
       MonsterCamp:
         respawnSeconds: 120
-    - Id: Mond_TeleAnchor_2
+    - Id: 9831979c0c9b4c58b4b9dee2d3954f82
       Region: Mond
       PoiType: 0
-      Position: {x: -12, y: 1, z: 6}
+      Position: {x: 265.29996, y: 1, z: 1074.0999}
       Rotation: {x: 0, y: 0, z: 0, w: 1}
-      ChunkId: -1000
+      ChunkId: 13053
       aoiExempt: 1
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: f43d81ddaa804639beed8e95a8b8ea17
+      Region: Mond
+      PoiType: 2
+      Position: {x: 277.29996, y: 1, z: 1068.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 13053
+      aoiExempt: 0
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: f9d9e9dfdbd94f1b9cb8f36b392c3c67
+      Region: Mond
+      PoiType: 2
+      Position: {x: 277.29996, y: 1, z: 1060.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 13053
+      aoiExempt: 0
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: 93f3c30b0c0447efbc085d3cd786429b
+      Region: Mond
+      PoiType: 4
+      Position: {x: 277.29996, y: 1, z: 1076.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 13053
+      aoiExempt: 0
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+  - RegionId: 13054
+    Pois:
+    - Id: 6ac10f79621a4ac5be2cca12dd59f182
+      Region: Mond
+      PoiType: 7
+      Position: {x: 277.29996, y: 1, z: 1084.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 13054
+      aoiExempt: 0
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+  - RegionId: 14053
+    Pois:
+    - Id: 6967f09fc51e48cfa1ea117772c04b70
+      Region: Mond
+      PoiType: 5
+      Position: {x: 293.29996, y: 1, z: 1076.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 14053
+      aoiExempt: 1
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: 8aa94bb153e54debafcfc2ad5733833d
+      Region: Mond
+      PoiType: 1
+      Position: {x: 290.30997, y: 1, z: 1064.1}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 14053
+      aoiExempt: 1
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: 91d696ae5cc14ca89d550023c86f45a3
+      Region: Mond
+      PoiType: 0
+      Position: {x: 285.29996, y: 1, z: 1068.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 14053
+      aoiExempt: 1
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: ee69f61584f6435e8846791954a6b174
+      Region: Mond
+      PoiType: 3
+      Position: {x: 285.29996, y: 1, z: 1076.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 14053
+      aoiExempt: 0
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+    - Id: 8f8c8569f4fe4127b41a35237cd8d3d2
+      Region: Mond
+      PoiType: 1
+      Position: {x: 293.29996, y: 1, z: 1068.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 14053
+      aoiExempt: 1
+      TeleAnchor:
+        initiallyUnlocked: 0
+      Gathering:
+        respawnSeconds: 30
+      MapBoss:
+        respawnSeconds: 300
+      MonsterCamp:
+        respawnSeconds: 120
+  - RegionId: 14054
+    Pois:
+    - Id: 99b0334d786746aca78bbbb29b38bf61
+      Region: Mond
+      PoiType: 4
+      Position: {x: 281.29996, y: 1, z: 1080.0999}
+      Rotation: {x: 0, y: 0, z: 0, w: 1}
+      ChunkId: 14054
+      aoiExempt: 0
       TeleAnchor:
         initiallyUnlocked: 0
       Gathering:

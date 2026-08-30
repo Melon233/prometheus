@@ -2,13 +2,15 @@
 
 服务器网络链路按 Transport/Framing/Session/Service 分层。`internal/netx` 负责 TCP 监听、连接会话、4 字节大端长度帧、Protobuf 解码和响应写入；`internal/room` 管理唯一默认房间及在线玩家坐标；`internal/service` 负责 POI、玩家背包和抽卡等权威业务。会话写入通过连接级互斥锁串行化，避免坐标推送与请求响应互相穿插。
 
+玩家持久化采用 MongoDB `players` 集合的一玩家一文档模型，账号、背包和个人 POI 状态由同一聚合存储维护，具体字段和迁移规则见 `Server/DATABASE.md`。
+
 ## 协议
 
 协议定义位于 `Server/proto/poi.proto`，由 `Server/gen_proto.ps1` 生成 Go 和 Unity C# 类型。每个请求在 `Packet.request_id` 写入非零关联 ID，响应复制该 ID；服务器主动坐标推送使用 `request_id=0`。帧格式为 `[4 字节大端长度][Packet Protobuf 字节]`。
 
 ## 默认房间与坐标
 
-服务器启动后创建 `room.DefaultRoomID` 对应的唯一默认房间。客户端发送 `JoinRoomRequest` 后绑定玩家身份；`UpdatePositionRequest` 写入该玩家坐标，服务器向默认房间全部在线会话广播 `PlayerPositionPush`，包括发送者自身，便于单客户端回环验证。
+服务器启动后创建 `room.DefaultRoomID` 对应的唯一默认房间。客户端使用本机持久化的稳定 `player_id` 发送 `JoinRoomRequest`，并在响应中收到该玩家最近一次持久化坐标（首次进入为空）；`UpdatePositionRequest` 写入该玩家坐标，服务器向默认房间全部在线会话广播 `PlayerPositionPush`，包括发送者自身，便于单客户端回环验证。服务器每 3 秒保存在线玩家坐标，连接断开时额外保存一次最新坐标。
 
 ## 抽卡
 

@@ -261,7 +261,6 @@ namespace Xuan.Prometheus
             AddSystem(new EffectSystem(library: effectLibrary, traceEnabled: true));
             AddSystem(new CombatAudioPresentationSystem());
             AddSystem(new CameraSystem(startupOptions.RuntimeRoot));
-            AddSystem(new MinimapSystem());
             AddSystem(new WorldSystem());
             AddSystem(new BagSystem());
             teamSystem = new TeamSystem();

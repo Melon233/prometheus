@@ -757,6 +757,7 @@ type JoinRoomResponse struct {
 	RoomId        string                 `protobuf:"bytes,2,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
 	PlayerId      string                 `protobuf:"bytes,3,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
 	Error         string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
+	Position      *PlayerPositionPush    `protobuf:"bytes,5,opt,name=position,proto3" json:"position,omitempty"` // 玩家上次持久化的位置；首次进入时为空
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -817,6 +818,13 @@ func (x *JoinRoomResponse) GetError() string {
 		return x.Error
 	}
 	return ""
+}
+
+func (x *JoinRoomResponse) GetPosition() *PlayerPositionPush {
+	if x != nil {
+		return x.Position
+	}
+	return nil
 }
 
 // 客户端上传自身在默认房间中的世界坐标。
@@ -1465,12 +1473,13 @@ const file_proto_poi_proto_rawDesc = "" +
 	"\x10GetItemsResponse\x12\x1f\n" +
 	"\x05items\x18\x01 \x03(\v2\t.poi.ItemR\x05items\".\n" +
 	"\x0fJoinRoomRequest\x12\x1b\n" +
-	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\"x\n" +
+	"\tplayer_id\x18\x01 \x01(\tR\bplayerId\"\xad\x01\n" +
 	"\x10JoinRoomResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x17\n" +
 	"\aroom_id\x18\x02 \x01(\tR\x06roomId\x12\x1b\n" +
 	"\tplayer_id\x18\x03 \x01(\tR\bplayerId\x12\x14\n" +
-	"\x05error\x18\x04 \x01(\tR\x05error\"A\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\x123\n" +
+	"\bposition\x18\x05 \x01(\v2\x17.poi.PlayerPositionPushR\bposition\"A\n" +
 	"\x15UpdatePositionRequest\x12\f\n" +
 	"\x01x\x18\x01 \x01(\x02R\x01x\x12\f\n" +
 	"\x01y\x18\x02 \x01(\x02R\x01y\x12\f\n" +
@@ -1573,28 +1582,29 @@ var file_proto_poi_proto_depIdxs = []int32{
 	1,  // 3: poi.InteractRequest.op:type_name -> poi.PoiOp
 	2,  // 4: poi.InteractResponse.state:type_name -> poi.PoiState
 	9,  // 5: poi.GetItemsResponse.items:type_name -> poi.Item
-	9,  // 6: poi.GachaResponse.reward:type_name -> poi.Item
-	9,  // 7: poi.GachaResponse.items:type_name -> poi.Item
-	3,  // 8: poi.Packet.pull_all:type_name -> poi.PullAllRequest
-	4,  // 9: poi.Packet.pull_all_resp:type_name -> poi.PullAllResponse
-	7,  // 10: poi.Packet.interact:type_name -> poi.InteractRequest
-	8,  // 11: poi.Packet.interact_resp:type_name -> poi.InteractResponse
-	5,  // 12: poi.Packet.pull_chunk:type_name -> poi.PullChunkRequest
-	6,  // 13: poi.Packet.pull_chunk_resp:type_name -> poi.PullChunkResponse
-	10, // 14: poi.Packet.get_items:type_name -> poi.GetItemsRequest
-	11, // 15: poi.Packet.get_items_resp:type_name -> poi.GetItemsResponse
-	12, // 16: poi.Packet.join_room:type_name -> poi.JoinRoomRequest
-	13, // 17: poi.Packet.join_room_resp:type_name -> poi.JoinRoomResponse
-	14, // 18: poi.Packet.update_position:type_name -> poi.UpdatePositionRequest
-	15, // 19: poi.Packet.player_position:type_name -> poi.PlayerPositionPush
-	17, // 20: poi.Packet.gacha:type_name -> poi.GachaRequest
-	18, // 21: poi.Packet.gacha_resp:type_name -> poi.GachaResponse
-	16, // 22: poi.Packet.update_position_resp:type_name -> poi.UpdatePositionResponse
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	15, // 6: poi.JoinRoomResponse.position:type_name -> poi.PlayerPositionPush
+	9,  // 7: poi.GachaResponse.reward:type_name -> poi.Item
+	9,  // 8: poi.GachaResponse.items:type_name -> poi.Item
+	3,  // 9: poi.Packet.pull_all:type_name -> poi.PullAllRequest
+	4,  // 10: poi.Packet.pull_all_resp:type_name -> poi.PullAllResponse
+	7,  // 11: poi.Packet.interact:type_name -> poi.InteractRequest
+	8,  // 12: poi.Packet.interact_resp:type_name -> poi.InteractResponse
+	5,  // 13: poi.Packet.pull_chunk:type_name -> poi.PullChunkRequest
+	6,  // 14: poi.Packet.pull_chunk_resp:type_name -> poi.PullChunkResponse
+	10, // 15: poi.Packet.get_items:type_name -> poi.GetItemsRequest
+	11, // 16: poi.Packet.get_items_resp:type_name -> poi.GetItemsResponse
+	12, // 17: poi.Packet.join_room:type_name -> poi.JoinRoomRequest
+	13, // 18: poi.Packet.join_room_resp:type_name -> poi.JoinRoomResponse
+	14, // 19: poi.Packet.update_position:type_name -> poi.UpdatePositionRequest
+	15, // 20: poi.Packet.player_position:type_name -> poi.PlayerPositionPush
+	17, // 21: poi.Packet.gacha:type_name -> poi.GachaRequest
+	18, // 22: poi.Packet.gacha_resp:type_name -> poi.GachaResponse
+	16, // 23: poi.Packet.update_position_resp:type_name -> poi.UpdatePositionResponse
+	24, // [24:24] is the sub-list for method output_type
+	24, // [24:24] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_proto_poi_proto_init() }

@@ -16,7 +16,7 @@ type Store interface {
 	Upsert(context.Context, *poi.Poi) error
 }
 
-// MongoStore 使用 MongoDB 持久化 POI 记录。
+// MongoStore 使用 MongoDB 持久化 POI 记录；仅为旧调用方保留，新的启动链路请使用 MongoPlayerStore。
 type MongoStore struct{ coll *mongo.Collection }
 
 // NewMongoStore 连接 MongoDB 并为 chunk_id 建立索引。

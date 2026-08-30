@@ -54,9 +54,6 @@ namespace Xuan.Prometheus
         /// <summary>保存独立 HUD 命令系统，普通点击只负责提交命令而不监听任何快捷键。</summary>
         private HudCommandSystem hudCommandSystem;
 
-        /// <summary>保存当前单局的小地图系统，地图采样与玩家映射不由 UI 自行计算。</summary>
-        private MinimapSystem minimapSystem;
-
         /// <summary>保存当前单局的大世界 POI 系统，交互点击由它向服务器提交请求。</summary>
         private WorldSystem worldSystem;
 
@@ -65,6 +62,21 @@ namespace Xuan.Prometheus
 
         /// <summary>保存当前 HUD 独占的 MaskUIShader 材质，避免 uvRect 参数影响其他 UI。</summary>
         private Material minimapMaskMaterial;
+
+        /// <summary>保存小地图 POI 标记的父节点，标记坐标与地图纹理使用同一套归一化视口。</summary>
+        private RectTransform minimapPoiRoot;
+
+        /// <summary>保存覆盖小地图区域的透明命中层，仅用于让点击事件沿 MiniMapButton 父级链路触发。</summary>
+        private GameObject minimapHitArea;
+
+        /// <summary>保存按地图归一化坐标定位的玩家标记，显示逻辑与大地图保持一致。</summary>
+        private Image minimapPlayerMarker;
+
+        /// <summary>保存最近一次从玩家实体读取的位置，HUD 打开后立即恢复地图视口。</summary>
+        private Vector3 minimapPlayerPosition;
+
+        /// <summary>标记是否已经收到有效玩家位置，避免地图资源未就绪时使用未初始化坐标。</summary>
+        private bool hasMinimapPlayerPosition;
 
         /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 EntitySystem 观察。</summary>
         protected override void OnBind()
@@ -114,9 +126,14 @@ namespace Xuan.Prometheus
             if (!gameplayKit.TryGetSystem(out teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
             if (!gameplayKit.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
             if (!gameplayKit.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(HudCommandSystem)}.");
-            if (!gameplayKit.TryGetSystem(out minimapSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(MinimapSystem)}.");
             if (!gameplayKit.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(WorldSystem)}.");
-            minimapSystem.BindView(minimapImage, minimapMaskMaterial);
+            SubscribeMinimapEvents();
+            if (worldSystem.TryGetPlayerPosition(out Vector3 currentPosition))
+            {
+                minimapPlayerPosition = currentPosition;
+                hasMinimapPlayerPosition = true;
+            }
+            RefreshMinimap();
             isObserving = true;
             BindObservedEntity(teamSystem.ActiveEntityId);
         }
@@ -124,7 +141,7 @@ namespace Xuan.Prometheus
         /// <summary>面板进入缓存关闭状态时释放字段监听，重新打开时会从当前值立即恢复。</summary>
         protected override void OnClose()
         {
-            if (minimapSystem != null) minimapSystem.UnbindView(minimapImage);
+            UnsubscribeMinimapEvents();
             isObserving = false;
             ReleaseValueListeners();
         }
@@ -134,6 +151,7 @@ namespace Xuan.Prometheus
         {
             Shader maskShader = Resources.Load<Shader>("MaskUIShader");
             if (maskShader == null) throw new InvalidOperationException($"{nameof(HudPanel)} requires Resources shader 'MaskUIShader'.");
+            DisableMinimapTemplateGraphics();
             minimapMaskMaterial = new Material(maskShader) { name = "Hud Minimap Alpha Mask" };
             ConfigureMinimapFade(minimapMaskMaterial, MinimapFadeStartDistance, MinimapFadeCompleteDistance);
             GameObject mapObject = new GameObject("Map Image", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
@@ -150,6 +168,175 @@ namespace Xuan.Prometheus
             minimapImage.color = Color.white;
             minimapImage.material = minimapMaskMaterial;
             minimapImage.raycastTarget = false;
+            GameObject poiRootObject = new GameObject("POI Markers", typeof(RectTransform));
+            poiRootObject.layer = MiniMapButton.gameObject.layer;
+            minimapPoiRoot = poiRootObject.GetComponent<RectTransform>();
+            minimapPoiRoot.SetParent(MiniMapButton.transform, false);
+            minimapPoiRoot.anchorMin = new Vector2(0f, 0f);
+            minimapPoiRoot.anchorMax = new Vector2(1f, 1f);
+            minimapPoiRoot.offsetMin = new Vector2(14f, 14f);
+            minimapPoiRoot.offsetMax = new Vector2(-14f, -14f);
+            minimapPoiRoot.SetAsLastSibling();
+            GameObject playerMarkerObject = CreateMinimapMarker("Player Marker", WorldMapIconCatalog.LoadPlayerIcon(), Color.white, minimapPoiRoot, new Vector2(28f, 28f));
+            minimapPlayerMarker = playerMarkerObject.GetComponent<Image>();
+            minimapPlayerMarker.rectTransform.anchorMin = Vector2.zero;
+            minimapPlayerMarker.rectTransform.anchorMax = Vector2.zero;
+            minimapPlayerMarker.rectTransform.anchoredPosition = Vector2.zero;
+            minimapHitArea = new GameObject("MiniMap Hit Area", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            minimapHitArea.layer = MiniMapButton.gameObject.layer;
+            RectTransform hitRect = minimapHitArea.GetComponent<RectTransform>();
+            hitRect.SetParent(MiniMapButton.transform, false);
+            hitRect.anchorMin = Vector2.zero;
+            hitRect.anchorMax = Vector2.one;
+            hitRect.offsetMin = Vector2.zero;
+            hitRect.offsetMax = Vector2.zero;
+            Image hitImage = minimapHitArea.GetComponent<Image>();
+            hitImage.color = Color.clear;
+            hitImage.raycastTarget = true;
+            minimapHitArea.transform.SetAsFirstSibling();
+        }
+
+        /// <summary>关闭 MiniMapButton 模板中仅用于旧地图表现的 Graphic，避免旧圆形贴图覆盖新的地图视图。</summary>
+        private void DisableMinimapTemplateGraphics()
+        {
+            for (int index = 0; index < MiniMapButton.transform.childCount; index++)
+            {
+                Transform child = MiniMapButton.transform.GetChild(index);
+                Graphic graphic = child.GetComponent<Graphic>();
+                if (graphic == null) continue;
+                graphic.enabled = false;
+                graphic.raycastTarget = false;
+            }
+        }
+
+        /// <summary>订阅 WorldSystem 的地图资源和 POI 状态事实；玩家坐标由逐帧实体读取驱动。</summary>
+        private void SubscribeMinimapEvents()
+        {
+            if (Core.Event == null) throw new InvalidOperationException($"{nameof(HudPanel)} requires EventKit before subscribing map events.");
+            Core.Event.AddListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
+            Core.Event.AddListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
+        }
+
+        /// <summary>解除 HUD 小地图的 WorldSystem 监听，避免缓存面板关闭后继续更新已隐藏控件。</summary>
+        private void UnsubscribeMinimapEvents()
+        {
+            if (Core.Event == null) return;
+            Core.Event.RemoveListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
+            Core.Event.RemoveListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
+        }
+
+        /// <summary>地图资源就绪后重新绑定静态纹理和当前 POI 标记。</summary>
+        private void OnWorldMapReady(WorldMapReadyEvent eventData)
+        {
+            RefreshMinimap();
+        }
+
+        /// <summary>每帧直接读取当前玩家实体坐标；只有坐标变化时才重算小地图视口和 POI 锚点。</summary>
+        private void UpdateMinimapPlayerPosition()
+        {
+            if (worldSystem == null || !worldSystem.TryGetPlayerPosition(out Vector3 currentPosition)) return;
+            if (hasMinimapPlayerPosition && minimapPlayerPosition == currentPosition) return;
+            minimapPlayerPosition = currentPosition;
+            hasMinimapPlayerPosition = true;
+            RefreshMinimap();
+        }
+
+        /// <summary>POI 集合或状态变化后重建小地图上的 POI 标记。</summary>
+        private void OnWorldMapPoiChanged(WorldMapPoiChangedEvent eventData)
+        {
+            RefreshMinimap();
+        }
+
+        /// <summary>根据 WorldSystem 地图定义设置纹理、局部视口和 POI 标记；地图未拍摄时显示空白视图。</summary>
+        private void RefreshMinimap()
+        {
+            if (minimapImage == null || worldSystem == null) return;
+            minimapImage.texture = worldSystem.MapTexture;
+            minimapImage.enabled = worldSystem.MapTexture != null;
+            if (worldSystem.MapTexture == null)
+            {
+                minimapImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+                ConfigureMinimapMask(new Rect(0f, 0f, 1f, 1f));
+                ClearMinimapPoiMarkers();
+                return;
+            }
+            Rect viewport = new Rect(0f, 0f, 1f, 1f);
+            if (hasMinimapPlayerPosition)
+            {
+                Vector2 playerUv = worldSystem.WorldToMapNormalized(minimapPlayerPosition);
+                // 视口越小，地图显示比例越大；玩家始终作为视口中心点，避免小地图看起来过度缩小。
+                const float viewportFraction = 0.2f;
+                viewport = WorldMapUiMath.CalculateMinimapViewport(playerUv, viewportFraction);
+            }
+            minimapImage.uvRect = viewport;
+            ConfigureMinimapMask(viewport);
+            RebuildMinimapPoiMarkers(viewport);
+        }
+
+        /// <summary>同步径向虚化材质的 UV 还原参数，确保虚化边界固定在 HUD 控件而不是地图内容上。</summary>
+        private void ConfigureMinimapMask(Rect viewport)
+        {
+            Vector4 maskUvTransform = new Vector4(1f / viewport.width, 1f / viewport.height, -viewport.x / viewport.width, -viewport.y / viewport.height);
+            minimapMaskMaterial.SetVector("_MaskUvTransform", maskUvTransform);
+        }
+
+        /// <summary>按 WorldSystem 当前 POI 集合重建可见于小地图视口内的彩色标记。</summary>
+        private void RebuildMinimapPoiMarkers(Rect viewport)
+        {
+            ClearMinimapPoiMarkers();
+            for (int index = 0; index < worldSystem.AllPois.Count; index++)
+            {
+                PoiEntity poi = worldSystem.AllPois[index];
+                if (poi == null || poi.Config == null || poi.IsConsumed) continue;
+                // POI 根节点可能挂在带有场景偏移的父节点下；运行时实际 Transform 才是静态地图拍摄所使用的权威世界坐标。
+                Vector2 poiUv = worldSystem.WorldToMapNormalized(poi.bindGo.transform.position);
+                if (!WorldMapUiMath.TryGetViewportAnchor(poiUv, viewport, out Vector2 localUv)) continue;
+                GameObject markerObject = CreateMinimapMarker(poi.Config.Id, WorldMapIconCatalog.LoadPoiIcon(poi.Config.PoiType), Color.white, minimapPoiRoot, new Vector2(28f, 28f));
+                RectTransform markerRect = markerObject.GetComponent<RectTransform>();
+                markerRect.anchorMin = localUv;
+                markerRect.anchorMax = localUv;
+                markerRect.anchoredPosition = Vector2.zero;
+            }
+            if (!hasMinimapPlayerPosition || minimapPlayerMarker == null) return;
+            // 视口已经以玩家坐标为中心，玩家图标固定在视口中心，保证始终可见且不会随 POI 标记偏移。
+            minimapPlayerMarker.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            minimapPlayerMarker.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            minimapPlayerMarker.rectTransform.anchoredPosition = Vector2.zero;
+            minimapPlayerMarker.transform.SetAsLastSibling();
+        }
+
+        /// <summary>删除旧 POI 标记但保留固定在中心的玩家标记。</summary>
+        private void ClearMinimapPoiMarkers()
+        {
+            if (minimapPoiRoot == null) return;
+            for (int index = minimapPoiRoot.childCount - 1; index >= 0; index--)
+            {
+                Transform child = minimapPoiRoot.GetChild(index);
+                if (minimapPlayerMarker != null && child == minimapPlayerMarker.transform) continue;
+                DestroyUiResource(child.gameObject);
+            }
+        }
+
+        /// <summary>创建不拦截 MiniMapButton 点击的简单圆点标记。</summary>
+        private static GameObject CreateMinimapMarker(string markerName, Sprite sprite, Color color, RectTransform parent, Vector2 size)
+        {
+            GameObject markerObject = new GameObject(markerName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            markerObject.layer = parent.gameObject.layer;
+            RectTransform markerRect = markerObject.GetComponent<RectTransform>();
+            markerRect.SetParent(parent, false);
+            markerRect.sizeDelta = size;
+            Image markerImage = markerObject.GetComponent<Image>();
+            markerImage.sprite = sprite;
+            markerImage.preserveAspect = sprite != null;
+            markerImage.color = color;
+            markerImage.raycastTarget = false;
+            return markerObject;
+        }
+
+        /// <summary>面板打开期间逐帧读取玩家实体坐标，地图 UI 的更新由 UIKit 面板生命周期统一驱动。</summary>
+        protected override void OnUpdate(float dt)
+        {
+            if (isObserving) UpdateMinimapPlayerPosition();
         }
 
         /// <summary>把径向虚化区间写入当前小地图独占材质，区间内由 Shader 使用五次 smootherstep 平滑过渡。</summary>
@@ -263,18 +450,22 @@ namespace Xuan.Prometheus
         protected override void OnUnbind()
         {
             ReleaseValueListeners();
-            if (minimapSystem != null) minimapSystem.UnbindView(minimapImage);
+            UnsubscribeMinimapEvents();
             if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            DestroyUiResource(minimapHitArea);
             DestroyUiResource(minimapMaskMaterial);
             eventKit = null;
             inputSystem = null;
             teamSystem = null;
             hudCommandSystem = null;
-            minimapSystem = null;
             worldSystem = null;
             entitySystem = null;
             minimapImage = null;
             minimapMaskMaterial = null;
+            minimapPoiRoot = null;
+            minimapHitArea = null;
+            minimapPlayerMarker = null;
+            hasMinimapPlayerPosition = false;
             observedEntityId = 0;
             isObserving = false;
         }

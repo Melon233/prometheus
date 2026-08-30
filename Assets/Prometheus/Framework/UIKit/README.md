@@ -10,7 +10,7 @@ UIKit 只记录和释放自己创建的事件系统，不接管场景预置的 E
 
 UI Prefab 根节点使用 `UIComponentBinder` 保存稳定名称和组件引用。选中 Prefab 后执行 `Tools/Prometheus/UIKit/Generate Selected Panel`，生成器会覆盖 `Assets/Prometheus/Framework/UIKit/Generated` 下的强类型 `PanelBase`，但只在业务 Panel 不存在时创建业务脚本，因此重复生成不会覆盖已经实现的界面逻辑。
 
-生成的 `PanelBase` 负责按 Binder 索引和名称取得组件、注册 Button 点击监听、最终解绑监听并清空 Unity 对象引用。业务 Panel 负责实现生成的抽象 `OnXxxClick` 回调以及 `OnBind`、`OnInitialize`、`OnOpen`、`OnClose`、`OnUnbind` 生命周期。
+生成的 `PanelBase` 负责按 Binder 索引和名称取得组件、注册 Button 点击监听、最终解绑监听并清空 Unity 对象引用。业务 Panel 负责实现生成的抽象 `OnXxxClick` 回调以及 `OnBind`、`OnInitialize`、`OnOpen`、`OnUpdate`、`OnClose`、`OnUnbind` 生命周期。
 
 ## Button 规则
 
@@ -28,6 +28,6 @@ HUD 的抽奖、小地图、任务、菜单、引导、活动、角色和背包�
 
 ## 生命周期约定
 
-生成监听只在面板绑定时注册一次，并在最终解绑时移除。缓存关闭不会销毁生成字段，业务 Panel 在 `OnClose` 只释放数据监听；快捷键租约由独立 `HudCommandSystem` 按单局生命周期持有和释放。最终 `OnUnbind` 必须清空业务持有的 System、事件总线和实体引用。
+生成监听只在面板绑定时注册一次，并在最终解绑时移除。UIKit 每帧只向处于打开状态且实例有效的面板分发 `OnUpdate(float dt)`；缓存关闭不会执行该回调。业务 Panel 在 `OnClose` 只释放数据监听；快捷键租约由独立 `HudCommandSystem` 按单局生命周期持有和释放。最终 `OnUnbind` 必须清空业务持有的 System、事件总线和实体引用。
 
-HUD 小地图复用 Binder 已生成的 `MiniMapButton` 作为容器，不把运行时地图图层加入稳定绑定表。`HudPanel.OnInitialize` 只创建 RawImage 和独占径向虚化材质，并把 RawImage 固定在容器子节点最底层；`OnOpen`/`OnClose` 只负责向 `MinimapSystem` 绑定或解绑地图视图，世界坐标映射进入系统。玩家标记由 UI Prefab 自行配置并自然覆盖在地图之上，不进入小地图系统的创建、显隐或旋转链路。
+HUD 小地图复用 Binder 已生成的 `MiniMapButton` 作为容器，不把运行时地图图层加入稳定绑定表。`HudPanel.OnInitialize` 创建 RawImage、径向虚化材质和 POI 标记层；`OnOpen`/`OnClose` 订阅或解除 `WorldSystem` 的地图事件，世界坐标映射统一调用 `WorldMapDefinition`。大地图使用独立的 `MapPanel`，但同样只读取 `WorldSystem` 的地图和 POI 数据。

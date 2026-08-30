@@ -111,8 +111,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d247ba06193faa74d9335f5481b2b56c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   skeletonDataAsset: {fileID: 11400000, guid: 49c2de8d7a2f07e45bfd2a4b94b03b3b, type: 2}
   initialSkinName: 
   initialFlipX: 0
@@ -186,8 +186,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec688383a2b64e949cbd57317db6f8db, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   cc: {fileID: 491497129945753471}
   curVelo: {x: 0, y: 0, z: 0}
   wasGroundedLastFrame: 0
@@ -248,6 +248,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   talentConfig: {fileID: 0}
   attackHits: []
+  talentGrowth:
+    debugTalentLevel: 1
   legacyAttackCollider: {fileID: 8140240498181792558}
 --- !u!114 &3247687134074917520
 MonoBehaviour:
@@ -363,7 +365,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 2, y: 1, z: 2}
+  m_Size: {x: 1.5, y: 1, z: 0.5}
   m_Center: {x: 0.5, y: 0, z: 0}
 --- !u!114 &8140240498181792558
 MonoBehaviour:

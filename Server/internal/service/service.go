@@ -6,11 +6,13 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
 	"prometheus/internal/item"
 	"prometheus/internal/poi"
+	"prometheus/internal/room"
 	"prometheus/internal/store"
 )
 
@@ -23,8 +25,21 @@ type Service struct {
 	itemConfig  *item.Config
 	byID        map[string]*poi.Poi
 	byChunk     map[int32][]*poi.Poi
+	playerPois  map[string]map[string]*poi.Poi
 	randomMu    sync.Mutex
 	random      *rand.Rand
+}
+
+// PlayerPoiStore 是可选的玩家作用域 POI 存储扩展；旧的 Store 实现仍可用于兼容内存测试。
+type PlayerPoiStore interface {
+	LoadAllForPlayer(ctx context.Context, playerID string) ([]*poi.Poi, error)
+	UpsertForPlayer(ctx context.Context, playerID string, target *poi.Poi) error
+}
+
+// PlayerPositionStore 是可选的玩家坐标持久化扩展，由网络层的定时保存任务调用。
+type PlayerPositionStore interface {
+	LoadPlayerPosition(ctx context.Context, playerID string) (room.Position, bool, error)
+	UpsertPlayerPosition(ctx context.Context, playerID string, position room.Position) error
 }
 
 // New 创建 POI 权威服务。
@@ -33,37 +48,57 @@ func New(st store.Store, inv *Inventory, itemConfig *item.Config) *Service {
 	if inv != nil {
 		inventories[inv.player] = inv
 	}
-	return &Service{store: st, inventory: inv, inventories: inventories, itemConfig: itemConfig, byID: make(map[string]*poi.Poi), byChunk: make(map[int32][]*poi.Poi), random: rand.New(rand.NewSource(time.Now().UnixNano()))}
+	return &Service{store: st, inventory: inv, inventories: inventories, itemConfig: itemConfig, byID: make(map[string]*poi.Poi), byChunk: make(map[int32][]*poi.Poi), playerPois: make(map[string]map[string]*poi.Poi), random: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
 
-// Seed 从存储加载已有记录，并按导出配置 upsert：新 POI 插入，已有 POI 更新静态定义（region/类型/位置/旋转/chunkId），状态 bool 保持不变。
+// Seed 从存储加载已有记录，并按 UUID 导出配置执行整批同步；缺失于本次导出的合法 UUID 会标记为退役并保留历史状态。
 func (s *Service) Seed(ctx context.Context, exported []poi.ExportItem) error {
+	// 先完整校验导出批次，任何错误都不得造成部分播种或部分更新。
+	exportedIDs := make(map[string]struct{}, len(exported))
+	for index, item := range exported {
+		if !poi.IsUUID(item.ID) {
+			return fmt.Errorf("poi export item %d has invalid UUID %q", index, item.ID)
+		}
+		if _, exists := exportedIDs[item.ID]; exists {
+			return fmt.Errorf("poi export contains duplicate UUID %q", item.ID)
+		}
+		exportedIDs[item.ID] = struct{}{}
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	pois, err := s.store.LoadAll(ctx)
 	if err != nil {
 		return err
 	}
+	// 重建索引，避免重复 Seed 后旧 chunk 索引和玩家模板残留。
+	s.byID = make(map[string]*poi.Poi, len(pois)+len(exported))
+	s.byChunk = make(map[int32][]*poi.Poi)
+	s.playerPois = make(map[string]map[string]*poi.Poi)
 	for _, p := range pois {
 		if p == nil {
 			continue
 		}
-		s.byID[p.ID] = p
-		s.byChunk[p.ChunkID] = append(s.byChunk[p.ChunkID], p)
-	}
-	for _, item := range exported {
-		if item.ID == "" {
+		// 当前数据已切换到 UUID，旧临时主键不再参与运行时索引，也不迁移。
+		if !poi.IsUUID(p.ID) {
 			continue
 		}
+		s.byID[p.ID] = p
+		if !p.Retired {
+			s.byChunk[p.ChunkID] = append(s.byChunk[p.ChunkID], p)
+		}
+	}
+	for _, item := range exported {
 		if existing, ok := s.byID[item.ID]; ok {
 			// 已存在：更新静态定义字段，保留状态 bool，避免移动/改配置丢失玩家进度。
 			oldChunk := existing.ChunkID
+			wasRetired := existing.Retired
 			existing.Region = item.Region
 			existing.PoiType = item.PoiType
 			existing.Position = item.Position
 			existing.Rotation = item.Rotation
 			existing.ChunkID = item.ChunkID
-			if oldChunk != existing.ChunkID { // chunk 变化时同步调整 chunk 索引
+			existing.Retired = false
+			if wasRetired || oldChunk != existing.ChunkID { // 退役恢复或 chunk 变化时同步调整 chunk 索引
 				s.byChunk[oldChunk] = removePoiFromChunk(s.byChunk[oldChunk], existing)
 				s.byChunk[existing.ChunkID] = append(s.byChunk[existing.ChunkID], existing)
 			}
@@ -79,11 +114,26 @@ func (s *Service) Seed(ctx context.Context, exported []poi.ExportItem) error {
 			Position: item.Position,
 			Rotation: item.Rotation,
 			ChunkID:  item.ChunkID,
+			Retired:  false,
 		}
 		initState(p)
 		s.byID[p.ID] = p
 		s.byChunk[p.ChunkID] = append(s.byChunk[p.ChunkID], p)
 		if err := s.store.Upsert(ctx, p); err != nil {
+			return err
+		}
+	}
+	// 导出中消失的 POI 进入退役状态，保留数据库记录和历史状态但不再进入活动 chunk。
+	for id, existing := range s.byID {
+		if _, exists := exportedIDs[id]; exists {
+			continue
+		}
+		if existing.Retired {
+			continue
+		}
+		existing.Retired = true
+		s.byChunk[existing.ChunkID] = removePoiFromChunk(s.byChunk[existing.ChunkID], existing)
+		if err := s.store.Upsert(ctx, existing); err != nil {
 			return err
 		}
 	}
@@ -104,8 +154,15 @@ func removePoiFromChunk(list []*poi.Poi, target *poi.Poi) []*poi.Poi {
 func (s *Service) PullAll() []*poi.Poi {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	out := make([]*poi.Poi, 0, len(s.byID))
-	for _, p := range s.byID {
+	pois := s.byID
+	if player, ok := s.playerPois["default"]; ok {
+		pois = player
+	}
+	out := make([]*poi.Poi, 0, len(pois))
+	for _, p := range pois {
+		if p == nil || p.Retired {
+			continue
+		}
 		out = append(out, p.Clone())
 	}
 	return out
@@ -115,10 +172,21 @@ func (s *Service) PullAll() []*poi.Poi {
 func (s *Service) PullChunk(chunkID int32) []*poi.Poi {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
+	if player, ok := s.playerPois["default"]; ok {
+		out := make([]*poi.Poi, 0)
+		for _, p := range player {
+			if !p.Retired && p.ChunkID == chunkID {
+				out = append(out, p.Clone())
+			}
+		}
+		return out
+	}
 	if list, ok := s.byChunk[chunkID]; ok {
 		out := make([]*poi.Poi, 0, len(list))
 		for _, p := range list {
-			out = append(out, p.Clone())
+			if !p.Retired {
+				out = append(out, p.Clone())
+			}
 		}
 		return out
 	}
@@ -142,6 +210,24 @@ func (s *Service) GetItemsForPlayer(ctx context.Context, playerID string) ([]*it
 	return inventory.GetAll(), nil
 }
 
+// LoadPlayerPosition 读取玩家最近一次持久化坐标；未找到时返回 false。
+func (s *Service) LoadPlayerPosition(ctx context.Context, playerID string) (room.Position, bool, error) {
+	positionStore, ok := s.store.(PlayerPositionStore)
+	if !ok {
+		return room.Position{}, false, nil
+	}
+	return positionStore.LoadPlayerPosition(ctx, playerID)
+}
+
+// SavePlayerPosition 持久化玩家当前坐标；旧存储实现不支持坐标时保持兼容并忽略保存。
+func (s *Service) SavePlayerPosition(ctx context.Context, playerID string, position room.Position) error {
+	positionStore, ok := s.store.(PlayerPositionStore)
+	if !ok {
+		return nil
+	}
+	return positionStore.UpsertPlayerPosition(ctx, playerID, position)
+}
+
 // Interact 校验并应用一次交互：返回变更后的记录与是否成功。
 // 一次性操作（解锁/开箱/收集）重复请求返回 false；可刷新操作（采集/击败）总是成功；供奉总是成功。
 func (s *Service) Interact(ctx context.Context, id string, op int32) (*poi.Poi, bool) {
@@ -152,8 +238,17 @@ func (s *Service) Interact(ctx context.Context, id string, op int32) (*poi.Poi, 
 func (s *Service) InteractForPlayer(ctx context.Context, playerID, id string, op int32) (*poi.Poi, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, ok := s.byID[id]
-	if !ok {
+	// UUID 是大小写无关的表示；仅对合法 UUID 规范化小写，保留临时语义 ID 的原始大小写。
+	id = strings.TrimSpace(id)
+	if poi.IsUUID(id) {
+		id = strings.ToLower(id)
+	}
+	pois, err := s.playerPoisLocked(ctx, playerID)
+	if err != nil {
+		return nil, false
+	}
+	p, ok := pois[id]
+	if !ok || p.Retired {
 		return nil, false
 	}
 	if op == poi.PoiOpOfferStatue {
@@ -161,13 +256,13 @@ func (s *Service) InteractForPlayer(ctx context.Context, playerID, id string, op
 		if err != nil {
 			return p.Clone(), false
 		}
-		s.offerStatue(ctx, p, inventory) // 供奉：消耗风神瞳推进进度，升级发长剑
+		s.offerStatue(ctx, playerID, p, inventory) // 供奉：消耗风神瞳推进进度，升级发长剑
 		return p.Clone(), true
 	}
 	if !applyToState(p, op) {
 		return p.Clone(), false
 	}
-	_ = s.store.Upsert(ctx, p) // 权威变更后立即入库
+	_ = s.upsertPlayerPoi(ctx, playerID, p) // 权威变更后立即入库
 	if inventory, err := s.inventoryForPlayerLocked(ctx, playerID); err == nil {
 		s.grantItems(ctx, op, inventory) // 按操作发放掉落物品
 	}
@@ -224,7 +319,7 @@ func (s *Service) grantItems(ctx context.Context, op int32, inventory *Inventory
 }
 
 // offerStatue 神像供奉：消耗全部风神瞳推进进度，每升一级发放一把长剑。
-func (s *Service) offerStatue(ctx context.Context, p *poi.Poi, inventory *Inventory) {
+func (s *Service) offerStatue(ctx context.Context, playerID string, p *poi.Poi, inventory *Inventory) {
 	if inventory == nil || s.itemConfig == nil {
 		return
 	}
@@ -245,7 +340,66 @@ func (s *Service) offerStatue(ctx context.Context, p *poi.Poi, inventory *Invent
 		p.Statue.Level++
 		_ = inventory.Grant(ctx, item.IDSword, 1)
 	}
-	_ = s.store.Upsert(ctx, p)
+	_ = s.upsertPlayerPoi(ctx, playerID, p)
+}
+
+// playerPoisLocked 加载玩家个人 POI 状态；没有持久化记录的新玩家从策划导出的静态模板初始化。
+// 调用方必须已经持有 s.mu 写锁，避免同一玩家被并发创建多个内存快照。
+func (s *Service) playerPoisLocked(ctx context.Context, playerID string) (map[string]*poi.Poi, error) {
+	if playerID == "" {
+		playerID = "default"
+	}
+	if pois, ok := s.playerPois[playerID]; ok {
+		return pois, nil
+	}
+	pois := make(map[string]*poi.Poi, len(s.byID))
+	if scoped, ok := s.store.(PlayerPoiStore); ok {
+		stored, err := scoped.LoadAllForPlayer(ctx, playerID)
+		if err != nil {
+			return nil, err
+		}
+		for _, target := range stored {
+			if target != nil && poi.IsUUID(target.ID) && !target.Retired {
+				if template, exists := s.byID[target.ID]; !exists || template.Retired {
+					continue
+				}
+				pois[target.ID] = target
+			}
+		}
+	}
+	for id, template := range s.byID {
+		if template.Retired {
+			continue
+		}
+		if _, exists := pois[id]; exists {
+			continue
+		}
+		copy := template.Clone()
+		resetPoiState(copy)
+		pois[id] = copy
+	}
+	s.playerPois[playerID] = pois
+	return pois, nil
+}
+
+// upsertPlayerPoi 按玩家作用域持久化 POI；旧存储只支持默认玩家，因此回退到原 Store 接口。
+func (s *Service) upsertPlayerPoi(ctx context.Context, playerID string, target *poi.Poi) error {
+	if scoped, ok := s.store.(PlayerPoiStore); ok {
+		return scoped.UpsertForPlayer(ctx, playerID, target)
+	}
+	return s.store.Upsert(ctx, target)
+}
+
+// resetPoiState 清除模板中可能携带的其它玩家状态，再按 POI 类型建立全新的初始状态。
+func resetPoiState(target *poi.Poi) {
+	target.Statue = nil
+	target.Anchor = nil
+	target.Chest = nil
+	target.SpiritCore = nil
+	target.Gathering = nil
+	target.Dungeon = nil
+	target.MapBoss = nil
+	initState(target)
 }
 
 // inventoryForPlayer 在读场景中加载指定玩家背包；新玩家会复用同一个 ItemStore 创建独立内存索引。

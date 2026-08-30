@@ -7,10 +7,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"google.golang.org/protobuf/proto"
 
@@ -53,6 +55,7 @@ func (s *Server) ListenAndServe(addr string) error {
 	if err != nil {
 		return err
 	}
+	go s.persistPositionsLoop()
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -130,24 +133,42 @@ func (s *Server) dispatch(session *clientSession, req *protocol.Packet) []*proto
 				playerID = s.newPlayerID()
 			}
 		}
+		position, hasPosition, err := s.svc.LoadPlayerPosition(s.ctx, playerID)
+		if err != nil {
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: false, PlayerId: playerID, Error: err.Error()}}}}
+		}
 		s.mu.Lock()
 		if session.joined {
+			if session.playerID == playerID {
+				if current, ok := s.rooms.CurrentPosition(playerID); ok {
+					position = current
+					hasPosition = true
+				}
+			}
 			if session.playerID != playerID {
 				s.rooms.Leave(session.playerID)
 				session.playerID = playerID
-				session.roomID = s.rooms.Join(playerID)
+				if hasPosition {
+					session.roomID = s.rooms.JoinWithPosition(playerID, &position)
+				} else {
+					session.roomID = s.rooms.Join(playerID)
+				}
 			}
 			roomID := session.roomID
 			currentPlayerID := session.playerID
 			s.mu.Unlock()
-			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: true, RoomId: roomID, PlayerId: currentPlayerID}}}}
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: true, RoomId: roomID, PlayerId: currentPlayerID, Position: positionPush(roomID, position, hasPosition)}}}}
 		}
 		session.playerID = playerID
-		session.roomID = s.rooms.Join(playerID)
+		if hasPosition {
+			session.roomID = s.rooms.JoinWithPosition(playerID, &position)
+		} else {
+			session.roomID = s.rooms.Join(playerID)
+		}
 		session.joined = true
 		roomID := session.roomID
 		s.mu.Unlock()
-		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: true, RoomId: roomID, PlayerId: playerID}}}}
+		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_JoinRoomResp{JoinRoomResp: &protocol.JoinRoomResponse{Success: true, RoomId: roomID, PlayerId: playerID, Position: positionPush(roomID, position, hasPosition)}}}}
 	case *protocol.Packet_UpdatePosition:
 		playerID, roomID, joined := s.sessionState(session)
 		if !joined {
@@ -189,7 +210,28 @@ func (s *Server) removeSession(session *clientSession) {
 	session.joined = false
 	s.mu.Unlock()
 	if joined {
+		if position, ok := s.rooms.CurrentPosition(playerID); ok {
+			_ = s.svc.SavePlayerPosition(s.ctx, playerID, position)
+		}
 		s.rooms.Leave(playerID)
+	}
+}
+
+// persistPositionsLoop 每 3 秒把在线玩家的最新坐标写入其 players 聚合文档。
+func (s *Server) persistPositionsLoop() {
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			for _, position := range s.rooms.Snapshot() {
+				if err := s.svc.SavePlayerPosition(s.ctx, position.PlayerID, position); err != nil {
+					log.Printf("persist player position %s: %v", position.PlayerID, err)
+				}
+			}
+		case <-s.ctx.Done():
+			return
+		}
 	}
 }
 
@@ -265,6 +307,14 @@ func toProtoState(p *poi.Poi) *protocol.PoiState {
 		s.MapBossRespawnAt = p.MapBoss.RespawnAt
 	}
 	return s
+}
+
+// positionPush 将领域坐标转换为加入响应中的恢复坐标；没有历史坐标时返回 nil。
+func positionPush(roomID string, position room.Position, ok bool) *protocol.PlayerPositionPush {
+	if !ok {
+		return nil
+	}
+	return &protocol.PlayerPositionPush{RoomId: roomID, PlayerId: position.PlayerID, X: position.X, Y: position.Y, Z: position.Z, ServerTimeMs: position.ServerTimeMs}
 }
 
 // readPacket 读取一帧：4 字节大端长度 + protobuf 字节。

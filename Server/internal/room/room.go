@@ -11,11 +11,11 @@ const DefaultRoomID = "default"
 
 // Position 表示玩家在房间中的服务器权威坐标。
 type Position struct {
-	PlayerID     string
-	X            float32
-	Y            float32
-	Z            float32
-	ServerTimeMs int64
+	PlayerID     string  `bson:"player_id"`
+	X            float32 `bson:"x"`
+	Y            float32 `bson:"y"`
+	Z            float32 `bson:"z"`
+	ServerTimeMs int64   `bson:"server_time_ms"`
 }
 
 // Manager 管理唯一默认房间中的在线玩家位置。
@@ -32,13 +32,32 @@ func New() *Manager {
 
 // Join 将玩家加入默认房间，并返回稳定房间 ID。
 func (m *Manager) Join(playerID string) string {
+	return m.JoinWithPosition(playerID, nil)
+}
+
+// JoinWithPosition 将玩家加入默认房间，并在已有持久化坐标时恢复房间内位置。
+func (m *Manager) JoinWithPosition(playerID string, initial *Position) string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.positions[playerID]; !ok {
-		m.positions[playerID] = Position{PlayerID: playerID, ServerTimeMs: time.Now().UnixMilli()}
+		if initial != nil {
+			position := *initial
+			position.PlayerID = playerID
+			m.positions[playerID] = position
+		} else {
+			m.positions[playerID] = Position{PlayerID: playerID, ServerTimeMs: time.Now().UnixMilli()}
+		}
 	}
 	m.members[playerID]++
 	return DefaultRoomID
+}
+
+// CurrentPosition 返回玩家当前在线坐标；玩家不在线时返回 false。
+func (m *Manager) CurrentPosition(playerID string) (Position, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	position, ok := m.positions[playerID]
+	return position, ok
 }
 
 // Leave 移除断开连接的在线玩家。

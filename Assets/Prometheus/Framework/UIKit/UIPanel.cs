@@ -76,6 +76,11 @@ namespace Xuan.Prometheus
         {
         }
 
+        /// <summary>面板处于打开状态时每帧调用一次；具体面板可在此读取实体状态并刷新 UI。</summary>
+        protected virtual void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>
         /// 在面板实例最终释放前调用，适合移除 OnBind 注册的事件监听。
         /// </summary>
@@ -162,6 +167,13 @@ namespace Xuan.Prometheus
             {
                 IsOpen = false;
             }
+        }
+
+        /// <summary>由 UIKit 统一驱动当前打开面板的逐帧生命周期。</summary>
+        internal void InternalUpdate(float dt)
+        {
+            if (!IsOpen || isDisposed) return;
+            OnUpdate(dt);
         }
 
         /// <summary>

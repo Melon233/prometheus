@@ -14,7 +14,7 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 1
+  m_Fog: 0
   m_FogColor: {r: 0.43959886, g: 0.5849056, b: 0.5844147, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.01
@@ -27489,7 +27489,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Id
-      value: Mond_TeleAnchor_2
+      value: 9831979c0c9b4c58b4b9dee2d3954f82
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.uuid
@@ -27501,7 +27501,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.ChunkId
-      value: 13027
+      value: 13053
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.aoiExempt
@@ -27509,15 +27509,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Position.x
-      value: 265.3
+      value: 265.29996
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Position.z
-      value: 552.1
+      value: 1074.0999
       objectReference: {fileID: 0}
     - target: {fileID: 4110803676722469840, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -27525,7 +27525,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4110803676722469840, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4110803676722469840, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: m_LocalPosition.z
@@ -67173,7 +67173,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Id
-      value: Mond_Statue_1
+      value: 8f8c8569f4fe4127b41a35237cd8d3d2
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.uuid
@@ -67185,7 +67185,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.ChunkId
-      value: 14027
+      value: 14053
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.aoiExempt
@@ -67193,15 +67193,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Position.x
-      value: 293.3
+      value: 293.29996
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Position.z
-      value: 546.1
+      value: 1068.0999
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalPosition.x
@@ -67209,7 +67209,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalPosition.z
@@ -75500,7 +75500,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -2212645968816068835, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: Config.Id
-      value: Mond_SpiritCore_1
+      value: ee69f61584f6435e8846791954a6b174
       objectReference: {fileID: 0}
     - target: {fileID: -2212645968816068835, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: Config.uuid
@@ -75512,19 +75512,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -2212645968816068835, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: Config.ChunkId
-      value: 14027
+      value: 14053
       objectReference: {fileID: 0}
     - target: {fileID: -2212645968816068835, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: Config.Position.x
-      value: 285.3
+      value: 285.29996
       objectReference: {fileID: 0}
     - target: {fileID: -2212645968816068835, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: -2212645968816068835, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: Config.Position.z
-      value: 554.1
+      value: 1076.0999
       objectReference: {fileID: 0}
     - target: {fileID: 6842236353743571897, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: m_LocalPosition.x
@@ -75532,7 +75532,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6842236353743571897, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6842236353743571897, guid: fd3e5debcc65d764d9b81b74ea508589, type: 3}
       propertyPath: m_LocalPosition.z
@@ -99176,7 +99176,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Id
-      value: Mond_MonsterCamp_1
+      value: 6ac10f79621a4ac5be2cca12dd59f182
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.uuid
@@ -99188,19 +99188,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.ChunkId
-      value: 13028
+      value: 13054
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Position.x
-      value: 277.3
+      value: 277.29996
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Position.z
-      value: 562.1
+      value: 1084.0999
       objectReference: {fileID: 0}
     - target: {fileID: 3128473068206175161, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -99208,7 +99208,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3128473068206175161, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3128473068206175161, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: m_LocalPosition.z
@@ -107118,7 +107118,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Id
-      value: Mond_Chest_2
+      value: f43d81ddaa804639beed8e95a8b8ea17
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.uuid
@@ -107130,19 +107130,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.ChunkId
-      value: 13027
+      value: 13053
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Position.x
-      value: 277.3
+      value: 277.29996
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Position.z
-      value: 546.1
+      value: 1068.0999
       objectReference: {fileID: 0}
     - target: {fileID: 2805509600843403636, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -107150,7 +107150,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2805509600843403636, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2805509600843403636, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: m_LocalPosition.z
@@ -158597,7 +158597,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Id
-      value: Mond_MonsterCamp_1
+      value: 52288272f83a4556a0847350cf70ec49
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.uuid
@@ -158609,19 +158609,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.ChunkId
-      value: 13028
+      value: 11023
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Position.x
-      value: 277.3
+      value: 235.69986
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: -5922848142293987081, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: Config.Position.z
-      value: 562.1
+      value: 462.59973
       objectReference: {fileID: 0}
     - target: {fileID: 3128473068206175161, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -158629,7 +158629,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3128473068206175161, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3128473068206175161, guid: ba23c71809580a8409279d99347f20dc, type: 3}
       propertyPath: m_LocalPosition.z
@@ -160001,7 +160001,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Id
-      value: Mond_Statue_2
+      value: 8aa94bb153e54debafcfc2ad5733833d
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.uuid
@@ -160013,7 +160013,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.ChunkId
-      value: 14027
+      value: 14053
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.aoiExempt
@@ -160021,27 +160021,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Position.x
-      value: 289.3
+      value: 290.30997
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 850501503241014332, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: Config.Position.z
-      value: 542.1
+      value: 1064.1
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 479.00012
+      value: 479
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -480
+      value: -478.99
       objectReference: {fileID: 0}
     - target: {fileID: 8492088112778574565, guid: 176552dd426b25c4384831f21cc27a33, type: 3}
       propertyPath: m_LocalRotation.w
@@ -179441,7 +179441,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 22400762, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000030517578
+      value: 0.0000038146973
       objectReference: {fileID: 0}
     - target: {fileID: 22426080, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchorMax.x
@@ -202636,7 +202636,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7794042808606800206, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7794042808606800206, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: m_LocalPosition.z
@@ -202672,7 +202672,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8930510059948029333, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: Config.Id
-      value: Mond_MapBoss_1
+      value: 3d4b4adfa50c444aaee8ec7aed085118
       objectReference: {fileID: 0}
     - target: {fileID: 8930510059948029333, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: Config.uuid
@@ -202684,19 +202684,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8930510059948029333, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: Config.ChunkId
-      value: 13027
+      value: 13053
       objectReference: {fileID: 0}
     - target: {fileID: 8930510059948029333, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: Config.Position.x
-      value: 269.3
+      value: 269.29996
       objectReference: {fileID: 0}
     - target: {fileID: 8930510059948029333, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 8930510059948029333, guid: af566edf51519b4489ac78449258f782, type: 3}
       propertyPath: Config.Position.z
-      value: 546.1
+      value: 1068.0999
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -212205,7 +212205,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Id
-      value: Mond_Gathering_2
+      value: 99b0334d786746aca78bbbb29b38bf61
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.uuid
@@ -212217,19 +212217,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.ChunkId
-      value: 14027
+      value: 14054
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Position.x
-      value: 281.3
+      value: 281.29996
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Position.z
-      value: 558.1
+      value: 1080.0999
       objectReference: {fileID: 0}
     - target: {fileID: 4349188615137578939, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: m_Name
@@ -212241,7 +212241,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5940037692427393530, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5940037692427393530, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -232319,7 +232319,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Id
-      value: Mond_Gathering_1
+      value: 93f3c30b0c0447efbc085d3cd786429b
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.uuid
@@ -232331,19 +232331,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.ChunkId
-      value: 13027
+      value: 13053
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Position.x
-      value: 277.3
+      value: 277.29996
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: -6170201275561856037, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: Config.Position.z
-      value: 554.1
+      value: 1076.0999
       objectReference: {fileID: 0}
     - target: {fileID: 4349188615137578939, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: m_Name
@@ -232355,7 +232355,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5940037692427393530, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5940037692427393530, guid: 32759860bd9d85f42a25d077b5381ea9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -251468,7 +251468,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Id
-      value: Mond_Chest_1
+      value: f9d9e9dfdbd94f1b9cb8f36b392c3c67
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.uuid
@@ -251480,19 +251480,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.ChunkId
-      value: 13026
+      value: 13053
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Position.x
-      value: 277.3
+      value: 277.29996
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 1640475078936234288, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: Config.Position.z
-      value: 538.1
+      value: 1060.0999
       objectReference: {fileID: 0}
     - target: {fileID: 2805509600843403636, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -251500,7 +251500,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2805509600843403636, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2805509600843403636, guid: 44612338c073c6b41a44a64091544bdc, type: 3}
       propertyPath: m_LocalPosition.z
@@ -265125,7 +265125,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.Id
-      value: Mond_Dungeon_1
+      value: 6967f09fc51e48cfa1ea117772c04b70
       objectReference: {fileID: 0}
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.uuid
@@ -265137,7 +265137,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.ChunkId
-      value: 14027
+      value: 14053
       objectReference: {fileID: 0}
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.aoiExempt
@@ -265145,15 +265145,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.Position.x
-      value: 293.3
+      value: 293.29996
       objectReference: {fileID: 0}
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: -3878661528555127773, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: Config.Position.z
-      value: 554.1
+      value: 1076.0999
       objectReference: {fileID: 0}
     - target: {fileID: 1984651592515025446, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: m_Name
@@ -265165,7 +265165,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8586037602283697099, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8586037602283697099, guid: fc30e82c801cc14428d7149b2ef613f3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -300112,7 +300112,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Id
-      value: Mond_TeleAnchor_1
+      value: 91d696ae5cc14ca89d550023c86f45a3
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.uuid
@@ -300124,7 +300124,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.ChunkId
-      value: 14027
+      value: 14053
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.aoiExempt
@@ -300132,15 +300132,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Position.x
-      value: 285.3
+      value: 285.29996
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Position.y
-      value: 1
+      value: 0.04812
       objectReference: {fileID: 0}
     - target: {fileID: 641205520903807711, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: Config.Position.z
-      value: 546.1
+      value: 1068.0999
       objectReference: {fileID: 0}
     - target: {fileID: 4110803676722469840, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -300148,7 +300148,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4110803676722469840, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.95188
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4110803676722469840, guid: 07bda2313f5066847b6261f0af5691e4, type: 3}
       propertyPath: m_LocalPosition.z

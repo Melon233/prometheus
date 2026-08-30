@@ -59,6 +59,7 @@ type MapBossState struct {
 // 状态按类型建模：仅该类型对应的状态指针非 nil 才写入，避免无关字段冗余，同时保留字段可见性。
 type Poi struct {
 	ID       string `bson:"_id" json:"Id"`
+	Retired  bool   `bson:"retired" json:"-"` // 当前导出已删除的 POI；保留历史记录但不再同步或允许交互
 	Region   string `bson:"region" json:"Region"`
 	PoiType  int32  `bson:"poi_type" json:"PoiType"` // 0..7，见下方 PoiType* 常量
 	Position Vec3   `bson:"position" json:"Position"`

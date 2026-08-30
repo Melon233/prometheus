@@ -70,7 +70,7 @@ public enum PoiType
 
 - **网格坐标**：`cellX = floor(worldPos.x / regionSize)`，`cellY = floor(worldPos.z / regionSize)`。
 - **RegionId**：`$"{cellX}x{cellY}"`，如 `1x1`、`12x345`。
-- **PoiId**：`$"{RegionId}_{局部id}"`，局部 id 从 1 开始，如 `1x1_1`、`12x345_1`。
+- **PoiId**：编辑器写回的 32 位无分隔小写 UUID；与 Region、位置、类型和遍历顺序无关，删除后永不复用。
 
 ### 3.2 PoiConfig（兴趣点配置基类，可序列化）
 
@@ -78,7 +78,7 @@ public enum PoiType
 [Serializable]
 public class PoiConfig
 {
-    public string       PoiId;             // 唯一 id，网格坐标 + 局部 id，如 "1x1_1"
+    public string       PoiId;             // 不可变 UUID，同步键与服务器数据库主键
     public PoiType      PoiType;           // 八种兴趣点之一
     public Vector3      Position;          // 世界坐标（烘焙时写入，距离过滤必需）
     public bool         aoiExempt;         // 豁免 AOI 裁剪：大体建筑（神像/副本/锚点）常驻，远离不回收
@@ -143,16 +143,17 @@ public sealed class PoiMono : MonoBehaviour
 }
 ```
 
-- 自定义 Inspector：根据 `Config.PoiType` 显示对应类型的 Config 字段（见 4.3）。
+- `PoiMono` 使用 Unity 默认 Inspector，不再注册专用 `CustomEditor`；`PoiConfig` 的通用字段绘制由其 PropertyDrawer 负责。
 - **运行时**：此对象不参与逻辑。加载阶段完全基于烘焙数据，运行时场景里不应依赖 `PoiMono`。
 
 ### 4.2 烘焙工具（编辑器窗口）
 - 配置 `Region Size`（区域边长，默认 `100m`）。
 - 点击**烘焙**：扫描场景中所有 `PoiMono`，按 `Position` 计算归属网格，聚合成 `RegionConfig`，写入（或重建）`WorldRegionsConfig` 资产。
-- 归属规则：`cellX = floor(x / size)`、`cellY = floor(z / size)`；同一格内的 POI 归入该 Region，局部 id 按格内顺序从 1 递增。
+- 归属规则：`cellX = floor(x / size)`、`cellY = floor(z / size)`；同一格内的 POI 归入该 Region。POI UUID 不参与网格计算，也不会因布局变化而改变。
+- 进入 PlayMode 时 `ServerProcessManager` 自动构建并启动 Go 服务器；服务器异常残留时可使用菜单 `Prometheus/World/Stop POI Server` 停止项目对应的 `Server/bin/server.exe`。
 
-### 4.3 类型分面编辑器
-Inspector 依据 `PoiType` 切换显示对应的 Config 面板（`Statue`/`TeleAnchor`/`Chest`/`SpiritCore`/`Gathering`/`Dungeon`/`MapBoss`/`MonsterCamp` 之一），保证一次只编辑一个类型的数据，避免误填。
+### 4.3 配置字段绘制
+`PoiConfigDrawer` 仅负责 `PoiConfig` 属性的通用折叠和类型字段显示，不再通过 `PoiMonoEditor` 接管 `PoiMono` 的 Inspector。
 
 ---
 
@@ -199,7 +200,7 @@ public sealed class WorldSystem : XSystem
 - 烘焙加载（`AfterNew` 经 `AssetKit.Ins`）与核心刷新（`LoadBaked` / `RefreshAt`）**分离**，便于独立测试。
 - 玩家位置在 `OnUpdate` 中取 `gameplayKit.Player`（即 `TeamSystem.ActiveMember`）的 `bindGo` 坐标。
 
-> 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：`AfterNew` 先注册怪物营地死亡监听并生成初始史莱姆，再创建 `PoiNetworkClient`，通过 `ConnectAsync` 确认 POI 服务器可用后扫描场景并启用 AOI/交互逻辑。`OnUpdate` 先执行营地补刷，再调用 `PumpEvents` 分发 NetworkKit 推送，最后按玩家位置同步 chunk；服务器不可用时保持 `isAvailable=false`，不发起后续 POI 请求。
+> 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：`AfterNew` 先注册怪物营地死亡监听并生成初始史莱姆，`InitializeAsync` 首先扫描场景并建立本地 POI 索引，保证地图和交互列表可以独立于网络显示；随后创建 `PoiNetworkClient` 并通过 `ConnectAsync` 恢复玩家坐标、启用服务器状态同步和交互请求。`OnUpdate` 先执行营地补刷，再调用 `PumpEvents` 分发 NetworkKit 推送，最后按玩家位置同步 chunk；服务器不可用时保持 `isAvailable=false`，但已扫描的静态 POI 仍保留，待网络恢复后再执行服务器请求。
 
 ### 5.3 激活与失活
 - **激活**：`RefreshAt` 计算 9 格邻域，候选 POI 满足"在 9 格内 + 在兴趣半径内"且尚未实例化 → 经 `AssetKit.Ins.InstantiateSync("Poi_<Type>", position)` 实例化对应预制体、把 `PoiId + PoiType` 写入 Label，再 `new PoiEntity(go, config)` → `EntitySystem.AddEntity` + `AfterNew`，记入 `activePois`。回收时 `RequestDispose` 会销毁绑定的场景对象。
@@ -321,7 +322,7 @@ public class PoiComponent : IComponent
 | 阶段 | 内容 | 状态 |
 |------|------|------|
 | **P0 数据** | `PoiType`、`PoiConfig` + 8 个类型 Config、`RegionConfig`、`WorldRegionsConfig` | ✅ 已实现 |
-| **P1 烘焙** | `PoiMono` + 编辑器窗口 + 类型分面 Inspector | ✅ 已实现 |
+| **P1 烘焙** | `PoiMono` + 编辑器窗口 + `PoiConfig` 属性绘制 | ✅ 已实现 |
 | **P2 WorldSystem** | 加载烘焙数据、region 邻域 + 兴趣半径、POI 激活/失活差量 | ✅ 已实现 |
 | **P3 PoiEntity** | `PoiEntity` + `PoiComponent` + `PoiLogic` 基类 + 工厂 | ✅ 已实现 |
 | **P4 逐类型** | 8 个 Logic（状态/幂等/重生 + 事件广播） | ✅ 已实现 |
@@ -345,3 +346,11 @@ public class PoiComponent : IComponent
 - 交互触发入口（玩家接近/按键/射线检测调 `Open()`/`Collect()`/`Gather()` 等）不在本 Spec 范围，待交互层接入。
 - `WorldRegionsConfig` 的 YooAsset 地址（`location`）命名，随烘焙工具的资产输出约定确定。
 - 8 个类型 Logic 的业务细节（奖励、战斗、传送、副本进入）在各自实现中展开，不在本文档范围。
+
+## 13. 地图数据接口
+
+`WorldSystem` 同时是当前世界地图的唯一运行时数据出口。`AfterNew` 通过 AssetKit 读取 `WorldMapDefinition`，对外提供 `MapTexture`、`MapWorldLength`、`MapWorldWidth`、`MapInitialZoom`、`MapZoom`、`WorldToMapNormalized`、`TryGetPlayerPosition` 和只读 `AllPois`；HUD 小地图和 `MapPanel` 不直接访问网络客户端或 POI 内部逻辑。
+
+地图相关变化通过 `Core.Event` 发布：`WorldMapReady` 表示地图资源已解析，`WorldMapPoiChanged` 表示 POI 集合或状态变化。玩家坐标不通过高频事件传递，HUD 和 `MapPanel` 各自逐帧读取当前玩家实体的 `bindGo.transform.position`；AOI 刷新和网络同步仍按低频 tick 执行。大地图滚轮缩放以当前指针所在的视口点为锚点，缩放前后保持该地图点位于相同屏幕位置。地图纹理由编辑器菜单 `Prometheus/World/Map Capture` 生成，运行时不再创建俯拍相机和 RenderTexture。
+
+大地图的传送请求也由 `WorldSystem.TryTeleportToPoi` 统一处理。该接口只接受当前已加载且类型为 `Statue` 或 `TeleAnchor` 的 POI；传送时暂时停用玩家 `CharacterController`、写入目标位置并清空移动速度与 Root Motion，避免下一帧运动逻辑覆盖传送结果。随后 HUD 和大地图直接读取同一份实体 Transform，保证两个视图继续使用同一份世界坐标事实。

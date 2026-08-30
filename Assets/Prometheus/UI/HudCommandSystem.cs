@@ -45,7 +45,7 @@ namespace Xuan.Prometheus
             switch (command)
             {
                 case HudCommandType.OpenLottery: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenLottery triggered."); break;
-                case HudCommandType.OpenMiniMap: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenMiniMap triggered."); break;
+                case HudCommandType.OpenMiniMap: Core.UI.OpenPanel<MapPanel>(); break;
                 case HudCommandType.OpenQuest: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenQuest triggered."); break;
                 case HudCommandType.OpenMenu: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenMenu triggered."); break;
                 case HudCommandType.OpenGuide: Debug.Log($"[UIKit] {nameof(HudCommandSystem)} OpenGuide triggered."); break;

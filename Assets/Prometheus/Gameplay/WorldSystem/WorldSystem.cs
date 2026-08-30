@@ -18,9 +18,15 @@ namespace Xuan.Prometheus.World
         /// <summary>生命周期刷新间隔，避免每帧全量遍历。</summary>
         private const float TickInterval = 0.25f;
 
+        /// <summary>玩家坐标上传间隔；服务器会以独立的 3 秒定时器将房间坐标写入数据库。</summary>
+        private const float PositionUploadInterval = 1f;
+
         /// <summary>Go 服务器监听地址与端口，需与 Server/main.go 默认值及 Editor 启动脚本保持一致。</summary>
         private const string ServerHost = "127.0.0.1";
         private const int ServerPort = 9000;
+
+        /// <summary>地图定义的 YooAsset 地址；地图拍摄工具会在 Config/Global 下生成同名资产。</summary>
+        private const string MapDefinitionAddress = "WorldMapDefinition";
 
         /// <summary>交互物触发体的统一 tag，玩家感应据此过滤。</summary>
         private const string PoiTag = "POI";
@@ -38,8 +44,12 @@ namespace Xuan.Prometheus.World
         /// <summary>缓存实体更新期间收到的死亡通知，在系统更新阶段结束后逐个执行补刷。</summary>
         private readonly Queue<Vector3> pendingMonsterCampRespawns = new Queue<Vector3>();
         private PoiNetworkClient client;
+        private PlayerPositionPush pendingRestoredPosition;
         private float tickAccumulator;
+        private float positionUploadAccumulator;
         private bool isAvailable;
+        private WorldMapDefinition mapDefinition;
+        private float mapZoom = 1f;
 
         /// <summary>AOI 网格边长，与 chunk 尺寸一致。</summary>
         public float RegionSize { get; set; } = ChunkIdCodec.ChunkSize;
@@ -50,6 +60,54 @@ namespace Xuan.Prometheus.World
         /// <summary>已加载的 POI 数量（诊断）。</summary>
         public int PoiCount => allPois.Count;
 
+        /// <summary>当前世界使用的静态地图定义；拍摄工具尚未生成资源时为空。</summary>
+        public WorldMapDefinition MapDefinition => mapDefinition;
+
+        /// <summary>向表现层提供当前地图纹理，UI 不需要直接依赖地图资源加载方式。</summary>
+        public Texture2D MapTexture => mapDefinition == null ? null : mapDefinition.MapTexture;
+
+        /// <summary>向表现层提供地图覆盖的世界 X 轴长度。</summary>
+        public float MapWorldLength => mapDefinition == null ? 0f : mapDefinition.WorldLength;
+
+        /// <summary>向表现层提供地图覆盖的世界 Z 轴宽度。</summary>
+        public float MapWorldWidth => mapDefinition == null ? 0f : mapDefinition.WorldWidth;
+
+        /// <summary>向大地图提供配置文件中的初始缩放倍数。</summary>
+        public float MapInitialZoom => mapDefinition == null ? 1f : mapDefinition.InitialZoom;
+
+        /// <summary>保存当前单局大地图缩放值，面板销毁并重新打开时继续使用上次缩放。</summary>
+        public float MapZoom
+        {
+            get => mapZoom;
+            set => mapZoom = value;
+        }
+
+        /// <summary>当前已经扫描到的全部 POI，面板只读遍历该集合，不直接修改 WorldSystem 生命周期。</summary>
+        public IReadOnlyList<PoiEntity> AllPois => allPois;
+
+        /// <summary>读取当前上场玩家的世界位置，供大地图打开时立即定位到玩家。</summary>
+        /// <param name="position">成功读取时写入当前玩家位置。</param>
+        /// <returns>当前存在可绑定玩家实体时返回 true。</returns>
+        public bool TryGetPlayerPosition(out Vector3 position)
+        {
+            if (gameplayKit != null && gameplayKit.Player != null && gameplayKit.Player.bindGo != null)
+            {
+                position = gameplayKit.Player.bindGo.transform.position;
+                return true;
+            }
+            position = default;
+            return false;
+        }
+
+        /// <summary>统一把世界坐标转换为地图归一化坐标，保证 HUD 和 MapPanel 使用 WorldSystem 的同一接口。</summary>
+        /// <param name="worldPosition">待转换的世界坐标。</param>
+        /// <returns>地图归一化坐标。</returns>
+        public Vector2 WorldToMapNormalized(Vector3 worldPosition)
+        {
+            if (mapDefinition == null) throw new InvalidOperationException("WorldSystem cannot convert coordinates before WorldMapDefinition is loaded.");
+            return mapDefinition.WorldToNormalized(worldPosition);
+        }
+
         /// <summary>POI 网络客户端（诊断 / 测试用）。</summary>
         public PoiNetworkClient Client => client;
 
@@ -57,9 +115,11 @@ namespace Xuan.Prometheus.World
         public override void AfterNew(IGameplayKit ownerGameplayKit)
         {
             gameplayKit = ownerGameplayKit;
+            LoadMapDefinition();
             if (Core.Event != null) Core.Event.AddListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
             SpawnMonsterCampEnemies();
             client = new PoiNetworkClient(ServerHost, ServerPort);
+            client.PositionRestored += OnPositionRestored;
             InitializeAsync().Forget();
         }
 
@@ -84,19 +144,58 @@ namespace Xuan.Prometheus.World
             pendingMonsterCampRespawns.Enqueue(campPosition);
         }
 
-        /// <summary>执行一次初始化连接检测；服务器不可用时保持系统禁用，避免后续更新与交互持续发起失败请求。</summary>
+        /// <summary>先加载本地静态 POI，再执行服务器连接检测；地图展示不依赖服务器，网络只控制状态同步和交互请求。</summary>
         private async UniTask InitializeAsync()
         {
+            LoadFromScene();
             try
             {
-                await client.ConnectAsync();
-                LoadFromScene();
+                JoinRoomResponse joinResponse = await client.ConnectAsync();
+                if (joinResponse != null) OnPositionRestored(joinResponse.Position);
+                ApplyRestoredPosition();
                 isAvailable = true;
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[WorldSystem] 未检测到 POI 服务器，已屏蔽 WorldSystem 逻辑：{e.Message}");
+                Debug.LogWarning($"[WorldSystem] 未检测到 POI 服务器，已暂停状态同步和交互请求，本地地图 POI 仍可显示：{e.Message}");
             }
+        }
+
+        /// <summary>从统一资源模块读取静态地图定义；资源尚未拍摄时保留空定义并允许世界系统继续运行。</summary>
+        private void LoadMapDefinition()
+        {
+            mapDefinition = null;
+            mapZoom = 1f;
+            if (Core.Asset != null)
+            {
+                try
+                {
+                    mapDefinition = Core.Asset.LoadAssetSync<WorldMapDefinition>(MapDefinitionAddress);
+                    mapZoom = mapDefinition == null ? 1f : mapDefinition.InitialZoom;
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[WorldSystem] 未找到地图定义资源 '{MapDefinitionAddress}'，请先使用地图拍摄工具生成；地图面板将保持空白：{exception.Message}");
+                }
+            }
+            if (Core.Event != null) Core.Event.Invoke(Event.WorldMapReady, new WorldMapReadyEvent(mapDefinition));
+        }
+
+        /// <summary>应用服务器返回的最近持久化位置；连接和重连都经过此入口，确保玩家在正确位置生成。</summary>
+        private void OnPositionRestored(PlayerPositionPush position)
+        {
+            pendingRestoredPosition = position;
+            ApplyRestoredPosition();
+        }
+
+        /// <summary>在玩家 GameObject 已完成生成后应用待恢复坐标；网络回调可能早于玩家实体生成。</summary>
+        private void ApplyRestoredPosition()
+        {
+            if (pendingRestoredPosition == null || gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
+            PlayerPositionPush position = pendingRestoredPosition;
+            gameplayKit.Player.bindGo.transform.position = new Vector3(position.X, position.Y, position.Z);
+            pendingRestoredPosition = null;
+            Debug.Log($"[WorldSystem] 已恢复玩家位置 ({position.X}, {position.Y}, {position.Z})");
         }
 
         /// <summary>扫描场景全部 PoiMono 作为数据源，为每个绑定 PoiEntity（按 Id 建立索引）。</summary>
@@ -117,6 +216,7 @@ namespace Xuan.Prometheus.World
                 EnsurePoiTrigger(mono.gameObject);
             }
             Debug.Log($"WorldSystem: loaded {allPois.Count} POIs from scene, {persistentPois.Count} persistent.");
+            PublishMapPoiChanged(null);
         }
 
         /// <summary>低频驱动生命周期：以玩家位置刷新 AOI 显隐，并拉取附近 chunk 状态。</summary>
@@ -125,13 +225,40 @@ namespace Xuan.Prometheus.World
             // 先处理死亡期间排队的营地补刷，避免在 EntitySystem 遍历期间修改实体集合。
             RespawnPendingMonsterCampEnemies();
             client?.PumpEvents();
-            if (!isAvailable || gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
+            ApplyRestoredPosition();
+            if (gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
+            Vector3 playerPos = gameplayKit.Player.bindGo.transform.position;
             tickAccumulator += dt;
+            positionUploadAccumulator += dt;
             if (tickAccumulator < TickInterval) return;
             tickAccumulator = 0f;
-            Vector3 playerPos = gameplayKit.Player.bindGo.transform.position;
+            if (!isAvailable) return;
+            if (positionUploadAccumulator >= PositionUploadInterval)
+            {
+                positionUploadAccumulator = 0f;
+                UploadPlayerPositionAsync(playerPos).Forget();
+            }
             RefreshAt(playerPos);
             SyncNearbyChunks(playerPos);
+        }
+
+        /// <summary>通知地图面板重新读取 WorldSystem 的 POI 集合或指定 POI 状态。</summary>
+        private void PublishMapPoiChanged(string poiId)
+        {
+            if (Core.Event != null) Core.Event.Invoke(Event.WorldMapPoiChanged, new WorldMapPoiChangedEvent(poiId));
+        }
+
+        /// <summary>上传玩家当前坐标，保证服务器 3 秒持久化周期使用的是最新移动位置。</summary>
+        private async UniTask UploadPlayerPositionAsync(Vector3 position)
+        {
+            try
+            {
+                await client.UploadPositionAsync(position);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[WorldSystem] 玩家坐标上传失败：{e.Message}");
+            }
         }
 
         /// <summary>在 EntitySystem 完成实体遍历后执行待处理营地补刷，确保新增实体不会修改遍历集合。</summary>
@@ -174,7 +301,11 @@ namespace Xuan.Prometheus.World
                 PullChunkResponse response = await client.PullChunkAsync(chunkId);
                 foreach (PoiState state in response.States)
                 {
-                    if (poisById.TryGetValue(state.Id, out PoiEntity entity)) PoiStateApplier.Apply(entity, state);
+                    if (poisById.TryGetValue(state.Id, out PoiEntity entity))
+                    {
+                        PoiStateApplier.Apply(entity, state);
+                        PublishMapPoiChanged(state.Id);
+                    }
                 }
                 Debug.Log($"WorldSystem: chunk {chunkId} synced {response.States.Count} states.");
             }
@@ -199,6 +330,7 @@ namespace Xuan.Prometheus.World
                 if (!response.Success) return false;
                 PoiStateApplier.Apply(entity, response.State); // 服务器确认后按最新状态做表现
                 if (entity.IsConsumed) RemoveFromNearby(entity); // 已消失则移出交互列表
+                PublishMapPoiChanged(entity.Config.Id);
                 return true;
             }
             catch (Exception e)
@@ -221,6 +353,32 @@ namespace Xuan.Prometheus.World
 
         /// <summary>按语义 Id 查询当前场景中的 PoiEntity。</summary>
         public bool TryGetPoiEntity(string poiId, out PoiEntity entity) => poisById.TryGetValue(poiId, out entity);
+
+        /// <summary>把当前玩家传送到已加载的神像或传送锚点位置；两个地图面板下一帧直接读取实体坐标。</summary>
+        /// <param name="poiId">目标神像或传送锚点的语义 Id。</param>
+        /// <returns>目标存在、类型允许且当前玩家可用时返回 true。</returns>
+        public bool TryTeleportToPoi(string poiId)
+        {
+            if (!poisById.TryGetValue(poiId, out PoiEntity entity) || entity == null || entity.Config == null || entity.bindGo == null) return false;
+            if (entity.Config.PoiType != PoiType.Statue && entity.Config.PoiType != PoiType.TeleAnchor) return false;
+            if (gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return false;
+            Vector3 targetPosition = entity.bindGo.transform.position;
+            PlayerEntity player = gameplayKit.Player;
+            CharacterController characterController = player.bindGo.GetComponent<CharacterController>();
+            if (characterController != null) characterController.enabled = false;
+            player.bindGo.transform.position = targetPosition;
+            if (characterController != null) characterController.enabled = true;
+            if (player.TryGetComp(out MotionComponent motionComponent))
+            {
+                // 传送后清空上一位置残留的速度和根运动，避免下一帧运动逻辑把角色拉回原位置。
+                motionComponent.curVelo = Vector3.zero;
+                motionComponent.ClearRootMotionDelta();
+                motionComponent.landThisFrame = false;
+                motionComponent.wasGroundedLastFrame = false;
+            }
+            Debug.Log($"[WorldSystem] 玩家已传送到 {entity.Config.PoiType} {entity.Config.Id} ({targetPosition.x}, {targetPosition.y}, {targetPosition.z})");
+            return true;
+        }
 
         /// <summary>按 POI 类型映射到对应的交互操作（MonsterCamp 暂无操作，返回 Unlock 占位）。</summary>
         public static PoiOp GetInteractOp(PoiType type)
@@ -284,7 +442,11 @@ namespace Xuan.Prometheus.World
             if (Core.Event != null) Core.Event.RemoveListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
             monsterCampByEntityId.Clear();
             pendingMonsterCampRespawns.Clear();
+            pendingRestoredPosition = null;
+            mapDefinition = null;
+            mapZoom = 1f;
             isAvailable = false;
+            if (client != null) client.PositionRestored -= OnPositionRestored;
             client?.Dispose();
             client = null;
         }

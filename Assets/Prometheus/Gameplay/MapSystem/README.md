@@ -1,31 +1,41 @@
-# MinimapSystem
+# 世界地图系统
 
-## 目标
+## 运行时职责
 
-`MinimapSystem` 为每个 GameplayKit 实例生成并管理一张静态场景俯拍地图。地图固定以世界 `+Z` 为上方，不随玩家旋转；HUD 通过移动地图采样窗口让玩家始终位于圆心。玩家标记由 UI 自行配置，系统不创建、不绑定也不控制标记。
+地图的事实来源是 `WorldSystem`，不再注册或运行独立的 `MinimapSystem`。`WorldSystem` 持有 `WorldMapDefinition` 和 POI 集合，并通过 `Core.Event` 发布地图资源就绪与 POI 状态变化事件；玩家位置由地图 UI 每帧直接读取当前玩家实体坐标。
 
-## 生成流程
+地图定义包含地图纹理、左下角世界原点、世界 X 轴长度和世界 Z 轴宽度。所有坐标转换都使用 `WorldMapDefinition.WorldToNormalized`，因此 HUD 小地图和大地图不会各自维护一套换算常量。POI 图标定位读取 `PoiEntity.bindGo.transform.position` 的实际世界坐标，以兼容场景中带父节点偏移的 POI；`PoiConfig.Position` 仅作为导出与缓存字段，不作为运行时 UI 定位来源。
 
-1. `GameplayKit.Configure` 在 `TeamSystem` 之前注册 `MinimapSystem`。
-2. `MinimapSystem.AfterNew` 在角色和敌人实例创建前统计活动场景中可渲染的场景几何，排除 `UI`、`Character` 和 `Enemy` Layer。
-3. 系统创建一台临时正交相机，从世界上方沿 `-Y` 方向把整个场景渲染到 1024×1024 RenderTexture。
-4. 俯拍完成后立即销毁临时相机；后续帧只保留静态纹理，不承担第二台相机的持续渲染成本。
-5. `ActiveTeamMemberChangedEvent` 只负责切换玩家位置来源，换人不会重拍地图，也不会读取角色旋转。
+## UI 分工
 
-## HUD 映射
+- `HudPanel` 直接创建小地图 RawImage 和 POI 标记。面板通过 `UIPanel.OnUpdate` 每帧读取 `WorldSystem.TryGetPlayerPosition`，按玩家归一化坐标计算局部视口并保持玩家标记位于视口中心；视口比例为 0.2，以保证小地图有足够的地图放大比例，不订阅玩家位置高频事件。
+- HUD Prefab 中的 `MiniMap` 及其旧模板装饰 Image 均保持禁用，HUD 运行时创建透明命中层接收点击并沿生成的 Button 绑定链路打开 `MapPanel`；地图 RawImage 和 POI 标记均关闭射线拦截，POI 层固定置于地图内容之上。地图纹理尚未就绪时会禁用 RawImage，避免 Unity 默认白色纹理形成白圈。
+- `MapPanel` 使用 `MapPanel.prefab` 作为 UIKit 面板根节点。`MapImage` 和 `CloseButton` 由根节点 `UIComponentBinder` 固定绑定，面板运行时建立可拖拽、可缩放的全局地图视口，并通过 `UIPanel.OnUpdate` 每帧显示玩家和 POI 标记。
+- 两个面板只订阅地图资源和 POI 状态事件；玩家坐标由各自的 UI 驱动逐帧读取当前实体 Transform，不通过高频全局事件传递。
 
-`HudPanel` 只在现有 `MiniMapButton` 内动态创建 `RawImage`，并把它固定为容器的第一个子节点，不修改 UIComponentBinder 的生成字段表。`MinimapSystem` 每帧在角色移动完成后把世界 `X/Z` 换算为地图 `U/V`，再设置 RawImage 的 `uvRect`。需要玩家标记时应直接在 UI Prefab 中配置，Prefab 子节点会显示在地图之上；标记不进入小地图系统的创建、绑定、显隐或旋转链路。
+小地图和大地图使用同一张静态地图纹理及同一坐标系；小地图通过局部 `uvRect` 跟随玩家，大地图通过可平移内容显示玩家标记。动态玩家、敌人、UI 和特效不会被拍摄进纹理。
 
-## 径向虚化
+## 图标与大地图交互
 
-地图使用 `Prometheus/UI/Alpha Mask`。Shader 保存在 `Shaders/UI/Resources`，确保只有运行时代码引用时仍会进入 Player 构建。Shader 不再读取外部 alpha 贴图，而是根据控件中心的归一化径向距离直接计算透明度。
+`WorldMapIconCatalog` 统一读取八种 POI 图标（`UI_TeleAnchor`、`UI_Statue`、`UI_Chest`、`UI_SpiritCore`、`UI_Gathering`、`UI_Dungeon`、`UI_Boss`、`UI_MonsterCamp`）、关闭图标 `UI_Close` 和原有角色位置图标 `UI_MarkLocalAvatar`。HUD 小地图和 `MapPanel` 通过同一个目录加载入口，避免两处资源地址不一致。
 
-`HudPanel` 通过代码写入 `_FadeStartDistance=0.78` 和 `_FadeCompleteDistance=1`。开始距离以内完全不透明，达到完全距离后透明度为零；过渡区间使用五次 smootherstep `t³(t(6t-15)+10)`，最终透明度为 `1-smootherstep(t)`，使透明度、一阶变化率和二阶变化率都能在区间两端连续衔接。
+`Assets/BundleCollectorSetting.asset` 为该目录配置了 `AddressByFileName + CollectAll` 收集器，因此这些 PNG 会进入 YooAsset 的 `DefaultPackage`，运行时可以通过文件名地址加载为 `Sprite`。
 
-RawImage 的 `uvRect` 会改变主纹理 UV，因此系统继续同步写入 `_MaskUvTransform`，把主纹理 UV 还原为控件局部零到一坐标后再计算中心距离，保证地图移动时虚化边界不跟着地图内容移动。
+打开大地图后，`MapPanel` 将地图纹理按 `WorldMapDefinition` 的世界长宽比例铺满全屏视口，首次缩放读取 `WorldMapDefinition.InitialZoom`（运行时限制在 1 到 4 倍）；之后的滚轮缩放写入 `WorldSystem.MapZoom`，同一局再次打开时继续使用缓存值。鼠标拖动地图内容、滚轮调整缩放；滚轮缩放以当前指针所在视口点为锚点，缩放前后保持该地图点位于相同屏幕位置。地图内容的可移动边界以地图尺寸一半为范围，允许视口在地图边缘外扩半个视口。地图标记跟随地图平移，但应用 `1 / zoom` 逆缩放保持固定屏幕尺寸。关闭按钮使用 `UI_Close`，由 Binder 自动注册 `OnCloseButtonClick`。
 
-## 扩展约束
+神像和传送锚点标记使用 `Button` 绑定点击回调，点击后调用 `WorldSystem.TryTeleportToPoi`。传送成功时 `WorldSystem` 会暂停玩家 `CharacterController`、设置目标坐标并清空移动状态，HUD 和大地图在下一帧直接读取该坐标；其余 POI 只显示图标，不注册传送操作。
 
-- 需要手工控制地图范围时，应增加显式场景配置组件，不要在 HUD 中保存世界坐标常量。
-- 动态任务点、敌人点和传送点应作为独立 UI 图标映射到同一世界范围，不要重新拍摄整张地图。
-- 改变地图缩放时只调整采样窗口比例；玩家标记的样式、显隐和旋转由 UI 层独立管理。
+## 编辑器拍摄
+
+通过菜单 `Prometheus/World/Map Capture` 打开 `WorldMapCaptureWindow`，设置地图左下角原点、世界长度、世界宽度、纹理宽度、拍摄高度和 LayerMask 后执行拍摄。相机使用透明清屏色，拍摄范围内没有场景内容的像素会以 Alpha=0 写入 PNG，不会被填充为黑色。
+
+工具使用临时正交相机在编辑器中生成 PNG，默认保存到 `Assets/BundleResources/UI/Common/Atlas/WorldMap_<Scene>.png`，并创建或更新 `Assets/BundleResources/Config/Global/WorldMapDefinition.asset`。运行时只读取生成的静态资源，不会创建俯拍相机或 RenderTexture。
+
+## 事件时序
+
+1. `WorldSystem.AfterNew` 通过 AssetKit 读取 `WorldMapDefinition`，发布 `WorldMapReady`。
+2. POI 场景扫描完成后发布 `WorldMapPoiChanged`，面板从 `WorldSystem.AllPois` 读取完整集合。
+3. HUD 和 `MapPanel` 的运行时驱动每帧读取当前玩家实体位置并更新地图视口；AOI 刷新和网络同步仍按低频 tick 执行。
+4. 服务器交互确认后发布 POI 变化事件，两个面板重建受影响的标记。
+
+地图定义尚未生成时，WorldSystem 会保留空地图状态，面板可以正常打开但不显示纹理；生成资源后重新启动玩法即可加载。

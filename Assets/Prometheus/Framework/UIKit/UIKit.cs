@@ -250,6 +250,10 @@ namespace Xuan.Prometheus
             if (!isInitialized || isDisposed)
                 return;
 
+            foreach (UIPanelRecord record in new List<UIPanelRecord>(panelRecords.Values))
+            {
+                if (record.State == UIPanelState.Open && record.Instance != null && record.Instance.activeSelf) record.Controller.InternalUpdate(dt);
+            }
             UpdateWorldUI(dt);
         }
 

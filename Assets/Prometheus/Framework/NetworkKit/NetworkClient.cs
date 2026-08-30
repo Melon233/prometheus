@@ -12,13 +12,19 @@ namespace Xuan.Prometheus.NetworkKit
     public sealed class NetworkClient : IDisposable
     {
         /// <summary>使用 TCP 创建客户端网络门面。</summary>
-        public NetworkClient() : this(new TcpByteTransport()) { }
+        public NetworkClient() : this(new TcpByteTransport(), null) { }
+
+        /// <summary>使用默认 TCP 传输和指定稳定玩家 ID 创建网络门面。</summary>
+        public NetworkClient(string playerId) : this(new TcpByteTransport(), playerId) { }
 
         /// <summary>使用指定传输实现创建客户端网络门面，便于替换 Mock 传输测试。</summary>
-        public NetworkClient(IByteTransport transport)
+        public NetworkClient(IByteTransport transport) : this(transport, null) { }
+
+        /// <summary>使用指定传输实现和稳定玩家 ID 创建网络门面；玩家 ID 由上层平台存储提供。</summary>
+        public NetworkClient(IByteTransport transport, string playerId)
         {
             Session = new NetworkSession(transport);
-            Room = new DefaultRoomService(Session);
+            Room = new DefaultRoomService(Session, playerId);
             Poi = new PoiService(Session);
             Gacha = new GachaService(Session);
         }

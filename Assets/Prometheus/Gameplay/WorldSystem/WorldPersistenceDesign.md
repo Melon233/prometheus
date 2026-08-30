@@ -11,9 +11,7 @@
 
 ### 核心原则
 - **服务器是权威**：一切状态变更经服务器校验、落库、回包 true 后，客户端才更新表现。
-- **两个 id 各司其职**：
-  - `PoiId`：策划导出的**稳定业务键**（网格坐标 + 局部序号，如 `"1x1_1"`），客户端 ↔ 服务器**同步键**。
-  - `uuid`：服务器分配的主键（**雪花 int64**），**仅服务器内部**持有，客户端不参与。
+- **单一 UUID 主键**：`PoiConfig.Id` 是编辑器首次烘焙/导出时写回场景的 32 位无分隔小写 UUID，和位置、类型、Chunk、名称及遍历顺序无关；客户端与服务器都使用它作为同步键和数据库主键，删除后永不复用。
 
 ---
 
@@ -23,19 +21,19 @@
 策划在场景摆放 `PoiMono`（挂 `PoiConfig`），执行菜单 **Prometheus/World/Export POI Data (JSON)**。
 导出内容包括：**PoiId / PoiType / 坐标 Position / 旋转 Rotation / aoiExempt / 各类型专属配置**。
 
-- PoiId 在导出时按网格归属生成（`cellXxcellY_局部序号`）。
-- 导出会把生成的 PoiId **写回场景 `PoiMono.Config`**（单次遍历内完成，保证运行时读到的 PoiId 与导出一致），并保存场景。
-- **不含 uuid**（uuid 是服务器入库时才分配的）。
+- 缺失或非 UUID 的 Id 会生成新的 UUID，并把 Id、Region、ChunkId、Position **写回场景 `PoiMono.Config`**，随后保存场景。
+- 已有合法 UUID 永远复用；发现重复 UUID 时整批导出失败，并报告对象路径，避免复制 POI 后发生引用冲突。
 - 导出为 JSON：`Assets/Resources/Config/PoiExport.json`，运行时通过 `PoiExportLoader`（Resources.Load）读取。
 
 ### 2. 服务器入库
 `PoiSyncService` 初始化时：
 - 读取 `PoiExport.json`（策划导出的定义）。
 - 读取已有数据库（`JsonPoiDataStore` → `persistentDataPath/poi_states.json`）。
-- 对每个 POI：若已在库（按 PoiId）则**复用既有 uuid**，否则**分配雪花 int64 uuid** 并写入数据库。
-- 数据库记录为 `PoiState`（见 §二）。
+- 服务器先校验整批 ID 非空、格式合法且不重复，再按 UUID upsert；已有记录只更新静态字段并保留玩家状态。
+- 交互请求会裁剪首尾空白并统一 UUID 为小写后查找活动 POI，避免表示差异造成 ID 查找失败。
+- 数据库记录为 `PoiState`（见 §二）。本次导出缺失的合法 UUID 标记为 `Retired`，保留历史状态但不再同步或允许交互。
 
-> 因此每次重启不会重复分配 uuid；策划改导出后，新增 POI 才会新分配。
+> 因此每次重启不会重复分配 UUID；策划移动或改类型不会改变 ID，类型变更应删除旧 POI 并创建新 UUID。
 
 ### 3. 游戏启动同步
 `WorldSystem.AfterNew`：
@@ -61,16 +59,16 @@ WorldSystem.TryInteract(entity, op)
 
 ### 静态定义 `PoiConfig`（客户端 + 导出）
 - `PoiId` / `PoiType` / `Position` / `Rotation` / `aoiExempt` / 各类型 Config。
-- **不含 uuid、不含可变状态**。
+- **不含可变状态**；`PoiId` 本身就是客户端与服务器共用的 UUID 主键。
 
 ### 服务器记录 `PoiState`（可序列化，数据库）
 ```csharp
 [Serializable]
 public sealed class PoiState
 {
-    public long   uuid;      // 雪花 int64，数据库主键（服务器内部）
-    public string poiId;     // 同步键，客户端按它匹配
+    public string PoiId;     // 编辑器分配的 UUID，数据库主键与同步键
     public PoiType poiType;  // 服务器据此决定 Unlock 落到哪个字段
+    public bool retired;     // 已从当前导出删除，仅保留历史状态，不下发且不可交互
 
     public bool  statueUnlocked; public int statueLevel; public float statueProgress; // 神像
     public bool  anchorUnlocked;            // 锚点
@@ -95,7 +93,7 @@ public struct PoiInteraction { public string PoiId; public PoiOp Op; }
 
 | 接口 | 说明 |
 |------|------|
-| `PoiSyncService(store, exportedPois)` | 读导出 + 复用/分配 uuid 入库 |
+| `PoiSyncService(store, exportedPois)` | 校验导出 UUID + upsert，并将缺失项标记 Retired |
 | `PullAll()` | 启动时下发全部状态 |
 | `RequestApply(PoiInteraction) -> bool` | 交互请求：校验 + 落库，成功返回 true |
 
@@ -112,18 +110,17 @@ public struct PoiInteraction { public string PoiId; public PoiOp Op; }
 ```
 WorldSystem/
 ├─ Server/                          ← 原 Persistence 更名
-│  ├─ SnowflakeIdGenerator.cs       // 雪花 int64，服务器内部发号
 │  ├─ PoiState.cs                   // 服务器数据库记录
 │  ├─ IPoiDataStore.cs              // 数据库存储抽象
 │  ├─ JsonPoiDataStore.cs           // JSON 文件模拟数据库（原 LocalPoiDataStore）
-│  ├─ PoiSyncService.cs             // 模拟服务器（读导出/分配uuid/PullAll/RequestApply）
+│  ├─ PoiSyncService.cs             // 模拟服务器（读导出/UUID入库/PullAll/RequestApply）
 │  ├─ PoiExportLoader.cs            // 读取策划导出 JSON
 │  ├─ PoiInteraction.cs             // PoiOp 枚举 + PoiInteraction
 │  ├─ PoiInteractionHandler.cs      // 服务器确认后应用到本地 Logic
 │  └─ PoiStateApplier.cs            // 启动时按 poiId 应用状态
-├─ Data/PoiConfig.cs                // 移除 uuid，新增 Rotation
-├─ PoiMono.cs                       // 移除 uuid 分配
-├─ Editor/WorldBakeWindow.cs        // 移除 uuid 菜单；新增 JSON 导出
+├─ Data/PoiConfig.cs                // 保存编辑器分配的 UUID 与静态定义
+├─ PoiMono.cs                       // 场景 POI 配置载体
+├─ Editor/WorldBakeWindow.cs        // UUID 分配、重复校验与 JSON 导出
 └─ WorldSystem.cs                   // 按 PoiId 同步 + TryInteract 请求确认
 ```
 
@@ -134,7 +131,7 @@ WorldSystem/
 - **Rotation 仅存储暂不应用**：`PoiConfig.Rotation` 已导出记录，运行时绑定 `PoiEntity` 时暂未设置 `bindGo` 旋转；后续需要时在 `WorldSystem.LoadFromScene` 中应用即可。
 - **可刷新 POI（采集/地图 Boss）**：服务器只记录"消费态"（gathered/defeated），重生计时在客户端 `RespawnablePoiLogic`。因此重复采集/击败请求服务器恒返回 true。
 - **怪物营地**：刷新属边缘逻辑，**不入库**，`ClearCamp` 保持纯本地。
-- **PoiId 稳定性**：同步依赖 PoiId；策划改场景布局导致 PoiId 变化会使旧库记录失配（视为新 POI 重新入库）。若需跨布局稳定，可改为策划在 Inspector 手填稳定 id。
+- **PoiId 稳定性**：同步依赖编辑器写回的 UUID；策划移动 POI 或修改静态配置不会改变 ID。复制对象若产生重复 UUID，导出会阻止整批写入并报告对象路径；删除的 POI 标记 `Retired`，UUID 永不复用。类型变更应删除旧 POI 并创建新 UUID。
 
 ---
 

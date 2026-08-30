@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.NetworkKit.Services
         private readonly NetworkSession session;
 
         /// <summary>创建默认房间服务并绑定会话推送分发。</summary>
-        public DefaultRoomService(NetworkSession session) { this.session = session; session.PushReceived += HandlePush; PlayerId = Guid.NewGuid().ToString("N"); }
+        public DefaultRoomService(NetworkSession session, string playerId = null) { this.session = session; session.PushReceived += HandlePush; PlayerId = string.IsNullOrWhiteSpace(playerId) ? Guid.NewGuid().ToString("N") : playerId; }
 
         /// <summary>客户端本次身份标识；服务器会在 JoinRoom 中绑定该身份。</summary>
         public string PlayerId { get; }

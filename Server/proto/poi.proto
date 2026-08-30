@@ -113,6 +113,7 @@ message JoinRoomResponse {
   string room_id = 2;
   string player_id = 3;
   string error = 4;
+  PlayerPositionPush position = 5; // 玩家上次持久化的位置；首次进入时为空
 }
 
 // 客户端上传自身在默认房间中的世界坐标。

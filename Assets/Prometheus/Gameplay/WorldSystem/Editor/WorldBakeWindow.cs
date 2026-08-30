@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Xuan.Prometheus.World.Editor
 {
     /// <summary>
     /// 烘焙 / 导出工具：扫描场景中全部 PoiMono。
-    /// 1. 生成语义化 Id（"{Region}_{类型}_{序号}"）与 chunkId，导出到 JSON 供服务器入库；
+    /// 1. 为缺失或非法的 POI 分配不可变 UUID，并计算 chunkId，导出到 JSON 供服务器入库；
     /// 2. 按 chunkId 分组烘焙为 WorldRegionsConfig 资产（保留兼容）。
     /// </summary>
     public class WorldBakeWindow : EditorWindow
@@ -45,25 +46,26 @@ namespace Xuan.Prometheus.World.Editor
             if (GUILayout.Button("Export POI Data (JSON)")) ExportPoiJsonTo(exportPath);
         }
 
-        /// <summary>扫描场景全部 PoiMono，为每个生成语义 Id（缺失时）与 chunkId，并深拷贝为 PoiConfig 列表。</summary>
+        /// <summary>扫描场景全部 PoiMono，为每个分配稳定 UUID（缺失或旧格式时）与 chunkId，并深拷贝为 PoiConfig 列表。</summary>
         /// <param name="writeBackToScene">若为 true，同时把生成的 Id/Region/ChunkId 写回场景 PoiMono.Config（保证运行时与导出一致）。</param>
         public static List<PoiConfig> CollectPoiDefs(bool writeBackToScene = false)
         {
             var result = new List<PoiConfig>();
             PoiMono[] pois = FindObjectsOfType<PoiMono>(true);
-            var typeSeq = new Dictionary<PoiType, int>();
+            var ids = new Dictionary<string, PoiMono>(StringComparer.Ordinal);
             foreach (PoiMono poi in pois)
             {
                 if (poi == null || poi.Config == null) continue;
                 PoiConfig src = poi.Config;
-                // 已分配过 Id 则复用；否则按类型分配 "{Region}_{类型}_{序号}"（序号 1 起，按类型独立计数）。
+                // UUID 与位置、类型和遍历顺序无关；复制对象造成的重复 UUID 必须报错，不能静默改写引用。
                 string id = src.Id;
-                if (string.IsNullOrEmpty(id))
+                if (!TryNormalizePoiId(id, out id))
                 {
-                    if (!typeSeq.TryGetValue(src.PoiType, out int n)) n = 0;
-                    typeSeq[src.PoiType] = ++n;
-                    id = $"{DefaultRegion}_{src.PoiType}_{n}";
+                    id = Guid.NewGuid().ToString("N");
                 }
+                if (ids.TryGetValue(id, out PoiMono duplicate))
+                    throw new InvalidOperationException($"World Bake: POI UUID 重复：{id}，对象：{GetObjectPath(duplicate)} 与 {GetObjectPath(poi)}。请为复制的 POI 重新生成 UUID。");
+                ids.Add(id, poi);
                 Vector3 pos = poi.transform.position; // 权威位置 = GameObject 世界坐标（策划直接移动对象，字段仅作缓存）
                 int chunkId = ChunkIdCodec.EncodeFromPosition(pos);
                 if (writeBackToScene && (src.Id != id || src.Region != DefaultRegion || src.ChunkId != chunkId || src.Position != pos))
@@ -89,7 +91,7 @@ namespace Xuan.Prometheus.World.Editor
         /// <summary>按 chunkId 分组烘焙为 WorldRegionsConfig 资产。</summary>
         public static void BakeScene(string outputPath)
         {
-            List<PoiConfig> defs = CollectPoiDefs();
+            List<PoiConfig> defs = CollectPoiDefs(writeBackToScene: true);
             if (defs.Count == 0) { Debug.LogWarning("World Bake: no PoiMono found in scene."); return; }
 
             var chunkMap = new Dictionary<int, RegionConfig>();
@@ -155,6 +157,28 @@ namespace Xuan.Prometheus.World.Editor
             return new TeleAnchorConfig { initiallyUnlocked = src.initiallyUnlocked };
         }
 
+        /// <summary>验证并规范化编辑器中的 POI UUID；业务主键统一为小写 32 位无分隔 UUID。</summary>
+        private static bool TryNormalizePoiId(string value, out string normalized)
+        {
+            normalized = value;
+            if (string.IsNullOrEmpty(value) || !Guid.TryParseExact(value, "N", out Guid guid)) return false;
+            normalized = guid.ToString("N");
+            return true;
+        }
+
+        /// <summary>返回场景对象路径，重复 UUID 报错时用于定位策划对象。</summary>
+        private static string GetObjectPath(PoiMono poi)
+        {
+            string path = poi.name;
+            Transform current = poi.transform.parent;
+            while (current != null)
+            {
+                path = current.name + "/" + path;
+                current = current.parent;
+            }
+            return path;
+        }
+
         /// <summary>若目标资产已存在则覆盖写入，否则新建；保证输出目录存在。</summary>
         private static void SaveConfig(WorldRegionsConfig config, string outputPath)
         {
@@ -163,7 +187,7 @@ namespace Xuan.Prometheus.World.Editor
             if (existing != null)
             {
                 EditorUtility.CopySerialized(config, existing);
-                Object.DestroyImmediate(config);
+                UnityEngine.Object.DestroyImmediate(config);
             }
             else
             {

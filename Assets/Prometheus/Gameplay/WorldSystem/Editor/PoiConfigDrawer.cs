@@ -8,7 +8,7 @@ namespace Xuan.Prometheus.World.Editor
     /// 展开后按 PoiType 仅显示对应的专属 Config，避免同屏出现全部 8 个 Config。
     /// 自动作用于烘焙资产 WorldRegionsConfig 里嵌套的 List&lt;PoiConfig&gt; 与 PoiMono.Config。
     /// </summary>
-    [CustomPropertyDrawer(typeof(PoiConfig))]
+    // [CustomPropertyDrawer(typeof(PoiConfig))]
     public class PoiConfigDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

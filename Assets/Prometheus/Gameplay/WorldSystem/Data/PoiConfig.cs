@@ -4,12 +4,12 @@ namespace Xuan.Prometheus.World
 {
     /// <summary>
     /// 一个兴趣点的配置数据：既是烘焙产物 WorldRegionsConfig 中的最小单元，也是编辑器 PoiMono 的配置载体。
-    /// Id 为语义化字符串（如 "Mond_Chest_1"），是服务器主键与客户端同步键；ChunkId 为空间分区，用于按区块查询。
+    /// Id 是创建时分配并写回场景的不可变 UUID（32 位无分隔小写字符串），是服务器主键与客户端同步键；ChunkId 为空间分区，用于按区块查询。
     /// </summary>
     [System.Serializable]
     public class PoiConfig
     {
-        /// <summary>语义化唯一 id，格式 "{Region}_{类型名}_{序号}"，如 "Mond_Chest_1"。烘焙时生成并写回场景。</summary>
+        /// <summary>不可变 UUID 主键，格式为 32 位无分隔小写字符串。缺失或旧格式会在烘焙/导出时生成并写回场景，删除后永不复用。</summary>
         public string Id;
 
         /// <summary>所属地区（当前均为 Mond）。</summary>

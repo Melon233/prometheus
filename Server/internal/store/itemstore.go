@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// ItemStore 使用 MongoDB 持久化背包物品。
+// ItemStore 使用 MongoDB 持久化背包物品；仅为旧调用方保留，新的启动链路请使用 MongoPlayerStore.ItemStore。
 type ItemStore struct{ coll *mongo.Collection }
 
 // NewItemStore 连接 MongoDB 并返回背包集合。

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Xuan.Prometheus.Editor;
 
 namespace Xuan.Prometheus.ConfigKit.Editor
 {
@@ -34,10 +35,10 @@ namespace Xuan.Prometheus.ConfigKit.Editor
         }
 
         /// <summary>初始化窗口并读取派生索引；没有索引时自动执行一次完整扫描。</summary>
-        private void OnEnable() { wantsMouseMove = true; configuredRoots = ConfigCenterIndexer.GetConfiguredRoots(); showRootConfiguration = EditorPrefs.GetBool(ShowRootConfigurationPreferenceKey, false); index = ConfigCenterIndexer.Load(); if (index.entries.Count == 0) index = ConfigCenterIndexer.Rebuild(); selectedRowStyle = BuildSelectedRowStyle(); folderRowStyle = BuildFolderRowStyle(); }
+        private void OnEnable() { wantsMouseMove = true; ProjectNavigationHistory.DirectorySelectionRequested += RestoreDirectorySelection; configuredRoots = ConfigCenterIndexer.GetConfiguredRoots(); showRootConfiguration = EditorPrefs.GetBool(ShowRootConfigurationPreferenceKey, false); index = ConfigCenterIndexer.Load(); if (index.entries.Count == 0) index = ConfigCenterIndexer.Rebuild(); selectedRowStyle = BuildSelectedRowStyle(); folderRowStyle = BuildFolderRowStyle(); }
 
         /// <summary>配置中心关闭时不销毁 Unity 原生 Inspector，Inspector 生命周期由 Unity 编辑器布局管理。</summary>
-        private void OnDisable() { if (selectedRowBackground != null) DestroyImmediate(selectedRowBackground); selectedRowBackground = null; selectedRowStyle = null; folderRowStyle = null; }
+        private void OnDisable() { ProjectNavigationHistory.DirectorySelectionRequested -= RestoreDirectorySelection; if (selectedRowBackground != null) DestroyImmediate(selectedRowBackground); selectedRowBackground = null; selectedRowStyle = null; folderRowStyle = null; }
 
         /// <summary>绘制仅包含目录树的配置中心布局；配置详情由 Unity 独立 InspectorWindow 负责显示。</summary>
         private void OnGUI()
@@ -133,7 +134,7 @@ namespace Xuan.Prometheus.ConfigKit.Editor
             Rect rowRect = GUILayoutUtility.GetRect(new GUIContent($"{node.name} ({totalCount})"), style, GUILayout.ExpandWidth(true), GUILayout.Height(EditorGUIUtility.singleLineHeight));
             DrawHoverBackground(rowRect, selectedGroup == (isRoot ? "全部配置" : node.path));
             GUI.Label(rowRect, $"{node.name} ({totalCount})", style);
-            if (!arrowPressed && UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && rowRect.Contains(UnityEngine.Event.current.mousePosition)) { selectedGroup = isRoot ? "全部配置" : node.path; selectedEntry = null; SetGroupExpanded(node.path, !expanded); UnityEngine.Event.current.Use(); Repaint(); }
+            if (!arrowPressed && UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && rowRect.Contains(UnityEngine.Event.current.mousePosition)) { selectedGroup = isRoot ? "全部配置" : node.path; selectedEntry = null; ProjectNavigationHistory.RecordDirectorySelection(selectedGroup); SetGroupExpanded(node.path, !expanded); UnityEngine.Event.current.Use(); Repaint(); }
             EditorGUILayout.EndHorizontal();
             if (!GetGroupExpanded(node.path)) return;
             if (isRoot) { foreach (string scanRoot in ConfigCenterIndexer.ScanRoots) DrawGroupNode(node.children[scanRoot], depth + 1); }
@@ -184,6 +185,14 @@ namespace Xuan.Prometheus.ConfigKit.Editor
             EnsureExpandedPath(entry);
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(entry.assetPath);
             FocusNativeInspector();
+        }
+
+        private void RestoreDirectorySelection(string path)
+        {
+            selectedGroup = string.IsNullOrEmpty(path) ? "全部配置" : path;
+            selectedEntry = null;
+            searchText = string.Empty;
+            Repaint();
         }
 
         /// <summary>展开配置所属分组的全部父级，并在清空搜索后让目录树能够立即显示该配置。</summary>

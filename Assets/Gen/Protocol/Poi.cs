@@ -41,42 +41,43 @@ namespace Xuan.Prometheus.Protocol {
             "ZBgBIAEoCRIPCgdxdWFsaXR5GAIgASgFEhAKCHF1YW50aXR5GAMgASgFIhEK",
             "D0dldEl0ZW1zUmVxdWVzdCIsChBHZXRJdGVtc1Jlc3BvbnNlEhgKBWl0ZW1z",
             "GAEgAygLMgkucG9pLkl0ZW0iJAoPSm9pblJvb21SZXF1ZXN0EhEKCXBsYXll",
-            "cl9pZBgBIAEoCSJWChBKb2luUm9vbVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASAB",
-            "KAgSDwoHcm9vbV9pZBgCIAEoCRIRCglwbGF5ZXJfaWQYAyABKAkSDQoFZXJy",
-            "b3IYBCABKAkiOAoVVXBkYXRlUG9zaXRpb25SZXF1ZXN0EgkKAXgYASABKAIS",
-            "CQoBeRgCIAEoAhIJCgF6GAMgASgCInEKElBsYXllclBvc2l0aW9uUHVzaBIP",
-            "Cgdyb29tX2lkGAEgASgJEhEKCXBsYXllcl9pZBgCIAEoCRIJCgF4GAMgASgC",
-            "EgkKAXkYBCABKAISCQoBehgFIAEoAhIWCg5zZXJ2ZXJfdGltZV9tcxgGIAEo",
-            "AyI4ChZVcGRhdGVQb3NpdGlvblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgS",
-            "DQoFZXJyb3IYAiABKAkiDgoMR2FjaGFSZXF1ZXN0ImQKDUdhY2hhUmVzcG9u",
-            "c2USDwoHc3VjY2VzcxgBIAEoCBIZCgZyZXdhcmQYAiABKAsyCS5wb2kuSXRl",
-            "bRIYCgVpdGVtcxgDIAMoCzIJLnBvaS5JdGVtEg0KBWVycm9yGAQgASgJIuQF",
-            "CgZQYWNrZXQSEgoKcmVxdWVzdF9pZBhkIAEoBBInCghwdWxsX2FsbBgBIAEo",
-            "CzITLnBvaS5QdWxsQWxsUmVxdWVzdEgAEi0KDXB1bGxfYWxsX3Jlc3AYAiAB",
-            "KAsyFC5wb2kuUHVsbEFsbFJlc3BvbnNlSAASKAoIaW50ZXJhY3QYAyABKAsy",
-            "FC5wb2kuSW50ZXJhY3RSZXF1ZXN0SAASLgoNaW50ZXJhY3RfcmVzcBgEIAEo",
-            "CzIVLnBvaS5JbnRlcmFjdFJlc3BvbnNlSAASKwoKcHVsbF9jaHVuaxgFIAEo",
-            "CzIVLnBvaS5QdWxsQ2h1bmtSZXF1ZXN0SAASMQoPcHVsbF9jaHVua19yZXNw",
-            "GAYgASgLMhYucG9pLlB1bGxDaHVua1Jlc3BvbnNlSAASKQoJZ2V0X2l0ZW1z",
-            "GAcgASgLMhQucG9pLkdldEl0ZW1zUmVxdWVzdEgAEi8KDmdldF9pdGVtc19y",
-            "ZXNwGAggASgLMhUucG9pLkdldEl0ZW1zUmVzcG9uc2VIABIpCglqb2luX3Jv",
-            "b20YCSABKAsyFC5wb2kuSm9pblJvb21SZXF1ZXN0SAASLwoOam9pbl9yb29t",
-            "X3Jlc3AYCiABKAsyFS5wb2kuSm9pblJvb21SZXNwb25zZUgAEjUKD3VwZGF0",
-            "ZV9wb3NpdGlvbhgLIAEoCzIaLnBvaS5VcGRhdGVQb3NpdGlvblJlcXVlc3RI",
-            "ABIyCg9wbGF5ZXJfcG9zaXRpb24YDCABKAsyFy5wb2kuUGxheWVyUG9zaXRp",
-            "b25QdXNoSAASIgoFZ2FjaGEYDSABKAsyES5wb2kuR2FjaGFSZXF1ZXN0SAAS",
-            "KAoKZ2FjaGFfcmVzcBgOIAEoCzISLnBvaS5HYWNoYVJlc3BvbnNlSAASOwoU",
-            "dXBkYXRlX3Bvc2l0aW9uX3Jlc3AYDyABKAsyGy5wb2kuVXBkYXRlUG9zaXRp",
-            "b25SZXNwb25zZUgAQgYKBGJvZHkqxgEKB1BvaVR5cGUSGAoUUE9JX1RZUEVf",
-            "VEVMRV9BTkNIT1IQABITCg9QT0lfVFlQRV9TVEFUVUUQARISCg5QT0lfVFlQ",
-            "RV9DSEVTVBACEhgKFFBPSV9UWVBFX1NQSVJJVF9DT1JFEAMSFgoSUE9JX1RZ",
-            "UEVfR0FUSEVSSU5HEAQSFAoQUE9JX1RZUEVfRFVOR0VPThAFEhUKEVBPSV9U",
-            "WVBFX01BUF9CT1NTEAYSGQoVUE9JX1RZUEVfTU9OU1RFUl9DQU1QEAcqiQEK",
-            "BVBvaU9wEhEKDVBPSV9PUF9VTkxPQ0sQABIVChFQT0lfT1BfT1BFTl9DSEVT",
-            "VBABEhcKE1BPSV9PUF9DT0xMRUNUX0NPUkUQAhIRCg1QT0lfT1BfR0FUSEVS",
-            "EAMSEQoNUE9JX09QX0RFRkVBVBAEEhcKE1BPSV9PUF9PRkZFUl9TVEFUVUUQ",
-            "BUI9WiBwcm9tZXRoZXVzL2dlbi9wcm90b2NvbDtwcm90b2NvbKoCGFh1YW4u",
-            "UHJvbWV0aGV1cy5Qcm90b2NvbGIGcHJvdG8z"));
+            "cl9pZBgBIAEoCSKBAQoQSm9pblJvb21SZXNwb25zZRIPCgdzdWNjZXNzGAEg",
+            "ASgIEg8KB3Jvb21faWQYAiABKAkSEQoJcGxheWVyX2lkGAMgASgJEg0KBWVy",
+            "cm9yGAQgASgJEikKCHBvc2l0aW9uGAUgASgLMhcucG9pLlBsYXllclBvc2l0",
+            "aW9uUHVzaCI4ChVVcGRhdGVQb3NpdGlvblJlcXVlc3QSCQoBeBgBIAEoAhIJ",
+            "CgF5GAIgASgCEgkKAXoYAyABKAIicQoSUGxheWVyUG9zaXRpb25QdXNoEg8K",
+            "B3Jvb21faWQYASABKAkSEQoJcGxheWVyX2lkGAIgASgJEgkKAXgYAyABKAIS",
+            "CQoBeRgEIAEoAhIJCgF6GAUgASgCEhYKDnNlcnZlcl90aW1lX21zGAYgASgD",
+            "IjgKFlVwZGF0ZVBvc2l0aW9uUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIN",
+            "CgVlcnJvchgCIAEoCSIOCgxHYWNoYVJlcXVlc3QiZAoNR2FjaGFSZXNwb25z",
+            "ZRIPCgdzdWNjZXNzGAEgASgIEhkKBnJld2FyZBgCIAEoCzIJLnBvaS5JdGVt",
+            "EhgKBWl0ZW1zGAMgAygLMgkucG9pLkl0ZW0SDQoFZXJyb3IYBCABKAki5AUK",
+            "BlBhY2tldBISCgpyZXF1ZXN0X2lkGGQgASgEEicKCHB1bGxfYWxsGAEgASgL",
+            "MhMucG9pLlB1bGxBbGxSZXF1ZXN0SAASLQoNcHVsbF9hbGxfcmVzcBgCIAEo",
+            "CzIULnBvaS5QdWxsQWxsUmVzcG9uc2VIABIoCghpbnRlcmFjdBgDIAEoCzIU",
+            "LnBvaS5JbnRlcmFjdFJlcXVlc3RIABIuCg1pbnRlcmFjdF9yZXNwGAQgASgL",
+            "MhUucG9pLkludGVyYWN0UmVzcG9uc2VIABIrCgpwdWxsX2NodW5rGAUgASgL",
+            "MhUucG9pLlB1bGxDaHVua1JlcXVlc3RIABIxCg9wdWxsX2NodW5rX3Jlc3AY",
+            "BiABKAsyFi5wb2kuUHVsbENodW5rUmVzcG9uc2VIABIpCglnZXRfaXRlbXMY",
+            "ByABKAsyFC5wb2kuR2V0SXRlbXNSZXF1ZXN0SAASLwoOZ2V0X2l0ZW1zX3Jl",
+            "c3AYCCABKAsyFS5wb2kuR2V0SXRlbXNSZXNwb25zZUgAEikKCWpvaW5fcm9v",
+            "bRgJIAEoCzIULnBvaS5Kb2luUm9vbVJlcXVlc3RIABIvCg5qb2luX3Jvb21f",
+            "cmVzcBgKIAEoCzIVLnBvaS5Kb2luUm9vbVJlc3BvbnNlSAASNQoPdXBkYXRl",
+            "X3Bvc2l0aW9uGAsgASgLMhoucG9pLlVwZGF0ZVBvc2l0aW9uUmVxdWVzdEgA",
+            "EjIKD3BsYXllcl9wb3NpdGlvbhgMIAEoCzIXLnBvaS5QbGF5ZXJQb3NpdGlv",
+            "blB1c2hIABIiCgVnYWNoYRgNIAEoCzIRLnBvaS5HYWNoYVJlcXVlc3RIABIo",
+            "CgpnYWNoYV9yZXNwGA4gASgLMhIucG9pLkdhY2hhUmVzcG9uc2VIABI7ChR1",
+            "cGRhdGVfcG9zaXRpb25fcmVzcBgPIAEoCzIbLnBvaS5VcGRhdGVQb3NpdGlv",
+            "blJlc3BvbnNlSABCBgoEYm9keSrGAQoHUG9pVHlwZRIYChRQT0lfVFlQRV9U",
+            "RUxFX0FOQ0hPUhAAEhMKD1BPSV9UWVBFX1NUQVRVRRABEhIKDlBPSV9UWVBF",
+            "X0NIRVNUEAISGAoUUE9JX1RZUEVfU1BJUklUX0NPUkUQAxIWChJQT0lfVFlQ",
+            "RV9HQVRIRVJJTkcQBBIUChBQT0lfVFlQRV9EVU5HRU9OEAUSFQoRUE9JX1RZ",
+            "UEVfTUFQX0JPU1MQBhIZChVQT0lfVFlQRV9NT05TVEVSX0NBTVAQByqJAQoF",
+            "UG9pT3ASEQoNUE9JX09QX1VOTE9DSxAAEhUKEVBPSV9PUF9PUEVOX0NIRVNU",
+            "EAESFwoTUE9JX09QX0NPTExFQ1RfQ09SRRACEhEKDVBPSV9PUF9HQVRIRVIQ",
+            "AxIRCg1QT0lfT1BfREVGRUFUEAQSFwoTUE9JX09QX09GRkVSX1NUQVRVRRAF",
+            "Qj1aIHByb21ldGhldXMvZ2VuL3Byb3RvY29sO3Byb3RvY29sqgIYWHVhbi5Q",
+            "cm9tZXRoZXVzLlByb3RvY29sYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Xuan.Prometheus.Protocol.PoiType), typeof(global::Xuan.Prometheus.Protocol.PoiOp), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -91,7 +92,7 @@ namespace Xuan.Prometheus.Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.GetItemsRequest), global::Xuan.Prometheus.Protocol.GetItemsRequest.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.GetItemsResponse), global::Xuan.Prometheus.Protocol.GetItemsResponse.Parser, new[]{ "Items" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.JoinRoomRequest), global::Xuan.Prometheus.Protocol.JoinRoomRequest.Parser, new[]{ "PlayerId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.JoinRoomResponse), global::Xuan.Prometheus.Protocol.JoinRoomResponse.Parser, new[]{ "Success", "RoomId", "PlayerId", "Error" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.JoinRoomResponse), global::Xuan.Prometheus.Protocol.JoinRoomResponse.Parser, new[]{ "Success", "RoomId", "PlayerId", "Error", "Position" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.UpdatePositionRequest), global::Xuan.Prometheus.Protocol.UpdatePositionRequest.Parser, new[]{ "X", "Y", "Z" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.PlayerPositionPush), global::Xuan.Prometheus.Protocol.PlayerPositionPush.Parser, new[]{ "RoomId", "PlayerId", "X", "Y", "Z", "ServerTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Xuan.Prometheus.Protocol.UpdatePositionResponse), global::Xuan.Prometheus.Protocol.UpdatePositionResponse.Parser, new[]{ "Success", "Error" }, null, null, null, null),
@@ -2914,6 +2915,7 @@ namespace Xuan.Prometheus.Protocol {
       roomId_ = other.roomId_;
       playerId_ = other.playerId_;
       error_ = other.error_;
+      position_ = other.position_ != null ? other.position_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2971,6 +2973,21 @@ namespace Xuan.Prometheus.Protocol {
       }
     }
 
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 5;
+    private global::Xuan.Prometheus.Protocol.PlayerPositionPush position_;
+    /// <summary>
+    /// 玩家上次持久化的位置；首次进入时为空
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Xuan.Prometheus.Protocol.PlayerPositionPush Position {
+      get { return position_; }
+      set {
+        position_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -2990,6 +3007,7 @@ namespace Xuan.Prometheus.Protocol {
       if (RoomId != other.RoomId) return false;
       if (PlayerId != other.PlayerId) return false;
       if (Error != other.Error) return false;
+      if (!object.Equals(Position, other.Position)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -3001,6 +3019,7 @@ namespace Xuan.Prometheus.Protocol {
       if (RoomId.Length != 0) hash ^= RoomId.GetHashCode();
       if (PlayerId.Length != 0) hash ^= PlayerId.GetHashCode();
       if (Error.Length != 0) hash ^= Error.GetHashCode();
+      if (position_ != null) hash ^= Position.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3035,6 +3054,10 @@ namespace Xuan.Prometheus.Protocol {
         output.WriteRawTag(34);
         output.WriteString(Error);
       }
+      if (position_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Position);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -3061,6 +3084,10 @@ namespace Xuan.Prometheus.Protocol {
         output.WriteRawTag(34);
         output.WriteString(Error);
       }
+      if (position_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Position);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -3082,6 +3109,9 @@ namespace Xuan.Prometheus.Protocol {
       }
       if (Error.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Error);
+      }
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -3106,6 +3136,12 @@ namespace Xuan.Prometheus.Protocol {
       }
       if (other.Error.Length != 0) {
         Error = other.Error;
+      }
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::Xuan.Prometheus.Protocol.PlayerPositionPush();
+        }
+        Position.MergeFrom(other.Position);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -3142,6 +3178,13 @@ namespace Xuan.Prometheus.Protocol {
             Error = input.ReadString();
             break;
           }
+          case 42: {
+            if (position_ == null) {
+              Position = new global::Xuan.Prometheus.Protocol.PlayerPositionPush();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
         }
       }
     #endif
@@ -3175,6 +3218,13 @@ namespace Xuan.Prometheus.Protocol {
           }
           case 34: {
             Error = input.ReadString();
+            break;
+          }
+          case 42: {
+            if (position_ == null) {
+              Position = new global::Xuan.Prometheus.Protocol.PlayerPositionPush();
+            }
+            input.ReadMessage(Position);
             break;
           }
         }
