@@ -354,3 +354,6 @@ public class PoiComponent : IComponent
 地图相关变化通过 `Core.Event` 发布：`WorldMapReady` 表示地图资源已解析，`WorldMapPoiChanged` 表示 POI 集合或状态变化。玩家坐标不通过高频事件传递，HUD 和 `MapPanel` 各自逐帧读取当前玩家实体的 `bindGo.transform.position`；AOI 刷新和网络同步仍按低频 tick 执行。大地图滚轮缩放以当前指针所在的视口点为锚点，缩放前后保持该地图点位于相同屏幕位置。地图纹理由编辑器菜单 `Prometheus/World/Map Capture` 生成，运行时不再创建俯拍相机和 RenderTexture。
 
 大地图的传送请求也由 `WorldSystem.TryTeleportToPoi` 统一处理。该接口只接受当前已加载且类型为 `Statue` 或 `TeleAnchor` 的 POI；传送时暂时停用玩家 `CharacterController`、写入目标位置并清空移动速度与 Root Motion，避免下一帧运动逻辑覆盖传送结果。随后 HUD 和大地图直接读取同一份实体 Transform，保证两个视图继续使用同一份世界坐标事实。
+### NPC POI（第一阶段）
+
+当 `PoiConfig.PoiType` 为 `Npc` 时，WorldSystem 使用 `PoiConfig.Npc` 创建 `NpcEntity`，仍沿用 POI 的 AOI 激活、EntitySystem 注册和安全回收链路。NPC 身份与行为由 NpcSystem 的 `NpcDefinition`、`NpcComponent` 和 `NpcLogic` 提供；WorldSystem 不直接控制对话、镜头或任务推进。

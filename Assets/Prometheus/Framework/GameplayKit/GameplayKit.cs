@@ -8,6 +8,7 @@ using Xuan.Prometheus.Film;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.World;
+using Xuan.Prometheus.Npc;
 
 namespace Xuan.Prometheus
 {
@@ -263,6 +264,8 @@ namespace Xuan.Prometheus
             AddSystem(new CombatAudioPresentationSystem());
             AddSystem(new CameraSystem(startupOptions.RuntimeRoot));
             AddSystem(new FilmSystem(startupOptions.RuntimeRoot));
+            AddSystem(new NpcSystem());
+            AddSystem(new Quest.QuestSystem());
             AddSystem(new WorldSystem());
             AddSystem(new BagSystem());
             teamSystem = new TeamSystem();

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Xuan.Prometheus.Npc;
 
 namespace Xuan.Prometheus.World
 {
@@ -53,5 +54,8 @@ namespace Xuan.Prometheus.World
 
         /// <summary>怪物营地专属配置。</summary>
         public MonsterCampConfig MonsterCamp;
+
+        /// <summary>NPC 类型 POI 使用的静态 NPC 定义；其他类型保持为空。</summary>
+        public NpcDefinition Npc;
     }
 }

@@ -10,6 +10,7 @@ namespace Xuan.Prometheus.World
         Gathering,    // 采集物
         Dungeon,      // 副本
         MapBoss,      // 地图 Boss
-        MonsterCamp   // 怪物营地
+        MonsterCamp,  // 怪物营地
+        Npc            // 可交互 NPC
     }
 }

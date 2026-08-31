@@ -4,7 +4,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus.World
 {
     /// <summary>一个兴趣点的运行时实体：绑定场景摆放的 POI 预制体，组合 PoiComponent(数据) 与按类型选择的 PoiLogic(行为)。由 WorldSystem 创建并交给 EntitySystem 托管。</summary>
-    public sealed class PoiEntity : Entity
+    public class PoiEntity : Entity
     {
         /// <summary>该 POI 的配置数据（源自场景 PoiMono）。</summary>
         public PoiConfig Config { get; }
@@ -18,11 +18,17 @@ namespace Xuan.Prometheus.World
         /// <param name="bindGameObject">场景中摆放的 POI 表现对象。</param>
         /// <param name="config">该 POI 的配置数据。</param>
         public PoiEntity(GameObject bindGameObject, PoiConfig config)
+            : this(bindGameObject, config, PoiLogicFactory.Create(config != null ? config.PoiType : throw new System.ArgumentNullException(nameof(config))))
+        {
+        }
+
+        /// <summary>为特殊 POI 子类提供受控的 Logic 注入入口，保持 EntitySystem 的统一生命周期。</summary>
+        protected PoiEntity(GameObject bindGameObject, PoiConfig config, PoiLogic injectedLogic)
         {
             Config = config ?? throw new System.ArgumentNullException(nameof(config));
             bindGo = bindGameObject != null ? bindGameObject : throw new System.ArgumentNullException(nameof(bindGameObject));
             AddComp(new PoiComponent { Config = config });
-            logic = PoiLogicFactory.Create(config.PoiType);
+            logic = injectedLogic ?? throw new System.ArgumentNullException(nameof(injectedLogic));
             AddLogic(logic);
         }
 
@@ -30,6 +36,9 @@ namespace Xuan.Prometheus.World
         public bool IsConsumed => logic != null && logic.IsConsumed;
 
         /// <summary>外部交互入口：调用该 POI 逻辑的自定义交互行为（服务器请求或客户端 UI）。</summary>
-        public void OnInteract() => logic?.OnInteract();
+        public virtual void OnInteract() => logic?.OnInteract();
+
+        /// <summary>向 NPC 等派生实体暴露其已注入的 POI Logic，只读返回。</summary>
+        protected PoiLogic Logic => logic;
     }
 }

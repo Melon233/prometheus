@@ -5,6 +5,7 @@ using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.Protocol;
+using Xuan.Prometheus.Npc;
 
 namespace Xuan.Prometheus.World
 {
@@ -208,7 +209,7 @@ namespace Xuan.Prometheus.World
                 PoiConfig cfg = mono.Config;
                 if (string.IsNullOrEmpty(cfg.Id) || poisById.ContainsKey(cfg.Id)) continue;
                 if (cfg.aoiExempt) persistentPois.Add(cfg);
-                PoiEntity entity = new PoiEntity(mono.gameObject, cfg);
+                PoiEntity entity = cfg.PoiType == PoiType.Npc ? new NpcEntity(mono.gameObject, cfg, cfg.Npc) : new PoiEntity(mono.gameObject, cfg);
                 gameplayKit.GetSystem<EntitySystem>().AddEntity(entity);
                 entity.AfterNew();
                 allPois.Add(entity);

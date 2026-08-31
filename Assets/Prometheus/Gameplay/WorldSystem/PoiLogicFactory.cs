@@ -1,4 +1,5 @@
 using System;
+using Xuan.Prometheus.Npc;
 
 namespace Xuan.Prometheus.World
 {
@@ -16,6 +17,7 @@ namespace Xuan.Prometheus.World
             PoiType.Dungeon => new DungeonLogic(),
             PoiType.MapBoss => new MapBossLogic(),
             PoiType.MonsterCamp => new MonsterCampLogic(),
+            PoiType.Npc => new NpcLogic(),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
     }
