@@ -23,6 +23,8 @@
 
 ## 扩展约束
 
+- `FilmSystem` 通过 `AcquireFilmCamera` 获取一次性的演出镜头优先级租约。租约释放后，`CameraSystem` 恢复该镜头原优先级；演出代码不得直接修改输出 `Main Camera` 或长期改变玩法跟随镜头优先级。
+
 - 后续增加锁定、冲刺、演出或场景镜头时，应新增 Cinemachine Camera 并由 `CameraSystem` 仲裁优先级，不能把 Camera 放回角色 Prefab。
 - 普通换人继续复用当前跟随镜头，只替换跟随目标，保证位置交接和相机控制权各自只有一个来源。
 - 如果修改基础构图，应集中调整 `FollowLocalPosition` 与 `FollowLocalRotation`，不要在角色资源中保存重复参数。

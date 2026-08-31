@@ -1,0 +1,24 @@
+{
+    "name": "Prometheus.Film.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.Film.Tests",
+    "references": [
+        "Runtime",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:dc04f38471c3a459fb4d31124ee9127d",
+        "GUID:f06555f75b070af458a003d92f9efb00"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

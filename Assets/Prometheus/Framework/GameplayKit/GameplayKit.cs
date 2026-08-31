@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Film;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.World;
@@ -261,6 +262,7 @@ namespace Xuan.Prometheus
             AddSystem(new EffectSystem(library: effectLibrary, traceEnabled: true));
             AddSystem(new CombatAudioPresentationSystem());
             AddSystem(new CameraSystem(startupOptions.RuntimeRoot));
+            AddSystem(new FilmSystem(startupOptions.RuntimeRoot));
             AddSystem(new WorldSystem());
             AddSystem(new BagSystem());
             teamSystem = new TeamSystem();

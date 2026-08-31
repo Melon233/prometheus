@@ -13,6 +13,8 @@ namespace Xuan.Prometheus
     /// <summary>集中创建并管理单局唯一的输出相机、Cinemachine 跟随镜头、音频监听器和当前角色跟随目标。</summary>
     public sealed class CameraSystem : XSystem
     {
+        /// <summary>普通玩法跟随镜头的默认优先级；演出镜头必须高于该值才能稳定接管输出。</summary>
+        private const int GameplayFollowCameraPriority = 100;
         /// <summary>保存旧角色 Prefab 相机相对角色根节点的位置，用于维持迁移前的构图和跟随距离。</summary>
         private static readonly Vector3 FollowLocalPosition = new Vector3(0f, 3.4884024f, -4.0738688f);
 
@@ -46,6 +48,15 @@ namespace Xuan.Prometheus
         /// <summary>保存由 CameraSystem 创建并动态挂接到当前上场角色的跟随参考节点。</summary>
         private GameObject followTarget;
 
+        /// <summary>保存当前由 FilmSystem 独占的演出镜头；阶段一只允许一台演出镜头接管输出。</summary>
+        private CinemachineCamera activeFilmCamera;
+
+        /// <summary>保存演出镜头在取得租约前的优先级，以便演出结束后无损恢复场景配置。</summary>
+        private int activeFilmCameraOriginalPriority;
+
+        /// <summary>保存当前有效的演出镜头租约，用于拒绝未定义的并行镜头接管。</summary>
+        private FilmCameraLease activeFilmCameraLease;
+
         /// <summary>保存当前玩法世界的实体查询入口。</summary>
         private EntitySystem entitySystem;
 
@@ -68,6 +79,24 @@ namespace Xuan.Prometheus
         /// <summary>获取当前单局负责坐标跟随的 Cinemachine Camera。</summary>
         public CinemachineCamera FollowCamera => followCamera;
 
+        /// <summary>临时提高一台 Cinemachine 演出镜头的优先级，并返回负责恢复原值的独占租约。</summary>
+        /// <param name="filmCamera">由当前演出绑定提供的 Cinemachine 镜头。</param>
+        /// <param name="priority">演出期间使用且必须高于普通跟随镜头的优先级。</param>
+        /// <returns>演出结束时必须释放的镜头租约。</returns>
+        public FilmCameraLease AcquireFilmCamera(CinemachineCamera filmCamera, int priority)
+        {
+            if (isDisposed) throw new ObjectDisposedException(nameof(CameraSystem));
+            if (filmCamera == null) throw new ArgumentNullException(nameof(filmCamera));
+            int gameplayPriority = followCamera != null ? followCamera.Priority.Value : GameplayFollowCameraPriority;
+            if (priority <= gameplayPriority) throw new ArgumentOutOfRangeException(nameof(priority), priority, "Film camera priority must be greater than the gameplay follow camera priority.");
+            if (activeFilmCameraLease != null) throw new InvalidOperationException("CameraSystem phase one supports only one active film camera lease.");
+            activeFilmCamera = filmCamera;
+            activeFilmCameraOriginalPriority = filmCamera.Priority.Value;
+            activeFilmCamera.Priority = priority;
+            activeFilmCameraLease = new FilmCameraLease(this);
+            return activeFilmCameraLease;
+        }
+
         /// <summary>创建完整相机运行时对象并在初始小队成员发布前订阅切换事件。</summary>
         /// <param name="gameplayKit">持有当前相机系统的单局玩法世界。</param>
         public override void AfterNew(IGameplayKit gameplayKit)
@@ -85,6 +114,7 @@ namespace Xuan.Prometheus
         public override void Dispose()
         {
             if (isDisposed) return;
+            activeFilmCameraLease?.Dispose();
             if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
             PrometheusRenderQualityController.QualityChanged -= OnRenderQualityChanged;
             DestroyRuntimeObject(followTarget);
@@ -99,6 +129,18 @@ namespace Xuan.Prometheus
             entitySystem = null;
             eventKit = null;
             isDisposed = true;
+        }
+
+        /// <summary>由 FilmCameraLease 归还当前演出镜头并恢复申请租约前的优先级。</summary>
+        /// <param name="lease">需要与当前活动租约完全一致的归还凭据。</param>
+        internal void ReleaseFilmCamera(FilmCameraLease lease)
+        {
+            if (!ReferenceEquals(activeFilmCameraLease, lease)) return;
+            if (activeFilmCamera != null) activeFilmCamera.Priority = activeFilmCameraOriginalPriority;
+            activeFilmCameraLease.Invalidate();
+            activeFilmCameraLease = null;
+            activeFilmCamera = null;
+            activeFilmCameraOriginalPriority = 0;
         }
 
         /// <summary>收到上场成员变化后，把唯一跟随参考节点迁移到新角色并立即对齐旧 Prefab 相机的局部姿态。</summary>
@@ -140,7 +182,7 @@ namespace Xuan.Prometheus
             GameObject followCameraObject = new GameObject("Player Follow Camera");
             followCameraObject.transform.SetParent(cameraSystemRoot.transform, false);
             followCamera = followCameraObject.AddComponent<CinemachineCamera>();
-            followCamera.Priority = 100;
+            followCamera.Priority = GameplayFollowCameraPriority;
             followCamera.Lens = LensSettings.FromCamera(outputCamera);
             followBody = followCameraObject.AddComponent<CinemachineFollow>();
             followBody.FollowOffset = Quaternion.Inverse(FollowLocalRotation) * FollowLocalPosition;

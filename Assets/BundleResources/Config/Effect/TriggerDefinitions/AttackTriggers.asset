@@ -17,7 +17,7 @@ MonoBehaviour:
     signalType: 1
     listenScope: 0
     targetSelector: 1
-    chance: 1
+    probability: 1
     cooldown: 0
     oncePerSignalChain: 1
     priority: 0
@@ -25,16 +25,18 @@ MonoBehaviour:
     - type: 2
       tags: 0
       threshold: 0
+      damageAttribute: 0
     - type: 5
       tags: 1
       threshold: 0
+      damageAttribute: 0
     effects:
     - {fileID: 11400000, guid: 0f82c33f324baa349b0caca8c2801801, type: 2}
   - triggerId: Example.OnFireDamage.Burning
     signalType: 2
     listenScope: 0
     targetSelector: 1
-    chance: 1
+    probability: 1
     cooldown: 0
     oncePerSignalChain: 1
     priority: 0
@@ -42,9 +44,11 @@ MonoBehaviour:
     - type: 2
       tags: 0
       threshold: 0
+      damageAttribute: 0
     - type: 7
       tags: 0
       threshold: 0
+      damageAttribute: 0
     - type: 9
       tags: 0
       threshold: 0
