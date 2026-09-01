@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 45531c79858e778408249ff91b3d326d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/ShaderFunctions/PA_WaterFoam.asset
+  uploadId: 854664

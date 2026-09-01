@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: b04a9b46036b35a4ba0aefdfbd1e9452
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 60072b568d64c40a485e0fc55012dc9f, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/ShaderGraph/Material Functions/CreateLineSegments.shadersubgraph
+  uploadId: 854664

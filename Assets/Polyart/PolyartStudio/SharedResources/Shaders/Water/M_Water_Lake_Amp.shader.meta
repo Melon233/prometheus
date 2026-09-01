@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: acbcda7c9a10c8f4fa6c6ed23f49b53b
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Water/M_Water_Lake_Amp.shader
+  uploadId: 854664

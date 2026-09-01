@@ -1,0 +1,68 @@
+#pragma kernel CSMain
+
+// Input Textures
+Texture2D<half4> _Cloud1;
+Texture2D<half4> _Cloud2;
+
+// Output Render Target
+RWTexture2D<half> _FinalClouds;
+
+// Texture sizes
+int2 _Cloud1Size;
+int2 _Cloud2Size;
+uint2 _FinalSize;
+
+// Parameters for texture manipulation
+float2 _Cloud1Pan;
+float2 _Cloud2Pan;
+float _Cloud1Contrast;
+float _Cloud2Contrast;
+float _Cloud1Influence; // Blend influence of Cloud1 (0 to 1)
+float _Cloud2Influence; // Blend influence of Cloud2 (0 to 1)
+
+// Tiling parameters
+float _Cloud1Tiling;
+float _Cloud2Tiling;
+
+// Offset parameters
+float4 _CloudOffsets;
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _FinalSize.x || id.y >= _FinalSize.y)
+        return;
+
+    // Convert pixel ID to normalized UV (0 to 1)
+    float2 uv = id.xy / float2(_FinalSize);
+
+    // Apply panning offsets
+    float2 uv1 = frac(uv + _Cloud1Pan);
+    float2 uv2 = frac(uv + _Cloud2Pan);
+
+    // Apply tiling by scaling UVs
+    uv1 *= _Cloud1Tiling;
+    uv2 *= _Cloud2Tiling;
+
+    // Apply offset to UVs
+    uv1 += _CloudOffsets.rg;
+    uv2 += _CloudOffsets.ba;
+
+    // Convert UVs to integer coordinates for each texture (handling different sizes)
+    int2 coord1 = uv1 * _Cloud1Size;
+    int2 coord2 = uv2 * _Cloud2Size;
+
+    // Sample textures
+    half cloud1Color = _Cloud1.Load(int3(coord1, 0)).r;
+    half cloud2Color = _Cloud2.Load(int3(coord2, 0)).r;
+
+    // Adjust contrast
+    cloud1Color = pow(abs(cloud1Color), _Cloud1Contrast);
+    cloud2Color = pow(abs(cloud2Color), _Cloud2Contrast);
+
+    // Blend clouds with influence
+    half finalLuminance = lerp(1, cloud1Color, _Cloud1Influence) * lerp(1, cloud2Color, _Cloud2Influence);
+    
+    // Output the final blended result
+    _FinalClouds[id.xy] = finalLuminance;
+}

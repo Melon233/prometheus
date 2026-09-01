@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 7b53dfc52477f5d478042ebb94c002fc
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Terrain/Dreamscape_Surface_WorldAligned.shader
+  uploadId: 854664

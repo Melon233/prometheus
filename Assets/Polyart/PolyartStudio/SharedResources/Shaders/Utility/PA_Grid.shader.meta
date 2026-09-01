@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 87e2fa980c1496a4dad3d1fa072a56a6
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Utility/PA_Grid.shader
+  uploadId: 854664

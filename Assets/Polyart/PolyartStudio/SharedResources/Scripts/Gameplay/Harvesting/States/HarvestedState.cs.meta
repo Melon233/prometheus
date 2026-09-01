@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: da581ffec34c32b4d98e9c80cef1b448
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 345842
+  packageName: SUN TEMPLE - Stylized Ruins Open World Environment
+  packageVersion: 1.2
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Scripts/Gameplay/Harvesting/States/HarvestedState.cs
+  uploadId: 822834

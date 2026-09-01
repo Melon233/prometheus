@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: ad549d76b7627934d9582c6dee793137
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _TerrainHeightMap: {fileID: 2800000, guid: 2c6536772776dd84f872779990273bfc, type: 3}
+  - _WaterNormalMap: {fileID: 2800000, guid: 4ea058df3811fdf439d5bff6fbdb2316, type: 3}
+  - _FoamTexture: {fileID: 2800000, guid: 617b206ec808f7041b7a41b2c1373f91, type: 3}
+  - _Noisetexture: {fileID: 2800000, guid: 878bec983c34b8c4b9f8fc06d0e7b5af, type: 3}
+  - _CausticsTexture: {fileID: 2800000, guid: 0695fb758668c584badb3d37cc51ed53, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 345842
+  packageName: SUN TEMPLE - Stylized Ruins Open World Environment
+  packageVersion: 1.2
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Water/M_Ocean_Amp.shader
+  uploadId: 822834

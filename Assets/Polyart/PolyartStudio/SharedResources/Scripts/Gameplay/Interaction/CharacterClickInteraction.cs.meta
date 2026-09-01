@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: b68f43c6d462aea4bb743c0f0e9e464b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Scripts/Gameplay/Interaction/CharacterClickInteraction.cs
+  uploadId: 854664

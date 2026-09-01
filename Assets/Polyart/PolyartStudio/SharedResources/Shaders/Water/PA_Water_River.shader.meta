@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 8352fe40c7dd2a44a835eae3e0a9b55c
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  preprocessorOverride: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Water/PA_Water_River.shader
+  uploadId: 854664

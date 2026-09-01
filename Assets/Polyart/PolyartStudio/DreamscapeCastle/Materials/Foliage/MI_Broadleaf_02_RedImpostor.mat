@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MI_Broadleaf_02_RedImpostor
+  m_Shader: {fileID: 4800000, guid: c83e0d6021200634a8b2ca4e998b498b, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _ALPHATEST_ON
+  - _BILLBOARDINGENABLED_ON
+  - _CLAMPLATITUDE_ON
+  - _SMOOTH_ON
+  - _SURFACE_TYPE_TRANSPARENT
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: -3805622813848737537, guid: 191219d2ac6472948bb6ebed7e3d8c94, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskMap:
+        m_Texture: {fileID: -6706061381714034273, guid: 191219d2ac6472948bb6ebed7e3d8c94, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 5582589769281728177, guid: 191219d2ac6472948bb6ebed7e3d8c94, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClipThresshold: 0.521
+    - _BillboardingEnabled: 1
+    - _Brightness: 1
+    - _ClampLatitude: 1
+    - _Contrast: 1
+    - _CurvedOcclusion: 0
+    - _Cutout: 0.355
+    - _DitheringFade: 0
+    - _ElevationOffset: 0
+    - _GridSize: 169
+    - _HorizontalSegments: 18
+    - _Hue: 0.699
+    - _LatitudeOffset: 3
+    - _LatitudeSamples: 4
+    - _LatitudeStep: 4.736842
+    - _LongitudeSamples: 18
+    - _Metallic: 0
+    - _NormalStrength: 0.87
+    - _Occlusion: 1
+    - _Saturation: 1.479
+    - _SmartSphere: 0
+    - _Smooth: 1
+    - _Smoothness: 0
+    - _Value: 1
+    - _VerticalOffset: 0
+    - _VerticalSegments: 4
+    - _VerticalStep: 15
+    - _YawOffset: 0
+    - _ZOffset: 0.5
+    m_Colors: []
+  m_BuildTextureStacks: []

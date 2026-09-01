@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 69ef2045f71a4da4d853d7fd244b4ab6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/ShaderGraph/Custom Inspectors/RGB_Rock_CustomInspector.cs
+  uploadId: 854664

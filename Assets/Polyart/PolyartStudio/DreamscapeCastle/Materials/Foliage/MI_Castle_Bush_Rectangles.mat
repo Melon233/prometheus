@@ -1,0 +1,201 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-3735824141220856494
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639247ca83abc874e893eb93af2b5e44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 0
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MI_Castle_Bush_Rectangles
+  m_Shader: {fileID: -6465566751694194690, guid: 481a28ca7227f644ea9a715895d2730d, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ALPHATEST_ON
+  - _BUILTIN_ALPHATEST_ON
+  - _BUILTIN_AlphaClip
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: TransparentCutout
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FlowerMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoliageMap:
+        m_Texture: {fileID: 2800000, guid: abc00000000002619342563986532792, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Foliage_Map:
+        m_Texture: {fileID: 2800000, guid: 9cc67d2e1543ff54fb2338e68a7b8231, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _GradientMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Gradient_Map:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2DLOD_02da661a106745d98499351c7680fb3d_Texture_1:
+        m_Texture: {fileID: 2800000, guid: 7156872dfec946b40b0c19e401a2fe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2DLOD_02da661a106745d98499351c7680fb3d_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 7156872dfec946b40b0c19e401a2fe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2DLOD_f4fa5a54ad7c4fa2b81c271b138a1420_Texture_1:
+        m_Texture: {fileID: 2800000, guid: 7156872dfec946b40b0c19e401a2fe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2DLOD_f4fa5a54ad7c4fa2b81c271b138a1420_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 7156872dfec946b40b0c19e401a2fe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WindNoiseTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 1
+    - _AlphaToMask: 1
+    - _Alpha_Clip: 0.5
+    - _BUILTIN_AlphaClip: 1
+    - _BUILTIN_Blend: 0
+    - _BUILTIN_CullMode: 0
+    - _BUILTIN_DstBlend: 0
+    - _BUILTIN_QueueControl: 0
+    - _BUILTIN_QueueOffset: 0
+    - _BUILTIN_SrcBlend: 1
+    - _BUILTIN_Surface: 0
+    - _BUILTIN_ZTest: 4
+    - _BUILTIN_ZWrite: 1
+    - _BUILTIN_ZWriteControl: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 1
+    - _CUSTOM_INSTANCING: 0
+    - _CastShadows: 1
+    - _Color_Intensity: 0
+    - _Cull: 2
+    - _DitherBottomLevel: 0
+    - _DitherFade: 0
+    - _Dither_Bottom_Level: 0
+    - _Dither_Fade: 2
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
+    - _Emissive_Intensity: 0
+    - _FoliageRoughness: 0.786
+    - _Gradience_Height: 1
+    - _Gradience_Power: 1
+    - _HasStem: 0
+    - _LockPositionGradient: 0
+    - _MaskClip: 0.512
+    - _Normal_Intensity: 1
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
+    - _Smoothness: 0
+    - _SpecularIntensity: 0.1
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
+    - _USE_DITHER: 0
+    - _USE_GRADIENT_MAP: 0
+    - _USE_GRADIENT_MAP_INSTEAD: 0
+    - _USE_HEIGHT_GRADIENT: 0
+    - _USE_NORMAL_MAP: 0
+    - _USE_VERTEX_COLOR: 0
+    - _UV_Pivot_Lock_Strangth: 0
+    - _UseDithering: 0
+    - _UseGlobalSetting: 0
+    - _UseGlobalWindSettings: 0
+    - _UseGradientMap: 0
+    - _UseVertexColor: 1
+    - _Use_Normals_For_Offset: 0
+    - _VertexColorGradient: 1
+    - _VertexColorOffset: 0
+    - _WindNoise01: 0
+    - _WindNoise01Multiplier: 0
+    - _WindNoise02: 0
+    - _WindNoise02Multiplier: 0
+    - _Wind_Large_Intensity: 0
+    - _Wind_Large_Scale: 2.52
+    - _Wind_Small_Intensity: 0.15
+    - _Wind_Small_Scale: 15
+    - _WorkflowMode: 1
+    - _ZTest: 4
+    - _ZWrite: 1
+    - _ZWriteControl: 0
+    - __dirty: 1
+    m_Colors:
+    - _ColorGradient01: {r: 0, g: 0, b: 0, a: 0}
+    - _ColorGradient02: {r: 0, g: 0, b: 0, a: 0}
+    - _ColorTint: {r: 1, g: 1, b: 1, a: 0}
+    - _Color_Base: {r: 0.2713315, g: 0.4528302, b: 0.1644713, a: 1}
+    - _Color_Bottom: {r: 0.27133146, g: 0.45283014, b: 0.16447127, a: 1}
+    - _Color_Tint: {r: 0.14382839, g: 0.4264151, b: 0.021722998, a: 1}
+    - _Color_Top: {r: 0.44009998, g: 0.6603774, b: 0.121484466, a: 1}
+    - _StemColor: {r: 0, g: 0, b: 0, a: 0}
+    - _Wind_Large_Speed: {r: 0.1, g: 0.1, b: 0, a: 0}
+    - _Wind_Small_Speed: {r: 0.3, g: 5, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &2776576026129565299
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 10

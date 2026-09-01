@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: cc2db01810d1d8647ba2398146260fd7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Scripts/Gameplay/SimpleAI/StateMachine/States/NPCMoveState.cs
+  uploadId: 854664

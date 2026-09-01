@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b0f282fb0799a4e4389f2062d2bab02a
+ComputeShaderImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/ComputeShaders/CloudComputeShader.compute
+  uploadId: 854664

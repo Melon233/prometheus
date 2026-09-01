@@ -1,0 +1,210 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-1190763617431593478
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639247ca83abc874e893eb93af2b5e44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 0
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MI_Castle_Town_Pavement_02
+  m_Shader: {fileID: -6465566751694194690, guid: 1d79841aac711a14096152a27f862c49, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _USE_DIRT_MASK
+  - _USE_LAYER_2
+  - _USE_LAYER_3
+  - _USE_PARALLAX_OCCLUSION
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Layer_01_Color:
+        m_Texture: {fileID: 2800000, guid: d6c5bc9513b24ad419382c1603abb206, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_01_Emissive:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_01_Normal:
+        m_Texture: {fileID: 2800000, guid: 49855dd77ecf2bb4a91424c93c1a6d99, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_01_ORM:
+        m_Texture: {fileID: 2800000, guid: 477e858c7ed26954b98a9ea523829392, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Color:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Color_A:
+        m_Texture: {fileID: 2800000, guid: 454b80f8d54afd44483c3aa9990a340a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Emissive:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Emissive_A:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Normal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Normal_A:
+        m_Texture: {fileID: 2800000, guid: fc8d43555cedec04ca3f2919f62f1691, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_ORM:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_ORM_A:
+        m_Texture: {fileID: 2800000, guid: 05803db9f8b6fae43bbacd15cf7159df, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_Color:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_Emissive:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_Normal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_ORM:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _POM_Height:
+        m_Texture: {fileID: 2800000, guid: 64546f44737cbea498d19d9f51338acc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Triplanar_a55e4756d3774f5391a2e1d06602058c_Texture_1:
+        m_Texture: {fileID: 2800000, guid: 7156872dfec946b40b0c19e401a2fe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Triplanar_a55e4756d3774f5391a2e1d06602058c_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 7156872dfec946b40b0c19e401a2fe74, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BUILTIN_QueueControl: 0
+    - _BUILTIN_QueueOffset: 0
+    - _Dirt_Gradient_Mask_Feather: 2.14
+    - _Dirt_Gradient_Mask_Height: 0
+    - _Dirt_Mask_Contrast: 3.21
+    - _Dirt_Mask_Feather: 0.1
+    - _Dirt_Mask_Growth: 0.37
+    - _Dirt_Roughness: 0
+    - _Dirt_Smoothness: 0
+    - _LayerContrast: 55.06
+    - _Layer_01_AO: 1
+    - _Layer_01_Emissive_Intensity: 1
+    - _Layer_01_Flaten_Normal: 0.32
+    - _Layer_01_Metallic: 1
+    - _Layer_01_Normal_Strength: 1
+    - _Layer_01_Roughness: 0.88
+    - _Layer_02_AO: 1
+    - _Layer_02_AO_A: 1
+    - _Layer_02_Emissive_Intensity_A: 1
+    - _Layer_02_Flaten_Normal_A: 0
+    - _Layer_02_Metallic: 1
+    - _Layer_02_Metallic_A: 1
+    - _Layer_02_Normal_Strength: 1
+    - _Layer_02_Roughness: 1
+    - _Layer_02_Roughness_A: 1
+    - _Layer_02_Tiling_Multiplier_A: 1
+    - _Layer_03_AO: 1
+    - _Layer_03_Metallic: 1
+    - _Layer_03_Normal_Strength: 1
+    - _Layer_03_Roughness: 1
+    - _Layer_1_2_Contrast: 1
+    - _Layer_2_3_Contrast: 1
+    - _POMCameraDistanceOptimization_inMeters: 100
+    - _POMCameraGradienceOptimization_inMeters: 2
+    - _POM_Height_Ratio: 5.38
+    - _POM_Max_Steps: 32
+    - _QueueControl: -1
+    - _QueueOffset: 0
+    - _USE_COVERAGE_GRADIENT: 0
+    - _USE_DIRT_MASK: 1
+    - _USE_EMISSIVE: 0
+    - _USE_LAYER_02_A: 0
+    - _USE_LAYER_2: 1
+    - _USE_LAYER_3: 1
+    - _USE_PARALLAX_OCCLUSION: 1
+    - _USE_TILING_VARIATION: 0
+    - _UV_Scale: 1
+    - _Use_Vertex_Paint_for_Tiling_Variation: 0
+    - _VariationNoiseTiling: -0.06
+    - _Variation_Mask_Contrast: 1
+    - _Variation_Tiling: 1.5
+    m_Colors:
+    - _Dirt_Color: {r: 0.6226415, g: 0.6079566, b: 0.6079566, a: 1}
+    - _Layer_01_Emissive_Color: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
+    - _Layer_01_Tint: {r: 1, g: 1, b: 1, a: 0}
+    - _Layer_01_Variation_Tint: {r: 1, g: 1, b: 1, a: 0}
+    - _Layer_02_Emissive_Color: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
+    - _Layer_02_Emissive_Color_A: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
+    - _Layer_02_Tint: {r: 0.9716981, g: 0.9716981, b: 0.9716981, a: 0}
+    - _Layer_02_Tint_A: {r: 1, g: 1, b: 1, a: 0}
+    - _Layer_03_Emissive_Color: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
+    - _Layer_03_Tint: {r: 0.9716981, g: 0.9716981, b: 0.9716981, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &9154114959897949800
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 10

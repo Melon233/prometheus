@@ -1,0 +1,153 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MI_Castle_DemoScene_Lake
+  m_Shader: {fileID: 4800000, guid: ad8e030ef04669d4aba092657d5d84b4, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Displacement:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflectionNormal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflectionTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaterRenderTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Water_Normals:
+        m_Texture: {fileID: 2800000, guid: c7eecd4c36cac8043b0fb53e64169d7e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaveNormal:
+        m_Texture: {fileID: 2800000, guid: c7eecd4c36cac8043b0fb53e64169d7e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Absorbtion_Coefficient: 0
+    - _BUILTIN_QueueControl: 0
+    - _BUILTIN_QueueOffset: 0
+    - _Caustics_Depth: 0.87
+    - _Caustics_Distortion: 0.1
+    - _Caustics_Fade: 2.23
+    - _Caustics_Intensity: 1
+    - _Caustics_Movement_Speed: 3
+    - _Caustics_Opacity: 0.164
+    - _Caustics_Power: 5
+    - _Caustics_Tiling: 3
+    - _ColorDepthFade: 2.71
+    - _DisplaceStrength: 0
+    - _Edge_Opacity_Distance: 2.89
+    - _FoamCutoff: 2.4
+    - _FoamDepthFade: 1
+    - _FoamScale: 2
+    - _FoamSpeed: 0
+    - _Foam_Contrast: 4.84
+    - _Foam_Distance: 3.13
+    - _Foam_Noise_Distortion: 0.07
+    - _Foam_Noise_Speed: 0.05
+    - _Foam_Noise_Tiling: 2
+    - _Foam_Opacity: 0.56
+    - _Foam_Power: 8.54
+    - _Foam_Wave_Number: 9.45
+    - _Foam_Wave_Speed: 1
+    - _Highlight_Noise_Speed: 0.02
+    - _Highlight_Noise_Tiling: 1
+    - _HighlightsIntensity: 2
+    - _Highlights_Power: 0.43
+    - _Highlights_Speed: 0.1
+    - _Highlights_Tiling: 2
+    - _Min_Opacity: 0.766
+    - _Normal_Speed: 0.02
+    - _Normal_Strength: 0.1
+    - _Opacity: 1
+    - _Overall_Opacity: 0.949
+    - _QueueControl: -1
+    - _QueueOffset: 0
+    - _ReflectionsIntensity: 1
+    - _Refraction: 0.1
+    - _RefractionDepth: 3.91
+    - _RefractionStrength: 1
+    - _Roughness: 1
+    - _Shallow_Water_Distance: 1.72
+    - _Smoothness: 1
+    - _TurbulenceDistortionIntensity: 0.8
+    - _TurbulenceScale: 1
+    - _TurbulenceTiling: 0
+    - _WaveNormalIntensity: 0.174
+    - _WaveTiling01: 50
+    - _WaveTiling02: 50
+    - _WorldtoObjectPosition: 0
+    - __dirty: 1
+    m_Colors:
+    - _ColorDeep: {r: 0, g: 0.34737757, b: 0.6528301, a: 0}
+    - _ColorShallow: {r: 0.5990566, g: 0.9091429, b: 1, a: 0}
+    - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Normal_Direction_Randomizer: {r: 1, g: 1.2, b: -0.9, a: -1}
+    - _Normal_Tiling_two_different_maps: {r: 0.7, g: 0.4, b: 0, a: 0}
+    - _WaterColor: {r: 0, g: 0.501172, b: 0.7283019, a: 1}
+  m_BuildTextureStacks: []
+--- !u!114 &1608703132521801821
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639247ca83abc874e893eb93af2b5e44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 0
+--- !u!114 &3354606998406272487
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 5

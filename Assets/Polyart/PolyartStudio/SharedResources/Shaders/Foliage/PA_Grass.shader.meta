@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 70ff6e3a81c1f424c9f9da756571a30f
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _WindNoiseTexture: {fileID: 2800000, guid: ecd0578dd5d2cb54e90e298c6fbe1019, type: 3}
+  - _VariationMask: {fileID: 2800000, guid: ecd0578dd5d2cb54e90e298c6fbe1019, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Foliage/PA_Grass.shader
+  uploadId: 854664

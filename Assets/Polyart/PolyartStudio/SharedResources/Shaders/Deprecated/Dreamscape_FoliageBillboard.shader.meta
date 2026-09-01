@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b28029cc52e10a0419b31f0b9b1bbc2d
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 303689
+  packageName: 'KINGDOM : Stylized Modular Castle Environment'
+  packageVersion: 1.21
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Deprecated/Dreamscape_FoliageBillboard.shader
+  uploadId: 854664

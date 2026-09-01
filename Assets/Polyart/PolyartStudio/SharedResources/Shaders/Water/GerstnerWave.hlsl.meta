@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 746f5a2e42a9c4c48a5b5d90f7a72a6a
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 345842
+  packageName: SUN TEMPLE - Stylized Ruins Open World Environment
+  packageVersion: 1.2
+  assetPath: Assets/Polyart/PolyartStudio/SharedResources/Shaders/Water/GerstnerWave.hlsl
+  uploadId: 822834
