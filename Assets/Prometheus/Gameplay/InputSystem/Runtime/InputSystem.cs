@@ -20,7 +20,6 @@ namespace Xuan.Prometheus.Input
         private readonly List<IInputSource> routingSources = new List<IInputSource>();
         /// <summary>保存 UI Button 在玩法更新之后提交的定向按钮命令，并在下一次输入阶段写入目标实体。</summary>
         private readonly Dictionary<int, InputActionMask> queuedEntityButtonActions = new Dictionary<int, InputActionMask>();
-        private IGameplayKit gameplayKit;
         private int nextBindingId = 1;
         private long nextRegistrationOrder;
         private long currentFrameId;
@@ -42,15 +41,6 @@ namespace Xuan.Prometheus.Input
 
         /// <summary>获取当前仍持有控制权的绑定数量。</summary>
         public int BindingCount => bindings.Count;
-
-        /// <inheritdoc />
-        public override void AfterNew(IGameplayKit gameplayKit)
-        {
-            ThrowIfDisposed();
-            if (gameplayKit == null) throw new ArgumentNullException(nameof(gameplayKit));
-            if (this.gameplayKit != null && !ReferenceEquals(this.gameplayKit, gameplayKit)) throw new InvalidOperationException("InputSystem cannot move between GameplayKit instances.");
-            this.gameplayKit = gameplayKit;
-        }
 
         /// <summary>注册一个由当前 InputSystem 托管生命周期的额外输入源。</summary>
         public void RegisterSource(IInputSource source)
@@ -90,8 +80,7 @@ namespace Xuan.Prometheus.Input
         public ControlLease AcquireEntityControl(string sourceId, int entityId, InputActionMask actions, InputContext context, int bindingPriority = 0, InputDeliveryMode deliveryMode = InputDeliveryMode.Exclusive)
         {
             ThrowIfDisposed();
-            if (gameplayKit == null) throw new InvalidOperationException("InputSystem must complete AfterNew before it can bind an Entity.");
-            return AcquireControl(sourceId, new EntityInputReceiver(gameplayKit, entityId), actions, context, bindingPriority, deliveryMode);
+            return AcquireControl(sourceId, new EntityInputReceiver(entityId), actions, context, bindingPriority, deliveryMode);
         }
 
         /// <summary>由普通 UI Button 为指定实体提交离散玩法按钮命令；该命令不进入 InputAction 和控制权仲裁，但会在输入重置后、实体更新前可靠写入。</summary>
@@ -156,7 +145,6 @@ namespace Xuan.Prometheus.Input
             queuedEntityButtonActions.Clear();
             sourceOrder.Clear();
             sources.Clear();
-            gameplayKit = null;
             isDisposed = true;
         }
 
@@ -243,7 +231,7 @@ namespace Xuan.Prometheus.Input
         private void DispatchQueuedEntityButtonActions()
         {
             if (queuedEntityButtonActions.Count == 0) return;
-            EntitySystem entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            EntitySystem entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
             foreach (KeyValuePair<int, InputActionMask> command in queuedEntityButtonActions)
             {
                 if (!entitySystem.TryGetEntity(command.Key, out Entity entity) || !entity.IsActive) continue;

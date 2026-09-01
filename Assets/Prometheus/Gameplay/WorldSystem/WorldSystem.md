@@ -172,51 +172,47 @@ public sealed class PoiMono : MonoBehaviour
 ```csharp
 public sealed class WorldSystem : XSystem
 {
-    private WorldRegionsConfig  baked;            // 烘焙数据（运行时唯一数据源）
-    private Dictionary<string, RegionConfig> byRegion; // RegionId -> Region
-    private Dictionary<string, PoiConfig>    poiById;  // PoiId -> PoiConfig
-    private Dictionary<string, PoiEntity>    activePois; // 已实例化的 POI 实体
-    private float tickAccumulator;              // 低频驱动（默认 0.25s 一跳）
+    private readonly List<PoiEntity> allPois = new List<PoiEntity>(); // 保存由场景 PoiMono 组合出的全部 POI Entity。
+    private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>(); // 按语义 Id 查询当前场景 POI。
+    private float tickAccumulator; // 以 0.25 秒间隔执行 AOI 与网络同步。
 
-    public float RegionSize => baked != null ? baked.RegionSize : 100f;
-    public float InterestRadius { get; set; } = 50f;   // 加载后默认 RegionSize * 0.5f
-    public int   ActiveCount => activePois.Count;      // 诊断
-    public IEnumerable<string> ActivePoiIds => activePois.Keys; // 诊断/测试
+    public float RegionSize { get; set; } = ChunkIdCodec.ChunkSize; // AOI 网格边长与服务器 chunk 保持一致。
+    public float InterestRadius { get; set; } = 15f; // 普通 POI 的世界距离显隐半径。
 
-    public override void AfterNew(IGameplayKit ownerGameplayKit)
+    public override void AfterNew()
     {
-        gameplayKit = ownerGameplayKit;
-        // 经 AssetKit.Ins 地址化加载烘焙数据；缺失时降级为空世界并告警。
-        // 测试/编辑器场景可绕过此加载，直接调用 LoadBaked(config)。
+        // 基础模块和玩法系统统一从 Core 获取，不保存或注入 IGameplayKit、IAssetKit、IEventKit。
+        Core.Event.AddListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
+        Core.Asset.LoadAssetSync<WorldMapDefinition>("WorldMapDefinition");
     }
 
-    public void LoadBaked(WorldRegionsConfig config) { /* 建 byRegion / poiById 索引，初始化 InterestRadius */ }
-    public override void OnUpdate(float dt) { /* 低频驱动，取 gameplayKit.Player 位置调用 RefreshAt */ }
-    public void RefreshAt(Vector3 playerPos) { /* 9 格邻域 + 兴趣半径，差量激活 / 回收 */ }
+    public override void OnUpdate(float dt) { /* 低频读取 Core.Gameplay.Player 坐标并刷新 POI 显隐与附近 chunk。 */ }
+    public void RefreshAt(Vector3 playerPos) { /* 对场景 POI 执行 3x3 邻域、兴趣半径和消费状态判断。 */ }
 }
 ```
 
 要点：
-- 烘焙加载（`AfterNew` 经 `AssetKit.Ins`）与核心刷新（`LoadBaked` / `RefreshAt`）**分离**，便于独立测试。
-- 玩家位置在 `OnUpdate` 中取 `gameplayKit.Player`（即 `TeamSystem.ActiveMember`）的 `bindGo` 坐标。
+- 静态地图定义经 `Core.Asset` 加载，场景 POI 由 `LoadFromScene` 扫描 `PoiMono` 建立 Entity 与 Id 索引。
+- 玩家位置在 `OnUpdate` 中取 `Core.Gameplay.Player`（即 `TeamSystem.ActiveMember`）的 `bindGo` 坐标。
+- Entity 注册、敌人生成和营地补刷统一通过 `Core.Gameplay.GetSystem<EntitySystem>()` 完成。
 
 > 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：`AfterNew` 先注册怪物营地死亡监听并生成初始史莱姆，`InitializeAsync` 首先扫描场景并建立本地 POI 索引，保证地图和交互列表可以独立于网络显示；随后创建 `PoiNetworkClient` 并通过 `ConnectAsync` 恢复玩家坐标、启用服务器状态同步和交互请求。`OnUpdate` 先执行营地补刷，再调用 `PumpEvents` 分发 NetworkKit 推送，最后按玩家位置同步 chunk；服务器不可用时保持 `isAvailable=false`，但已扫描的静态 POI 仍保留，待网络恢复后再执行服务器请求。
 
 ### 5.3 激活与失活
-- **激活**：`RefreshAt` 计算 9 格邻域，候选 POI 满足"在 9 格内 + 在兴趣半径内"且尚未实例化 → 经 `AssetKit.Ins.InstantiateSync("Poi_<Type>", position)` 实例化对应预制体、把 `PoiId + PoiType` 写入 Label，再 `new PoiEntity(go, config)` → `EntitySystem.AddEntity` + `AfterNew`，记入 `activePois`。回收时 `RequestDispose` 会销毁绑定的场景对象。
-- **失活**：POI 移出 9 格邻域或移出兴趣半径 → 从 `activePois` 移除并 `entity.RequestDispose()`（内部走 `EntitySystem.RequestRemoveEntity` 安全边界，下一帧排水）。
-- **AOI 豁免（`aoiExempt`）**：`PoiConfig.aoiExempt` 为 true 的 POI（大体建筑：七天神像/副本/传送锚点）**常驻**——无视 9 格邻域与兴趣半径始终实例化，且永不回收（`LoadBaked` 时收入 `persistentPois` 列表）。
-- **差量策略**：`RefreshAt` 每跳重算期望 9 格集合，仅对"新增/移出"的 POI 做创建/回收，避免每帧全量遍历。
+- **初始化**：`LoadFromScene` 为每个合法 `PoiMono` 创建 `PoiEntity` 或 `NpcEntity`，注册到 EntitySystem 并保留场景 GameObject，不在 AOI 阶段重复实例化或销毁。
+- **显隐**：`RefreshAt` 计算 3x3 邻域和兴趣半径，通过场景 GameObject 的 `SetActive` 切换普通 POI 显示；被消费的 POI 始终隐藏。
+- **AOI 豁免（`aoiExempt`）**：常驻 POI 无视邻域和兴趣半径，但仍服从消费状态。
+- **生命周期**：WorldSystem 释放前，POI Entity 仍由 EntitySystem 统一托管；GameplayKit 销毁时先释放全部 Entity，再逆序释放其他 System。
 
 ### 5.4 玩家位置来源
 `WorldSystem` 需要玩家世界坐标，经确认**复用 `TeamSystem` 现成成员**，不再另设位置定位器：
 
 ```csharp
-// 取当前上场成员的世界坐标作为兴趣中心（TeamSystem.ActiveMember 为空时跳过本轮加载）
-if (gameplayKit.TryGetSystem(out TeamSystem teamSystem) && teamSystem.ActiveMember != null)
+// 取 Core.Gameplay 当前玩家的世界坐标作为兴趣中心；玩家尚未创建时跳过本轮刷新。
+if (Core.Gameplay.Player != null && Core.Gameplay.Player.bindGo != null)
 {
-    Vector3 playerPos = teamSystem.ActiveMember.bindGo.transform.position;
-    Tick(playerPos);
+    Vector3 playerPos = Core.Gameplay.Player.bindGo.transform.position;
+    RefreshAt(playerPos);
 }
 ```
 
@@ -297,12 +293,12 @@ public class PoiComponent : IComponent
 
 ```
 玩家移动 -> WorldSystem.OnUpdate（低频，默认 0.25s 一跳）
-  1. 取 gameplayKit.Player（当前上场成员）位置
+  1. 取 Core.Gameplay.Player（当前上场成员）位置
   2. RefreshAt(playerPos)：cell = floor(playerPos / RegionSize)，9 格邻域（±1）
-  3. 差量：
-     - 离开 9 格邻域或超出兴趣半径的 POI：RequestDispose()
-     - 邻域内未激活且位于兴趣半径内的 POI：创建 PoiEntity
-       -> EntitySystem.AddEntity -> PoiEntity.AfterNew()（各类型 Logic 开始跑）
+  3. 遍历场景已注册的 PoiEntity：
+     - 离开 9 格邻域、超出兴趣半径或已经消费：GameObject.SetActive(false)
+     - 位于邻域和兴趣半径内，或配置 aoiExempt：GameObject.SetActive(true)
+  4. 根据玩家所在 chunk 拉取附近 3x3 chunk 的服务器状态
 ```
 
 ---

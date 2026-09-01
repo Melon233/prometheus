@@ -38,7 +38,6 @@ namespace Xuan.Prometheus.Logic
             if (Entity.bindGo == null) throw new InvalidOperationException($"Entity '{Entity.GetType().FullName}' requires a bound GameObject before world HP bar initialization.");
             WorldHpBarAnchor anchor = Entity.bindGo.GetComponent<WorldHpBarAnchor>();
             if (anchor == null) throw new InvalidOperationException($"Entity prefab '{Entity.bindGo.name}' requires WorldHpBarAnchor after its embedded HP bar is removed.");
-            if (Core.UI == null) throw new InvalidOperationException("UIKit must be initialized before world HP bars are spawned.");
             worldHpBarHandle = Core.UI.SpawnWorldUI(WorldHpBarAssetAddress, anchor.FollowTarget, anchor.WorldOffset);
             hpBar = worldHpBarHandle.GetComponent<HpBar>();
             if (hpBar != null)

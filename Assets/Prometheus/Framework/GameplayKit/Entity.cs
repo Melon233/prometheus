@@ -8,6 +8,8 @@ namespace Xuan.Prometheus.Logic
     /// <summary>定义 Entity 内 Logic 的逐帧执行阶段，枚举顺序就是默认执行顺序。</summary>
     public enum OrderTag
     {
+        /// <summary>最先创建或接管 Entity 的 Unity 表现对象，并发布根 Binder。</summary>
+        GameObject,
         Input,
         Talent,
         Buff,
@@ -54,13 +56,12 @@ namespace Xuan.Prometheus.Logic
         private readonly List<ILogic> logicList = new List<ILogic>();
         private readonly Dictionary<Type, ILogic> logics = new Dictionary<Type, ILogic>();
         private readonly Dictionary<ILogic, int> logicRegistrationOrders = new Dictionary<ILogic, int>();
-        private IGameplayKit gameplayKit;
         private int nextLogicRegistrationOrder;
         private int initializedLogicCount;
         private float destroyDelay;
 
-        /// <summary>获取当前实体所属的单局 GameplayKit；未注册或已释放时访问会抛出明确异常。</summary>
-        public IGameplayKit GameplayKit => gameplayKit ?? throw new InvalidOperationException($"Entity '{GetType().FullName}' has not been registered with a GameplayKit.");
+        /// <summary>获取首次回收请求确定的表现对象延迟销毁时间，供最后释放的 GameObjectLogic 使用。</summary>
+        internal float DisposeDelay => destroyDelay;
 
         /// <summary>获取 GameplayKit 分配的单局运行时编号；未注册实体返回零，已释放实体保留原编号用于诊断。</summary>
         public int EntityId { get; private set; }
@@ -77,13 +78,11 @@ namespace Xuan.Prometheus.Logic
         /// <summary>当前实体绑定的场景对象；资源定位和实例化由 GameplayKit 负责。</summary>
         public GameObject bindGo;
 
-        /// <summary>由 GameplayKit 在实体初始化前建立所属单局关系并写入唯一运行时编号。</summary>
-        internal void BindGameplayKit(IGameplayKit ownerGameplayKit, int entityId)
+        /// <summary>由 EntitySystem 在实体初始化前写入当前单局唯一运行时编号。</summary>
+        internal void BindEntityId(int entityId)
         {
-            if (ownerGameplayKit == null) throw new ArgumentNullException(nameof(ownerGameplayKit));
             if (entityId <= 0) throw new ArgumentOutOfRangeException(nameof(entityId), entityId, "Entity runtime ID must be positive.");
             if (LifecycleState != EntityLifecycleState.Created) throw new InvalidOperationException($"Entity '{GetType().FullName}' cannot be registered from lifecycle state '{LifecycleState}'.");
-            gameplayKit = ownerGameplayKit;
             EntityId = entityId;
             LifecycleState = EntityLifecycleState.Registered;
         }
@@ -129,7 +128,7 @@ namespace Xuan.Prometheus.Logic
         {
             if (IsDespawningOrDisposed) return false;
             float safeDelay = Mathf.Max(0f, delay);
-            if (gameplayKit != null) return gameplayKit.GetSystem<EntitySystem>().RequestRemoveEntity(EntityId, safeDelay);
+            if (LifecycleState == EntityLifecycleState.Registered || LifecycleState == EntityLifecycleState.Active) return Core.Gameplay.GetSystem<EntitySystem>().RequestRemoveEntity(EntityId, safeDelay);
             if (!MarkDespawnRequested(safeDelay)) return false;
             DisposeImmediately();
             return true;
@@ -188,15 +187,7 @@ namespace Xuan.Prometheus.Logic
             logicList.Clear();
             logics.Clear();
             logicRegistrationOrders.Clear();
-            gameplayKit = null;
-            GameObject objectToDestroy = bindGo;
-            bindGo = null;
             LifecycleState = EntityLifecycleState.Disposed;
-            if (objectToDestroy != null)
-            {
-                if (Application.isPlaying) UnityEngine.Object.Destroy(objectToDestroy, destroyDelay);
-                else UnityEngine.Object.DestroyImmediate(objectToDestroy);
-            }
             return true;
         }
 
@@ -266,7 +257,7 @@ namespace Xuan.Prometheus.Logic
         /// <summary>在 Entity 构造阶段创建并注册一个普通 C# 组件。</summary>
         public void AddComp<T>() where T : IComponent, new()
         {
-            AddComp(new T());
+            AddComp<T>(new T());
         }
 
         /// <summary>按具体类型尝试获取当前 Entity 仍然持有的组件。</summary>
@@ -291,6 +282,24 @@ namespace Xuan.Prometheus.Logic
             }
             logic = default;
             return false;
+        }
+
+        /// <summary>由首位 GameObjectLogic 初始化构造阶段已经注册的全部 Binder 感知 Component，不改变 Entity 组成。</summary>
+        internal void BindComponents(EntityBinder binder)
+        {
+            foreach (IComponent component in comps.Values)
+            {
+                if (component is IEntityBinderComponent binderComponent) binderComponent.Bind(binder);
+            }
+        }
+
+        /// <summary>由最后释放的 GameObjectLogic 逆向解除全部 Binder 感知 Component 持有的 Unity 引用与回调。</summary>
+        internal void UnbindComponents()
+        {
+            foreach (IComponent component in comps.Values)
+            {
+                if (component is IEntityBinderComponent binderComponent) binderComponent.Unbind();
+            }
         }
 
         /// <summary>为指定 Logic 增加一层阻塞，并使用饱和保护避免计数溢出后意外启用。</summary>

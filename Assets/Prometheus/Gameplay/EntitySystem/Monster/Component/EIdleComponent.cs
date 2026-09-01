@@ -3,7 +3,7 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus
 {
-    public class EIdleComponent : Component.MonoComponent
+    public class EIdleComponent : Component.Component
     {
         public float idleTime = 2f; // Idle time in seconds
         public Timer idleTimer;

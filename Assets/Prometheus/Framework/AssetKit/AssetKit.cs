@@ -78,7 +78,7 @@ namespace Xuan.Prometheus.Asset
 
     /// <summary>
     /// 提供基于 YooAsset 的实例资源入口，负责默认资源包初始化、资源加载、预制体实例化和句柄释放。
-    /// 每个 Core 持有自己的 AssetKit 和句柄缓存，不再通过静态字段共享玩法上下文的资源状态。
+    /// 每个 Core 持有自己的 AssetKit 和句柄缓存，跨模块资源访问统一通过 Core.Asset。
     /// </summary>
     public sealed class AssetKit : Kit, IAssetKit
     {
@@ -86,8 +86,6 @@ namespace Xuan.Prometheus.Asset
         /// 项目默认资源包名称。
         /// </summary>
         public const string DefaultPackageName = "DefaultPackage";
-        public static IAssetKit Ins { get; private set; }
-
         /// <summary>
         /// 按资源地址缓存有效句柄，确保返回的资源对象和已实例化对象使用期间其依赖资源不会被提前卸载。
         /// </summary>
@@ -109,11 +107,6 @@ namespace Xuan.Prometheus.Asset
         /// </summary>
         public bool IsReady => !isDisposed && defaultPackage != null && defaultPackage.InitializeStatus == EOperationStatus.Succeeded && defaultPackage.PackageValid;
 
-
-        public AssetKit()
-        {
-            Ins = this;
-        }
 
         /// <summary>在 AfterNewAsync 开始前配置当前 Core 使用的唯一 YooAsset 资源包。</summary>
         /// <param name="packageName">需要异步初始化的资源包名称。</param>

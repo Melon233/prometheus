@@ -15,14 +15,14 @@
 ## 快速接入
 
 1. `GameplayKit` 为当前单局注册唯一的 `EffectSystem`，不再创建场景单例。
-2. `Entity` 注册到 `GameplayKit` 后，通过 `Entity.GameplayKit.GetSystem<EffectSystem>()` 获取本局效果系统。
+2. `Entity` 注册到 `EntitySystem` 后只保存 `EntityId`，Effect 接入通过 `Core.Gameplay.GetSystem<EffectSystem>()` 获取本局效果系统。
 3. `EffectLogic` 将 EffectSystem 和触发注册句柄写入 `EffectComponent`，攻击逻辑不直接持有 EffectRuntime。
 4. 攻击命中时通过 `EffectComponent.Runtime` 发布事实信号。
 5. Entity 销毁时由 `EffectLogic -> EffectComponent` 自动注销规则、移除持续效果并回滚属性句柄。
 
 ```csharp
-// 从 Entity 所属的单局 GameplayKit 获取唯一 EffectSystem。
-EffectSystem effectSystem = attacker.GameplayKit.GetSystem<EffectSystem>();
+// 从 Core.Gameplay 获取当前单局唯一 EffectSystem。
+EffectSystem effectSystem = Core.Gameplay.GetSystem<EffectSystem>();
 
 // EffectLogic 已经把运行时和注册句柄集中写入 EffectComponent。
 attacker.TryGetComp(out EffectComponent effectComponent);
@@ -53,6 +53,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 - Trigger 只能产生 EffectRequest，不能直接递归执行效果。
 - 每个 GameplayKit 只注册一个 EffectSystem，多个单局上下文之间不共享 EffectRuntime。
+- EffectSystem 与 Entity Logic 不保存或注入 IGameplayKit，跨玩法模块访问统一从 `Core.Gameplay` 开始。
 - EffectDefinition 是共享只读配置，所有层数、时间和句柄必须保存在 EffectInstance。
 - 运行时动态养成使用 `EffectDefinition.CreateRuntime` 创建带 `HideAndDontSave` 的 Entity 独占定义，仍必须经过标准 `EffectInstance` 与资源句柄生命周期；替换时先移除实例，再释放临时定义。
 - 持续属性修改必须使用实例资源句柄，实例移除时由运行时统一回滚。

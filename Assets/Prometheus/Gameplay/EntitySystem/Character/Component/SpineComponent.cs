@@ -12,10 +12,8 @@ namespace Xuan.Prometheus.Component
         Right
     }
 
-    /// <summary>作为角色唯一的 Spine 动画播放组件，负责 AnimationLine 解析、优先级仲裁、序列播放和会话清理。</summary>
-    // [DefaultExecutionOrder(-100)]
-    [RequireComponent(typeof(SkeletonAnimation))]
-    public sealed class SpineComponent : MonoComponent
+    /// <summary>作为角色唯一的纯 C# Spine 动画运行态，负责 AnimationLine 解析、优先级仲裁、序列播放和会话清理。</summary>
+    public sealed class SpineComponent : Component, IEntityBinderComponent
     {
         /// <summary>保留旧测试和外部调用的默认时长常量；运行时动画过渡不再读取该常量，而是统一查询 AnimationLibrary 矩阵。</summary>
         public const float TransitionDuration = AnimationMixDurationMatrix.FallbackDuration;
@@ -23,9 +21,9 @@ namespace Xuan.Prometheus.Component
         private AnimationPlayback currentPlayback;
         private int nextPlaybackVersion;
 
-        [NonSerialized] public SkeletonAnimation spineAnimator;
-        [SerializeField] public AnimationLibrary animationLib;
-        [SerializeField] public Transform rotateRoot;
+        public SkeletonAnimation spineAnimator;
+        public AnimationLibrary animationLib;
+        public Transform rotateRoot;
 
         /// <summary>获取当前仍然拥有主轨道的动画会话；没有活动会话时返回空。</summary>
         public AnimationPlayback CurrentPlayback => currentPlayback;
@@ -59,24 +57,30 @@ namespace Xuan.Prometheus.Component
             else if (horizontal < 0f) CurFaceDir = FaceDir.Left;
         }
 
-        /// <summary>缓存 Spine 组件并尽早校验共享动画配置；AnimationLibrary 保持纯配置且不再按实体克隆。</summary>
-        private void Awake()
+        /// <summary>从唯一根 CharacterBinder 获取 Spine 引用并应用共享动画混合矩阵。</summary>
+        public void Bind(Logic.EntityBinder binder)
         {
-            spineAnimator = GetComponent<SkeletonAnimation>();
+            CharacterBinder characterBinder = binder as CharacterBinder ?? throw new InvalidOperationException($"SpineComponent requires CharacterBinder but received '{binder?.GetType().FullName}'.");
+            spineAnimator = characterBinder.SpineAnimator;
+            animationLib = characterBinder.AnimationLibrary;
+            rotateRoot = characterBinder.RotateRoot;
             if (spineAnimator != null && spineAnimator.AnimationState != null)
             {
                 if (animationLib != null) animationLib.ApplyMixDurationMatrix(spineAnimator.AnimationState.Data);
                 else spineAnimator.AnimationState.Data.DefaultMix = AnimationMixDurationMatrix.FallbackDuration;
             }
-            if (animationLib == null) Debug.LogError($"角色 '{name}' 未配置 AnimationLibrary。", this);
+            if (animationLib == null) throw new InvalidOperationException($"CharacterBinder '{binder.name}' requires AnimationLibrary.");
         }
 
-        /// <summary>组件销毁时结束当前动画会话并通知其持有 Logic。</summary>
-        private void OnDestroy()
+        /// <summary>结束当前动画会话并解除全部 Unity 表现引用。</summary>
+        public void Unbind()
         {
             AnimationPlayback playback = currentPlayback;
             currentPlayback = null;
             playback?.Finish(AnimationEndReason.Disposed);
+            spineAnimator = null;
+            animationLib = null;
+            rotateRoot = null;
         }
 
         /// <summary>通过动画语义解析角色专属 AnimationLine 并尝试播放；低优先级请求会被拒绝，同所有者同语义默认复用当前会话。</summary>

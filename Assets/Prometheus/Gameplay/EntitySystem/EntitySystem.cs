@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 
@@ -35,12 +34,6 @@ namespace Xuan.Prometheus
     /// <summary>集中管理单局 Entity 的注册、查询、逐帧调度、安全回收和字段监听。</summary>
     public sealed class EntitySystem : XSystem
     {
-        /// <summary>保存所属玩法世界，供 Entity 建立归属关系并解析协作系统。</summary>
-        private readonly IGameplayKit gameplayKit;
-
-        /// <summary>保存当前单局创建敌人时使用的资源能力，由 GameplayKit 在 System 初始化前配置。</summary>
-        private IAssetKit enemyAssetKit;
-
         /// <summary>保存当前单局统一使用的敌人预制体地址。</summary>
         private string enemyLocation;
 
@@ -74,30 +67,15 @@ namespace Xuan.Prometheus
         /// <summary>标记当前系统已经完成最终释放。</summary>
         private bool isDisposed;
 
-        /// <summary>创建一个由指定 GameplayKit 独占的核心实体系统。</summary>
-        public EntitySystem(IGameplayKit gameplayKit)
-        {
-            this.gameplayKit = gameplayKit ?? throw new ArgumentNullException(nameof(gameplayKit));
-        }
-
         /// <summary>获取当前仍由系统托管的 Entity 数量。</summary>
         public int Count { get; private set; }
 
         /// <summary>获取系统是否已经完成释放。</summary>
         public bool IsDisposed => isDisposed;
 
-        /// <summary>验证系统只能由构造时声明的 GameplayKit 初始化。</summary>
-        public override void AfterNew(IGameplayKit ownerGameplayKit)
-        {
-            ThrowIfDisposed();
-            if (ownerGameplayKit == null) throw new ArgumentNullException(nameof(ownerGameplayKit));
-            if (!ReferenceEquals(gameplayKit, ownerGameplayKit)) throw new InvalidOperationException("EntitySystem cannot move between GameplayKit instances.");
-        }
-
         /// <summary>配置当前单局的敌人实例化上下文，使初始出生点和世界 POI 可以复用同一条创建链路。</summary>
-        internal void ConfigureEnemySpawner(IAssetKit assetKit, string location, Transform runtimeRoot)
+        internal void ConfigureEnemySpawner(string location, Transform runtimeRoot)
         {
-            enemyAssetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
             enemyLocation = !string.IsNullOrWhiteSpace(location) ? location : throw new ArgumentException("Enemy asset location cannot be empty.", nameof(location));
             enemyRuntimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
         }
@@ -106,11 +84,10 @@ namespace Xuan.Prometheus
         public SlimeEntity SpawnEnemy(Vector3 worldPosition)
         {
             ThrowIfDisposed();
-            GameObject enemyObject = enemyAssetKit.InstantiateSync(enemyLocation, worldPosition, Quaternion.identity, enemyRuntimeRoot);
             int entityId = 0;
             try
             {
-                SlimeEntity enemy = new SlimeEntity(enemyObject);
+                SlimeEntity enemy = new SlimeEntity(enemyLocation, worldPosition, Quaternion.identity, enemyRuntimeRoot);
                 entityId = AddEntity(enemy);
                 enemy.AfterNew();
                 return enemy;
@@ -118,12 +95,11 @@ namespace Xuan.Prometheus
             catch
             {
                 if (entityId > 0) RemoveEntity(entityId);
-                else UnityEngine.Object.Destroy(enemyObject);
                 throw;
             }
         }
 
-        /// <summary>注册一个已经完成构造的 Entity、建立所属 GameplayKit，并返回单局运行时编号。</summary>
+        /// <summary>注册一个已经完成构造的 Entity、写入单局运行时编号并纳入统一生命周期。</summary>
         public int AddEntity(Entity entity)
         {
             ThrowIfDisposed();
@@ -131,7 +107,7 @@ namespace Xuan.Prometheus
             if (isUpdatingEntities) throw new InvalidOperationException("EntitySystem cannot register an Entity while the Entity collection is updating.");
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             int entityId = nextEntityId++;
-            entity.BindGameplayKit(gameplayKit, entityId);
+            entity.BindEntityId(entityId);
             entities.Add(entityId, entity);
             Count++;
             return entityId;
@@ -251,14 +227,13 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>根据玩法启动参数创建三人小队与场景敌人，并将所有实例纳入当前系统托管。</summary>
-        internal void CreateInitialEntities(IAssetKit assetKit, GameplayStartupOptions startupOptions, TeamSystem teamSystem)
+        internal void CreateInitialEntities(GameplayStartupOptions startupOptions, TeamSystem teamSystem)
         {
             ThrowIfDisposed();
-            if (assetKit == null) throw new ArgumentNullException(nameof(assetKit));
             if (startupOptions == null) throw new ArgumentNullException(nameof(startupOptions));
             if (teamSystem == null) throw new ArgumentNullException(nameof(teamSystem));
-            CreateTeam(assetKit, startupOptions, teamSystem);
-            CreateEnemies(assetKit, startupOptions);
+            CreateTeam(startupOptions, teamSystem);
+            CreateEnemies(startupOptions);
         }
 
         /// <summary>单局结束时先释放字段监听，再按稳定顺序释放全部 Entity。</summary>
@@ -289,7 +264,7 @@ namespace Xuan.Prometheus
         private void RemoveRegisteredEntity(int entityId, Entity entity)
         {
             DisposeEntityListeners(entityId);
-            if (gameplayKit.TryGetSystem(out TeamSystem teamSystem)) teamSystem.UnregisterMember(entity);
+            if (Core.Gameplay.TryGetSystem(out TeamSystem teamSystem)) teamSystem.UnregisterMember(entity);
             entities.Remove(entityId);
             Count--;
             entity.MarkDespawnRequested(0f);
@@ -307,20 +282,18 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后交给 TeamSystem 原子初始化。</summary>
-        private void CreateTeam(IAssetKit assetKit, GameplayStartupOptions startupOptions, TeamSystem teamSystem)
+        private void CreateTeam(GameplayStartupOptions startupOptions, TeamSystem teamSystem)
         {
             List<Entity> createdMembers = new List<Entity>(TeamSystem.Capacity);
             try
             {
                 for (int slotIndex = 0; slotIndex < TeamSystem.Capacity; slotIndex++)
                 {
-                    // GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], startupOptions.RuntimeRoot);
-                    GameObject playerObject = assetKit.InstantiateSync(startupOptions.TeamMemberLocations[slotIndex], new Vector3(277f, 0.95f, 1068f), Quaternion.identity, startupOptions.RuntimeRoot);
                     //UnityEditor.TransformWorldPlacementJSON:{"position":{"x":277.2999572753906,"y":1.0,"z":1068.099853515625},"rotation":{"x":0.0,"y":0.0,"z":0.0,"w":1.0000001192092896},"scale":{"x":1.0,"y":1.0,"z":1.0}}
                     int entityId = 0;
                     try
                     {
-                        PlayerEntity member = new PlayerEntity(playerObject);
+                        PlayerEntity member = new PlayerEntity(startupOptions.TeamMemberLocations[slotIndex], new Vector3(277f, 0.95f, 1068f), Quaternion.identity, startupOptions.RuntimeRoot);
                         entityId = AddEntity(member);
                         member.AfterNew();
                         createdMembers.Add(member);
@@ -328,7 +301,6 @@ namespace Xuan.Prometheus
                     catch
                     {
                         if (entityId > 0) RemoveEntity(entityId);
-                        else UnityEngine.Object.Destroy(playerObject);
                         throw;
                     }
                 }
@@ -346,7 +318,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>遍历入口配置的世界坐标创建敌人，并按照启动参数限制有效实例数量。</summary>
-        private void CreateEnemies(IAssetKit assetKit, GameplayStartupOptions startupOptions)
+        private void CreateEnemies(GameplayStartupOptions startupOptions)
         {
             int createdCount = 0;
             foreach (Vector3 spawnPosition in startupOptions.EnemySpawnPositions)

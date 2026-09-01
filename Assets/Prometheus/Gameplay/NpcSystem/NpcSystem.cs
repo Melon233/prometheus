@@ -6,7 +6,6 @@ namespace Xuan.Prometheus.Npc
     /// <summary>管理单局唯一 NPC 交互会话，并向演出、对话和任务适配器发布请求。</summary>
     public sealed class NpcSystem : XSystem
     {
-        private IGameplayKit gameplayKit;
         private NpcInteractionContext? activeInteraction;
         private NpcInteractionCoordinator coordinator;
 
@@ -16,18 +15,17 @@ namespace Xuan.Prometheus.Npc
         /// <summary>获取当前活动交互；没有活动会话时为空。</summary>
         public NpcInteractionContext? ActiveInteraction => activeInteraction;
 
-        /// <summary>绑定当前单局 GameplayKit。</summary>
-        public override void AfterNew(IGameplayKit ownerGameplayKit)
+        /// <summary>通过 Core.Gameplay 建立当前单局 NPC 与演出系统的交互协调器。</summary>
+        public override void AfterNew()
         {
-            gameplayKit = ownerGameplayKit ?? throw new ArgumentNullException(nameof(ownerGameplayKit));
-            coordinator = new NpcInteractionCoordinator(gameplayKit, gameplayKit.GetSystem<FilmSystem>(), CompleteInteractionFromCoordinator);
+            coordinator = new NpcInteractionCoordinator(Core.Gameplay.GetSystem<FilmSystem>(), CompleteInteractionFromCoordinator);
             InteractionRequested += coordinator.Start;
         }
 
         /// <summary>尝试为 NPC 创建唯一交互会话并发布请求。</summary>
         public bool TryBeginInteraction(NpcEntity entity)
         {
-            if (gameplayKit == null) throw new InvalidOperationException("NpcSystem must complete AfterNew before interaction.");
+            if (coordinator == null) throw new InvalidOperationException("NpcSystem must complete AfterNew before interaction.");
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             if (!entity.IsActive || activeInteraction.HasValue) return false;
             NpcDefinition definition = entity.Definition;
@@ -64,7 +62,6 @@ namespace Xuan.Prometheus.Npc
             activeInteraction = null;
             InteractionRequested = null;
             coordinator = null;
-            gameplayKit = null;
         }
     }
 }

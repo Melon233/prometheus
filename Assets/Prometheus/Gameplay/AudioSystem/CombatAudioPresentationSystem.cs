@@ -22,13 +22,11 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>在实体创建前订阅当前 GameplayKit 唯一的 EffectRuntime，使本局全部普通、周期和致命伤害共享同一音频入口。</summary>
-        /// <param name="gameplayKit">持有当前音频表现系统和效果系统的单局 GameplayKit。</param>
-        public override void AfterNew(IGameplayKit gameplayKit)
+        public override void AfterNew()
         {
-            if (gameplayKit == null) throw new ArgumentNullException(nameof(gameplayKit));
             if (isDisposed) throw new ObjectDisposedException(nameof(CombatAudioPresentationSystem));
             if (runtime != null) return;
-            runtime = gameplayKit.GetSystem<EffectSystem>().Runtime;
+            runtime = Core.Gameplay.GetSystem<EffectSystem>().Runtime;
             runtime.SignalProcessed += OnSignalProcessed;
         }
 

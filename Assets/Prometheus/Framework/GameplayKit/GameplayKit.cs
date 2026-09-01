@@ -183,11 +183,10 @@ namespace Xuan.Prometheus
 
     /// <summary>
     /// 负责玩法对象创建与公共 System 生命周期编排；Entity 的注册、更新、监听和销毁统一交给 EntitySystem。
-    /// 资源能力通过构造函数注入，避免 Entity、入口组件和 YooAsset 形成隐式全局依赖。
+    /// 基础模块和公共 System 统一通过 Core 静态入口访问，避免逐层传递基础设施依赖。
     /// </summary>
     public sealed class GameplayKit : Kit, IGameplayKit
     {
-        private readonly IAssetKit assetKit;
         /// <summary>保存当前玩法世界内建且唯一的实体系统。</summary>
         private readonly EntitySystem entitySystem;
         private readonly XMap<Type, XSystem> systems = new XMap<Type, XSystem>();
@@ -199,13 +198,12 @@ namespace Xuan.Prometheus
         private bool isDisposed;
 
         /// <summary>
-        /// 创建 GameplayKit，并显式声明其依赖的资源 Kit。
+        /// 创建 GameplayKit、注册 Core.Gameplay，并建立内建 EntitySystem。
         /// </summary>
-        /// <param name="assetKit">由同一个 Core 持有的资源 Kit。</param>
-        public GameplayKit(IAssetKit assetKit)
+        public GameplayKit()
         {
-            this.assetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
-            entitySystem = new EntitySystem(this);
+            Core.Gameplay = this;
+            entitySystem = new EntitySystem();
             AddSystem(entitySystem);
         }
 
@@ -244,14 +242,14 @@ namespace Xuan.Prometheus
         {
             ThrowIfDisposed();
             if (startupOptions == null) throw new InvalidOperationException("GameplayKit must be configured before AfterNewAsync.");
-            await assetKit.WaitUntilReadyAsync();
+            await Core.Asset.WaitUntilReadyAsync();
             if (startupOptions.EffectLibrary == null)
             {
                 EffectLibrary loadedEffectLibrary = null;
-                await assetKit.LoadAssetAsync<EffectLibrary>(startupOptions.EffectLibraryLocation, library => loadedEffectLibrary = library, error => throw new InvalidOperationException(error)).ToUniTask();
+                await Core.Asset.LoadAssetAsync<EffectLibrary>(startupOptions.EffectLibraryLocation, library => loadedEffectLibrary = library, error => throw new InvalidOperationException(error)).ToUniTask();
                 RegisterGameplaySystems(loadedEffectLibrary);
             }
-            await assetKit.LoadSceneAsync(startupOptions.SceneLocation);
+            await Core.Asset.LoadSceneAsync(startupOptions.SceneLocation);
         }
 
         /// <summary>以已经取得的 EffectLibrary 注册当前单局全部公共 System，并保持 EntitySystem 为首个系统。</summary>
@@ -338,12 +336,12 @@ namespace Xuan.Prometheus
             if (startupOptions == null)
                 throw new InvalidOperationException("GameplayKit must be configured before initialization.");
 
-            if (!assetKit.IsReady) throw new InvalidOperationException("AssetKit must be ready before GameplayKit creates entities.");
-            entitySystem.ConfigureEnemySpawner(assetKit, startupOptions.EnemyLocation, startupOptions.RuntimeRoot);
+            if (!Core.Asset.IsReady) throw new InvalidOperationException("AssetKit must be ready before GameplayKit creates entities.");
+            entitySystem.ConfigureEnemySpawner(startupOptions.EnemyLocation, startupOptions.RuntimeRoot);
             foreach (XSystem system in systemInitializationOrder)
-                system.AfterNew(this);
+                system.AfterNew();
 
-            entitySystem.CreateInitialEntities(assetKit, startupOptions, teamSystem);
+            entitySystem.CreateInitialEntities(startupOptions, teamSystem);
             IsReady = true;
         }
 

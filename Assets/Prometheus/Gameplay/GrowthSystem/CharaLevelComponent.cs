@@ -16,12 +16,12 @@ namespace Xuan.Prometheus.Component
     }
 
     /// <summary>持有角色经验曲线配置、当前累计经验、当前等级及当前 Entity 独占的运行时副本。</summary>
-    public sealed class CharaLevelComponent : MonoComponent
+    public sealed class CharaLevelComponent : Component, IEntityBinderComponent
     {
         /// <summary>引用角色等级 Logic 的只读 ScriptableObject 配置。</summary>
-        [SerializeField] private CharaLevelConfig config;
+        private CharaLevelConfig config;
         /// <summary>配置启动时复制到运行时数据的 Debug 累计总经验。</summary>
-        [SerializeField] private CharaLevelDebugData debugData = new CharaLevelDebugData();
+        private CharaLevelDebugData debugData = new CharaLevelDebugData();
         /// <summary>保存当前 Entity 生命周期独占的等级上限副本。</summary>
         private int runtimeMaximumLevel;
         /// <summary>保存当前 Entity 生命周期独占的最高等级攻击力副本。</summary>
@@ -73,6 +73,21 @@ namespace Xuan.Prometheus.Component
 
         /// <summary>获取运行时数据是否已经完成初始化。</summary>
         public bool IsInitialized => initialized;
+
+        /// <summary>从唯一根 PlayerBinder 获取等级配置和只读 Debug 模板。</summary>
+        public void Bind(Logic.EntityBinder binder)
+        {
+            PlayerBinder playerBinder = binder as PlayerBinder ?? throw new InvalidOperationException($"CharaLevelComponent requires PlayerBinder but received '{binder?.GetType().FullName}'.");
+            config = playerBinder.CharaLevelConfig;
+            debugData = playerBinder.CharaLevelDebugData ?? new CharaLevelDebugData();
+        }
+
+        /// <summary>解除等级配置和 Debug 模板引用。</summary>
+        public void Unbind()
+        {
+            config = null;
+            debugData = null;
+        }
 
         /// <summary>由 CharaLevelLogic 创建当前 Entity 独占的配置、曲线和 Debug 数据副本。</summary>
         internal void InitializeRuntimeData()
@@ -131,10 +146,5 @@ namespace Xuan.Prometheus.Component
             if (!initialized) throw new InvalidOperationException("CharaLevelComponent runtime data has not been initialized by CharaLevelLogic.");
         }
 
-        /// <summary>在 Inspector 修改时只补齐 Component 自己持有的 Debug 数据，静态配置由 CharaLevelConfig 校验。</summary>
-        private void OnValidate()
-        {
-            if (debugData == null) debugData = new CharaLevelDebugData();
-        }
     }
 }

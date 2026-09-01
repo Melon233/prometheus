@@ -35,7 +35,6 @@ namespace Xuan.Prometheus.World
         /// <summary>交互物根节点球形触发体的半径（米）。</summary>
         private const float PoiTriggerRadius = 0.5f;
 
-        private IGameplayKit gameplayKit;
         private readonly List<PoiConfig> persistentPois = new List<PoiConfig>(); // aoiExempt 常驻 POI
         private readonly List<PoiEntity> allPois = new List<PoiEntity>();
         private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>();
@@ -91,9 +90,9 @@ namespace Xuan.Prometheus.World
         /// <returns>当前存在可绑定玩家实体时返回 true。</returns>
         public bool TryGetPlayerPosition(out Vector3 position)
         {
-            if (gameplayKit != null && gameplayKit.Player != null && gameplayKit.Player.bindGo != null)
+            if (Core.Gameplay.Player != null && Core.Gameplay.Player.bindGo != null)
             {
-                position = gameplayKit.Player.bindGo.transform.position;
+                position = Core.Gameplay.Player.bindGo.transform.position;
                 return true;
             }
             position = default;
@@ -113,11 +112,10 @@ namespace Xuan.Prometheus.World
         public PoiNetworkClient Client => client;
 
         /// <summary>建立单局状态：创建客户端并异步检测服务器，仅在连接成功后扫描场景和启用系统逻辑。</summary>
-        public override void AfterNew(IGameplayKit ownerGameplayKit)
+        public override void AfterNew()
         {
-            gameplayKit = ownerGameplayKit;
             LoadMapDefinition();
-            if (Core.Event != null) Core.Event.AddListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
+            Core.Event.AddListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
             SpawnMonsterCampEnemies();
             client = new PoiNetworkClient(ServerHost, ServerPort);
             client.PositionRestored += OnPositionRestored;
@@ -128,7 +126,7 @@ namespace Xuan.Prometheus.World
         private void SpawnMonsterCampEnemies()
         {
             PoiMono[] monos = UnityEngine.Object.FindObjectsOfType<PoiMono>(true);
-            EntitySystem entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            EntitySystem entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
             foreach (PoiMono mono in monos)
             {
                 if (mono == null || mono.Config == null || mono.Config.PoiType != PoiType.MonsterCamp) continue;
@@ -167,19 +165,16 @@ namespace Xuan.Prometheus.World
         {
             mapDefinition = null;
             mapZoom = 1f;
-            if (Core.Asset != null)
+            try
             {
-                try
-                {
-                    mapDefinition = Core.Asset.LoadAssetSync<WorldMapDefinition>(MapDefinitionAddress);
-                    mapZoom = mapDefinition == null ? 1f : mapDefinition.InitialZoom;
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogWarning($"[WorldSystem] 未找到地图定义资源 '{MapDefinitionAddress}'，请先使用地图拍摄工具生成；地图面板将保持空白：{exception.Message}");
-                }
+                mapDefinition = Core.Asset.LoadAssetSync<WorldMapDefinition>(MapDefinitionAddress);
+                mapZoom = mapDefinition == null ? 1f : mapDefinition.InitialZoom;
             }
-            if (Core.Event != null) Core.Event.Invoke(Event.WorldMapReady, new WorldMapReadyEvent(mapDefinition));
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"[WorldSystem] 未找到地图定义资源 '{MapDefinitionAddress}'，请先使用地图拍摄工具生成；地图面板将保持空白：{exception.Message}");
+            }
+            Core.Event.Invoke(Event.WorldMapReady, new WorldMapReadyEvent(mapDefinition));
         }
 
         /// <summary>应用服务器返回的最近持久化位置；连接和重连都经过此入口，确保玩家在正确位置生成。</summary>
@@ -192,9 +187,9 @@ namespace Xuan.Prometheus.World
         /// <summary>在玩家 GameObject 已完成生成后应用待恢复坐标；网络回调可能早于玩家实体生成。</summary>
         private void ApplyRestoredPosition()
         {
-            if (pendingRestoredPosition == null || gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
+            if (pendingRestoredPosition == null || Core.Gameplay.Player == null || Core.Gameplay.Player.bindGo == null) return;
             PlayerPositionPush position = pendingRestoredPosition;
-            gameplayKit.Player.bindGo.transform.position = new Vector3(position.X, position.Y, position.Z);
+            Core.Gameplay.Player.bindGo.transform.position = new Vector3(position.X, position.Y, position.Z);
             pendingRestoredPosition = null;
             Debug.Log($"[WorldSystem] 已恢复玩家位置 ({position.X}, {position.Y}, {position.Z})");
         }
@@ -210,7 +205,7 @@ namespace Xuan.Prometheus.World
                 if (string.IsNullOrEmpty(cfg.Id) || poisById.ContainsKey(cfg.Id)) continue;
                 if (cfg.aoiExempt) persistentPois.Add(cfg);
                 PoiEntity entity = cfg.PoiType == PoiType.Npc ? new NpcEntity(mono.gameObject, cfg, cfg.Npc) : new PoiEntity(mono.gameObject, cfg);
-                gameplayKit.GetSystem<EntitySystem>().AddEntity(entity);
+                Core.Gameplay.GetSystem<EntitySystem>().AddEntity(entity);
                 entity.AfterNew();
                 allPois.Add(entity);
                 poisById[cfg.Id] = entity;
@@ -227,8 +222,8 @@ namespace Xuan.Prometheus.World
             RespawnPendingMonsterCampEnemies();
             client?.PumpEvents();
             ApplyRestoredPosition();
-            if (gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return;
-            Vector3 playerPos = gameplayKit.Player.bindGo.transform.position;
+            if (Core.Gameplay.Player == null || Core.Gameplay.Player.bindGo == null) return;
+            Vector3 playerPos = Core.Gameplay.Player.bindGo.transform.position;
             tickAccumulator += dt;
             positionUploadAccumulator += dt;
             if (tickAccumulator < TickInterval) return;
@@ -246,7 +241,7 @@ namespace Xuan.Prometheus.World
         /// <summary>通知地图面板重新读取 WorldSystem 的 POI 集合或指定 POI 状态。</summary>
         private void PublishMapPoiChanged(string poiId)
         {
-            if (Core.Event != null) Core.Event.Invoke(Event.WorldMapPoiChanged, new WorldMapPoiChangedEvent(poiId));
+            Core.Event.Invoke(Event.WorldMapPoiChanged, new WorldMapPoiChangedEvent(poiId));
         }
 
         /// <summary>上传玩家当前坐标，保证服务器 3 秒持久化周期使用的是最新移动位置。</summary>
@@ -265,8 +260,8 @@ namespace Xuan.Prometheus.World
         /// <summary>在 EntitySystem 完成实体遍历后执行待处理营地补刷，确保新增实体不会修改遍历集合。</summary>
         private void RespawnPendingMonsterCampEnemies()
         {
-            if (gameplayKit == null || pendingMonsterCampRespawns.Count == 0) return;
-            EntitySystem entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            if (pendingMonsterCampRespawns.Count == 0) return;
+            EntitySystem entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
             while (pendingMonsterCampRespawns.Count > 0)
             {
                 Vector3 campPosition = pendingMonsterCampRespawns.Dequeue();
@@ -344,8 +339,8 @@ namespace Xuan.Prometheus.World
         /// <summary>把已消费（消失）的 POI 从玩家附近交互列表中移除。</summary>
         private void RemoveFromNearby(PoiEntity entity)
         {
-            if (gameplayKit == null || gameplayKit.Player == null) return;
-            if (gameplayKit.Player.TryGetComp(out InteractComponent interact))
+            if (Core.Gameplay.Player == null) return;
+            if (Core.Gameplay.Player.TryGetComp(out InteractComponent interact))
             {
                 interact.RemoveNearby(entity.Config);
                 Debug.Log($"[交互] 移出交互列表 {entity.Config.Id}");
@@ -362,9 +357,9 @@ namespace Xuan.Prometheus.World
         {
             if (!poisById.TryGetValue(poiId, out PoiEntity entity) || entity == null || entity.Config == null || entity.bindGo == null) return false;
             if (entity.Config.PoiType != PoiType.Statue && entity.Config.PoiType != PoiType.TeleAnchor) return false;
-            if (gameplayKit == null || gameplayKit.Player == null || gameplayKit.Player.bindGo == null) return false;
+            if (Core.Gameplay.Player == null || Core.Gameplay.Player.bindGo == null) return false;
             Vector3 targetPosition = entity.bindGo.transform.position;
-            PlayerEntity player = gameplayKit.Player;
+            PlayerEntity player = Core.Gameplay.Player;
             CharacterController characterController = player.bindGo.GetComponent<CharacterController>();
             if (characterController != null) characterController.enabled = false;
             player.bindGo.transform.position = targetPosition;
@@ -440,7 +435,7 @@ namespace Xuan.Prometheus.World
         /// <summary>释放网络客户端。</summary>
         public override void Dispose()
         {
-            if (Core.Event != null) Core.Event.RemoveListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
+            Core.Event.RemoveListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
             monsterCampByEntityId.Clear();
             pendingMonsterCampRespawns.Clear();
             pendingRestoredPosition = null;

@@ -1,47 +1,38 @@
-using UnityEngine;
+using System;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Logic;
 
 namespace Xuan.Prometheus.Ai
 {
     /// <summary>
-    /// 将敌人 AI 根定义和场景移动适配器绑定到预制体；所有可变决策数据由 EnemyAiBrain 持有而不会写回本组件或资产。
+    /// 保存敌人 AI 根定义的纯 C# 投影；所有可变决策数据由 EnemyAiBrain 持有而不会写回 Binder 或资产。
     /// </summary>
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(CharacterController))]
-    public sealed class EnemyAiComponent : MonoComponent
+    public sealed class EnemyAiComponent : Component.Component, IEntityBinderComponent
     {
-        [SerializeField] private EnemyAiDefinition definition;
-        [SerializeField] private CharacterController characterController;
+        private EnemyAiDefinition definition;
+        private UnityEngine.CharacterController characterController;
 
         /// <summary>获取预制体引用的只读 AI 根定义。</summary>
         public EnemyAiDefinition Definition => definition;
 
         /// <summary>获取用于实际位移的 CharacterController，并在旧预制体未显式赋值时自动从同一对象获取。</summary>
-        public CharacterController CharacterController => characterController != null ? characterController : characterController = GetComponent<CharacterController>();
+        public UnityEngine.CharacterController CharacterController => characterController;
 
         /// <summary>
-        /// 在选中预制体实例时显示资产配置的感知、攻击、追击和巡逻范围，不参与正式运行时决策。
+        /// 从唯一根 SlimeBinder 获取 AI 定义与角色运动出口。
         /// </summary>
-        private void OnDrawGizmosSelected()
+        public void Bind(EntityBinder binder)
         {
-            if (definition == null) return;
-            Vector3 center = transform.position;
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(center, definition.PerceptionRadius);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(center, definition.AttackRadius);
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawWireSphere(center, definition.ChaseRadius);
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(center, definition.PatrolRadius);
+            SlimeBinder slimeBinder = binder as SlimeBinder ?? throw new InvalidOperationException($"EnemyAiComponent requires SlimeBinder but received '{binder?.GetType().FullName}'.");
+            definition = slimeBinder.EnemyAiDefinition;
+            characterController = slimeBinder.CharacterController;
         }
 
-        /// <summary>
-        /// 在编辑预制体时自动补齐同对象 CharacterController 引用，减少资产漏配。
-        /// </summary>
-        private void OnValidate()
+        /// <summary>解除 AI 配置与 Unity 运动出口引用。</summary>
+        public void Unbind()
         {
-            if (characterController == null) characterController = GetComponent<CharacterController>();
+            definition = null;
+            characterController = null;
         }
     }
 }

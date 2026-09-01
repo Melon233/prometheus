@@ -1,6 +1,4 @@
 using System;
-using System.Reflection;
-using UnityEditor;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 
@@ -11,23 +9,14 @@ namespace Xuan.Prometheus.Effects.Tests
     /// </summary>
     internal static class EffectRuntimeTestExtensions
     {
-        private const BindingFlags PrivateInstanceMethod = BindingFlags.Instance | BindingFlags.NonPublic;
-
         /// <summary>
-        /// 在 EditMode 中写入 PropertyConfig 并显式重放 PropertyComponent.Awake，模拟 Unity 在后备角色被隐藏前完成属性初始化的真实顺序。
+        /// 在 EditMode 中显式初始化纯 C# PropertyComponent，模拟 GameObjectLogic 从 Binder 绑定配置的真实顺序。
         /// </summary>
         public static void InitializeForTests(this PropertyComponent property, PropertyConfig config)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
             if (config == null) throw new ArgumentNullException(nameof(config));
-            SerializedObject serializedProperty = new SerializedObject(property);
-            SerializedProperty configProperty = serializedProperty.FindProperty("propConfig");
-            if (configProperty == null) throw new MissingFieldException(typeof(PropertyComponent).FullName, "propConfig");
-            configProperty.objectReferenceValue = config;
-            serializedProperty.ApplyModifiedPropertiesWithoutUndo();
-            MethodInfo awakeMethod = typeof(PropertyComponent).GetMethod("Awake", PrivateInstanceMethod);
-            if (awakeMethod == null) throw new MissingMethodException(typeof(PropertyComponent).FullName, "Awake");
-            awakeMethod.Invoke(property, null);
+            property.Initialize(config);
         }
 
         /// <summary>

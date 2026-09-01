@@ -3,7 +3,7 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus
 {
-    public class EAttackComponent : Component.MonoComponent
+    public class EAttackComponent : Component.Component
     {
         public EnemyAttackConfig eAttackConfig;
         public Timer recoveryTimer;
@@ -18,7 +18,8 @@ namespace Xuan.Prometheus
             var cods = Physics.OverlapSphere(Entity.bindGo.transform.position, eAttackConfig.attckRadius, LayerMask.GetMask("Character"), QueryTriggerInteraction.UseGlobal);
             if (cods.Length > 0)
             {
-                targetPropertyComp = cods[0].GetComponent<PropertyComponent>();
+                targetPropertyComp = ColliderProxy.TryGetHostEntity(cods[0], out Logic.Entity target) && target.TryGetComp(out PropertyComponent property) ? property : null;
+                if (targetPropertyComp == null) return false;
                 return true;
             }
             targetPropertyComp = null; // If no target is found, set the target to null

@@ -54,9 +54,9 @@ namespace Xuan.Prometheus.Animation.Tests
             floor.transform.position = new Vector3(0f, -0.5f, 0f);
             floor.transform.localScale = new Vector3(10f, 1f, 10f);
             actor.transform.position = new Vector3(0f, 0.2f, 0f);
-            spineComponent = actor.GetComponent<SpineComponent>();
-            motionComponent = actor.GetComponent<MotionComponent>();
-            PropertyComponent propertyComponent = actor.GetComponent<PropertyComponent>();
+            spineComponent = actor.GetEntityComponent<SpineComponent>();
+            motionComponent = actor.GetEntityComponent<MotionComponent>();
+            PropertyComponent propertyComponent = actor.GetEntityComponent<PropertyComponent>();
             Assert.That(spineComponent, Is.Not.Null);
             Assert.That(motionComponent, Is.Not.Null);
             Assert.That(propertyComponent, Is.Not.Null);
@@ -74,7 +74,8 @@ namespace Xuan.Prometheus.Animation.Tests
             motionComponent.wasGroundedLastFrame = true;
             motionComponent.landThisFrame = false;
             assetKit = new AssetKit();
-            gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            gameplayKit = new GameplayKit();
             entity = new DodgeLandingTestEntity(actor, spineComponent, motionComponent, propertyComponent);
             gameplayKit.GetSystem<EntitySystem>().AddEntity(entity);
             entity.AfterNew();

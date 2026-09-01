@@ -25,9 +25,6 @@ namespace Xuan.Prometheus
         /// <summary>保存当前玩法世界地图数据源。</summary>
         private WorldSystem worldSystem;
 
-        /// <summary>保存当前面板注册的地图事件监听。</summary>
-        private IEventKit eventKit;
-
         /// <summary>裁剪地图内容的全屏视口。</summary>
         private RectTransform viewport;
 
@@ -61,11 +58,9 @@ namespace Xuan.Prometheus
         /// <summary>打开面板时解析 WorldSystem、订阅地图事实并立即重放当前地图状态。</summary>
         protected override void OnOpen()
         {
-            IGameplayKit gameplayKit = Core.Gameplay ?? throw new InvalidOperationException($"{nameof(MapPanel)} requires GameplayKit before opening.");
-            if (!gameplayKit.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(MapPanel)} requires {nameof(WorldSystem)}.");
-            eventKit = Core.Event ?? throw new InvalidOperationException($"{nameof(MapPanel)} requires EventKit before opening.");
-            eventKit.AddListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
-            eventKit.AddListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
+            if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(MapPanel)} requires {nameof(WorldSystem)}.");
+            Core.Event.AddListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
+            Core.Event.AddListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
             zoom = Mathf.Clamp(worldSystem.MapZoom, MinimumZoom, MaximumZoom);
             if (worldSystem.TryGetPlayerPosition(out Vector3 currentPosition))
             {
@@ -99,7 +94,6 @@ namespace Xuan.Prometheus
             mapImage = null;
             markerRoot = null;
             worldSystem = null;
-            eventKit = null;
             hasPlayerPosition = false;
         }
 
@@ -226,10 +220,8 @@ namespace Xuan.Prometheus
         /// <summary>解除三个地图事件监听。</summary>
         private void UnsubscribeMapEvents()
         {
-            if (eventKit == null) return;
-            eventKit.RemoveListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
-            eventKit.RemoveListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
-            eventKit = null;
+            Core.Event.RemoveListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
+            Core.Event.RemoveListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
         }
 
         /// <summary>地图资源变化时重新绑定纹理并重建标记。</summary>

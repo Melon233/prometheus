@@ -23,9 +23,9 @@ namespace Xuan.Prometheus.Quest
         public event Action<QuestRewardGranted> RewardGranted;
 
         /// <summary>初始化 NPC 领域事件适配器。</summary>
-        public override void AfterNew(IGameplayKit gameplayKit)
+        public override void AfterNew()
         {
-            if (gameplayKit.TryGetSystem(out npcSystem))
+            if (Core.Gameplay.TryGetSystem(out npcSystem))
             {
                 npcAdapter = new QuestNpcAdapter(this);
                 npcSystem.InteractionRequested += npcAdapter.OnInteractionRequested;

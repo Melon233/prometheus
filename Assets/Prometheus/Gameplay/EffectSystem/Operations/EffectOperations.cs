@@ -155,7 +155,7 @@ namespace Xuan.Prometheus.Effects
             if (!wasFatal) return;
             if (hasEntityEvents) eventComponent.Invoke(new DieEvent());
             // 首次致死伤害是统一的死亡事实来源，向 Core.Event 转发实体编号供跨系统响应。
-            if (context.Target.EntityId > 0 && Core.Event != null) Core.Event.Invoke(Event.EntityDied, new EntityDiedEvent(context.Target.EntityId));
+            if (context.Target.EntityId > 0) Core.Event.Invoke(Event.EntityDied, new EntityDiedEvent(context.Target.EntityId));
         }
 
         /// <summary>仅在非致死实际伤害的打断能力严格大于目标韧性时发布受击事实，受击状态与结束时机交给动画会话维护。</summary>

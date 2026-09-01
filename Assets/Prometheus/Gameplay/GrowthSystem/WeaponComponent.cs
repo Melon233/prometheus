@@ -17,12 +17,12 @@ namespace Xuan.Prometheus.Component
     }
 
     /// <summary>持有武器成长配置、当前等级经验、TierInstance 及每个 PlayerEntity 独占的运行时副本。</summary>
-    public sealed class WeaponComponent : MonoComponent
+    public sealed class WeaponComponent : Component, IEntityBinderComponent
     {
         /// <summary>引用武器 Logic 的只读 ScriptableObject 配置。</summary>
-        [SerializeField] private WeaponConfig config;
+        private WeaponConfig config;
         /// <summary>配置启动时复制到运行时数据的 Debug 武器累计总经验。</summary>
-        [SerializeField] private WeaponDebugData debugData = new WeaponDebugData();
+        private WeaponDebugData debugData = new WeaponDebugData();
         /// <summary>保存当前 Entity 生命周期独占的武器等级上限副本。</summary>
         private int runtimeMaximumLevel;
         /// <summary>保存当前 Entity 生命周期独占的武器经验曲线深拷贝。</summary>
@@ -73,6 +73,21 @@ namespace Xuan.Prometheus.Component
 
         /// <summary>获取运行时数据是否已经完成初始化。</summary>
         public bool IsInitialized => initialized;
+
+        /// <summary>从唯一根 PlayerBinder 获取武器配置和只读 Debug 模板。</summary>
+        public void Bind(Logic.EntityBinder binder)
+        {
+            PlayerBinder playerBinder = binder as PlayerBinder ?? throw new InvalidOperationException($"WeaponComponent requires PlayerBinder but received '{binder?.GetType().FullName}'.");
+            config = playerBinder.WeaponConfig;
+            debugData = playerBinder.WeaponDebugData ?? new WeaponDebugData();
+        }
+
+        /// <summary>解除武器配置和 Debug 模板引用。</summary>
+        public void Unbind()
+        {
+            config = null;
+            debugData = null;
+        }
 
         /// <summary>由 WeaponLogic 创建配置、曲线、档位预设、词条定义和 Debug 数据的当前 Entity 独占副本。</summary>
         internal void InitializeRuntimeData()
@@ -180,10 +195,5 @@ namespace Xuan.Prometheus.Component
             if (!initialized) throw new InvalidOperationException("WeaponComponent runtime data has not been initialized by WeaponLogic.");
         }
 
-        /// <summary>在 Inspector 修改时只补齐 Component 自己持有的 Debug 数据，静态配置由 WeaponConfig 校验。</summary>
-        private void OnValidate()
-        {
-            if (debugData == null) debugData = new WeaponDebugData();
-        }
     }
 }

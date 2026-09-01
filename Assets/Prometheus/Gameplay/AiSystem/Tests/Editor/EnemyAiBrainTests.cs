@@ -126,13 +126,14 @@ namespace Xuan.Prometheus.Ai.Tests
             Assert.That(definition, Is.Not.Null);
             Assert.That(prefab, Is.Not.Null);
             Assert.DoesNotThrow(() => definition.ValidateOrThrow());
-            EnemyAiComponent aiComponent = prefab.GetComponent<EnemyAiComponent>();
+            EnemyAiComponent aiComponent = prefab.GetEntityComponent<EnemyAiComponent>();
             Assert.That(aiComponent, Is.Not.Null);
             Assert.That(aiComponent.Definition, Is.SameAs(definition));
-            Assert.That(prefab.GetComponent<PatrolComponent>(), Is.Null);
-            Assert.That(prefab.GetComponent<EnmityComponent>(), Is.Null);
-            Assert.That(prefab.GetComponent<EAttackComponent>(), Is.Null);
-            Assert.That(prefab.GetComponent<EIdleComponent>(), Is.Null);
+            MonoBehaviour[] behaviours = prefab.GetComponents<MonoBehaviour>();
+            Assert.That(Array.Exists(behaviours, component => component != null && component.GetType() == typeof(PatrolComponent)), Is.False);
+            Assert.That(Array.Exists(behaviours, component => component != null && component.GetType() == typeof(EnmityComponent)), Is.False);
+            Assert.That(Array.Exists(behaviours, component => component != null && component.GetType() == typeof(EAttackComponent)), Is.False);
+            Assert.That(Array.Exists(behaviours, component => component != null && component.GetType() == typeof(EIdleComponent)), Is.False);
         }
 
         /// <summary>创建包含发现目标转移的最小定义。</summary>

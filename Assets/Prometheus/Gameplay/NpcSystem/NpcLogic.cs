@@ -24,13 +24,13 @@ namespace Xuan.Prometheus.Npc
         public override void OnInteract()
         {
             if (!CanInteract) return;
-            if (Entity.GameplayKit.TryGetSystem(out NpcSystem npcSystem)) npcSystem.TryBeginInteraction((NpcEntity)Entity);
+            if (Core.Gameplay.TryGetSystem(out NpcSystem npcSystem)) npcSystem.TryBeginInteraction((NpcEntity)Entity);
         }
 
         /// <summary>NPC 回收时取消仍属于该实体的活动交互。</summary>
         public override void OnDispose()
         {
-            if (Entity != null && Entity.GameplayKit.TryGetSystem(out NpcSystem npcSystem)) npcSystem.CancelInteraction(Entity.EntityId);
+            if (Entity != null && Core.Gameplay.TryGetSystem(out NpcSystem npcSystem)) npcSystem.CancelInteraction(Entity.EntityId);
             npcComponent = null;
         }
     }

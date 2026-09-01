@@ -5,7 +5,7 @@ using Xuan.Prometheus.Effects;
 namespace Xuan.Prometheus.Logic
 {
     /// <summary>
-    /// EffectLogic 负责把 Entity 接入其所属 GameplayKit 的单局 EffectSystem。
+    /// EffectLogic 负责通过 Core.Gameplay 把 Entity 接入当前单局 EffectSystem。
     /// 本 Logic 只保存继承 IComponent 的 EffectComponent；其他运行时状态全部由 EffectComponent 持有。
     /// </summary>
     public sealed class EffectLogic : Logic
@@ -22,14 +22,14 @@ namespace Xuan.Prometheus.Logic
         }
 
         /// <summary>
-        /// 通过 Entity 持有的 IGameplayKit 获取本局 EffectSystem，并把非 Component 状态交给 EffectComponent。
+        /// 通过 Core.Gameplay 获取本局 EffectSystem，并把非 Component 状态交给 EffectComponent。
         /// </summary>
         public override void AfterNew()
         {
             if (!Entity.TryGetComp(out effectComponent))
                 throw new InvalidOperationException($"Entity '{Entity.GetType().FullName}' requires an EffectComponent before EffectLogic initialization.");
 
-            EffectSystem effectSystem = Entity.GameplayKit.GetSystem<EffectSystem>();
+            EffectSystem effectSystem = Core.Gameplay.GetSystem<EffectSystem>();
             effectComponent.Initialize(effectSystem, Entity);
         }
 

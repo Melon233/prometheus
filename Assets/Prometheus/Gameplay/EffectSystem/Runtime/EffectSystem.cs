@@ -61,12 +61,8 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 在 Entity 初始化前准备 EffectRuntime，保证 EffectLogic 可以立即注册规则。
         /// </summary>
-        /// <param name="gameplayKit">持有当前 EffectSystem 的单局 GameplayKit。</param>
-        public override void AfterNew(IGameplayKit gameplayKit)
+        public override void AfterNew()
         {
-            if (gameplayKit == null)
-                throw new ArgumentNullException(nameof(gameplayKit));
-
             ThrowIfDisposed();
             EnsureRuntime();
         }

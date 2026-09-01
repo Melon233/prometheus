@@ -292,9 +292,11 @@ namespace Xuan.Prometheus.Film.Tests
             InputSystem inputSystem = new InputSystem(new FakeInputSource());
             CameraSystem cameraSystem = new CameraSystem(root.transform);
             FakeGameplayKit gameplayKit = new FakeGameplayKit(inputSystem, cameraSystem);
+            IGameplayKit previousGameplayKit = Core.Gameplay;
+            Core.Gameplay = gameplayKit;
             FilmSystem filmSystem = new FilmSystem(root.transform);
-            filmSystem.AfterNew(gameplayKit);
-            return new TestContext(root, actor, timeline, definition, track, filmSystem, inputSystem);
+            filmSystem.AfterNew();
+            return new TestContext(root, actor, timeline, definition, track, filmSystem, inputSystem, previousGameplayKit);
         }
 
         /// <summary>创建复用测试 Timeline 的演出定义，并设置阶段三优先级字段。</summary>
@@ -319,8 +321,9 @@ namespace Xuan.Prometheus.Film.Tests
             internal readonly ActivationTrack track;
             internal readonly FilmSystem filmSystem;
             internal readonly InputSystem inputSystem;
+            private readonly IGameplayKit previousGameplayKit;
 
-            internal TestContext(GameObject filmRoot, GameObject actor, TimelineAsset timeline, FilmDefinition definition, ActivationTrack track, FilmSystem filmSystem, InputSystem inputSystem)
+            internal TestContext(GameObject filmRoot, GameObject actor, TimelineAsset timeline, FilmDefinition definition, ActivationTrack track, FilmSystem filmSystem, InputSystem inputSystem, IGameplayKit previousGameplayKit)
             {
                 this.filmRoot = filmRoot;
                 this.actor = actor;
@@ -329,6 +332,7 @@ namespace Xuan.Prometheus.Film.Tests
                 this.track = track;
                 this.filmSystem = filmSystem;
                 this.inputSystem = inputSystem;
+                this.previousGameplayKit = previousGameplayKit;
             }
 
             /// <summary>释放演出系统、输入源、Timeline、定义资源和场景临时对象。</summary>
@@ -336,6 +340,7 @@ namespace Xuan.Prometheus.Film.Tests
             {
                 filmSystem.Dispose();
                 inputSystem.Dispose();
+                Core.Gameplay = previousGameplayKit;
                 UnityEngine.Object.DestroyImmediate(definition);
                 UnityEngine.Object.DestroyImmediate(timeline);
                 UnityEngine.Object.DestroyImmediate(actor);

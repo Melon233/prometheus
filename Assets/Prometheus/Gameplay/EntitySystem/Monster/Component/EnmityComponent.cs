@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Xuan.Prometheus
 {
-    public class EnmityComponent : Component.MonoComponent
+    public class EnmityComponent : Component.Component
     {
         public EnmityConfig enmityConfig;
         public Transform target; // The target that the enemy is chasing

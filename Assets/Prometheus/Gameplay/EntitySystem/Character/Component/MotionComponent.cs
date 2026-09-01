@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Component
         Sprint
     }
     /// <summary>集中保存角色移动、重力和接地逻辑共享的纯运行态以及场景运动配置。</summary>
-    public class MotionComponent : MonoComponent
+    public class MotionComponent : Component, IEntityBinderComponent
     {
         /// <summary>保存 Spine 本帧产生但尚未由 MotionLogic 提交给 CharacterController 的世界空间 Root Motion 位移。</summary>
         private Vector3 pendingRootMotionDelta;
@@ -43,6 +43,23 @@ namespace Xuan.Prometheus.Component
 
         /// <summary>保留旧动画轨道引用以兼容仍在迁移的表现逻辑。</summary>
         public TrackEntry entry;
+
+        /// <summary>从唯一根 CharacterBinder 获取运动出口和移动配置，不执行任何层级搜索。</summary>
+        public void Bind(Logic.EntityBinder binder)
+        {
+            CharacterBinder characterBinder = binder as CharacterBinder ?? throw new InvalidOperationException($"MotionComponent requires CharacterBinder but received '{binder?.GetType().FullName}'.");
+            cc = characterBinder.CharacterController;
+            propertyConfig = characterBinder.PropertyConfig;
+        }
+
+        /// <summary>解除对 Unity 运动出口和配置资产的引用，并清空未提交 Root Motion。</summary>
+        public void Unbind()
+        {
+            ClearRootMotionDelta();
+            cc = null;
+            propertyConfig = null;
+            entry = null;
+        }
 
         /// <summary>由 Root Motion 桥接组件追加一次世界空间位移；离场或停用期间的后台动画位移会被安全丢弃。</summary>
         public void AddRootMotionDelta(Vector3 worldDelta)

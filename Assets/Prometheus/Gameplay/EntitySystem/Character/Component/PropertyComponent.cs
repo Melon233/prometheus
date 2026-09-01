@@ -253,12 +253,12 @@ namespace Xuan.Prometheus.Component
     /// <summary>
     /// 管理实体全部可修改属性，对外只提供已经计算完成的属性结果与 modifier 操作入口。
     /// </summary>
-    public class PropertyComponent : MonoComponent
+    public class PropertyComponent : Component, IEntityBinderComponent
     {
         /// <summary>
         /// 保存 Inspector 配置的基础属性资产；组件在 Start 阶段据此建立全部属性缓存。
         /// </summary>
-        [SerializeField] private PropertyConfig propConfig;
+        private PropertyConfig propConfig;
 
         /// <summary>锁定本次 Entity 生命周期已经发生的死亡跃迁，阻止尸体再次受伤、治疗或重复结算死亡。</summary>
         private bool isDead;
@@ -491,14 +491,31 @@ namespace Xuan.Prometheus.Component
         /// <summary>获取实体是否可以释放主动技能；普通攻击不受 Silence 单独影响。</summary>
         public bool CanUseActiveSkill => CanAct && !HasAnyControlState(ControlState.Silence);
 
-        /// <summary>
-        /// 在 Unity Awake 阶段根据 Inspector 配置建立全部属性缓存并初始化生命值，使同帧隐藏的后备成员也拥有完整运行态。
-        /// </summary>
-        private void Awake()
+        /// <summary>使用显式属性配置建立纯 C# 运行态；GameObject 角色通常由 Bind 从 CharacterBinder 调用该入口。</summary>
+        public void Initialize(PropertyConfig config)
         {
+            propConfig = config != null ? config : throw new ArgumentNullException(nameof(config));
             RefreshBaseValuesInternal();
             hp.SetValue(MaxHp);
             isDead = Hp <= 0f;
+        }
+
+        /// <summary>
+        /// 在 GameObjectLogic 完成根 Binder 校验后建立全部属性缓存，使同帧隐藏的后备成员也拥有完整运行态。
+        /// </summary>
+        public void Bind(Logic.EntityBinder binder)
+        {
+            CharacterBinder characterBinder = binder as CharacterBinder ?? throw new InvalidOperationException($"PropertyComponent requires CharacterBinder but received '{binder?.GetType().FullName}'.");
+            Initialize(characterBinder.PropertyConfig);
+        }
+
+        /// <summary>解除只读配置引用并清空本 Entity 生命周期持有的控制与伤害属性覆盖。</summary>
+        public void Unbind()
+        {
+            propConfig = null;
+            controlStateModifiers.Clear();
+            damageAttributeModifiers.Clear();
+            ActiveControlStates = ControlState.None;
         }
 
         /// <summary>
@@ -630,7 +647,7 @@ namespace Xuan.Prometheus.Component
             float actualDamage = oldHp - Hp;
             wasFatal = oldHp > 0f && Hp <= 0f;
             if (wasFatal) isDead = true;
-            if (Application.isPlaying && safeDamage > 0f) FloatTextKit.Ins.CastNumberText(safeDamage, transform.position);
+            if (Application.isPlaying && safeDamage > 0f) FloatTextKit.Ins.CastNumberText(safeDamage, Entity.bindGo.transform.position);
             return actualDamage;
         }
 
@@ -644,7 +661,7 @@ namespace Xuan.Prometheus.Component
             float oldHp = Hp;
             hp.SetValue(Mathf.Min(MaxHp, oldHp + safeRecover));
             float actualRecover = Hp - oldHp;
-            if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(safeRecover, transform.position, true);
+            if (Application.isPlaying) FloatTextKit.Ins.CastNumberText(safeRecover, Entity.bindGo.transform.position, true);
             return actualRecover;
         }
         /// <summary>按有符号变化量调整当前核心能量并约束在零到运行时上限之间，返回本次实际变化量；负返回值表示能量被扣除。</summary>

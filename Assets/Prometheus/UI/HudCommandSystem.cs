@@ -30,10 +30,9 @@ namespace Xuan.Prometheus
         public bool IsAlive => !isDisposed;
 
         /// <summary>取得集中式输入系统并永久监听当前单局的 HUD 快捷键。</summary>
-        public override void AfterNew(IGameplayKit gameplayKit)
+        public override void AfterNew()
         {
-            if (gameplayKit == null) throw new ArgumentNullException(nameof(gameplayKit));
-            InputSystem inputSystem = gameplayKit.GetSystem<InputSystem>();
+            InputSystem inputSystem = Core.Gameplay.GetSystem<InputSystem>();
             shortcutLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.HudCommands, InputContexts.Gameplay);
         }
 

@@ -186,19 +186,8 @@ GameObject:
   - component: {fileID: 7007513957923084728}
   - component: {fileID: 256535028}
   - component: {fileID: 256535027}
-  - component: {fileID: 256535030}
-  - component: {fileID: 256535031}
-  - component: {fileID: 256535032}
-  - component: {fileID: 256535037}
-  - component: {fileID: 256535041}
-  - component: {fileID: 5496003748208063664}
-  - component: {fileID: 8356801192691331113}
-  - component: {fileID: 5895581109648259310}
-  - component: {fileID: 6200664063791877712}
-  - component: {fileID: 7984058003771753736}
-  - component: {fileID: 5159105806515104184}
-  - component: {fileID: 3924433855872551146}
-  - component: {fileID: 2471952885311846613}
+  - component: {fileID: 9081178111338254147}
+  - component: {fileID: 3564841238450493106}
   m_Layer: 6
   m_Name: Yefa
   m_TagString: Player
@@ -363,7 +352,7 @@ MonoBehaviour:
   rigidBody2D: {fileID: 0}
   rigidBody: {fileID: 0}
   animationTrackFlags: -1
---- !u!114 &256535030
+--- !u!114 &9081178111338254147
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -372,29 +361,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 5686316864933578544}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec688383a2b64e949cbd57317db6f8db, type: 3}
+  m_Script: {fileID: 11500000, guid: f799a0bd52ba80b49aca8123fbafb8d0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  cc: {fileID: 256535028}
-  curVelo: {x: 0, y: 0, z: 0}
-  wasGroundedLastFrame: 0
-  landThisFrame: 0
-  moveMode: 1
-  curMoveSpeed: 0
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.PlayerBinder
+  entityColliderProxies:
+  - {fileID: 3564841238450493106}
+  - {fileID: 7939482117543475403}
+  - {fileID: 2096031012208595202}
+  - {fileID: 1339774994947632687}
+  - {fileID: 1520222618}
+  - {fileID: 9100000000000002104}
+  - {fileID: 9100000000000002204}
+  - {fileID: 9100000000000002304}
+  characterController: {fileID: 256535028}
+  spineAnimator: {fileID: 7007513957923084728}
+  animationLibrary: {fileID: 11400000, guid: 572c817d17aaac740927c352e35b1152, type: 2}
+  rotateRoot: {fileID: 313841810}
+  rootMotionBridge: {fileID: 256535027}
   propertyConfig: {fileID: 11400000, guid: 419c909ad1a1fb04091d95ca9e703feb, type: 2}
---- !u!114 &256535031
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe9d9703fa244062acbc3c5dfd79ca55, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
+  attackTalentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
   attackHits:
   - colliderProxy: {fileID: 1520222618}
     abilityId: Player.NormalAttack.1
@@ -404,35 +389,9 @@ MonoBehaviour:
     abilityId: Player.NormalAttack.3
   - colliderProxy: {fileID: 9100000000000002304}
     abilityId: Player.NormalAttack.4
-  talentGrowth:
+  legacyAttackCollider: {fileID: 0}
+  attackTalentGrowth:
     debugTalentLevel: 1
-  legacyAttackCollider: {fileID: 1520222618}
---- !u!114 &256535032
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7511213f936c453b95c15871793e1d23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animationLib: {fileID: 11400000, guid: 572c817d17aaac740927c352e35b1152, type: 2}
-  rotateRoot: {fileID: 313841810}
---- !u!114 &256535037
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00d9c1f4dd5fb85439c6d6c87bfe4c83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
   vfxSlots:
   - {fileID: 2115483495263277456}
   - {fileID: 2115483494986185045}
@@ -440,128 +399,30 @@ MonoBehaviour:
   - {fileID: 2115483495495862690}
   - {fileID: 2114900581486018174}
   - {fileID: 2114499700531864430}
---- !u!114 &256535041
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56d8fe292c014794999993799efebd3e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &5496003748208063664
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32ddcca584ed4ac9bc0e67a5525ac41b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  propConfig: {fileID: 11400000, guid: 419c909ad1a1fb04091d95ca9e703feb, type: 2}
---- !u!114 &8356801192691331113
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d280a0c389f4ccd9b590c5f494c832e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
-  colliderProxy: {fileID: 1339774994947632687}
-  abilityId: Player.SpecialAttack
-  talentGrowth:
+  specialAttackTalentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
+  specialAttackCollider: {fileID: 1339774994947632687}
+  specialAttackAbilityId: Player.SpecialAttack
+  specialAttackTalentGrowth:
     debugTalentLevel: 1
---- !u!114 &5895581109648259310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b126830c2ec48be98612e9c0c3dc78e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
-  colliderProxy: {fileID: 2096031012208595202}
-  abilityId: Player.Skill
-  talentGrowth:
+  skillTalentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
+  skillCollider: {fileID: 2096031012208595202}
+  skillAbilityId: Player.Skill
+  skillTalentGrowth:
     debugTalentLevel: 1
---- !u!114 &6200664063791877712
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2677b62ab074acdab5a9ddcfaa67acd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  talentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
-  colliderProxy: {fileID: 7939482117543475403}
-  abilityId: Player.Ultimate
-  talentGrowth:
+  ultimateTalentConfig: {fileID: 11400000, guid: de27f3a521974b31852ca19872cf824c, type: 2}
+  ultimateCollider: {fileID: 7939482117543475403}
+  ultimateAbilityId: Player.Ultimate
+  ultimateTalentGrowth:
     debugTalentLevel: 1
---- !u!114 &7984058003771753736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88f812f1a4bd48544af6bb1ae2c95ce7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.WorldHpBarAnchor
-  followTarget: {fileID: 0}
-  worldOffset: {x: 0, y: 2.21, z: 0}
-  hpColor: {r: 0.41010675, g: 0.69803923, b: 0.25490198, a: 1}
-  chaserColor: {r: 0.3466232, g: 0.40700805, b: 0.29785088, a: 1}
---- !u!114 &5159105806515104184
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67994d696c1d47f2aaf4b10d04c67224, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.CharaLevelComponent
-  config: {fileID: 11400000, guid: 4196db8037b2e9e41ab25dbb933a4143, type: 2}
-  debugData:
+  charaLevelConfig: {fileID: 11400000, guid: 4196db8037b2e9e41ab25dbb933a4143, type: 2}
+  charaLevelDebugData:
     totalExperience: 0
---- !u!114 &3924433855872551146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5686316864933578544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2cbc46139214f15baea7d11a7dca7d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.EquipmentComponent
-  config: {fileID: 11400000, guid: e7aac929b94c95d4a95b560e403206a5, type: 2}
+  equipmentConfig: {fileID: 11400000, guid: e7aac929b94c95d4a95b560e403206a5, type: 2}
   debugEquipment: []
---- !u!114 &2471952885311846613
+  weaponConfig: {fileID: 11400000, guid: 27a5d69abfb693649be0a81efdcbc822, type: 2}
+  weaponDebugData:
+    totalExperience: 0
+--- !u!114 &3564841238450493106
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -570,12 +431,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5686316864933578544}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d24f7df100b244dbbb49b8d1e9a73080, type: 3}
+  m_Script: {fileID: 11500000, guid: 06b5f60a8fa947a98f756b3ceedf0900, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.WeaponComponent
-  config: {fileID: 11400000, guid: 27a5d69abfb693649be0a81efdcbc822, type: 2}
-  debugData:
-    totalExperience: 0
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.ColliderProxy
 --- !u!1 &6008575996780051533
 GameObject:
   m_ObjectHideFlags: 0

@@ -25,7 +25,6 @@ namespace Xuan.Prometheus
         private const float MinimapFadeCompleteDistance = 1f;
 
         /// <summary>保存当前 HUD 实际订阅的事件总线实例，确保最终解绑时移除同一条监听。</summary>
-        private IEventKit eventKit;
 
         /// <summary>保存当前上场成员的运行时 EntityId，切人时以该编号重新建立全部字段监听。</summary>
         private int observedEntityId;
@@ -81,8 +80,7 @@ namespace Xuan.Prometheus
         /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 EntitySystem 观察。</summary>
         protected override void OnBind()
         {
-            eventKit = Core.Event ?? throw new System.InvalidOperationException($"{nameof(HudPanel)} requires EventKit before binding.");
-            eventKit.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            Core.Event.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
         }
 
         /// <summary>收到上场成员变化后保存新编号，并在面板显示期间原子替换全部字段监听。</summary>
@@ -121,12 +119,11 @@ namespace Xuan.Prometheus
         protected override void OnOpen()
         {
             Debug.Log($"[UIKit] {nameof(HudPanel)} opened.", Root);
-            IGameplayKit gameplayKit = Core.Gameplay ?? throw new InvalidOperationException($"{nameof(HudPanel)} requires GameplayKit before opening.");
-            if (!gameplayKit.TryGetSystem(out entitySystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(EntitySystem)}.");
-            if (!gameplayKit.TryGetSystem(out teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
-            if (!gameplayKit.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
-            if (!gameplayKit.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(HudCommandSystem)}.");
-            if (!gameplayKit.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(WorldSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out entitySystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(EntitySystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(HudCommandSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(WorldSystem)}.");
             SubscribeMinimapEvents();
             if (worldSystem.TryGetPlayerPosition(out Vector3 currentPosition))
             {
@@ -212,7 +209,6 @@ namespace Xuan.Prometheus
         /// <summary>订阅 WorldSystem 的地图资源和 POI 状态事实；玩家坐标由逐帧实体读取驱动。</summary>
         private void SubscribeMinimapEvents()
         {
-            if (Core.Event == null) throw new InvalidOperationException($"{nameof(HudPanel)} requires EventKit before subscribing map events.");
             Core.Event.AddListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
             Core.Event.AddListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
         }
@@ -220,7 +216,6 @@ namespace Xuan.Prometheus
         /// <summary>解除 HUD 小地图的 WorldSystem 监听，避免缓存面板关闭后继续更新已隐藏控件。</summary>
         private void UnsubscribeMinimapEvents()
         {
-            if (Core.Event == null) return;
             Core.Event.RemoveListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
             Core.Event.RemoveListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
         }
@@ -451,10 +446,9 @@ namespace Xuan.Prometheus
         {
             ReleaseValueListeners();
             UnsubscribeMinimapEvents();
-            if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            Core.Event.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
             DestroyUiResource(minimapHitArea);
             DestroyUiResource(minimapMaskMaterial);
-            eventKit = null;
             inputSystem = null;
             teamSystem = null;
             hudCommandSystem = null;

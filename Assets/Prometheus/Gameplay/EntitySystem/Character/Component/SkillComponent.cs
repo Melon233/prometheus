@@ -4,13 +4,13 @@ using Xuan.Prometheus.Component;
 namespace Xuan.Prometheus.Logic.Talent
 {
     /// <summary>保存技能使用的静态配置、命中代理和每个玩家实体独立拥有的冷却运行态。</summary>
-    public sealed class SkillComponent : Component.MonoComponent, ITalentGrowthComponent
+    public sealed class SkillComponent : Component.Component, Component.IEntityBinderComponent, ITalentGrowthComponent
     {
-        [SerializeField] private TalentConfig talentConfig;
-        [SerializeField] private ColliderProxy colliderProxy;
-        [SerializeField] private string abilityId = "Player.Skill";
+        private TalentConfig talentConfig;
+        private ColliderProxy colliderProxy;
+        private string abilityId = "Player.Skill";
         /// <summary>保存技能自己的 Debug 等级配置、运行时等级副本和可修改增益系数。</summary>
-        [SerializeField] private TalentGrowthState talentGrowth = new TalentGrowthState();
+        private TalentGrowthState talentGrowth = new TalentGrowthState();
         /// <summary>保存当前技能剩余冷却，并通过统一属性脏监听向 UI 暴露变化。</summary>
         private readonly ModifiableProperty cooldownRemaining = new ModifiableProperty();
 
@@ -68,6 +68,23 @@ namespace Xuan.Prometheus.Logic.Talent
 
         /// <summary>获取当前技能是否已经结束冷却并允许新的释放请求。</summary>
         public bool IsCooldownReady => CooldownRemaining <= 0f;
+
+        /// <summary>从唯一根 PlayerBinder 复制技能配置和命中引用，并创建独立天赋运行态。</summary>
+        public void Bind(Xuan.Prometheus.Logic.EntityBinder binder)
+        {
+            PlayerBinder playerBinder = binder as PlayerBinder ?? throw new System.InvalidOperationException($"SkillComponent requires PlayerBinder but received '{binder?.GetType().FullName}'.");
+            talentConfig = playerBinder.SkillTalentConfig;
+            colliderProxy = playerBinder.SkillCollider;
+            abilityId = playerBinder.SkillAbilityId;
+            talentGrowth = playerBinder.SkillTalentGrowth?.CloneTemplate() ?? new TalentGrowthState();
+        }
+
+        /// <summary>解除技能配置和碰撞代理引用。</summary>
+        public void Unbind()
+        {
+            talentConfig = null;
+            colliderProxy = null;
+        }
 
         /// <summary>实体初始化时建立无冷却运行态，避免把 Prefab 或 ScriptableObject 当作运行时状态容器。</summary>
         public void InitializeRuntimeState()

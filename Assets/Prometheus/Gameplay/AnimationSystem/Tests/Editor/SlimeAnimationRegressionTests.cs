@@ -41,7 +41,7 @@ namespace Xuan.Prometheus.Animation.Tests
             Assert.That(slimePrefab, Is.Not.Null, $"无法加载正式史莱姆预制体：{SlimePrefabPath}");
             slimeInstance = Object.Instantiate(slimePrefab);
             slimeInstance.name = "SlimeAnimationRegressionInstance";
-            spineComponent = slimeInstance.GetComponent<SpineComponent>();
+            spineComponent = slimeInstance.GetEntityComponent<SpineComponent>();
             Assert.That(spineComponent, Is.Not.Null, "史莱姆预制体必须包含 SpineComponent。");
             Assert.That(spineComponent.animationLib, Is.Not.Null, "史莱姆 SpineComponent 必须配置 AnimationLibrary。");
             runtimeLibrary = Object.Instantiate(spineComponent.animationLib);
@@ -51,14 +51,15 @@ namespace Xuan.Prometheus.Animation.Tests
             Assert.That(spineComponent.spineAnimator, Is.Not.Null, "史莱姆预制体必须包含 SkeletonAnimation。");
             spineComponent.spineAnimator.Initialize(true);
             spineComponent.spineAnimator.AnimationState.Data.DefaultMix = SpineComponent.TransitionDuration;
-            motionComponent = slimeInstance.GetComponent<MotionComponent>();
-            propertyComponent = slimeInstance.GetComponent<PropertyComponent>();
+            motionComponent = slimeInstance.GetEntityComponent<MotionComponent>();
+            propertyComponent = slimeInstance.GetEntityComponent<PropertyComponent>();
             Assert.That(motionComponent, Is.Not.Null, "史莱姆预制体必须包含 MotionComponent。");
             Assert.That(motionComponent.cc, Is.SameAs(slimeInstance.GetComponent<CharacterController>()), "史莱姆 MotionComponent 必须引用同对象的 CharacterController。");
             Assert.That(propertyComponent, Is.Not.Null, "史莱姆预制体必须包含 PropertyComponent。");
             propertyComponent.RefreshBaseValues();
             assetKit = new AssetKit();
-            gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            gameplayKit = new GameplayKit();
             entitySystem = gameplayKit.GetSystem<EntitySystem>();
             animationEntity = new AnimationTestEntity(slimeInstance, spineComponent, motionComponent, propertyComponent);
             entitySystem.AddEntity(animationEntity);
@@ -184,18 +185,18 @@ namespace Xuan.Prometheus.Animation.Tests
         {
             GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
-            AttackComponent attackComponent = yefaPrefab.GetComponent<AttackComponent>();
-            SpineComponent yefaSpine = yefaPrefab.GetComponent<SpineComponent>();
+            AttackComponent attackComponent = yefaPrefab.GetEntityComponent<AttackComponent>();
+            SpineComponent yefaSpine = yefaPrefab.GetEntityComponent<SpineComponent>();
             Assert.That(attackComponent, Is.Not.Null, "Yefa 预制体必须包含 AttackComponent。");
             Assert.That(yefaSpine, Is.Not.Null);
             Assert.That(attackComponent.TalentConfig, Is.Not.Null, "Yefa AttackComponent 必须引用 TalentConfig。");
-            Assert.That(yefaPrefab.GetComponent<SpecialAttackComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
-            Assert.That(yefaPrefab.GetComponent<SkillComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
-            Assert.That(yefaPrefab.GetComponent<UltimateComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
+            Assert.That(yefaPrefab.GetEntityComponent<SpecialAttackComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
+            Assert.That(yefaPrefab.GetEntityComponent<SkillComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
+            Assert.That(yefaPrefab.GetEntityComponent<UltimateComponent>().TalentConfig, Is.SameAs(attackComponent.TalentConfig));
             Assert.That(attackComponent.ConfiguredHitCount, Is.EqualTo(yefaSpine.animationLib.atkExecutor.Count), "普通攻击动画段和命中配置必须一一对应。");
             Assert.That(attackComponent.TalentConfig.NormalAttack.StageCount, Is.EqualTo(attackComponent.ConfiguredHitCount), "TalentConfig 普攻数值段必须与碰撞绑定段一一对应。");
-            SerializedObject prefabAttack = new SerializedObject(attackComponent);
-            SerializedProperty firstBinding = prefabAttack.FindProperty("attackHits").GetArrayElementAtIndex(0);
+            SerializedObject prefabBinder = new SerializedObject(yefaPrefab.GetComponent<PlayerBinder>());
+            SerializedProperty firstBinding = prefabBinder.FindProperty("attackHits").GetArrayElementAtIndex(0);
             Assert.That(firstBinding.FindPropertyRelative("damageMultiplier"), Is.Null, "AttackComponent 不得继续暴露伤害倍率。");
             Assert.That(firstBinding.FindPropertyRelative("damageOffset"), Is.Null, "AttackComponent 不得继续暴露伤害偏移。");
             Assert.That(firstBinding.FindPropertyRelative("additionalTags"), Is.Null, "AttackComponent 不得继续暴露数值关联标签。");
@@ -216,10 +217,10 @@ namespace Xuan.Prometheus.Animation.Tests
             TalentConfig runtimeTalentConfig = Object.Instantiate(attackComponent.TalentConfig);
             try
             {
-                AttackComponent runtimeAttack = yefaInstance.GetComponent<AttackComponent>();
-                SerializedObject serializedAttack = new SerializedObject(runtimeAttack);
-                serializedAttack.FindProperty("talentConfig").objectReferenceValue = runtimeTalentConfig;
-                serializedAttack.ApplyModifiedPropertiesWithoutUndo();
+                SerializedObject serializedBinder = new SerializedObject(yefaInstance.GetComponent<PlayerBinder>());
+                serializedBinder.FindProperty("attackTalentConfig").objectReferenceValue = runtimeTalentConfig;
+                serializedBinder.ApplyModifiedPropertiesWithoutUndo();
+                AttackComponent runtimeAttack = yefaInstance.GetEntityComponent<AttackComponent>();
                 SerializedObject serializedTalent = new SerializedObject(runtimeTalentConfig);
                 SerializedProperty secondStage = serializedTalent.FindProperty("normalAttack").FindPropertyRelative("stages").GetArrayElementAtIndex(1);
                 secondStage.FindPropertyRelative("damageMultiplier").floatValue = 1.75f;
@@ -251,9 +252,9 @@ namespace Xuan.Prometheus.Animation.Tests
             int entityId = 0;
             try
             {
-                SpineComponent yefaSpine = yefaInstance.GetComponent<SpineComponent>();
-                AttackComponent yefaAttack = yefaInstance.GetComponent<AttackComponent>();
-                PropertyComponent yefaProperty = yefaInstance.GetComponent<PropertyComponent>();
+                SpineComponent yefaSpine = yefaInstance.GetEntityComponent<SpineComponent>();
+                AttackComponent yefaAttack = yefaInstance.GetEntityComponent<AttackComponent>();
+                PropertyComponent yefaProperty = yefaInstance.GetEntityComponent<PropertyComponent>();
                 Assert.That(yefaSpine, Is.Not.Null);
                 Assert.That(yefaAttack, Is.Not.Null);
                 Assert.That(yefaProperty, Is.Not.Null);
@@ -272,7 +273,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 AdvanceAnimation(yefaSpine, 0.1f);
                 Assert.That(firstHit.ColliderProxy.cod.enabled, Is.True, "第一段 EnableHitbox 命令后必须开启第一段碰撞盒。");
                 Assert.That(secondHit.ColliderProxy.cod.enabled, Is.False);
-                VfxComponent yefaVfx = yefaInstance.GetComponent<VfxComponent>();
+                VfxComponent yefaVfx = yefaInstance.GetEntityComponent<VfxComponent>();
                 Assert.That(yefaVfx.vfxSlots[(int)YefaVfx.Atk1].activeSelf, Is.True, "第一段 EnableHitbox 命令后必须启动第一段动作特效。");
                 AdvanceAnimation(yefaSpine, 0.2f);
                 Assert.That(firstHit.ColliderProxy.cod.enabled, Is.False, "第一段 DisableHitbox 命令后必须关闭第一段碰撞盒。");
@@ -367,9 +368,9 @@ namespace Xuan.Prometheus.Animation.Tests
             List<ListenHandle> handles = new List<ListenHandle>();
             try
             {
-                PropertyComponent playerProperty = yefaInstance.GetComponent<PropertyComponent>();
-                SkillComponent playerSkill = yefaInstance.GetComponent<SkillComponent>();
-                UltimateComponent playerUltimate = yefaInstance.GetComponent<UltimateComponent>();
+                PropertyComponent playerProperty = yefaInstance.GetEntityComponent<PropertyComponent>();
+                SkillComponent playerSkill = yefaInstance.GetEntityComponent<SkillComponent>();
+                UltimateComponent playerUltimate = yefaInstance.GetEntityComponent<UltimateComponent>();
                 Assert.That(playerProperty, Is.Not.Null);
                 Assert.That(playerSkill, Is.Not.Null);
                 Assert.That(playerUltimate, Is.Not.Null);
@@ -431,7 +432,7 @@ namespace Xuan.Prometheus.Animation.Tests
             GameObject yefaInstance = Object.Instantiate(yefaPrefab);
             try
             {
-                SkillComponent skillComponent = yefaInstance.GetComponent<SkillComponent>();
+                SkillComponent skillComponent = yefaInstance.GetEntityComponent<SkillComponent>();
                 Assert.That(skillComponent, Is.Not.Null);
                 skillComponent.InitializeRuntimeState();
                 Assert.That(skillComponent.CooldownDuration, Is.EqualTo(5f).Within(0.0001f));
@@ -460,8 +461,8 @@ namespace Xuan.Prometheus.Animation.Tests
             GameObject yefaInstance = Object.Instantiate(yefaPrefab);
             try
             {
-                PropertyComponent playerProperty = yefaInstance.GetComponent<PropertyComponent>();
-                UltimateComponent ultimateComponent = yefaInstance.GetComponent<UltimateComponent>();
+                PropertyComponent playerProperty = yefaInstance.GetEntityComponent<PropertyComponent>();
+                UltimateComponent ultimateComponent = yefaInstance.GetEntityComponent<UltimateComponent>();
                 Assert.That(playerProperty, Is.Not.Null);
                 Assert.That(ultimateComponent, Is.Not.Null);
                 playerProperty.RefreshBaseValues();
@@ -714,11 +715,11 @@ namespace Xuan.Prometheus.Animation.Tests
                 AddComp(animationComponent);
                 AddComp(motion);
                 AddComp(property);
-                AddComp(bindGameObject.GetComponent<AttackComponent>());
-                AddComp(bindGameObject.GetComponent<VfxComponent>());
-                AddComp(bindGameObject.GetComponent<EnemyAiComponent>());
+                AddComp(bindGameObject.GetEntityComponent<AttackComponent>());
+                AddComp(bindGameObject.GetEntityComponent<VfxComponent>());
+                AddComp(bindGameObject.GetEntityComponent<EnemyAiComponent>());
                 AddComp<EventComponent>();
-                AddComp(bindGameObject.GetComponent<EffectComponent>());
+                AddComp(bindGameObject.GetEntityComponent<EffectComponent>());
                 AddLogic<EnemyAiLogic>();
                 AddLogic<GravityLogic>();
                 AddLogic<MotionLogic>();
@@ -792,10 +793,10 @@ namespace Xuan.Prometheus.Animation.Tests
             {
                 bindGo = bindGameObject;
                 AddComp<InputComponent>();
-                AddComp(bindGameObject.GetComponent<SpineComponent>());
-                AddComp(bindGameObject.GetComponent<PropertyComponent>());
-                AddComp(bindGameObject.GetComponent<EffectComponent>());
-                AddComp(bindGameObject.GetComponent<VfxComponent>());
+                AddComp(bindGameObject.GetEntityComponent<SpineComponent>());
+                AddComp(bindGameObject.GetEntityComponent<PropertyComponent>());
+                AddComp(bindGameObject.GetEntityComponent<EffectComponent>());
+                AddComp(bindGameObject.GetEntityComponent<VfxComponent>());
                 AddLogic(combatLogic);
             }
         }

@@ -118,22 +118,21 @@ namespace Xuan.Prometheus.Ai
         public bool TryAcquireTarget(float radius, int layerMask, string requiredTag, out Transform target)
         {
             int count = Physics.OverlapSphereNonAlloc(Position, radius, perceptionBuffer, layerMask, QueryTriggerInteraction.UseGlobal);
-            PropertyComponent selectedProperty = null;
+            Entity selectedEntity = null;
             float selectedDistanceSquared = float.PositiveInfinity;
             for (int index = 0; index < count; index++)
             {
                 Collider candidateCollider = perceptionBuffer[index];
                 perceptionBuffer[index] = null;
                 if (candidateCollider == null) continue;
-                PropertyComponent candidateProperty = candidateCollider.GetComponentInParent<PropertyComponent>();
-                if (!IsPropertyTargetValid(candidateProperty, requiredTag)) continue;
-                float distanceSquared = (candidateProperty.transform.position - Position).sqrMagnitude;
+                if (!TryResolveProperty(candidateCollider, out Entity candidateEntity, out PropertyComponent candidateProperty) || !IsPropertyTargetValid(candidateEntity, candidateProperty, requiredTag)) continue;
+                float distanceSquared = (candidateEntity.bindGo.transform.position - Position).sqrMagnitude;
                 if (distanceSquared >= selectedDistanceSquared) continue;
-                selectedProperty = candidateProperty;
+                selectedEntity = candidateEntity;
                 selectedDistanceSquared = distanceSquared;
             }
 
-            target = selectedProperty == null ? null : selectedProperty.transform;
+            target = selectedEntity == null ? null : selectedEntity.bindGo.transform;
             return target != null;
         }
 
@@ -141,8 +140,8 @@ namespace Xuan.Prometheus.Ai
         public bool IsTargetValid(Transform target)
         {
             if (target == null || !target.gameObject.activeInHierarchy) return false;
-            PropertyComponent targetProperty = target.GetComponentInParent<PropertyComponent>();
-            return IsPropertyTargetValid(targetProperty, aiComponent.Definition.TargetTag);
+            Collider targetCollider = target.GetComponent<Collider>();
+            return TryResolveProperty(targetCollider, out Entity targetEntity, out PropertyComponent targetProperty) && IsPropertyTargetValid(targetEntity, targetProperty, aiComponent.Definition.TargetTag);
         }
 
         /// <inheritdoc />
@@ -218,9 +217,8 @@ namespace Xuan.Prometheus.Ai
         public void OnTriggerEnter(ColliderProxy source, Collider other)
         {
             if (!Entity.IsActive || dead || attackPlayback == null || source == null || other == null || !ReferenceEquals(source, attackComponent.PrimaryHitbox)) return;
-            PropertyComponent targetProperty = other.GetComponentInParent<PropertyComponent>();
-            if (!IsPropertyTargetValid(targetProperty, aiComponent.Definition.TargetTag)) return;
-            int targetId = targetProperty.GetInstanceID();
+            if (!TryResolveProperty(other, out Entity targetEntity, out PropertyComponent targetProperty) || !IsPropertyTargetValid(targetEntity, targetProperty, aiComponent.Definition.TargetTag)) return;
+            int targetId = targetEntity.EntityId;
             if (!hitTargets.Add(targetId)) return;
             float requestedDamage = propertyComponent.Atk;
             DamageAttribute damageAttribute = propertyComponent.ResolveDamageAttribute(DamageActionType.NormalAttack);
@@ -301,10 +299,17 @@ namespace Xuan.Prometheus.Ai
         /// <summary>
         /// 判断 PropertyComponent 是否可作为敌对目标，并排除自身、死亡对象和错误标签。
         /// </summary>
-        private bool IsPropertyTargetValid(PropertyComponent targetProperty, string requiredTag)
+        private bool IsPropertyTargetValid(Entity targetEntity, PropertyComponent targetProperty, string requiredTag)
         {
-            if (targetProperty == null || targetProperty == propertyComponent || targetProperty.Entity == null || targetProperty.IsDead || !targetProperty.Entity.IsActive || !targetProperty.gameObject.activeInHierarchy) return false;
-            return string.IsNullOrWhiteSpace(requiredTag) || targetProperty.CompareTag(requiredTag);
+            if (targetEntity == null || targetProperty == null || targetProperty == propertyComponent || targetProperty.IsDead || !targetEntity.IsActive || targetEntity.bindGo == null || !targetEntity.bindGo.activeInHierarchy) return false;
+            return string.IsNullOrWhiteSpace(requiredTag) || targetEntity.bindGo.CompareTag(requiredTag);
+        }
+
+        /// <summary>通过目标 ColliderProxy 在初始化阶段绑定的宿主引用解析 Entity 与纯 C# PropertyComponent。</summary>
+        private static bool TryResolveProperty(Collider collider, out Entity targetEntity, out PropertyComponent targetProperty)
+        {
+            targetProperty = null;
+            return ColliderProxy.TryGetHostEntity(collider, out targetEntity) && targetEntity.TryGetComp(out targetProperty);
         }
 
         /// <summary>

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Xuan.Prometheus.Ai;
 using Xuan.Prometheus.Component;
@@ -8,20 +7,30 @@ namespace Xuan.Prometheus.Logic
     public class SlimeEntity : Entity
     {
         /// <summary>
-        /// 使用 GameplayKit 已实例化的敌人对象构建实体，实体本身不关心资源地址或加载方式。
+        /// 使用资源地址和出生参数构造完整史莱姆 Entity；GameObject 在首个 GameObjectLogic.AfterNew 中由 Entity 自己创建。
         /// </summary>
-        /// <param name="bindGameObject">包含敌人表现组件和玩法组件的场景对象。</param>
-        public SlimeEntity(GameObject bindGameObject)
+        public SlimeEntity(string location, Vector3 position, Quaternion rotation, Transform parent) : this(GameObjectSpawnSpec.Spawned<SlimeBinder>(location, position, rotation, parent))
         {
-            bindGo = bindGameObject != null ? bindGameObject : throw new ArgumentNullException(nameof(bindGameObject));
-            AddComp(bindGo.GetComponent<PropertyComponent>());
-            AddComp(bindGo.GetComponent<AttackComponent>());
-            AddComp(bindGo.GetComponent<SpineComponent>());
-            AddComp(bindGo.GetComponent<VfxComponent>());
-            AddComp(bindGo.GetComponent<MotionComponent>());
-            AddComp(bindGo.GetComponent<EnemyAiComponent>());
+        }
+
+        /// <summary>接管一个已经存在且根节点挂有 SlimeBinder 的场景对象，主要用于场景绑定与编辑器验证。</summary>
+        public SlimeEntity(GameObject instance) : this(GameObjectSpawnSpec.SceneBound<SlimeBinder>(instance))
+        {
+        }
+
+        /// <summary>在 Created 阶段一次性注册史莱姆全部纯 C# Component 和普通 Logic。</summary>
+        private SlimeEntity(GameObjectSpawnSpec spawnSpec)
+        {
+            AddComp<GameObjectComponent>(new GameObjectComponent(spawnSpec));
+            AddComp<PropertyComponent>();
+            AddComp<AttackComponent>();
+            AddComp<SpineComponent>();
+            AddComp<VfxComponent>();
+            AddComp<MotionComponent>();
+            AddComp<EnemyAiComponent>();
             AddComp<EventComponent>();
-            AddComp(bindGo.GetComponent<EffectComponent>());
+            AddComp<EffectComponent>();
+            AddLogic<GameObjectLogic>();
             AddLogic<EnemyAiLogic>();
             AddLogic<GravityLogic>();
             AddLogic<MotionLogic>();

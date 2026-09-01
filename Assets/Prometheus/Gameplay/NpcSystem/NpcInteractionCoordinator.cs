@@ -9,15 +9,13 @@ namespace Xuan.Prometheus.Npc
     /// <summary>把 NPC 交互请求转换为 Film 播放，并统一处理完成和取消。</summary>
     internal sealed class NpcInteractionCoordinator
     {
-        private readonly IGameplayKit gameplayKit;
         private readonly FilmSystem filmSystem;
         private readonly Action<int> onCompleted;
         private FilmHandle activeFilm;
 
-        /// <summary>创建绑定当前单局 GameplayKit 的交互协调器。</summary>
-        internal NpcInteractionCoordinator(IGameplayKit gameplayKit, FilmSystem filmSystem, Action<int> onCompleted)
+        /// <summary>创建通过 Core.Gameplay 查询实体并使用指定 FilmSystem 播放演出的交互协调器。</summary>
+        internal NpcInteractionCoordinator(FilmSystem filmSystem, Action<int> onCompleted)
         {
-            this.gameplayKit = gameplayKit;
             this.filmSystem = filmSystem;
             this.onCompleted = onCompleted;
         }
@@ -25,7 +23,7 @@ namespace Xuan.Prometheus.Npc
         /// <summary>异步启动 NPC 配置的 Film；没有 Film 时保留给外部 InteractionRequested 订阅者。</summary>
         internal void Start(NpcInteractionContext context)
         {
-            if (!gameplayKit.GetSystem<EntitySystem>().TryGetEntity(context.EntityId, out Entity entity) || !(entity is NpcEntity npc)) return;
+            if (!Core.Gameplay.GetSystem<EntitySystem>().TryGetEntity(context.EntityId, out Entity entity) || !(entity is NpcEntity npc)) return;
             StartAsync(context, npc).Forget();
         }
 
@@ -34,8 +32,8 @@ namespace Xuan.Prometheus.Npc
         {
             NpcDefinition definition = npc.Definition;
             if (definition.InteractionFilm == null) return;
-            if (gameplayKit.Player == null || gameplayKit.Player.bindGo == null || npc.bindGo == null) return;
-            FilmBindingContext bindings = new FilmBindingContext().Set(definition.PlayerBindingKey, gameplayKit.Player.bindGo).Set(definition.NpcBindingKey, npc.bindGo);
+            if (Core.Gameplay.Player == null || Core.Gameplay.Player.bindGo == null || npc.bindGo == null) return;
+            FilmBindingContext bindings = new FilmBindingContext().Set(definition.PlayerBindingKey, Core.Gameplay.Player.bindGo).Set(definition.NpcBindingKey, npc.bindGo);
             try
             {
                 activeFilm = filmSystem.Play(definition.InteractionFilm, bindings, new FilmFlowContext().Set("NpcId", definition.NpcId).Set("InteractionId", context.InteractionId));

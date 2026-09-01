@@ -60,9 +60,6 @@ namespace Xuan.Prometheus
         /// <summary>保存当前玩法世界的实体查询入口。</summary>
         private EntitySystem entitySystem;
 
-        /// <summary>保存当前系统订阅的小队切换事件总线。</summary>
-        private IEventKit eventKit;
-
         /// <summary>标记当前系统已经完成释放，避免失效事件继续修改相机目标。</summary>
         private bool isDisposed;
 
@@ -98,16 +95,13 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>创建完整相机运行时对象并在初始小队成员发布前订阅切换事件。</summary>
-        /// <param name="gameplayKit">持有当前相机系统的单局玩法世界。</param>
-        public override void AfterNew(IGameplayKit gameplayKit)
+        public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CameraSystem));
-            if (gameplayKit == null) throw new ArgumentNullException(nameof(gameplayKit));
-            entitySystem = gameplayKit.GetSystem<EntitySystem>();
-            eventKit = Core.Event ?? throw new InvalidOperationException("CameraSystem requires EventKit.");
+            entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
             CreateCameraObjects();
             PrometheusRenderQualityController.QualityChanged += OnRenderQualityChanged;
-            eventKit.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            Core.Event.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
         }
 
         /// <summary>释放小队事件和全部系统创建的运行时对象；角色 Prefab 不再持有任何相机资源。</summary>
@@ -115,7 +109,7 @@ namespace Xuan.Prometheus
         {
             if (isDisposed) return;
             activeFilmCameraLease?.Dispose();
-            if (eventKit != null) eventKit.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            Core.Event.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
             PrometheusRenderQualityController.QualityChanged -= OnRenderQualityChanged;
             DestroyRuntimeObject(followTarget);
             DestroyRuntimeObject(cameraSystemRoot);
@@ -127,7 +121,6 @@ namespace Xuan.Prometheus
             outputCameraData = null;
             cameraSystemRoot = null;
             entitySystem = null;
-            eventKit = null;
             isDisposed = true;
         }
 

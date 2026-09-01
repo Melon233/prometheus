@@ -18,6 +18,7 @@ namespace Xuan.Prometheus.Animation.Tests
         private const BindingFlags PrivateInstanceField = BindingFlags.Instance | BindingFlags.NonPublic;
 
         private IUIKit previousUIKit;
+        private IAssetKit previousAssetKit;
         private TestAssetKit assetKit;
         private UIKit uiKit;
         private GameObject followTargetObject;
@@ -27,8 +28,10 @@ namespace Xuan.Prometheus.Animation.Tests
         public void SetUp()
         {
             previousUIKit = Core.UI;
+            previousAssetKit = Core.Asset;
             assetKit = new TestAssetKit();
-            uiKit = new UIKit(assetKit);
+            Core.Asset = assetKit;
+            uiKit = new UIKit();
             InitializeWorldUiForEditMode(uiKit);
             followTargetObject = new GameObject("WorldHpBarRegressionTests.FollowTarget");
         }
@@ -45,6 +48,8 @@ namespace Xuan.Prometheus.Animation.Tests
             followTargetObject = null;
             Core.UI = previousUIKit;
             previousUIKit = null;
+            Core.Asset = previousAssetKit;
+            previousAssetKit = null;
         }
 
         /// <summary>验证隐藏的跟随 UI 能在重新显示前立即定位到目标新坐标，不会先显示一帧旧位置。</summary>
@@ -84,7 +89,7 @@ namespace Xuan.Prometheus.Animation.Tests
                 hpImageObject.transform.SetParent(hpBarObject.transform, false);
                 chaserImageObject.transform.SetParent(hpBarObject.transform, false);
                 HpBar hpBar = hpBarObject.AddComponent<HpBar>();
-                PropertyComponent propertyComponent = propertyObject.AddComponent<PropertyComponent>();
+                PropertyComponent propertyComponent = new PropertyComponent();
                 hpBar.hpImg = hpImageObject.GetComponent<UnityEngine.UI.Image>();
                 hpBar.chaserImg = chaserImageObject.GetComponent<UnityEngine.UI.Image>();
                 hpBar.canvasGroup = hpBarObject.GetComponent<CanvasGroup>();

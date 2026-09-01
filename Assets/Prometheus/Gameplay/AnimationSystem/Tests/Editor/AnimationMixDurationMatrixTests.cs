@@ -23,7 +23,7 @@ namespace Xuan.Prometheus.Animation.Tests
             GameObject slimePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(SlimePrefabPath);
             Assert.That(slimePrefab, Is.Not.Null, $"无法加载正式史莱姆预制体：{SlimePrefabPath}");
             slimeInstance = Object.Instantiate(slimePrefab);
-            spineComponent = slimeInstance.GetComponent<SpineComponent>();
+            spineComponent = slimeInstance.GetEntityComponent<SpineComponent>();
             Assert.That(spineComponent, Is.Not.Null, "史莱姆预制体必须包含 SpineComponent。");
             runtimeLibrary = Object.Instantiate(spineComponent.animationLib);
             runtimeLibrary.MixDurationMatrix.ClearOverrides();

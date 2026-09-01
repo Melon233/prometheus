@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic.Talent;
 
@@ -54,13 +53,13 @@ namespace Xuan.Prometheus.Component
     }
 
     /// <summary>保存普通攻击场景引用和运行态；所有可调数值统一从角色 TalentConfig 读取。</summary>
-    public class AttackComponent : MonoComponent, ITalentGrowthComponent
+    public class AttackComponent : Component, IEntityBinderComponent, ITalentGrowthComponent
     {
-        [SerializeField] private TalentConfig talentConfig;
-        [SerializeField] private List<NormalAttackHitBinding> attackHits = new List<NormalAttackHitBinding>();
+        private TalentConfig talentConfig;
+        private List<NormalAttackHitBinding> attackHits = new List<NormalAttackHitBinding>();
+        private ColliderProxy legacyAttackCollider;
         /// <summary>保存普通攻击自己的 Debug 等级配置、运行时等级副本和可修改增益系数。</summary>
-        [SerializeField] private TalentGrowthState talentGrowth = new TalentGrowthState();
-        [SerializeField, HideInInspector, FormerlySerializedAs("atkCollider")] private ColliderProxy legacyAttackCollider;
+        private TalentGrowthState talentGrowth = new TalentGrowthState();
         [NonSerialized] public bool canCombo = true;
         [NonSerialized] public float elapsedComboTime;
         [NonSerialized] public int nextComboIndex;
@@ -109,6 +108,25 @@ namespace Xuan.Prometheus.Component
         /// <summary>获取敌人旧配置或单段攻击系统使用的首个碰撞代理。</summary>
         public ColliderProxy PrimaryHitbox => ConfiguredHitCount > 0 && attackHits[0] != null && attackHits[0].ColliderProxy != null ? attackHits[0].ColliderProxy : legacyAttackCollider;
 
+        /// <summary>从唯一根 CharacterBinder 复制普通攻击配置和命中引用，并创建独立天赋运行态。</summary>
+        public void Bind(Logic.EntityBinder binder)
+        {
+            CharacterBinder characterBinder = binder as CharacterBinder ?? throw new InvalidOperationException($"AttackComponent requires CharacterBinder but received '{binder?.GetType().FullName}'.");
+            talentConfig = characterBinder.AttackTalentConfig;
+            attackHits = characterBinder.AttackHits == null ? new List<NormalAttackHitBinding>() : new List<NormalAttackHitBinding>(characterBinder.AttackHits);
+            legacyAttackCollider = characterBinder.LegacyAttackCollider;
+            talentGrowth = characterBinder.AttackTalentGrowth?.CloneTemplate() ?? new TalentGrowthState();
+        }
+
+        /// <summary>解除普通攻击配置、命中代理和动画会话引用。</summary>
+        public void Unbind()
+        {
+            talentConfig = null;
+            attackHits.Clear();
+            legacyAttackCollider = null;
+            currentAnimation = null;
+        }
+
         /// <summary>获取指定配置段的碰撞代理，供普通攻击 Logic 在初始化时集中绑定和关闭全部命中盒。</summary>
         public ColliderProxy GetConfiguredHitbox(int stageIndex)
         {
@@ -130,13 +148,8 @@ namespace Xuan.Prometheus.Component
                 selection = new NormalAttackHitSelection(binding.ColliderProxy, values.DamageMultiplier, values.DamageOffset, values.AdditionalTags, binding.ResolveAbilityId(stageIndex));
                 return true;
             }
-            if (stageIndex < 0 || legacyAttackCollider == null)
-            {
-                selection = default;
-                return false;
-            }
-            selection = new NormalAttackHitSelection(legacyAttackCollider, 1f, 0f, EffectTag.None, $"Player.NormalAttack.{stageIndex + 1}");
-            return true;
+            selection = default;
+            return false;
         }
     }
 }

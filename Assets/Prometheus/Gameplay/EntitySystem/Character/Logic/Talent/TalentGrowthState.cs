@@ -71,6 +71,12 @@ namespace Xuan.Prometheus.Logic.Talent
         /// <summary>获取基础倍率或基础增益值需要乘算的最终非负系数。</summary>
         public float TalentScale => Mathf.Max(0f, 1f + GainCoefficient);
 
+        /// <summary>从 Binder 的只读 Debug 模板创建一份 Entity 生命周期独占的可变运行时状态。</summary>
+        public TalentGrowthState CloneTemplate()
+        {
+            return new TalentGrowthState { debugTalentLevel = Mathf.Max(1, debugTalentLevel) };
+        }
+
         /// <summary>从配置上限和 Debug 等级创建运行时数据副本，重复调用保持幂等。</summary>
         public void InitializeRuntimeData(int maximumTalentLevel)
         {

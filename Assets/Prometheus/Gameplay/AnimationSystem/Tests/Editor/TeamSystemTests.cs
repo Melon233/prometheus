@@ -67,7 +67,8 @@ namespace Xuan.Prometheus.Animation.Tests
             previousEventKit = Core.Event;
             eventKit = new EventKit();
             assetKit = new AssetKit();
-            gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            gameplayKit = new GameplayKit();
             entitySystem = gameplayKit.GetSystem<EntitySystem>();
             inputSource = new ScriptedTeamInputSource();
             inputSystem = new InputSystem(inputSource);
@@ -78,9 +79,9 @@ namespace Xuan.Prometheus.Animation.Tests
             gameplayKit.AddSystem(inputSystem);
             gameplayKit.AddSystem(effectSystem);
             gameplayKit.AddSystem(teamSystem);
-            inputSystem.AfterNew(gameplayKit);
-            effectSystem.AfterNew(gameplayKit);
-            teamSystem.AfterNew(gameplayKit);
+            inputSystem.AfterNew();
+            effectSystem.AfterNew();
+            teamSystem.AfterNew();
             GameObject yefaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(yefaPrefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
             members = new TeamTestEntity[TeamSystem.Capacity];
@@ -90,13 +91,13 @@ namespace Xuan.Prometheus.Animation.Tests
                 GameObject memberObject = UnityEngine.Object.Instantiate(yefaPrefab);
                 memberObject.name = $"TeamSystemTests.Yefa.{slotIndex + 1}";
                 createdMemberObjects.Add(memberObject);
-                SpineComponent spineComponent = memberObject.GetComponent<SpineComponent>();
+                SpineComponent spineComponent = memberObject.GetEntityComponent<SpineComponent>();
                 Assert.That(spineComponent, Is.Not.Null, "正式 Yefa 预制体必须包含 SpineComponent。");
                 spineComponent.spineAnimator = memberObject.GetComponent<Spine.Unity.SkeletonAnimation>();
                 Assert.That(spineComponent.spineAnimator, Is.Not.Null, "正式 Yefa SpineComponent 必须绑定 SkeletonAnimation。");
                 spineComponent.spineAnimator.Initialize(true);
                 spineComponent.spineAnimator.AnimationState.Data.DefaultMix = SpineComponent.TransitionDuration;
-                PropertyComponent propertyComponent = memberObject.GetComponent<PropertyComponent>();
+                PropertyComponent propertyComponent = memberObject.GetEntityComponent<PropertyComponent>();
                 Assert.That(propertyComponent, Is.Not.Null, "正式 Yefa 预制体必须包含 PropertyComponent。");
                 InitializePropertyComponent(propertyComponent);
                 TeamTestEntity member = new TeamTestEntity(memberObject);
@@ -132,6 +133,7 @@ namespace Xuan.Prometheus.Animation.Tests
             effectLibrary = null;
             assetKit?.Dispose();
             assetKit = null;
+            Core.Asset = null;
             eventKit?.Dispose();
             eventKit = null;
             Core.Event = previousEventKit;
@@ -281,10 +283,10 @@ namespace Xuan.Prometheus.Animation.Tests
                 AddComp<InputComponent>();
                 AddComp<TeamMemberComponent>();
                 AddComp<EventComponent>();
-                AddComp(bindGo.GetComponent<PropertyComponent>());
-                AddComp(bindGo.GetComponent<SpineComponent>());
-                AddComp(bindGo.GetComponent<MotionComponent>());
-                AddComp(bindGo.GetComponent<VfxComponent>());
+                AddComp(bindGo.GetEntityComponent<PropertyComponent>());
+                AddComp(bindGo.GetEntityComponent<SpineComponent>());
+                AddComp(bindGo.GetEntityComponent<MotionComponent>());
+                AddComp(bindGo.GetEntityComponent<VfxComponent>());
                 AddLogic<AttackedLogic>();
             }
         }

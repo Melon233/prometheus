@@ -56,13 +56,11 @@ namespace Xuan.Prometheus.Film
         public IFilmInteractionService InteractionService => interactionService;
 
         /// <summary>取得输入与镜头系统，并创建当前单局独占的演出运行时根节点。</summary>
-        /// <param name="gameplayKit">持有当前 FilmSystem 的单局 GameplayKit。</param>
-        public override void AfterNew(IGameplayKit gameplayKit)
+        public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(FilmSystem));
-            if (gameplayKit == null) throw new ArgumentNullException(nameof(gameplayKit));
-            inputSystem = gameplayKit.GetSystem<InputSystem>();
-            cameraSystem = gameplayKit.GetSystem<CameraSystem>();
+            inputSystem = Core.Gameplay.GetSystem<InputSystem>();
+            cameraSystem = Core.Gameplay.GetSystem<CameraSystem>();
             systemRoot = new GameObject("[FilmSystem]");
             systemRoot.transform.SetParent(runtimeRoot, false);
         }

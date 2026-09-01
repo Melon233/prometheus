@@ -7,15 +7,13 @@ namespace Xuan.Prometheus.Input
     /// <summary>把 InputSystem 分发的动作片段写入指定 Entity 的逐帧 InputComponent，而不长期持有 Entity 引用。</summary>
     public sealed class EntityInputReceiver : IInputReceiver
     {
-        private readonly IGameplayKit gameplayKit;
         private readonly EntitySystem entitySystem;
         private readonly int entityId;
 
-        /// <summary>创建一个通过 GameplayKit 的 EntitySystem 和运行时编号定位 Entity 的输入接收适配器。</summary>
-        public EntityInputReceiver(IGameplayKit gameplayKit, int entityId)
+        /// <summary>创建一个通过 Core.Gameplay 的 EntitySystem 和运行时编号定位 Entity 的输入接收适配器。</summary>
+        public EntityInputReceiver(int entityId)
         {
-            this.gameplayKit = gameplayKit ?? throw new ArgumentNullException(nameof(gameplayKit));
-            entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
             this.entityId = entityId > 0 ? entityId : throw new ArgumentOutOfRangeException(nameof(entityId), entityId, "Entity runtime ID must be positive.");
         }
 
@@ -41,7 +39,7 @@ namespace Xuan.Prometheus.Input
         private bool TryGetInputComponent(out InputComponent inputComponent)
         {
             inputComponent = null;
-            if (!gameplayKit.IsReady) return false;
+            if (!Core.Gameplay.IsReady) return false;
             if (!entitySystem.TryGetEntity(entityId, out Entity entity) || entity == null || !entity.IsActive) return false;
             return entity.TryGetComp(out inputComponent) && inputComponent != null;
         }

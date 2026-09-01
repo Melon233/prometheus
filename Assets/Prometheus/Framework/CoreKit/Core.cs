@@ -26,8 +26,8 @@ namespace Xuan.Prometheus
 
         /// <summary>获取当前正式入口创建的唯一 Core 实例。</summary>
         public static Core Current { get; private set; }
-        /// <summary>快速访问当前正式注册的资源模块。</summary>
-        public static IAssetKit Asset { get; private set; }
+        /// <summary>快速访问当前正式注册的资源模块；保留公开写入以支持独立系统测试隔离。</summary>
+        public static IAssetKit Asset { get; set; }
         /// <summary>快速访问当前正式注册的全局事件模块；保留公开写入以支持独立系统测试隔离。</summary>
         public static IEventKit Event { get; set; }
         /// <summary>快速访问当前正式注册的 UI 模块；保留公开写入以支持独立系统测试隔离。</summary>
@@ -44,12 +44,12 @@ namespace Xuan.Prometheus
             if (Current != null) throw new InvalidOperationException("A Core instance is already active.");
             Current = this;
             assetKit = new AssetKit();
+            Asset = assetKit;
             EventKit eventKit = new EventKit();
-            UIKit uiKit = new UIKit(assetKit);
+            UIKit uiKit = new UIKit();
             RegisterKit<IAssetKit>(assetKit);
             RegisterKit<IEventKit>(eventKit);
             RegisterKit<IUIKit>(uiKit);
-            Asset = assetKit;
         }
 
         /// <summary>所有 Kit 是否都已完成异步 AfterNewAsync 和同步 AfterNew。</summary>
@@ -63,10 +63,9 @@ namespace Xuan.Prometheus
             if (options == null) throw new ArgumentNullException(nameof(options));
             if (isConfigured) throw new InvalidOperationException("Core can only be configured once.");
             assetKit.Configure(options.PackageName);
-            GameplayKit gameplayKit = new GameplayKit(assetKit);
+            GameplayKit gameplayKit = new GameplayKit();
             gameplayKit.Configure(options);
             RegisterKit<IGameplayKit>(gameplayKit);
-            Gameplay = gameplayKit;
             isConfigured = true;
         }
 

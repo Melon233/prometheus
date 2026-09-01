@@ -5,9 +5,8 @@ namespace Xuan.Prometheus
     /// <summary>定义单局 GameplayKit 独占的公共系统生命周期；同一具体系统类型在一个 GameplayKit 中只能注册一个实例。</summary>
     public abstract class XSystem : IDisposable
     {
-        /// <summary>在全部 System 注册完成且创建 Entity 之前调用，供系统建立单局运行时状态。</summary>
-        /// <param name="gameplayKit">持有当前系统的单局 GameplayKit。</param>
-        public virtual void AfterNew(IGameplayKit gameplayKit)
+        /// <summary>在全部 System 注册完成且创建 Entity 之前调用；跨模块依赖统一通过 Core 静态入口获取。</summary>
+        public virtual void AfterNew()
         {
         }
 

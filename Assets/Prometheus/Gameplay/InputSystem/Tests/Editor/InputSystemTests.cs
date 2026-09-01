@@ -30,7 +30,8 @@ namespace Xuan.Prometheus.Input.Tests
             GameObject runtimeRoot = new GameObject("InputSystemTests.RuntimeRoot");
             EffectLibrary effectLibrary = ScriptableObject.CreateInstance<EffectLibrary>();
             AssetKit assetKit = new AssetKit();
-            GameplayKit gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            GameplayKit gameplayKit = new GameplayKit();
             try
             {
                 GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRoot.transform, effectLibrary, "Player", "Enemy", Array.Empty<Transform>(), 0);
@@ -43,6 +44,7 @@ namespace Xuan.Prometheus.Input.Tests
             {
                 gameplayKit.Dispose();
                 assetKit.Dispose();
+                Core.Asset = null;
                 UnityEngine.Object.DestroyImmediate(effectLibrary);
                 UnityEngine.Object.DestroyImmediate(runtimeRoot);
             }

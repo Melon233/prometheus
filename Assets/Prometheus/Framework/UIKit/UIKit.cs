@@ -88,7 +88,6 @@ namespace Xuan.Prometheus
         private const float WorldCanvasScale = 0.01f;
         /// <summary>相机不可用或世界锚点位于相机背后时使用的屏幕外隐藏坐标。</summary>
         private static readonly Vector2 HiddenScreenPosition = new Vector2(-100000f, -100000f);
-        private readonly IAssetKit assetKit;
         private readonly Dictionary<Type, UIPanelRecord> panelRecords = new Dictionary<Type, UIPanelRecord>();
         private readonly Dictionary<UIPanelLayer, RectTransform> layerRoots = new Dictionary<UIPanelLayer, RectTransform>();
         private readonly HashSet<Type> openingPanelTypes = new HashSet<Type>();
@@ -111,12 +110,10 @@ namespace Xuan.Prometheus
         private bool isDisposed;
 
         /// <summary>
-        /// 创建依赖指定 AssetKit 的 UI 模块；资源系统必须先完成初始化，UIKit 才能打开面板。
+        /// 创建 UI 模块并注册 Core.UI；资源访问统一通过 Core.Asset，初始化顺序保证 AssetKit 已经存在。
         /// </summary>
-        /// <param name="assetKit">负责加载并缓存 UI Prefab 的资源模块。</param>
-        public UIKit(IAssetKit assetKit)
+        public UIKit()
         {
-            this.assetKit = assetKit ?? throw new ArgumentNullException(nameof(assetKit));
             Core.UI = this;
         }
 
@@ -460,7 +457,7 @@ namespace Xuan.Prometheus
                     return cachedRecord;
             }
 
-            GameObject instance = assetKit.InstantiateSync(assetAddress, worldCanvasRoot, false, false);
+            GameObject instance = Core.Asset.InstantiateSync(assetAddress, worldCanvasRoot, false, false);
             if (!(instance.transform is RectTransform))
             {
                 DestroyUnityObject(instance);
@@ -665,7 +662,7 @@ namespace Xuan.Prometheus
             {
                 UIPanelDescriptor descriptor = UIPanelTypeRegistry.Get(panelType);
                 RectTransform layerRoot = GetLayerRoot(descriptor.Layer);
-                instance = assetKit.InstantiateSync(descriptor.AssetAddress, layerRoot, false, false);
+                instance = Core.Asset.InstantiateSync(descriptor.AssetAddress, layerRoot, false, false);
                 instance.name = panelType.Name;
                 StretchToParent(instance.transform as RectTransform);
                 if (!instance.TryGetComponent<UIComponentBinder>(out var binder))

@@ -10,6 +10,9 @@ namespace Xuan.Prometheus.Logic
         /// <summary>保存可选的小队成员状态；敌人等非小队实体保持为空。</summary>
         private TeamMemberComponent teamMemberComponent;
 
+        /// <summary>保存 Binder 提供的 Root Motion Unity 回调桥接器。</summary>
+        private CharacterRootMotionComponent rootMotionBridge;
+
         /// <summary>在全部玩法速度计算之后运行，确保玩家与敌人每帧只通过该逻辑提交合成位移。</summary>
         public override void AfterNew()
         {
@@ -18,6 +21,9 @@ namespace Xuan.Prometheus.Logic
             if (!Entity.TryGetComp(out motionComp) || motionComp == null) throw new InvalidOperationException($"Entity '{Entity.bindGo.name}' requires MotionComponent for motion integration.");
             if (motionComp.cc == null) throw new InvalidOperationException($"Entity '{Entity.bindGo.name}' MotionComponent requires CharacterController.");
             Entity.TryGetComp(out teamMemberComponent);
+            if (!Entity.TryGetComp(out GameObjectComponent gameObjectComponent) || !(gameObjectComponent.Binder is CharacterBinder characterBinder)) throw new InvalidOperationException($"Entity '{Entity.bindGo.name}' requires CharacterBinder for motion integration.");
+            rootMotionBridge = characterBinder.RootMotionBridge;
+            if (rootMotionBridge != null) rootMotionBridge.RootMotionApplied += OnRootMotionApplied;
         }
 
         /// <summary>实体存活期间始终允许基础位移积分。</summary>
@@ -58,8 +64,16 @@ namespace Xuan.Prometheus.Logic
         public override void OnDispose()
         {
             motionComp.SetRootMotionEnabled(false);
+            if (rootMotionBridge != null) rootMotionBridge.RootMotionApplied -= OnRootMotionApplied;
             motionComp = null;
             teamMemberComponent = null;
+            rootMotionBridge = null;
+        }
+
+        /// <summary>接收 Unity 桥接器计算后的世界空间 Root Motion，并写入纯 C# MotionComponent。</summary>
+        private void OnRootMotionApplied(UnityEngine.Vector3 worldDelta)
+        {
+            motionComp.AddRootMotionDelta(worldDelta);
         }
     }
 }

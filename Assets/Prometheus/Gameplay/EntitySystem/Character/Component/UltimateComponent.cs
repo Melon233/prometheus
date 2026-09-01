@@ -4,13 +4,13 @@ using Xuan.Prometheus.Component;
 namespace Xuan.Prometheus.Logic.Talent
 {
     /// <summary>保存大招使用的静态配置、命中代理和每个玩家实体独立拥有的冷却运行态。</summary>
-    public sealed class UltimateComponent : Component.MonoComponent, ITalentGrowthComponent
+    public sealed class UltimateComponent : Component.Component, Component.IEntityBinderComponent, ITalentGrowthComponent
     {
-        [SerializeField] private TalentConfig talentConfig;
-        [SerializeField] private ColliderProxy colliderProxy;
-        [SerializeField] private string abilityId = "Player.Ultimate";
+        private TalentConfig talentConfig;
+        private ColliderProxy colliderProxy;
+        private string abilityId = "Player.Ultimate";
         /// <summary>保存大招自己的 Debug 等级配置、运行时等级副本和可修改增益系数。</summary>
-        [SerializeField] private TalentGrowthState talentGrowth = new TalentGrowthState();
+        private TalentGrowthState talentGrowth = new TalentGrowthState();
         /// <summary>保存当前大招剩余冷却，并通过统一属性脏监听向 UI 暴露变化。</summary>
         private readonly ModifiableProperty cooldownRemaining = new ModifiableProperty();
 
@@ -68,6 +68,23 @@ namespace Xuan.Prometheus.Logic.Talent
 
         /// <summary>获取当前是否已经结束冷却并允许能量门禁继续判断。</summary>
         public bool IsCooldownReady => CooldownRemaining <= 0f;
+
+        /// <summary>从唯一根 PlayerBinder 复制大招配置和命中引用，并创建独立天赋运行态。</summary>
+        public void Bind(Xuan.Prometheus.Logic.EntityBinder binder)
+        {
+            PlayerBinder playerBinder = binder as PlayerBinder ?? throw new System.InvalidOperationException($"UltimateComponent requires PlayerBinder but received '{binder?.GetType().FullName}'.");
+            talentConfig = playerBinder.UltimateTalentConfig;
+            colliderProxy = playerBinder.UltimateCollider;
+            abilityId = playerBinder.UltimateAbilityId;
+            talentGrowth = playerBinder.UltimateTalentGrowth?.CloneTemplate() ?? new TalentGrowthState();
+        }
+
+        /// <summary>解除大招配置和碰撞代理引用。</summary>
+        public void Unbind()
+        {
+            talentConfig = null;
+            colliderProxy = null;
+        }
 
         /// <summary>同时检查正数满能量与冷却完成条件，作为 UltimateLogic 唯一释放门禁。</summary>
         public bool CanRelease(PropertyComponent property)

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic.Talent;
@@ -8,30 +7,40 @@ namespace Xuan.Prometheus.Logic
     public class PlayerEntity : Entity
     {
         /// <summary>
-        /// 使用 GameplayKit 已实例化的玩家对象构建实体，避免 Entity 反向依赖资源系统。
+        /// 使用资源地址和出生参数构造完整玩家 Entity；GameObject 在首个 GameObjectLogic.AfterNew 中由 Entity 自己创建。
         /// </summary>
-        /// <param name="bindGameObject">包含玩家表现组件和玩法组件的场景对象。</param>
-        public PlayerEntity(GameObject bindGameObject)
+        public PlayerEntity(string location, Vector3 position, Quaternion rotation, Transform parent) : this(GameObjectSpawnSpec.Spawned<PlayerBinder>(location, position, rotation, parent))
         {
-            bindGo = bindGameObject != null ? bindGameObject : throw new ArgumentNullException(nameof(bindGameObject));
+        }
+
+        /// <summary>接管一个已经存在且根节点挂有 PlayerBinder 的场景对象，主要用于场景绑定与编辑器验证。</summary>
+        public PlayerEntity(GameObject instance) : this(GameObjectSpawnSpec.SceneBound<PlayerBinder>(instance))
+        {
+        }
+
+        /// <summary>在 Created 阶段一次性注册玩家全部纯 C# Component 和普通 Logic。</summary>
+        private PlayerEntity(GameObjectSpawnSpec spawnSpec)
+        {
+            AddComp<GameObjectComponent>(new GameObjectComponent(spawnSpec));
             AddComp<InputComponent>();
             AddComp<TeamMemberComponent>();
             AddComp<EventComponent>();
             AddComp<DodgeComponent>();
-            AddComp(bindGo.GetComponent<EffectComponent>());
-            AddComp(bindGo.GetComponent<CharaLevelComponent>());
-            AddComp(bindGo.GetComponent<EquipmentComponent>());
-            AddComp(bindGo.GetComponent<WeaponComponent>());
-            AddComp(bindGo.GetComponent<SpineComponent>());
-            AddComp(bindGo.GetComponent<VfxComponent>());
-            AddComp(bindGo.GetComponent<MotionComponent>());
-            AddComp(bindGo.GetComponent<AttackComponent>());
-            AddComp(bindGo.GetComponent<PropertyComponent>());
-            AddComp(bindGo.GetComponent<SkillComponent>());
-            AddComp(bindGo.GetComponent<SpecialAttackComponent>());
-            AddComp(bindGo.GetComponent<UltimateComponent>());
+            AddComp<EffectComponent>();
+            AddComp<CharaLevelComponent>();
+            AddComp<EquipmentComponent>();
+            AddComp<WeaponComponent>();
+            AddComp<SpineComponent>();
+            AddComp<VfxComponent>();
+            AddComp<MotionComponent>();
+            AddComp<AttackComponent>();
+            AddComp<PropertyComponent>();
+            AddComp<SkillComponent>();
+            AddComp<SpecialAttackComponent>();
+            AddComp<UltimateComponent>();
             AddComp<CoreTalentComponent>();
             AddComp<InteractComponent>();
+            AddLogic<GameObjectLogic>();
             AddLogic<GroundMoveLogic>();
             AddLogic<IdleLogic>();
             AddLogic<MotionLogic>();

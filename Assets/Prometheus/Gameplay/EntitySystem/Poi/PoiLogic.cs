@@ -53,7 +53,7 @@ namespace Xuan.Prometheus.World
         protected void RequestServerInteract(PoiOp op)
         {
             if (Entity == null || !Entity.IsActive) return;
-            if (Entity.GameplayKit.TryGetSystem(out WorldSystem world)) world.TryInteractAsync((PoiEntity)Entity, op).Forget();
+            if (Core.Gameplay.TryGetSystem(out WorldSystem world)) world.TryInteractAsync((PoiEntity)Entity, op).Forget();
         }
     }
 }

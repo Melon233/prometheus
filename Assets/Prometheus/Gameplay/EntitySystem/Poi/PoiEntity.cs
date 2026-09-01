@@ -27,7 +27,7 @@ namespace Xuan.Prometheus.World
         {
             Config = config ?? throw new System.ArgumentNullException(nameof(config));
             bindGo = bindGameObject != null ? bindGameObject : throw new System.ArgumentNullException(nameof(bindGameObject));
-            AddComp(new PoiComponent { Config = config });
+            AddComp<PoiComponent>(new PoiComponent { Config = config });
             logic = injectedLogic ?? throw new System.ArgumentNullException(nameof(injectedLogic));
             AddLogic(logic);
         }

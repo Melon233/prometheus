@@ -47,7 +47,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 确保配置与当前 Core 的 UIKit 均可用；资源实例、相机、Canvas 和回收状态全部由 UIKit 统一处理。
+        /// 确保伤害飘字配置可用；Core 初始化顺序保证 UIKit 在调用阶段已经存在。
         /// </summary>
         /// <returns>当前可以安全生成伤害飘字时返回 true。</returns>
         private bool EnsureReady()
@@ -61,12 +61,6 @@ namespace Xuan.Prometheus
                 return false;
             }
 
-            if (Core.UI == null)
-            {
-                Debug.LogError("[FloatDamageKit] UIKit 尚未创建，无法生成屏幕空间伤害飘字。");
-                return false;
-            }
-
             return true;
         }
 
@@ -75,7 +69,7 @@ namespace Xuan.Prometheus
         /// </summary>
         private void LoadConfig()
         {
-            config = AssetKit.Ins.LoadAssetSync<FloatDamageConfig>(ConfigPath);
+            config = Core.Asset.LoadAssetSync<FloatDamageConfig>(ConfigPath);
         }
     }
 }

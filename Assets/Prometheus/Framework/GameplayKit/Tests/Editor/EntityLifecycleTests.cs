@@ -21,7 +21,8 @@ namespace Xuan.Prometheus.Tests
         public void SetUp()
         {
             assetKit = new AssetKit();
-            gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            gameplayKit = new GameplayKit();
             entitySystem = gameplayKit.GetSystem<EntitySystem>();
         }
 
@@ -34,6 +35,7 @@ namespace Xuan.Prometheus.Tests
             entitySystem = null;
             assetKit?.Dispose();
             assetKit = null;
+            Core.Asset = null;
             for (int index = cleanupObjects.Count - 1; index >= 0; index--)
             {
                 if (cleanupObjects[index] != null) UnityEngine.Object.DestroyImmediate(cleanupObjects[index]);

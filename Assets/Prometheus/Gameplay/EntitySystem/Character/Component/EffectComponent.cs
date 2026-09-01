@@ -9,7 +9,7 @@ namespace Xuan.Prometheus.Component
     /// 保存单个 Entity 接入 EffectSystem 时产生的运行时状态。
     /// EffectLogic 只保留该 Component 引用，EffectSystem、Entity 所有者和 IDisposable 注册句柄全部集中在此处管理。
     /// </summary>
-    public sealed class EffectComponent : MonoComponent
+    public sealed class EffectComponent : Component
     {
         private EffectSystem effectSystem;
         private Entity owner;
@@ -42,7 +42,7 @@ namespace Xuan.Prometheus.Component
         /// <summary>
         /// 将当前 Entity 接入指定单局 EffectSystem，并注册基础攻击触发规则。
         /// </summary>
-        /// <param name="ownerSystem">从 Entity.GameplayKit 获取的单局 EffectSystem。</param>
+        /// <param name="ownerSystem">从 Core.Gameplay 获取的单局 EffectSystem。</param>
         /// <param name="ownerEntity">当前组件所属的 Entity。</param>
         public void Initialize(EffectSystem ownerSystem, Entity ownerEntity)
         {

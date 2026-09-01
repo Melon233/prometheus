@@ -38,7 +38,7 @@ namespace Xuan.Prometheus.Logic
             if (configuration == null || !configuration.TryGetSelection(stageIndex, moving, out AttackAnimationSelection animationSelection)) return;
             if (!attackComponent.TryGetHitSelection(stageIndex, out NormalAttackHitSelection hitSelection))
             {
-                Debug.LogWarning($"普通攻击第 {stageIndex + 1} 段缺少有效命中配置，动作不会启动。", attackComponent);
+                Debug.LogWarning($"普通攻击第 {stageIndex + 1} 段缺少有效命中配置，动作不会启动。", Entity.bindGo);
                 return;
             }
             AnimationPlayback playback = SpineComponent.TryPlay(animationSelection.Semantic, ActionOwner, AnimationPriority.Attack, false, PropertyComponent.AtkSpeed, true);

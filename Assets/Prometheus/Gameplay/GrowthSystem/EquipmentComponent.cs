@@ -6,12 +6,12 @@ using Xuan.Prometheus.Growth;
 namespace Xuan.Prometheus.Component
 {
     /// <summary>持有装备槽位、成长曲线、档位预设、Debug 配置和每个 PlayerEntity 独占的 EquipmentInstance。</summary>
-    public sealed class EquipmentComponent : MonoComponent
+    public sealed class EquipmentComponent : Component, IEntityBinderComponent
     {
         /// <summary>引用装备 Logic 的只读 ScriptableObject 配置。</summary>
-        [SerializeField] private EquipmentConfig config;
+        private EquipmentConfig config;
         /// <summary>配置启动时按列表下标应用到装备槽位的 Debug Definition 与累计经验。</summary>
-        [SerializeField] private List<EquipmentDebugData> debugEquipment = new List<EquipmentDebugData>();
+        private List<EquipmentDebugData> debugEquipment = new List<EquipmentDebugData>();
         /// <summary>保存当前 Entity 生命周期独占的装备槽位数量副本。</summary>
         private int runtimeEquipmentSlotCount;
         /// <summary>保存当前 Entity 生命周期独占的副词条槽位数量副本。</summary>
@@ -57,6 +57,21 @@ namespace Xuan.Prometheus.Component
 
         /// <summary>获取运行时数据是否已经完成初始化。</summary>
         public bool IsInitialized => initialized;
+
+        /// <summary>从唯一根 PlayerBinder 获取装备配置并复制 Debug 装备列表。</summary>
+        public void Bind(Logic.EntityBinder binder)
+        {
+            PlayerBinder playerBinder = binder as PlayerBinder ?? throw new InvalidOperationException($"EquipmentComponent requires PlayerBinder but received '{binder?.GetType().FullName}'.");
+            config = playerBinder.EquipmentConfig;
+            debugEquipment = playerBinder.DebugEquipment == null ? new List<EquipmentDebugData>() : new List<EquipmentDebugData>(playerBinder.DebugEquipment);
+        }
+
+        /// <summary>解除装备配置和 Debug 模板引用。</summary>
+        public void Unbind()
+        {
+            config = null;
+            debugEquipment.Clear();
+        }
 
         /// <summary>由 EquipmentLogic 创建配置、曲线、档位预设和 Debug EquipmentInstance 的独立运行时副本。</summary>
         internal void InitializeRuntimeData()
@@ -240,12 +255,5 @@ namespace Xuan.Prometheus.Component
             if (!initialized) throw new InvalidOperationException("EquipmentComponent runtime data has not been initialized by EquipmentLogic.");
         }
 
-        /// <summary>在 Inspector 修改时只维护 Debug 数据，静态槽位、曲线和预设由 EquipmentConfig 校验。</summary>
-        private void OnValidate()
-        {
-            if (debugEquipment == null) debugEquipment = new List<EquipmentDebugData>();
-            int configuredSlotCount = config == null ? debugEquipment.Count : config.EquipmentSlotCount;
-            if (debugEquipment.Count > configuredSlotCount) debugEquipment.RemoveRange(configuredSlotCount, debugEquipment.Count - configuredSlotCount);
-        }
     }
 }

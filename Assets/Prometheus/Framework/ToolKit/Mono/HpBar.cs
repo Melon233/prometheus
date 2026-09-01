@@ -177,7 +177,7 @@ namespace Xuan.Prometheus.Component
         private void TryBindEvents()
         {
             if (propComp == null || propComp.Entity == null) return;
-            if (!isPropertyBound && propComp.Entity.GameplayKit.TryGetSystem(out EntitySystem entitySystem))
+            if (!isPropertyBound && Core.Gameplay.TryGetSystem(out EntitySystem entitySystem))
             {
                 hpListenHandle = entitySystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.HpProperty, OnHpPropertyDirty);
                 maxHpListenHandle = entitySystem.Listen<PropertyComponent>(propComp.Entity.EntityId, component => component.MaxHpProperty, OnHpPropertyDirty);

@@ -12,15 +12,10 @@ GameObject:
   - component: {fileID: 491497129945753443}
   - component: {fileID: 491497129945753442}
   - component: {fileID: 491497129945753441}
-  - component: {fileID: 491497129945753470}
   - component: {fileID: 491497129945753471}
-  - component: {fileID: 7346509812746509812}
-  - component: {fileID: 491497129945753465}
-  - component: {fileID: 491497129945753467}
-  - component: {fileID: 491497129945753466}
-  - component: {fileID: 2980487244475764144}
-  - component: {fileID: 3247687134074917520}
   - component: {fileID: 939907256192294841}
+  - component: {fileID: 3965172468858107078}
+  - component: {fileID: 2549108971965831110}
   m_Layer: 7
   m_Name: Slime
   m_TagString: Enemy
@@ -138,19 +133,6 @@ MonoBehaviour:
   _animationName: idle
   loop: 1
   timeScale: 1
---- !u!114 &491497129945753470
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32ddcca584ed4ac9bc0e67a5525ac41b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  propConfig: {fileID: 11400000, guid: a2a39929b7d7ce54c998359d38c04f34, type: 2}
 --- !u!143 &491497129945753471
 CharacterController:
   m_ObjectHideFlags: 0
@@ -176,95 +158,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
---- !u!114 &7346509812746509812
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec688383a2b64e949cbd57317db6f8db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cc: {fileID: 491497129945753471}
-  curVelo: {x: 0, y: 0, z: 0}
-  wasGroundedLastFrame: 0
-  landThisFrame: 0
-  moveMode: 1
-  curMoveSpeed: 0
-  propertyConfig: {fileID: 11400000, guid: a2a39929b7d7ce54c998359d38c04f34, type: 2}
---- !u!114 &491497129945753465
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56d8fe292c014794999993799efebd3e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &491497129945753467
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00d9c1f4dd5fb85439c6d6c87bfe4c83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  vfxSlots: []
---- !u!114 &491497129945753466
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7511213f936c453b95c15871793e1d23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animationLib: {fileID: 11400000, guid: e637ee4e4a996f1468ecc56e62888208, type: 2}
-  rotateRoot: {fileID: 8856089555610823684}
---- !u!114 &2980487244475764144
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe9d9703fa244062acbc3c5dfd79ca55, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  talentConfig: {fileID: 0}
-  attackHits: []
-  talentGrowth:
-    debugTalentLevel: 1
-  legacyAttackCollider: {fileID: 8140240498181792558}
---- !u!114 &3247687134074917520
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491497129945753440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98420dec92cf0264db9dde5f79d0948c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  definition: {fileID: 11400000, guid: 51133297670dba947ab337f3e6300fb0, type: 2}
-  characterController: {fileID: 491497129945753471}
 --- !u!114 &939907256192294841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,6 +174,46 @@ MonoBehaviour:
   worldOffset: {x: 0, y: 2, z: 0}
   hpColor: {r: 0.6981132, g: 0.2540304, b: 0.2540304, a: 1}
   chaserColor: {r: 0.735849, g: 0.4343691, b: 0.4343691, a: 1}
+--- !u!114 &3965172468858107078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491497129945753440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be1a48e0b457de4e96412c21d8c629e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.SlimeBinder
+  entityColliderProxies:
+  - {fileID: 2549108971965831110}
+  - {fileID: 8140240498181792558}
+  characterController: {fileID: 491497129945753471}
+  spineAnimator: {fileID: 491497129945753441}
+  animationLibrary: {fileID: 11400000, guid: e637ee4e4a996f1468ecc56e62888208, type: 2}
+  rotateRoot: {fileID: 8856089555610823684}
+  rootMotionBridge: {fileID: 0}
+  propertyConfig: {fileID: 11400000, guid: a2a39929b7d7ce54c998359d38c04f34, type: 2}
+  attackTalentConfig: {fileID: 0}
+  attackHits: []
+  legacyAttackCollider: {fileID: 8140240498181792558}
+  attackTalentGrowth:
+    debugTalentLevel: 1
+  vfxSlots: []
+  enemyAiDefinition: {fileID: 11400000, guid: 51133297670dba947ab337f3e6300fb0, type: 2}
+--- !u!114 &2549108971965831110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491497129945753440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06b5f60a8fa947a98f756b3ceedf0900, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Component.ColliderProxy
 --- !u!1 &1612248102676694530
 GameObject:
   m_ObjectHideFlags: 0

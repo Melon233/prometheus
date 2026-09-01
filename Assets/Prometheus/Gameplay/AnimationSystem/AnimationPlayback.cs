@@ -148,7 +148,7 @@ namespace Xuan.Prometheus
         private void OnTrackEvent(TrackEntry entry, Spine.Event animationEvent)
         {
             if (finished || animationEvent == null) return;
-            if (ownerComponent != null && FmodAudioRuntime.TryConsumeAnimationMarker(animationEvent, ownerComponent.transform.position)) return;
+            if (ownerComponent != null && ownerComponent.Entity != null && ownerComponent.Entity.bindGo != null && FmodAudioRuntime.TryConsumeAnimationMarker(animationEvent, ownerComponent.Entity.bindGo.transform.position)) return;
             if (AnimationLine.TryResolveCommand(animationEvent, out AnimationLineEventCommand command))
             {
                 CommandReceived?.Invoke(this, command);

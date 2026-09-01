@@ -26,8 +26,7 @@ namespace Xuan.Prometheus
         /// <summary>每次进入显示状态时：监听背包修订号并请求服务器刷新背包数据。</summary>
         protected override void OnOpen()
         {
-            IGameplayKit gameplayKit = Core.Gameplay ?? throw new System.InvalidOperationException($"{nameof(BagPanel)} requires GameplayKit before opening.");
-            if (!gameplayKit.TryGetSystem(out bagSystem)) throw new System.InvalidOperationException($"{nameof(BagPanel)} requires {nameof(BagSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out bagSystem)) throw new System.InvalidOperationException($"{nameof(BagPanel)} requires {nameof(BagSystem)}.");
             listenHandle = bagSystem.RevisionProperty.Listen(OnItemsChanged);
             bagSystem.RequestItemsAsync().Forget();
         }

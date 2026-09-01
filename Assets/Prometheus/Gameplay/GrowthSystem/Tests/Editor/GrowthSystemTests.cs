@@ -38,19 +38,17 @@ namespace Xuan.Prometheus.Growth.Tests
         public void SetUp()
         {
             assetKit = new AssetKit();
-            gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            gameplayKit = new GameplayKit();
             entitySystem = gameplayKit.GetSystem<EntitySystem>();
             effectLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(EffectLibraryPath);
             Assert.That(effectLibrary, Is.Not.Null, $"无法加载正式效果库：{EffectLibraryPath}");
             effectSystem = new EffectSystem(effectLibrary);
             gameplayKit.AddSystem(effectSystem);
-            effectSystem.AfterNew(gameplayKit);
+            effectSystem.AfterNew();
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(prefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
             yefaInstance = Object.Instantiate(prefab);
-            PropertyComponent property = yefaInstance.GetComponent<PropertyComponent>();
-            Assert.That(property, Is.Not.Null, "Yefa 必须持有 PropertyComponent。");
-            property.RefreshBaseValues();
             entity = new GrowthTestEntity(yefaInstance);
             entitySystem.AddEntity(entity);
             entity.AfterNew();
@@ -81,6 +79,8 @@ namespace Xuan.Prometheus.Growth.Tests
             try
             {
                 PlayerEntity player = new PlayerEntity(instance);
+                entitySystem.AddEntity(player);
+                player.AfterNew();
                 Assert.That(player.TryGetComp(out CharaLevelComponent level), Is.True);
                 Assert.That(player.TryGetComp(out EquipmentComponent equipment), Is.True);
                 Assert.That(player.TryGetComp(out WeaponComponent weapon), Is.True);
@@ -90,6 +90,7 @@ namespace Xuan.Prometheus.Growth.Tests
                 Assert.That(player.TryGetLogic(out CharaLevelLogic _), Is.True);
                 Assert.That(player.TryGetLogic(out EquipmentLogic _), Is.True);
                 Assert.That(player.TryGetLogic(out WeaponLogic _), Is.True);
+                entitySystem.RemoveEntity(player.EntityId);
             }
             finally
             {
@@ -152,7 +153,8 @@ namespace Xuan.Prometheus.Growth.Tests
             AssertPermanentGrowthEffect("Weapon.Tiers");
             AssertPermanentGrowthEffect("Talent");
             System.Collections.Generic.List<EffectInstance> visibleBuffs = new System.Collections.Generic.List<EffectInstance>();
-            yefaInstance.GetComponent<EffectComponent>().CopyActiveBuffs(visibleBuffs);
+            Assert.That(entity.TryGetComp(out EffectComponent effectComponent), Is.True);
+            effectComponent.CopyActiveBuffs(visibleBuffs);
             Assert.That(visibleBuffs, Is.Empty, "内部成长永久 Effect 不应污染 HUD Buff 列表。");
         }
 
@@ -169,37 +171,29 @@ namespace Xuan.Prometheus.Growth.Tests
             WeaponConfig weaponConfig = null;
             try
             {
-                CharaLevelComponent level = curveObject.GetComponent<CharaLevelComponent>();
-                EquipmentComponent equipment = curveObject.GetComponent<EquipmentComponent>();
-                WeaponComponent weapon = curveObject.GetComponent<WeaponComponent>();
-                levelConfig = Object.Instantiate(level.Config);
-                equipmentConfig = Object.Instantiate(equipment.Config);
-                weaponConfig = Object.Instantiate(weapon.Config);
+                PlayerBinder binder = curveObject.GetComponent<PlayerBinder>();
+                Assert.That(binder, Is.Not.Null, "Yefa 必须在根节点持有 PlayerBinder。");
+                levelConfig = Object.Instantiate(binder.CharaLevelConfig);
+                equipmentConfig = Object.Instantiate(binder.EquipmentConfig);
+                weaponConfig = Object.Instantiate(binder.WeaponConfig);
                 SetSerializedGrowthCurve(levelConfig, 5, 100f, AnimationCurve.EaseInOut(0f, 0f, 1f, 1f));
                 SetSerializedGrowthCurve(equipmentConfig, 4, 100f, AnimationCurve.EaseInOut(0f, 0f, 1f, 1f));
                 SetSerializedGrowthCurve(weaponConfig, 5, 100f, AnimationCurve.EaseInOut(0f, 0f, 1f, 1f));
-                SetComponentConfig(level, levelConfig);
-                SetComponentConfig(equipment, equipmentConfig);
-                SetComponentConfig(weapon, weaponConfig);
-                SerializedObject equipmentObject = new SerializedObject(equipment);
-                equipmentObject.FindProperty("debugEquipment").arraySize = 0;
-                equipmentObject.ApplyModifiedPropertiesWithoutUndo();
-                SerializedObject weaponObject = new SerializedObject(weapon);
-                weaponObject.FindProperty("debugData.totalExperience").floatValue = 0f;
-                weaponObject.ApplyModifiedPropertiesWithoutUndo();
-                SerializedObject levelObject = new SerializedObject(level);
-                levelObject.FindProperty("debugData.totalExperience").floatValue = 0f;
-                levelObject.ApplyModifiedPropertiesWithoutUndo();
-                PropertyComponent property = curveObject.GetComponent<PropertyComponent>();
-                property.RefreshBaseValues();
+                SetBinderConfig(binder, "charaLevelConfig", levelConfig);
+                SetBinderConfig(binder, "equipmentConfig", equipmentConfig);
+                SetBinderConfig(binder, "weaponConfig", weaponConfig);
                 curveAssetKit = new AssetKit();
-                curveGameplayKit = new GameplayKit(curveAssetKit);
+                Core.Asset = curveAssetKit;
+                curveGameplayKit = new GameplayKit();
                 EffectSystem curveEffectSystem = new EffectSystem(library);
                 curveGameplayKit.AddSystem(curveEffectSystem);
-                curveEffectSystem.AfterNew(curveGameplayKit);
+                curveEffectSystem.AfterNew();
                 GrowthTestEntity curveEntity = new GrowthTestEntity(curveObject);
                 curveGameplayKit.GetSystem<EntitySystem>().AddEntity(curveEntity);
                 curveEntity.AfterNew();
+                Assert.That(curveEntity.TryGetComp(out CharaLevelComponent level), Is.True);
+                Assert.That(curveEntity.TryGetComp(out EquipmentComponent equipment), Is.True);
+                Assert.That(curveEntity.TryGetComp(out WeaponComponent weapon), Is.True);
                 Assert.That(level.AddExperience(50f), Is.EqualTo(50f).Within(0.0001f));
                 Assert.That(level.CurrentLevel, Is.EqualTo(3), "EaseInOut 曲线在一半经验处应映射到一半等级进度。");
                 EquipmentDefinition definition = AssetDatabase.LoadAssetAtPath<EquipmentDefinition>(EquipmentDefinitionPath);
@@ -214,6 +208,8 @@ namespace Xuan.Prometheus.Growth.Tests
             {
                 curveGameplayKit?.Dispose();
                 curveAssetKit?.Dispose();
+                Core.Asset = assetKit;
+                Core.Gameplay = gameplayKit;
                 if (curveObject != null) Object.DestroyImmediate(curveObject);
                 if (levelConfig != null) Object.DestroyImmediate(levelConfig);
                 if (equipmentConfig != null) Object.DestroyImmediate(equipmentConfig);
@@ -240,31 +236,32 @@ namespace Xuan.Prometheus.Growth.Tests
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        /// <summary>把测试专用配置 SO 副本写入 Component 的唯一 config 引用，不修改正式资产。</summary>
-        private static void SetComponentConfig(Object component, ScriptableObject config)
+        /// <summary>把测试专用配置 SO 副本写入实例 Binder 的指定字段，不修改正式 Prefab 资产。</summary>
+        private static void SetBinderConfig(PlayerBinder binder, string fieldName, ScriptableObject config)
         {
-            SerializedObject serializedObject = new SerializedObject(component);
-            serializedObject.FindProperty("config").objectReferenceValue = config;
+            SerializedObject serializedObject = new SerializedObject(binder);
+            serializedObject.FindProperty(fieldName).objectReferenceValue = config;
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        /// <summary>只组合养成系统需要的正式 MonoComponent、普通 Component 与 Logic。</summary>
+        /// <summary>只组合养成系统需要的纯 C# Component、根 Binder 表现和 Logic。</summary>
         private sealed class GrowthTestEntity : Entity
         {
             /// <summary>从正式 Yefa 实例注册养成链路全部依赖。</summary>
             public GrowthTestEntity(GameObject gameObject)
             {
-                bindGo = gameObject;
-                AddComp(gameObject.GetComponent<EffectComponent>());
-                AddComp(gameObject.GetComponent<PropertyComponent>());
-                AddComp(gameObject.GetComponent<CharaLevelComponent>());
-                AddComp(gameObject.GetComponent<EquipmentComponent>());
-                AddComp(gameObject.GetComponent<WeaponComponent>());
-                AddComp(gameObject.GetComponent<AttackComponent>());
-                AddComp(gameObject.GetComponent<SpecialAttackComponent>());
-                AddComp(gameObject.GetComponent<SkillComponent>());
-                AddComp(gameObject.GetComponent<UltimateComponent>());
+                AddComp(new GameObjectComponent(GameObjectSpawnSpec.SceneBound<PlayerBinder>(gameObject)));
+                AddComp<EffectComponent>();
+                AddComp<PropertyComponent>();
+                AddComp<CharaLevelComponent>();
+                AddComp<EquipmentComponent>();
+                AddComp<WeaponComponent>();
+                AddComp<AttackComponent>();
+                AddComp<SpecialAttackComponent>();
+                AddComp<SkillComponent>();
+                AddComp<UltimateComponent>();
                 AddComp<CoreTalentComponent>();
+                AddLogic<GameObjectLogic>();
                 AddLogic<EffectLogic>();
                 AddLogic<CharaLevelLogic>();
                 AddLogic<EquipmentLogic>();

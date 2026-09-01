@@ -16,14 +16,8 @@ namespace Xuan.Prometheus
         /// <summary>保存三个固定槽位的运行时成员数据。</summary>
         private readonly TeamMemberRuntime[] members = new TeamMemberRuntime[Capacity];
 
-        /// <summary>保存所属单局玩法世界，输入适配器通过它按 EntityId 解析成员。</summary>
-        private IGameplayKit gameplayKit;
-
         /// <summary>保存单局输入系统，用于迁移当前上场成员的玩法动作租约。</summary>
         private InputSystem inputSystem;
-
-        /// <summary>保存全局事件总线，只用于发布当前上场成员变化事实。</summary>
-        private IEventKit eventKit;
 
         /// <summary>保存数字键一二三的独占输入租约。</summary>
         private ControlLease teamSelectionLease;
@@ -61,13 +55,11 @@ namespace Xuan.Prometheus
         /// <inheritdoc />
         public bool IsAlive => !isDisposed;
 
-        /// <summary>绑定所属 GameplayKit 和数字键选择输入，成员 Entity 随后再由 GameplayKit 创建。</summary>
-        public override void AfterNew(IGameplayKit ownerGameplayKit)
+        /// <summary>通过 Core.Gameplay 取得输入系统并绑定数字键选择输入，成员 Entity 随后再由 GameplayKit 创建。</summary>
+        public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            gameplayKit = ownerGameplayKit ?? throw new ArgumentNullException(nameof(ownerGameplayKit));
-            inputSystem = gameplayKit.GetSystem<InputSystem>();
-            eventKit = Core.Event ?? throw new InvalidOperationException("TeamSystem requires EventKit.");
+            inputSystem = Core.Gameplay.GetSystem<InputSystem>();
             teamSelectionLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.TeamSelection, InputContexts.Gameplay);
         }
 
@@ -75,7 +67,7 @@ namespace Xuan.Prometheus
         public void InitializeMembers(IReadOnlyList<Entity> teamMembers)
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            if (gameplayKit == null || inputSystem == null || eventKit == null) throw new InvalidOperationException("TeamSystem must complete AfterNew before members are initialized.");
+            if (inputSystem == null) throw new InvalidOperationException("TeamSystem must complete AfterNew before members are initialized.");
             if (isInitialized) throw new InvalidOperationException("TeamSystem members can only be initialized once.");
             if (teamMembers == null) throw new ArgumentNullException(nameof(teamMembers));
             if (teamMembers.Count != Capacity) throw new ArgumentException($"TeamSystem requires exactly {Capacity} members.", nameof(teamMembers));
@@ -83,7 +75,6 @@ namespace Xuan.Prometheus
             for (int slotIndex = 0; slotIndex < Capacity; slotIndex++)
             {
                 Entity entity = teamMembers[slotIndex] ?? throw new ArgumentException($"Team member slot {slotIndex} cannot be null.", nameof(teamMembers));
-                if (!ReferenceEquals(entity.GameplayKit, gameplayKit)) throw new ArgumentException($"Team member slot {slotIndex} belongs to another GameplayKit.", nameof(teamMembers));
                 if (!entity.IsActive) throw new ArgumentException($"Team member slot {slotIndex} must complete Entity.AfterNew before team initialization.", nameof(teamMembers));
                 if (!entityIds.Add(entity.EntityId)) throw new ArgumentException($"Team member EntityId {entity.EntityId} is configured more than once.", nameof(teamMembers));
                 members[slotIndex] = CreateMemberRuntime(entity, slotIndex);
@@ -202,9 +193,7 @@ namespace Xuan.Prometheus
             pendingSwitchFrame = default;
             hasPendingSwitchFrame = false;
             isInitialized = false;
-            eventKit = null;
             inputSystem = null;
-            gameplayKit = null;
             isDisposed = true;
         }
 
@@ -265,8 +254,7 @@ namespace Xuan.Prometheus
         /// <summary>通知所有观察者切换 EntityId；HUD 随后通过 EntitySystem 立即读取新成员当前字段。</summary>
         private void PublishActiveMemberTransition(int previousEntityId, int currentEntityId, int previousSlotIndex, int currentSlotIndex)
         {
-            if (eventKit == null) return;
-            eventKit.Invoke(Event.ActiveTeamMemberChanged, new ActiveTeamMemberChangedEvent(previousEntityId, currentEntityId, previousSlotIndex, currentSlotIndex));
+            Core.Event.Invoke(Event.ActiveTeamMemberChanged, new ActiveTeamMemberChangedEvent(previousEntityId, currentEntityId, previousSlotIndex, currentSlotIndex));
         }
 
         /// <summary>捕获切换瞬间的位置、朝向和速度，使新成员在同一战斗位置无缝接管。</summary>

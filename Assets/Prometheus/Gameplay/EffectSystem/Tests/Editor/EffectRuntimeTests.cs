@@ -44,8 +44,8 @@ namespace Xuan.Prometheus.Effects.Tests
             targetConfig.atk = 5f;
             targetConfig.toughness = 1f;
             targetConfig.hp = 100f;
-            sourceProperty = sourceObject.AddComponent<PropertyComponent>();
-            targetProperty = targetObject.AddComponent<PropertyComponent>();
+            sourceProperty = new PropertyComponent();
+            targetProperty = new PropertyComponent();
             sourceProperty.InitializeForTests(sourceConfig);
             targetProperty.InitializeForTests(targetConfig);
             sourceEntity = new TestEntity(sourceObject, sourceProperty);
@@ -766,7 +766,8 @@ namespace Xuan.Prometheus.Effects.Tests
             targetEntity.AddLogic(moveLogic);
             targetEntity.AddLogic(skillLogic);
             AssetKit lifecycleAssetKit = new AssetKit();
-            GameplayKit lifecycleGameplayKit = new GameplayKit(lifecycleAssetKit);
+            Core.Asset = lifecycleAssetKit;
+            GameplayKit lifecycleGameplayKit = new GameplayKit();
             lifecycleGameplayKit.GetSystem<EntitySystem>().AddEntity(targetEntity);
             try
             {
@@ -1025,7 +1026,7 @@ namespace Xuan.Prometheus.Effects.Tests
             GameObject originObject = new GameObject("EffectTest.Origin");
             PropertyConfig originConfig = ScriptableObject.CreateInstance<PropertyConfig>();
             originConfig.atk = 301f;
-            PropertyComponent originProperty = originObject.AddComponent<PropertyComponent>();
+            PropertyComponent originProperty = new PropertyComponent();
             originProperty.InitializeForTests(originConfig);
             TestEntity originEntity = new TestEntity(originObject, originProperty);
             targetProperty.SetBaseValue(PropertyType.Atk, 201f);
@@ -1182,7 +1183,8 @@ namespace Xuan.Prometheus.Effects.Tests
             EffectLibrary persistentLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(libraryPath);
             GameObject runtimeRootObject = new GameObject("EffectTest.GameplayRoot");
             AssetKit assetKit = new AssetKit();
-            GameplayKit gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            GameplayKit gameplayKit = new GameplayKit();
             try
             {
                 Assert.That(persistentLibrary, Is.Not.Null);
@@ -1205,7 +1207,8 @@ namespace Xuan.Prometheus.Effects.Tests
         {
             EffectLibrary library = ScriptableObject.CreateInstance<EffectLibrary>();
             AssetKit assetKit = new AssetKit();
-            GameplayKit gameplayKit = new GameplayKit(assetKit);
+            Core.Asset = assetKit;
+            GameplayKit gameplayKit = new GameplayKit();
             EffectSystem effectSystem = new EffectSystem(library);
             int playCount = 0;
             FmodAudioEvent playedEvent = FmodAudioEvent.None;
@@ -1221,8 +1224,8 @@ namespace Xuan.Prometheus.Effects.Tests
             {
                 gameplayKit.AddSystem(effectSystem);
                 gameplayKit.AddSystem(audioSystem);
-                effectSystem.AfterNew(gameplayKit);
-                audioSystem.AfterNew(gameplayKit);
+                effectSystem.AfterNew();
+                audioSystem.AfterNew();
                 Vector3 fatalHitPosition = new Vector3(3f, 2f, 1f);
                 effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 150f, 100f, EffectTag.Attack, position: fatalHitPosition, wasFatal: true));
                 Assert.That(playCount, Is.EqualTo(1), "致命实际伤害必须绕过受击动画并恰好播放一次命中音效。");

@@ -141,8 +141,7 @@ namespace Xuan.Prometheus.Logic
         {
             if (!Entity.IsActive || activePlayback == null || !isHitWindowOpen || source == null || other == null || !ReferenceEquals(source, activeHitContext.ColliderProxy)) return;
             if (source.cod != null && !source.cod.enabled) return;
-            PropertyComponent targetProperty = other.GetComponentInParent<PropertyComponent>();
-            if (targetProperty == null || targetProperty.Entity == null || targetProperty.IsDead || !targetProperty.Entity.IsActive || !targetProperty.CompareTag("Enemy")) return;
+            if (!ColliderProxy.TryGetHostEntity(other, out Entity targetEntity) || !targetEntity.TryGetComp(out PropertyComponent targetProperty) || targetProperty.IsDead || !targetEntity.IsActive || targetEntity.bindGo == null || !targetEntity.bindGo.CompareTag("Enemy")) return;
             float requestedDamage = activeHitContext.CalculateRequestedDamage(PropertyComponent.GetCalculatedDamage());
             DamageAttribute damageAttribute = PropertyComponent.ResolveDamageAttribute(activeHitContext.DamageActionType);
             EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, activeHitContext.Tags, activeHitContext.AbilityId, position: other.transform.position, damageAttribute: damageAttribute, damageActionType: activeHitContext.DamageActionType);

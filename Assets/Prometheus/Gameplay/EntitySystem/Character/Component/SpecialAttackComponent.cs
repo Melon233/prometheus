@@ -5,13 +5,13 @@ using Xuan.Prometheus.Component;
 namespace Xuan.Prometheus.Logic.Talent
 {
     /// <summary>保存特殊攻击的 TalentConfig、碰撞体、能力编号和非序列化蓄力运行态。</summary>
-    public class SpecialAttackComponent : Component.MonoComponent, ITalentGrowthComponent
+    public class SpecialAttackComponent : Component.Component, Component.IEntityBinderComponent, ITalentGrowthComponent
     {
-        [SerializeField] private TalentConfig talentConfig;
-        [SerializeField] private ColliderProxy colliderProxy;
-        [SerializeField] private string abilityId = "Player.SpecialAttack";
+        private TalentConfig talentConfig;
+        private ColliderProxy colliderProxy;
+        private string abilityId = "Player.SpecialAttack";
         /// <summary>保存特殊攻击自己的 Debug 等级配置、运行时等级副本和可修改增益系数。</summary>
-        [SerializeField] private TalentGrowthState talentGrowth = new TalentGrowthState();
+        private TalentGrowthState talentGrowth = new TalentGrowthState();
         [NonSerialized] public Timer specialTimer;
         [NonSerialized] public bool canSpecial = true;
 
@@ -57,6 +57,24 @@ namespace Xuan.Prometheus.Logic.Talent
 
         /// <summary>获取写入 HitConfirmed 的特殊攻击能力编号。</summary>
         public string AbilityId => string.IsNullOrWhiteSpace(abilityId) ? "Player.SpecialAttack" : abilityId.Trim();
+
+        /// <summary>从唯一根 PlayerBinder 复制特殊攻击配置和命中引用，并创建独立天赋运行态。</summary>
+        public void Bind(Xuan.Prometheus.Logic.EntityBinder binder)
+        {
+            PlayerBinder playerBinder = binder as PlayerBinder ?? throw new InvalidOperationException($"SpecialAttackComponent requires PlayerBinder but received '{binder?.GetType().FullName}'.");
+            talentConfig = playerBinder.SpecialAttackTalentConfig;
+            colliderProxy = playerBinder.SpecialAttackCollider;
+            abilityId = playerBinder.SpecialAttackAbilityId;
+            talentGrowth = playerBinder.SpecialAttackTalentGrowth?.CloneTemplate() ?? new TalentGrowthState();
+        }
+
+        /// <summary>解除特殊攻击配置、碰撞代理和计时器引用。</summary>
+        public void Unbind()
+        {
+            talentConfig = null;
+            colliderProxy = null;
+            specialTimer = null;
+        }
 
         /// <summary>按 TalentConfig 蓄力时间创建新的运行时计时器。</summary>
         public void InitializeRuntimeTimer()
