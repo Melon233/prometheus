@@ -7,7 +7,7 @@ namespace Xuan.Prometheus.Effects
     /// EffectSystem 是单局 GameplayKit 独占的公共效果系统，负责持有并推进唯一的 EffectRuntime。
     /// 它是普通 C# System，不依赖 MonoBehaviour、场景对象或进程级单例，因此多个战斗上下文可以彼此隔离。
     /// </summary>
-    public sealed class EffectSystem : XSystem
+    internal sealed class EffectSystem : XSystem, IEffectSystem
     {
         private readonly int randomSeed;
         private readonly bool logTrace;

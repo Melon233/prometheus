@@ -26,14 +26,14 @@ namespace Xuan.Prometheus
 
         /// <summary>获取当前正式入口创建的唯一 Core 实例。</summary>
         public static Core Current { get; private set; }
-        /// <summary>快速访问当前正式注册的资源模块；保留公开写入以支持独立系统测试隔离。</summary>
-        public static IAssetKit Asset { get; set; }
-        /// <summary>快速访问当前正式注册的全局事件模块；保留公开写入以支持独立系统测试隔离。</summary>
-        public static IEventKit Event { get; set; }
-        /// <summary>快速访问当前正式注册的 UI 模块；保留公开写入以支持独立系统测试隔离。</summary>
-        public static IUIKit UI { get; set; }
-        /// <summary>快速访问最后注册并已配置的玩法模块；保留公开写入以支持独立系统测试隔离。</summary>
-        public static IGameplayKit Gameplay { get; set; }
+        /// <summary>快速访问当前正式注册的资源模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
+        public static IAssetKit Asset { get; internal set; }
+        /// <summary>快速访问当前正式注册的全局事件模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
+        public static IEventKit Event { get; internal set; }
+        /// <summary>快速访问当前正式注册的 UI 模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
+        public static IUIKit UI { get; internal set; }
+        /// <summary>快速访问最后注册并已配置的玩法模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
+        public static IGameplayKit Gameplay { get; internal set; }
 
         /// <summary>
         /// 创建唯一 Core，并先注册 AssetKit、EventKit 和 UIKit 三个基础模块。
@@ -96,7 +96,7 @@ namespace Xuan.Prometheus
         /// <summary>获取指定契约对应的 Kit，使调用方不需要依赖内部注册容器。</summary>
         /// <typeparam name="TKit">注册 Kit 使用的接口类型。</typeparam>
         /// <returns>与接口类型对应的唯一 Kit 实例。</returns>
-        public TKit GetKit<TKit>() where TKit : class
+        public TKit GetKit<TKit>() where TKit : class, IKitContract
         {
             ThrowIfDisposed();
             if (!kits.TryGet(typeof(TKit), out Kit kit)) throw new InvalidOperationException($"Core does not contain a kit registered as '{typeof(TKit).FullName}'.");
@@ -132,7 +132,7 @@ namespace Xuan.Prometheus
         /// <summary>以接口契约注册 Kit，并把该实例追加到确定性的生命周期序列。</summary>
         /// <typeparam name="TContract">外部查询该 Kit 时使用的接口契约。</typeparam>
         /// <param name="kit">由当前 Core 独占并负责释放的 Kit 实例。</param>
-        private void RegisterKit<TContract>(Kit kit) where TContract : class
+        private void RegisterKit<TContract>(Kit kit) where TContract : class, IKitContract
         {
             if (kit == null) throw new ArgumentNullException(nameof(kit));
             if (!(kit is TContract)) throw new ArgumentException($"Kit '{kit.GetType().FullName}' does not implement '{typeof(TContract).FullName}'.", nameof(kit));

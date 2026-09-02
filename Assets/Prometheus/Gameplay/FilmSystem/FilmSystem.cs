@@ -7,13 +7,13 @@ using Xuan.Prometheus.Input;
 namespace Xuan.Prometheus.Film
 {
     /// <summary>集中创建和管理单局 Timeline 演出实例，并负责输入、镜头和实例生命周期的对称清理。</summary>
-    public sealed class FilmSystem : XSystem
+    internal sealed class FilmSystem : XSystem, IFilmSystem
     {
         /// <summary>保存系统运行时根节点，保证演出对象与 GameplayKit 同生命周期。</summary>
         private readonly Transform runtimeRoot;
         private GameObject systemRoot;
-        private InputSystem inputSystem;
-        private CameraSystem cameraSystem;
+        private IInputSystem inputSystem;
+        private ICameraSystem cameraSystem;
         /// <summary>保存对话和 QTE 的异步交互端口，默认使用可手动完成的服务。</summary>
         private readonly IFilmInteractionService interactionService;
         /// <summary>保存按父子关系和优先级排列的活动演出实例。</summary>
@@ -59,8 +59,8 @@ namespace Xuan.Prometheus.Film
         public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(FilmSystem));
-            inputSystem = Core.Gameplay.GetSystem<InputSystem>();
-            cameraSystem = Core.Gameplay.GetSystem<CameraSystem>();
+            inputSystem = Core.Gameplay.GetSystem<IInputSystem>();
+            cameraSystem = Core.Gameplay.GetSystem<ICameraSystem>();
             systemRoot = new GameObject("[FilmSystem]");
             systemRoot.transform.SetParent(runtimeRoot, false);
         }

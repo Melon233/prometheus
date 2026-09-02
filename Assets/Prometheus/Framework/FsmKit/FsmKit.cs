@@ -2,8 +2,17 @@ using System.Collections.Generic;
 
 namespace Xuan.Prometheus
 {
-    public interface IFsmKit
+    /// <summary>定义有限状态机的状态注册、移除和切换能力，调用方不接触具体 Kit 实现。</summary>
+    public interface IFsmKit : IKitContract
     {
+        /// <summary>按状态名称注册一个可切换状态。</summary>
+        void AddState(State state);
+
+        /// <summary>移除一个已经注册的状态。</summary>
+        void RemoveState(State state);
+
+        /// <summary>退出当前状态并进入指定状态。</summary>
+        void ChangeState(State state);
     }
     public abstract class State
     {
@@ -12,7 +21,7 @@ namespace Xuan.Prometheus
         public abstract void OnEnter();
         public abstract void OnExit();
     }
-    public class FsmKit : Kit, IFsmKit
+    internal sealed class FsmKit : Kit, IFsmKit
     {
         private Dictionary<string, State> stateDict = new Dictionary<string, State>();
         private State currentState = null;

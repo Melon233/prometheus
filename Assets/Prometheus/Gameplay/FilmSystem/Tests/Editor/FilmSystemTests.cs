@@ -382,22 +382,22 @@ namespace Xuan.Prometheus.Film.Tests
             public bool IsReady => true;
 
             /// <summary>测试不创建玩家实体。</summary>
-            public PlayerEntity Player => null;
+            public Entity Player => null;
 
             /// <summary>返回 FilmSystem 所需的输入或镜头系统实例。</summary>
-            public TSystem GetSystem<TSystem>() where TSystem : XSystem
+            public TContract GetSystem<TContract>() where TContract : class, ISystemContract
             {
-                if (typeof(TSystem) == typeof(InputSystem)) return inputSystem as TSystem;
-                if (typeof(TSystem) == typeof(CameraSystem)) return cameraSystem as TSystem;
-                throw new InvalidOperationException($"Unsupported test system type '{typeof(TSystem).Name}'.");
+                if (typeof(TContract) == typeof(IInputSystem)) return inputSystem as TContract;
+                if (typeof(TContract) == typeof(ICameraSystem)) return cameraSystem as TContract;
+                throw new InvalidOperationException($"Unsupported test system contract '{typeof(TContract).Name}'.");
             }
 
             /// <summary>尝试返回 FilmSystem 所需的输入或镜头系统实例。</summary>
-            public bool TryGetSystem<TSystem>(out TSystem system) where TSystem : XSystem
+            public bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystemContract
             {
                 try
                 {
-                    system = GetSystem<TSystem>();
+                    system = GetSystem<TContract>();
                     return true;
                 }
                 catch

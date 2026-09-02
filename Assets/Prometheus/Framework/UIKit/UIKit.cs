@@ -11,7 +11,7 @@ namespace Xuan.Prometheus
     /// <summary>
     /// 定义业务层访问 UI 系统所需的稳定能力，业务代码不需要接触资源句柄、Prefab 实例或内部面板记录。
     /// </summary>
-    public interface IUIKit
+    public interface IUIKit : IKitContract
     {
         /// <summary>
         /// 打开指定类型的单例面板；面板已经打开时直接返回当前控制器，已缓存时复用原实例。
@@ -74,7 +74,7 @@ namespace Xuan.Prometheus
     /// 管理 2D 面板类型注册、Prefab 实例、纯 C# 控制器、显示层级，以及多实例世界 UI 的跟随、计时和对象池。
     /// Prefab 资源句柄始终由 AssetKit 缓存和释放，UIKit 只管理使用这些资源创建出来的场景实例。
     /// </summary>
-    public sealed class UIKit : Kit, IUIKit
+    internal sealed class UIKit : Kit, IUIKit
     {
         private const string RootName = "[UIKit]";
         /// <summary>UIKit 在场景未提供事件系统时创建的运行时节点名称。</summary>

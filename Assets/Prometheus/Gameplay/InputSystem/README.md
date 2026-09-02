@@ -10,7 +10,7 @@
 
 `UnityInputActionSource` 在运行时创建 `Gameplay` Action Map，采样键盘、鼠标和手柄并生成 `InputFrame`。`InputSystem` 按 `InputContext`、绑定优先级和 `InputDeliveryMode` 分发动作。HUD 打开类快捷键交给独立 `HudCommandSystem.ReceiveInput`，小队数字键交给 `TeamSystem.ReceiveInput`，玩法动作交给当前上场实体的 `InputComponent`。
 
-`InputSystem` 和 `EntityInputReceiver` 不保存或注入 `IGameplayKit`。Entity 输入适配器只保存目标 `EntityId`，构造时通过 `Core.Gameplay.GetSystem<EntitySystem>()` 取得当前实体系统，分发时按编号查询实体；System 之间的访问同样从 `Core.Gameplay` 开始。
+`InputSystem` 和 `EntityInputReceiver` 不保存或注入 `IGameplayKit`。Entity 输入适配器只保存目标 `EntityId`，构造时通过 `Core.Gameplay.GetSystem<IEntitySystem>()` 取得当前实体系统，分发时按编号查询实体；System 之间的访问同样从 `Core.Gameplay` 开始，并且只查询接口契约。
 
 HUD 当前快捷键为：`L` 打开抽奖、`M` 打开小地图、`J` 打开任务、`P` 打开菜单、`G` 打开引导、`F5` 打开活动、`C` 打开角色、`B` 打开背包。数字键 `1`、`2`、`3` 切换三个固定小队槽位。技能为 `E`，大招为 `R`，跳跃为 `Space`，闪避为鼠标右键，鼠标左键只有在 GameView 屏幕范围内且未命中 UI 时才触发普通攻击；SceneView 和编辑器其他区域的点击不会进入玩法攻击。
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Xuan.Prometheus.NetworkKit.Transport
 {
     /// <summary>基于 TCP 的字节传输实现；不负责长度帧和 Protobuf 编解码。</summary>
-    public sealed class TcpByteTransport : IByteTransport
+    internal sealed class TcpByteTransport : IByteTransport
     {
         private TcpClient client;
         private NetworkStream stream;

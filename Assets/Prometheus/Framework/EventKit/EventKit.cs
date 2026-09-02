@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace Xuan.Prometheus
 {
+    /// <summary>标记可由全局 EventKit 发布的类型化事件载荷。</summary>
+    public interface IEvent
+    {
+    }
+
     /// <summary>定义由全局 EventKit 路由的事件类型。</summary>
     public enum Event
     {
@@ -26,6 +31,16 @@ namespace Xuan.Prometheus
         WorldMapPlayerPositionChanged,
         /// <summary>表示地图 POI 的集合或动态状态发生变化。</summary>
         WorldMapPoiChanged,
+        /// <summary>表示一个可解锁 POI 已完成解锁。</summary>
+        PoiUnlocked,
+        /// <summary>表示一个宝箱类 POI 已完成开启。</summary>
+        PoiOpened,
+        /// <summary>表示一个神瞳类 POI 已完成收集。</summary>
+        PoiCollected,
+        /// <summary>表示一个采集类 POI 已完成采集。</summary>
+        PoiGathered,
+        /// <summary>表示一个战斗类 POI 已完成击败或清剿。</summary>
+        PoiDefeated,
     }
 
     /// <summary>携带本次进入打开生命周期的具体 UI 面板类型，供玩法侧按面板类型重放当前状态。</summary>
@@ -180,7 +195,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>定义全局事件总线的监听、退订和同步发布能力。</summary>
-    public interface IEventKit
+    public interface IEventKit : IKitContract
     {
         /// <summary>添加一条无参数全局事件监听。</summary>
         void AddListener(Event evt, Action callback);
@@ -202,7 +217,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>由 Core 托管的全局同步事件总线，负责保存事件监听并在释放时统一清理。</summary>
-    public sealed class EventKit : Kit, IEventKit
+    internal sealed class EventKit : Kit, IEventKit
     {
         /// <summary>按全局事件类型保存当前注册的委托链。</summary>
         private readonly Dictionary<Event, Delegate> eventDict = new Dictionary<Event, Delegate>();

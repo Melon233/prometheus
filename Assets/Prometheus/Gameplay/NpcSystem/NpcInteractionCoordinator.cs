@@ -9,12 +9,12 @@ namespace Xuan.Prometheus.Npc
     /// <summary>把 NPC 交互请求转换为 Film 播放，并统一处理完成和取消。</summary>
     internal sealed class NpcInteractionCoordinator
     {
-        private readonly FilmSystem filmSystem;
+        private readonly IFilmSystem filmSystem;
         private readonly Action<int> onCompleted;
         private FilmHandle activeFilm;
 
         /// <summary>创建通过 Core.Gameplay 查询实体并使用指定 FilmSystem 播放演出的交互协调器。</summary>
-        internal NpcInteractionCoordinator(FilmSystem filmSystem, Action<int> onCompleted)
+        internal NpcInteractionCoordinator(IFilmSystem filmSystem, Action<int> onCompleted)
         {
             this.filmSystem = filmSystem;
             this.onCompleted = onCompleted;
@@ -23,7 +23,7 @@ namespace Xuan.Prometheus.Npc
         /// <summary>异步启动 NPC 配置的 Film；没有 Film 时保留给外部 InteractionRequested 订阅者。</summary>
         internal void Start(NpcInteractionContext context)
         {
-            if (!Core.Gameplay.GetSystem<EntitySystem>().TryGetEntity(context.EntityId, out Entity entity) || !(entity is NpcEntity npc)) return;
+            if (!Core.Gameplay.GetSystem<IEntitySystem>().TryGetEntity(context.EntityId, out Entity entity) || !(entity is NpcEntity npc)) return;
             StartAsync(context, npc).Forget();
         }
 

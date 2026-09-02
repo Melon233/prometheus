@@ -4,14 +4,14 @@ namespace Xuan.Prometheus.Quest
     public static class QuestEventAdapters
     {
         /// <summary>发布 Film 完成事件。</summary>
-        public static void PublishFilmCompleted(QuestSystem questSystem, string eventId, string filmId) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.FilmCompleted, filmId)); }
+        public static void PublishFilmCompleted(IQuestSystem questSystem, string eventId, string filmId) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.FilmCompleted, filmId)); }
         /// <summary>发布对话完成事件。</summary>
-        public static void PublishDialogueCompleted(QuestSystem questSystem, string eventId, string dialogueId, string result = null) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.DialogueCompleted, dialogueId, 1, result)); }
+        public static void PublishDialogueCompleted(IQuestSystem questSystem, string eventId, string dialogueId, string result = null) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.DialogueCompleted, dialogueId, 1, result)); }
         /// <summary>发布物品获得事件。</summary>
-        public static void PublishItemAdded(QuestSystem questSystem, string eventId, string itemId, int amount) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.ItemAdded, itemId, amount)); }
+        public static void PublishItemAdded(IQuestSystem questSystem, string eventId, string itemId, int amount) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.ItemAdded, itemId, amount)); }
         /// <summary>发布敌人击败事件。</summary>
-        public static void PublishEnemyDefeated(QuestSystem questSystem, string eventId, string enemyId, int amount = 1) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.EnemyDefeated, enemyId, amount)); }
+        public static void PublishEnemyDefeated(IQuestSystem questSystem, string eventId, string enemyId, int amount = 1) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.EnemyDefeated, enemyId, amount)); }
         /// <summary>发布进入区域事件。</summary>
-        public static void PublishEnteredRegion(QuestSystem questSystem, string eventId, string regionId) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.EnteredRegion, regionId)); }
+        public static void PublishEnteredRegion(IQuestSystem questSystem, string eventId, string regionId) { questSystem.PublishEvent(new QuestEvent(eventId, QuestEventType.EnteredRegion, regionId)); }
     }
 }

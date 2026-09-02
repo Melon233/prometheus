@@ -6,7 +6,7 @@ using Xuan.Prometheus.NetworkKit.Framing;
 namespace Xuan.Prometheus.NetworkKit.Protocol
 {
     /// <summary>Packet Protobuf 编解码器；协议层不直接操作 Socket 或请求状态。</summary>
-    public static class PacketCodec
+    internal static class PacketCodec
     {
         /// <summary>把 Packet 序列化成带长度前缀的完整发送帧。</summary>
         public static byte[] Encode(Packet packet) { return LengthPrefixedFrameCodec.Encode(packet.ToByteArray()); }

@@ -30,7 +30,7 @@ namespace Xuan.Prometheus
         private int observedEntityId;
 
         /// <summary>保存当前单局的实体与强类型字段监听系统。</summary>
-        private EntitySystem entitySystem;
+        private IEntitySystem entitySystem;
 
         /// <summary>保存生命、上限、核心能量、技能冷却、大招状态、Buff 列表和交互列表对应的可释放监听。</summary>
         private readonly ListenHandle[] listenHandles = new ListenHandle[10];
@@ -45,16 +45,16 @@ namespace Xuan.Prometheus
         private bool isObserving;
 
         /// <summary>保存当前 HUD 绑定到的集中式输入系统，快捷键由 InputAction 仲裁，战斗按钮点击则提交定向实体命令。</summary>
-        private InputSystem inputSystem;
+        private IInputSystem inputSystem;
 
         /// <summary>保存当前单局的小队系统，供三个头像按钮直接切换固定槽位。</summary>
-        private TeamSystem teamSystem;
+        private ITeamSystem teamSystem;
 
         /// <summary>保存独立 HUD 命令系统，普通点击只负责提交命令而不监听任何快捷键。</summary>
-        private HudCommandSystem hudCommandSystem;
+        private IHudCommandSystem hudCommandSystem;
 
         /// <summary>保存当前单局的大世界 POI 系统，交互点击由它向服务器提交请求。</summary>
-        private WorldSystem worldSystem;
+        private IWorldSystem worldSystem;
 
         /// <summary>保存运行时创建在 MiniMapButton 内的地图 RawImage。</summary>
         private RawImage minimapImage;
@@ -119,11 +119,11 @@ namespace Xuan.Prometheus
         protected override void OnOpen()
         {
             Debug.Log($"[UIKit] {nameof(HudPanel)} opened.", Root);
-            if (!Core.Gameplay.TryGetSystem(out entitySystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(EntitySystem)}.");
-            if (!Core.Gameplay.TryGetSystem(out teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(TeamSystem)}.");
-            if (!Core.Gameplay.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(InputSystem)}.");
-            if (!Core.Gameplay.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(HudCommandSystem)}.");
-            if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(WorldSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out entitySystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IEntitySystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out teamSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(ITeamSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IInputSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out hudCommandSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IHudCommandSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IWorldSystem)}.");
             SubscribeMinimapEvents();
             if (worldSystem.TryGetPlayerPosition(out Vector3 currentPosition))
             {

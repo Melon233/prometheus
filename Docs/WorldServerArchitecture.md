@@ -11,16 +11,17 @@ POI 采用**服务器权威 + chunk 分区同步**：
 
 - **身份**：语义化字符串 ID（`{Region}_{类型}_{序号}`，如 `Mond_Chest_1`），同时是 MongoDB 文档 `_id` 与客户端同步键。
 - **空间分区**：`chunkId`（三位编码 `chunkX*1000 + chunkY`，chunk 坐标非负），用于按区块查询。
-- **通信**：裸 TCP + 4 字节大端长度前缀 + protobuf `Packet` 信封。
+- **通信**：裸 TCP + 16 字节大端固定 Head + 变长 Protobuf `Packet` Body。
 - **持久化**：MongoDB（`prometheus` 库，`poi_states` 与 `backpack` 集合由服务按需写入）。
 - **同步**：客户端按需拉取玩家附近 chunk 的状态（`PullChunk`），全量 `PullAll` 保留作调试。
 - **权威**：服务器是唯一权威；客户端仅在 `Interact` 返回 `success=true` 后才做表现。
 
 ```
-┌────────────── Unity 客户端 ──────────────┐   TCP   ┌────────── Go 服务器 ──────────┐   ┌──────────┐
-│ WorldSystem ─ PoiNetworkClient           │ ──────► │ netx ─ service(PullChunk等)   │──►│ MongoDB  │
-│   扫描场景 / AOI 显隐 / chunk 按需拉取      │  9000   │   读导出→播种→按 chunk 索引     │   │ 两个业务集合 │
-└──────────────────────────────────────────┘        └───────────────────────────────┘   └──────────┘
+┌──────────────────── Unity 客户端 ───────────────────┐   TCP   ┌────────── Go 服务器 ──────────┐   ┌──────────┐
+│ ServiceSystem（业务协议 / 唯一 INetworkClient）     │ ──────► │ netx ─ service(PullChunk等)   │──►│ MongoDB  │
+│   ├─ IServiceSystem ─► WorldSystem（POI/AOI/位置）   │  9000   │   读导出→播种→按 chunk 索引     │   │ 两个业务集合 │
+│   └─ IServiceSystem ─► BagSystem（库存快照）         │         └───────────────────────────────┘   └──────────┘
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -47,8 +48,13 @@ Assets/Prometheus/Gameplay/WorldSystem/
 ├── ChunkIdCodec.cs              # chunkId 编解码
 ├── PoiOp.cs / PoiExportList.cs
 ├── Data/PoiConfig.cs            # Id / Region / ChunkId / 位置旋转
-├── Network/                     # PoiNetworkClient / PoiStateApplier / PoiInteractionHandler
+├── Network/                     # PoiStateApplier 等世界状态适配
 └── Editor/                      # WorldBakeWindow（导出）/ ServerProcessManager（自动启停）
+
+Assets/Prometheus/Gameplay/ServiceSystem/
+├── IServiceSystem.cs            # 纯游戏业务请求与业务 Push 契约
+├── ServiceSystem.cs             # 业务组包解包、Push 分类及唯一客户端所有权
+└── ServiceSystemDesign.md       # 生命周期和扩展约束
 ```
 
 ---
@@ -92,6 +98,8 @@ message InteractResponse { bool success=1; PoiState state=2; }
 message Packet { uint64 request_id=100; oneof body { ... POI / room / position / gacha requests and responses ... } }
 ```
 
+线上固定 Head 布局为 `[BodyLength:uint32][MessageId:uint32][RequestId:uint64]`。`request_id` 仅作为生成类型的兼容字段保留，编码 Protobuf Body 时固定清零；实际请求关联使用 Head 中的 `RequestId`。
+
 > `PoiState` 只同步可变状态 + `id`；位置/旋转/chunkId/region 属静态定义，存于导出配置（客户端从场景读取，服务器从导出读取），不随状态同步。
 
 ---
@@ -104,7 +112,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 | `internal/store` | `Store`/`ItemStore` 接口 + `MongoStore`/`ItemStore`，POI 与玩家背包持久化 |
 | `internal/room` | 唯一 `default` 房间、玩家引用计数与权威坐标快照 |
 | `internal/service` | `Service`：POI 内存索引、按玩家背包、交互掉落与抽卡 |
-| `internal/netx` | TCP 会话、长度帧、request_id 关联、广播写锁与按 oneof 分发 |
+| `internal/netx` | TCP 会话、固定 Head、RequestId 关联、广播写锁与按 MessageId/oneof 分发 |
 
 **启动流程**：连 MongoDB → 加载 `config/items.json` 与默认玩家背包 → 读 `PoiExport.json` → `Seed`（按 id 判重，新 POI 入库）→ 创建唯一默认房间并监听 TCP。
 
@@ -116,7 +124,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 
 ### 6.1 启动
 
-`WorldSystem.AfterNew`：创建 `PoiNetworkClient` 并通过 `ConnectAsync` 显式确认服务器连接；成功后扫描场景 `PoiMono` → 绑定 `PoiEntity`（按 `Id` 建索引）→ 启用 AOI 与交互。兼容外观内部使用 `Framework/NetworkKit`，NetworkKit 会话连接后自动加入默认房间。
+`GameplayKit` 在其他网络消费者之前创建并注册 ServiceSystem；WorldSystem 与 BagSystem 在调用点通过 `Core.Gameplay.GetSystem<IServiceSystem>()` 获取接口，不使用构造注入。`WorldSystem.AfterNew` 先扫描场景 `PoiMono`、绑定 `PoiEntity`（按 `Id` 建索引），再通过纯业务接口 `EnterWorldAsync` 进入默认世界；ServiceSystem 在内部完成一次连接与 JoinRoom 请求。成功后启用世界同步与权威交互，失败时保留本地 POI 展示且本局不重新连接。
 
 ### 6.2 chunk 按需拉取
 
@@ -128,7 +136,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 
 ### 6.4 坐标与抽卡
 
-`UploadPositionAsync(Vector3)` → `UpdatePositionRequest` → 默认房间广播 `PlayerPositionPush`（包含发送者自身）；客户端通过 `PumpEvents` 在主线程触发 `PositionReceived`。`DrawGachaAsync` → `GachaRequest` → 服务器扣除一个 `Anemoculus`，从物品配置中排除该道具后随机发放一件，并返回最新背包快照。
+`IServiceSystem.UploadPositionAsync(Vector3, CancellationToken)` → ServiceSystem 组装 `UpdatePositionRequest` → 默认房间广播 `PlayerPositionPush`（包含发送者自身）；NetworkKit 只上交通用 Packet，ServiceSystem 在 `OnUpdate` 调用 `PumpEvents`、识别业务 Body，并通过 `PositionReceived` 在主线程转发。接收或发送失败时，NetworkKit 同样在 `PumpEvents` 线程通知断线，ServiceSystem 切换为世界不可用且不自动重连。所有业务异步调用都携带消费方生命周期令牌，避免系统释放后继续写入状态。
 
 ---
 
@@ -146,7 +154,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 - **日常开发**：进 Unity Play，`ServerProcessManager` 自动 `go build` + 启动，退出 Play 关闭。
 - **手动启动**：`cd Server && go build -o bin/server.exe . && ./bin/server.exe -addr 127.0.0.1:9000 -export "../Assets/Resources/Config/PoiExport.json"`。
 - **重新生成协议**（仅 proto 变更时）：`cd Server && ./gen_proto.ps1`。
-- **导出 POI**：Unity 菜单 `Tools/World/Export POI Data (JSON)`（生成语义 Id + chunkId 并写回场景）。
+- **导出 POI**：Unity 菜单 `Prometheus/World/Export POI Data (JSON)`（生成语义 Id + chunkId 并写回场景）。
 - **MongoDB**：在 `docker/mongo` 执行 `docker compose up -d`；MongoDB 与 mongo-express 仅绑定回环地址，默认服务端连接串为 `mongodb://admin:admin123@localhost:27017/?authSource=admin`。
 
 ---

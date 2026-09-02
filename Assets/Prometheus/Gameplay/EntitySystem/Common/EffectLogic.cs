@@ -29,7 +29,7 @@ namespace Xuan.Prometheus.Logic
             if (!Entity.TryGetComp(out effectComponent))
                 throw new InvalidOperationException($"Entity '{Entity.GetType().FullName}' requires an EffectComponent before EffectLogic initialization.");
 
-            EffectSystem effectSystem = Core.Gameplay.GetSystem<EffectSystem>();
+            IEffectSystem effectSystem = Core.Gameplay.GetSystem<IEffectSystem>();
             effectComponent.Initialize(effectSystem, Entity);
         }
 

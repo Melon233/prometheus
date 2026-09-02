@@ -18,7 +18,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>独立接收 HUD 快捷键并执行界面命令，使 UIPanel 只负责显示、数据绑定和 Button 点击。</summary>
-    public sealed class HudCommandSystem : XSystem, IInputReceiver
+    internal sealed class HudCommandSystem : XSystem, IHudCommandSystem, IInputReceiver
     {
         /// <summary>保存 HUD 快捷键的独占控制租约，并随单局系统生命周期统一释放。</summary>
         private ControlLease shortcutLease;
@@ -32,7 +32,7 @@ namespace Xuan.Prometheus
         /// <summary>取得集中式输入系统并永久监听当前单局的 HUD 快捷键。</summary>
         public override void AfterNew()
         {
-            InputSystem inputSystem = Core.Gameplay.GetSystem<InputSystem>();
+            IInputSystem inputSystem = Core.Gameplay.GetSystem<IInputSystem>();
             shortcutLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.HudCommands, InputContexts.Gameplay);
         }
 

@@ -5,7 +5,7 @@ using Xuan.Prometheus.Effects;
 namespace Xuan.Prometheus
 {
     /// <summary>订阅当前单局已经完成结算的伤害事实并播放命中音效，使命中反馈不再依赖受击或死亡动画是否成功切换。</summary>
-    public sealed class CombatAudioPresentationSystem : XSystem
+    internal sealed class CombatAudioPresentationSystem : XSystem, ICombatAudioPresentationSystem
     {
         private readonly FmodAudioEvent damageHitAudioEvent;
         private readonly Func<FmodAudioEvent, Vector3, bool> playOneShot;
@@ -26,7 +26,7 @@ namespace Xuan.Prometheus
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CombatAudioPresentationSystem));
             if (runtime != null) return;
-            runtime = Core.Gameplay.GetSystem<EffectSystem>().Runtime;
+            runtime = Core.Gameplay.GetSystem<IEffectSystem>().Runtime;
             runtime.SignalProcessed += OnSignalProcessed;
         }
 

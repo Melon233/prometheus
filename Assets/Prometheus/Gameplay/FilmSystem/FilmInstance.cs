@@ -17,10 +17,10 @@ namespace Xuan.Prometheus.Film
         private readonly FilmSystem owner;
 
         /// <summary>保存用于演出期间输入接管的单局输入系统。</summary>
-        private readonly InputSystem inputSystem;
+        private readonly IInputSystem inputSystem;
 
         /// <summary>保存用于演出镜头优先级租约的单局相机系统。</summary>
-        private readonly CameraSystem cameraSystem;
+        private readonly ICameraSystem cameraSystem;
 
         /// <summary>保存对话和 QTE 的异步交互服务。</summary>
         private readonly IFilmInteractionService interactionService;
@@ -74,7 +74,7 @@ namespace Xuan.Prometheus.Film
         private CancellationTokenSource interactionCancellation;
 
         /// <summary>创建一个尚未绑定和播放的演出实例。</summary>
-        internal FilmInstance(FilmSystem owner, int instanceId, FilmDefinition definition, InputSystem inputSystem, CameraSystem cameraSystem, IFilmInteractionService interactionService, FilmFlowContext flowContext, Transform runtimeRoot)
+        internal FilmInstance(FilmSystem owner, int instanceId, FilmDefinition definition, IInputSystem inputSystem, ICameraSystem cameraSystem, IFilmInteractionService interactionService, FilmFlowContext flowContext, Transform runtimeRoot)
         {
             this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
             InstanceId = instanceId;

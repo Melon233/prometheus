@@ -9,7 +9,7 @@ namespace Xuan.Prometheus
     [UIPanelConfig("BagPanel", UIPanelLayer.Normal, UIPanelClosePolicy.Destroy)]
     public sealed class BagPanel : BagPanelBase
     {
-        private BagSystem bagSystem;
+        private IBagSystem bagSystem;
         private ListenHandle listenHandle;
 
         /// <summary>背包网格每行显示的物品格数（固定列数，避免列数为 0 触发除零异常）。</summary>
@@ -26,7 +26,7 @@ namespace Xuan.Prometheus
         /// <summary>每次进入显示状态时：监听背包修订号并请求服务器刷新背包数据。</summary>
         protected override void OnOpen()
         {
-            if (!Core.Gameplay.TryGetSystem(out bagSystem)) throw new System.InvalidOperationException($"{nameof(BagPanel)} requires {nameof(BagSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out bagSystem)) throw new System.InvalidOperationException($"{nameof(BagPanel)} requires {nameof(IBagSystem)}.");
             listenHandle = bagSystem.RevisionProperty.Listen(OnItemsChanged);
             bagSystem.RequestItemsAsync().Forget();
         }

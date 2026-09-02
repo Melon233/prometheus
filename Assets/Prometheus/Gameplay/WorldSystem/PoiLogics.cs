@@ -15,7 +15,7 @@ namespace Xuan.Prometheus.World
         {
             if (IsUnlocked) return;
             IsUnlocked = true;
-            EventHandler<PoiUnlockedEvent>.Invoke(new PoiUnlockedEvent { Id = Config?.Id });
+            Core.Event.Invoke(Event.PoiUnlocked, new PoiUnlockedEvent(Config?.Id));
         }
 
         /// <summary>从持久化状态恢复。</summary>
@@ -42,7 +42,7 @@ namespace Xuan.Prometheus.World
         {
             if (IsUnlocked) return;
             IsUnlocked = true;
-            EventHandler<PoiUnlockedEvent>.Invoke(new PoiUnlockedEvent { Id = Config?.Id });
+            Core.Event.Invoke(Event.PoiUnlocked, new PoiUnlockedEvent(Config?.Id));
         }
 
         /// <summary>供奉升级，仅在已解锁时生效。</summary>
@@ -85,7 +85,7 @@ namespace Xuan.Prometheus.World
         {
             if (IsUnlocked) return;
             IsUnlocked = true;
-            EventHandler<PoiUnlockedEvent>.Invoke(new PoiUnlockedEvent { Id = Config?.Id });
+            Core.Event.Invoke(Event.PoiUnlocked, new PoiUnlockedEvent(Config?.Id));
         }
 
         /// <summary>推进一段通关进度，仅在已解锁时生效。</summary>
@@ -121,7 +121,7 @@ namespace Xuan.Prometheus.World
             IsOpened = true;
             SetPoiVisible(false);
             Debug.Log($"[交互] 宝箱开启 {Config?.Id}");
-            EventHandler<PoiOpenedEvent>.Invoke(new PoiOpenedEvent { Id = Config?.Id });
+            Core.Event.Invoke(Event.PoiOpened, new PoiOpenedEvent(Config?.Id));
             return true;
         }
 
@@ -152,7 +152,7 @@ namespace Xuan.Prometheus.World
             IsCollected = true;
             SetPoiVisible(false);
             Debug.Log($"[交互] 神瞳收集 {Config?.Id}");
-            EventHandler<PoiCollectedEvent>.Invoke(new PoiCollectedEvent { Id = Config?.Id });
+            Core.Event.Invoke(Event.PoiCollected, new PoiCollectedEvent(Config?.Id));
             return true;
         }
 

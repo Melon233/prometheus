@@ -128,7 +128,7 @@ namespace Xuan.Prometheus.Logic
         {
             if (IsDespawningOrDisposed) return false;
             float safeDelay = Mathf.Max(0f, delay);
-            if (LifecycleState == EntityLifecycleState.Registered || LifecycleState == EntityLifecycleState.Active) return Core.Gameplay.GetSystem<EntitySystem>().RequestRemoveEntity(EntityId, safeDelay);
+            if (LifecycleState == EntityLifecycleState.Registered || LifecycleState == EntityLifecycleState.Active) return Core.Gameplay.GetSystem<IEntitySystem>().RequestRemoveEntity(EntityId, safeDelay);
             if (!MarkDespawnRequested(safeDelay)) return false;
             DisposeImmediately();
             return true;

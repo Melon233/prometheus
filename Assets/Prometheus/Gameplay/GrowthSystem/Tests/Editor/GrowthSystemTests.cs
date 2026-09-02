@@ -40,11 +40,11 @@ namespace Xuan.Prometheus.Growth.Tests
             assetKit = new AssetKit();
             Core.Asset = assetKit;
             gameplayKit = new GameplayKit();
-            entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            entitySystem = (EntitySystem)gameplayKit.GetSystem<IEntitySystem>();
             effectLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(EffectLibraryPath);
             Assert.That(effectLibrary, Is.Not.Null, $"无法加载正式效果库：{EffectLibraryPath}");
             effectSystem = new EffectSystem(effectLibrary);
-            gameplayKit.AddSystem(effectSystem);
+            gameplayKit.AddSystem<IEffectSystem>(effectSystem);
             effectSystem.AfterNew();
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(prefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
@@ -186,10 +186,10 @@ namespace Xuan.Prometheus.Growth.Tests
                 Core.Asset = curveAssetKit;
                 curveGameplayKit = new GameplayKit();
                 EffectSystem curveEffectSystem = new EffectSystem(library);
-                curveGameplayKit.AddSystem(curveEffectSystem);
+                curveGameplayKit.AddSystem<IEffectSystem>(curveEffectSystem);
                 curveEffectSystem.AfterNew();
                 GrowthTestEntity curveEntity = new GrowthTestEntity(curveObject);
-                curveGameplayKit.GetSystem<EntitySystem>().AddEntity(curveEntity);
+                curveGameplayKit.GetSystem<IEntitySystem>().AddEntity(curveEntity);
                 curveEntity.AfterNew();
                 Assert.That(curveEntity.TryGetComp(out CharaLevelComponent level), Is.True);
                 Assert.That(curveEntity.TryGetComp(out EquipmentComponent equipment), Is.True);

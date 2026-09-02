@@ -36,7 +36,7 @@ namespace Xuan.Prometheus.Input.Tests
             {
                 GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRoot.transform, effectLibrary, "Player", "Enemy", Array.Empty<Transform>(), 0);
                 gameplayKit.Configure(options);
-                InputSystem inputSystem = gameplayKit.GetSystem<InputSystem>();
+                IInputSystem inputSystem = gameplayKit.GetSystem<IInputSystem>();
                 Assert.That(inputSystem, Is.Not.Null);
                 Assert.That(inputSystem.DefaultSourceId, Is.EqualTo(UnityInputActionSource.LocalSourceId));
             }

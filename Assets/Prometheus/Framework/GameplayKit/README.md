@@ -8,6 +8,8 @@
 
 运行时实例统一采用 ELC：Entity 表示身份与生命周期，Component 保存纯 C# 状态，Logic 实现实例行为。需要 Unity GameObject 的 Entity 自己声明并拥有表现对象，通过 `GameObjectLogic + GameObjectComponent + Prefab 根 Binder` 完成实例化、引用绑定和释放，外部不再先创建 GameObject 再注入 Entity。
 
+Kit 与 System 的服务边界统一按接口注册和查询。`Core` 只公开 `IAssetKit`、`IEventKit`、`IUIKit`、`IGameplayKit`，`IGameplayKit` 只允许查询继承 `ISystemContract` 的接口；全部正式实现类保持程序集内部可见。完整规则和契约矩阵见 [SystemBoundaryDesign.md](SystemBoundaryDesign.md)。
+
 3D Prefab 与 UI Prefab 采用相同的“根节点集中引用”原则，但不复用 UIKit 的自动绑定和代码生成管线：
 
 - 每个可生成的 Entity Prefab 根节点必须且只能挂载一个强类型 Binder。

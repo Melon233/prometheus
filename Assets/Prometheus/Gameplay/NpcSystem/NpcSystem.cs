@@ -4,7 +4,7 @@ using Xuan.Prometheus.Film;
 namespace Xuan.Prometheus.Npc
 {
     /// <summary>管理单局唯一 NPC 交互会话，并向演出、对话和任务适配器发布请求。</summary>
-    public sealed class NpcSystem : XSystem
+    internal sealed class NpcSystem : XSystem, INpcSystem
     {
         private NpcInteractionContext? activeInteraction;
         private NpcInteractionCoordinator coordinator;
@@ -18,7 +18,7 @@ namespace Xuan.Prometheus.Npc
         /// <summary>通过 Core.Gameplay 建立当前单局 NPC 与演出系统的交互协调器。</summary>
         public override void AfterNew()
         {
-            coordinator = new NpcInteractionCoordinator(Core.Gameplay.GetSystem<FilmSystem>(), CompleteInteractionFromCoordinator);
+            coordinator = new NpcInteractionCoordinator(Core.Gameplay.GetSystem<IFilmSystem>(), CompleteInteractionFromCoordinator);
             InteractionRequested += coordinator.Start;
         }
 

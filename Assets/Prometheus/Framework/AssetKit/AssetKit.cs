@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Asset
     /// <summary>
     /// 定义 Core 向其他 Kit 提供的资源能力，调用方不需要直接依赖 ResourcePackage、AssetHandle 或 SceneHandle。
     /// </summary>
-    public interface IAssetKit : IDisposable
+    public interface IAssetKit : IDisposable, IKitContract
     {
         /// <summary>
         /// 默认资源包是否已经可以加载资源。
@@ -80,7 +80,7 @@ namespace Xuan.Prometheus.Asset
     /// 提供基于 YooAsset 的实例资源入口，负责默认资源包初始化、资源加载、预制体实例化和句柄释放。
     /// 每个 Core 持有自己的 AssetKit 和句柄缓存，跨模块资源访问统一通过 Core.Asset。
     /// </summary>
-    public sealed class AssetKit : Kit, IAssetKit
+    internal sealed class AssetKit : Kit, IAssetKit
     {
         /// <summary>
         /// 项目默认资源包名称。

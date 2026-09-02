@@ -14,11 +14,11 @@ NpcSystem 负责 NPC 定义、运行时状态、交互入口和 NPC 领域事件
 
 ## 依赖规则
 
-NpcSystem 可以请求 InteractionCoordinator，但不直接操作 FilmSystem、CameraSystem 或 Dialogue UI。Coordinator 负责调用 FilmSystem，DialogueSystem 负责呈现对话并返回结果。
+`NpcSystem` 是程序集内部实现，由 `GameplayKit` 以 `INpcSystem` 注册。系统内部的 `NpcInteractionCoordinator` 只依赖 `IFilmSystem` 和 `IEntitySystem`，不直接操作具体 `FilmSystem`、`CameraSystem` 或 Dialogue UI；DialogueSystem 负责呈现对话并返回结果。
 
 ## 任务接口
 
-NpcSystem 对外提供只读 NPC 状态和 NPC 领域事件；任务系统通过 `QuestNpcAdapter` 消费这些事件。任务系统不应直接持有或修改 NpcLogic。
+`INpcSystem` 对外提供只读 NPC 状态和 NPC 领域事件；任务系统通过 `QuestNpcAdapter` 消费这些事件。任务系统不应直接持有或修改 `NpcSystem`、`NpcLogic`。
 
 ## 生命周期
 
@@ -37,6 +37,6 @@ NPC 被 WorldSystem 回收时，NpcSystem 必须先取消相关交互会话，�
 3. 使用 `NpcDefinition.InteractionFilm` 调用 `FilmSystem.Play`，同时向 `FilmFlowContext` 写入 `NpcId` 和 `InteractionId`，供 Timeline 轨道或后续逻辑读取。
 4. 异步等待 `FilmHandle.WaitForCompletionAsync`，在 Film 完成、停止或异常退出时统一调用 `CompleteInteraction` 释放 NPC 会话占用。
 
-当 NPC 被场景系统回收或外部逻辑需要打断演出时，应调用 `NpcSystem.CancelInteraction(entityId)`。该接口会先停止当前 Film，再清理活动交互状态，保证输入、镜头和 Timeline 资源由 `FilmSystem` 统一释放。
+当 NPC 被场景系统回收或外部逻辑需要打断演出时，应调用 `INpcSystem.CancelInteraction(entityId)`。该接口会先停止当前 Film，再清理活动交互状态，保证输入、镜头和 Timeline 资源由 `IFilmSystem` 统一释放。
 
 当 `InteractionFilm` 为空时，协调器不会启动 Film，会保留 `InteractionRequested` 的外部订阅能力，适用于由 Dialogue UI 或其他交互适配器接管的 NPC。当前阶段尚未实现真实 Dialogue UI、玩家范围触发器和多入口分支配置。

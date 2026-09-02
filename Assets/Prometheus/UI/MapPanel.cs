@@ -23,7 +23,7 @@ namespace Xuan.Prometheus
         private const float MaximumZoom = 10f;
 
         /// <summary>保存当前玩法世界地图数据源。</summary>
-        private WorldSystem worldSystem;
+        private IWorldSystem worldSystem;
 
         /// <summary>裁剪地图内容的全屏视口。</summary>
         private RectTransform viewport;
@@ -58,7 +58,7 @@ namespace Xuan.Prometheus
         /// <summary>打开面板时解析 WorldSystem、订阅地图事实并立即重放当前地图状态。</summary>
         protected override void OnOpen()
         {
-            if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(MapPanel)} requires {nameof(WorldSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(MapPanel)} requires {nameof(IWorldSystem)}.");
             Core.Event.AddListener<WorldMapReadyEvent>(Event.WorldMapReady, OnWorldMapReady);
             Core.Event.AddListener<WorldMapPoiChangedEvent>(Event.WorldMapPoiChanged, OnWorldMapPoiChanged);
             zoom = Mathf.Clamp(worldSystem.MapZoom, MinimumZoom, MaximumZoom);

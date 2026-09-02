@@ -9,6 +9,8 @@ using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.World;
 using Xuan.Prometheus.Npc;
+using Xuan.Prometheus.Quest;
+using Xuan.Prometheus.Service;
 
 namespace Xuan.Prometheus
 {
@@ -158,7 +160,7 @@ namespace Xuan.Prometheus
     /// <summary>
     /// 对外暴露玩法世界的只读状态和公共 System 查询能力。
     /// </summary>
-    public interface IGameplayKit
+    public interface IGameplayKit : IKitContract
     {
         /// <summary>
         /// GameplayKit 是否已经完成初始实体创建。
@@ -168,24 +170,24 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 当前玩家实体；初始化完成前为空。
         /// </summary>
-        PlayerEntity Player { get; }
+        Entity Player { get; }
 
         /// <summary>
         /// 获取当前单局中指定类型的唯一公共 System。
         /// </summary>
-        TSystem GetSystem<TSystem>() where TSystem : XSystem;
+        TContract GetSystem<TContract>() where TContract : class, ISystemContract;
 
         /// <summary>
         /// 尝试获取当前单局中指定类型的唯一公共 System。
         /// </summary>
-        bool TryGetSystem<TSystem>(out TSystem system) where TSystem : XSystem;
+        bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystemContract;
     }
 
     /// <summary>
     /// 负责玩法对象创建与公共 System 生命周期编排；Entity 的注册、更新、监听和销毁统一交给 EntitySystem。
     /// 基础模块和公共 System 统一通过 Core 静态入口访问，避免逐层传递基础设施依赖。
     /// </summary>
-    public sealed class GameplayKit : Kit, IGameplayKit
+    internal sealed class GameplayKit : Kit, IGameplayKit
     {
         /// <summary>保存当前玩法世界内建且唯一的实体系统。</summary>
         private readonly EntitySystem entitySystem;
@@ -204,14 +206,14 @@ namespace Xuan.Prometheus
         {
             Core.Gameplay = this;
             entitySystem = new EntitySystem();
-            AddSystem(entitySystem);
+            AddSystem<IEntitySystem>(entitySystem);
         }
 
         /// <inheritdoc />
         public bool IsReady { get; private set; }
 
         /// <inheritdoc />
-        public PlayerEntity Player => teamSystem == null ? null : teamSystem.ActiveMember as PlayerEntity;
+        public Entity Player => teamSystem == null ? null : teamSystem.ActiveMember;
 
         /// <summary>
         /// 在初始化前写入场景启动参数，每个 GameplayKit 实例只接受一次配置。
@@ -256,27 +258,28 @@ namespace Xuan.Prometheus
         /// <param name="effectLibrary">当前单局效果系统使用的持久化配置库。</param>
         private void RegisterGameplaySystems(EffectLibrary effectLibrary)
         {
-            AddSystem(new InputSystem(new UnityInputActionSource()));
-            AddSystem(new HudCommandSystem());
-            AddSystem(new EffectSystem(library: effectLibrary, traceEnabled: true));
-            AddSystem(new CombatAudioPresentationSystem());
-            AddSystem(new CameraSystem(startupOptions.RuntimeRoot));
-            AddSystem(new FilmSystem(startupOptions.RuntimeRoot));
-            AddSystem(new NpcSystem());
-            AddSystem(new Quest.QuestSystem());
-            AddSystem(new WorldSystem());
-            AddSystem(new BagSystem());
+            AddSystem<IServiceSystem>(new ServiceSystem());
+            AddSystem<IInputSystem>(new InputSystem(new UnityInputActionSource()));
+            AddSystem<IHudCommandSystem>(new HudCommandSystem());
+            AddSystem<IEffectSystem>(new EffectSystem(library: effectLibrary, traceEnabled: true));
+            AddSystem<ICombatAudioPresentationSystem>(new CombatAudioPresentationSystem());
+            AddSystem<ICameraSystem>(new CameraSystem(startupOptions.RuntimeRoot));
+            AddSystem<IFilmSystem>(new FilmSystem(startupOptions.RuntimeRoot));
+            AddSystem<INpcSystem>(new NpcSystem());
+            AddSystem<IQuestSystem>(new Quest.QuestSystem());
+            AddSystem<IWorldSystem>(new WorldSystem());
+            AddSystem<IBagSystem>(new BagSystem());
             teamSystem = new TeamSystem();
-            AddSystem(teamSystem);
+            AddSystem<ITeamSystem>(teamSystem);
         }
 
         /// <summary>
         /// 在 GameplayKit 初始化前注册一个单局唯一 System。
         /// 同一具体类型重复注册会立即抛出异常，避免 Entity 获取到不确定实例。
         /// </summary>
-        /// <typeparam name="TSystem">需要注册的具体 System 类型。</typeparam>
+        /// <typeparam name="TContract">对外发布的 System 接口契约。</typeparam>
         /// <param name="system">由当前 GameplayKit 独占并负责释放的 System 实例。</param>
-        public void AddSystem<TSystem>(TSystem system) where TSystem : XSystem
+        internal void AddSystem<TContract>(XSystem system) where TContract : class, ISystemContract
         {
             ThrowIfDisposed();
 
@@ -289,31 +292,32 @@ namespace Xuan.Prometheus
             if (system == null)
                 throw new ArgumentNullException(nameof(system));
 
-            Type systemType = system.GetType();
-            if (systems.HasKey(systemType))
-                throw new InvalidOperationException($"GameplayKit already contains a system of type '{systemType.FullName}'.");
+            if (!(system is TContract)) throw new ArgumentException($"System '{system.GetType().FullName}' does not implement contract '{typeof(TContract).FullName}'.", nameof(system));
+            Type contractType = typeof(TContract);
+            if (systems.HasKey(contractType))
+                throw new InvalidOperationException($"GameplayKit already contains a system registered as '{contractType.FullName}'.");
 
-            systems.Add(systemType, system);
+            systems.Add(contractType, system);
             systemInitializationOrder.Add(system);
         }
 
         /// <inheritdoc />
-        public TSystem GetSystem<TSystem>() where TSystem : XSystem
+        public TContract GetSystem<TContract>() where TContract : class, ISystemContract
         {
             ThrowIfDisposed();
 
-            if (!systems.TryGet(typeof(TSystem), out XSystem system))
-                throw new InvalidOperationException($"GameplayKit does not contain a system of type '{typeof(TSystem).FullName}'.");
+            if (!systems.TryGet(typeof(TContract), out XSystem system))
+                throw new InvalidOperationException($"GameplayKit does not contain a system registered as '{typeof(TContract).FullName}'.");
 
-            return system as TSystem ?? throw new InvalidCastException($"Registered system '{system.GetType().FullName}' cannot be cast to '{typeof(TSystem).FullName}'.");
+            return system as TContract ?? throw new InvalidCastException($"Registered system '{system.GetType().FullName}' cannot be cast to '{typeof(TContract).FullName}'.");
         }
 
         /// <inheritdoc />
-        public bool TryGetSystem<TSystem>(out TSystem system) where TSystem : XSystem
+        public bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystemContract
         {
             ThrowIfDisposed();
 
-            if (systems.TryGet(typeof(TSystem), out XSystem registeredSystem) && registeredSystem is TSystem typedSystem)
+            if (systems.TryGet(typeof(TContract), out XSystem registeredSystem) && registeredSystem is TContract typedSystem)
             {
                 system = typedSystem;
                 return true;

@@ -170,11 +170,14 @@ public sealed class PoiMono : MonoBehaviour
 ### 5.2 WorldSystem（核心，已实现于 `Gameplay/WorldSystem/WorldSystem.cs`）
 
 ```csharp
-public sealed class WorldSystem : XSystem
+internal sealed class WorldSystem : XSystem, IWorldSystem
 {
     private readonly List<PoiEntity> allPois = new List<PoiEntity>(); // 保存由场景 PoiMono 组合出的全部 POI Entity。
     private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>(); // 按语义 Id 查询当前场景 POI。
+    private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource(); // 释放时取消全部世界异步操作。
     private float tickAccumulator; // 以 0.25 秒间隔执行 AOI 与网络同步。
+
+    private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>(); // 使用点通过 Core 获取公共 System。
 
     public float RegionSize { get; set; } = ChunkIdCodec.ChunkSize; // AOI 网格边长与服务器 chunk 保持一致。
     public float InterestRadius { get; set; } = 15f; // 普通 POI 的世界距离显隐半径。
@@ -194,9 +197,9 @@ public sealed class WorldSystem : XSystem
 要点：
 - 静态地图定义经 `Core.Asset` 加载，场景 POI 由 `LoadFromScene` 扫描 `PoiMono` 建立 Entity 与 Id 索引。
 - 玩家位置在 `OnUpdate` 中取 `Core.Gameplay.Player`（即 `TeamSystem.ActiveMember`）的 `bindGo` 坐标。
-- Entity 注册、敌人生成和营地补刷统一通过 `Core.Gameplay.GetSystem<EntitySystem>()` 完成。
+- Entity 注册、敌人生成和营地补刷统一通过 `Core.Gameplay.GetSystem<IEntitySystem>()` 完成。
 
-> 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：`AfterNew` 先注册怪物营地死亡监听并生成初始史莱姆，`InitializeAsync` 首先扫描场景并建立本地 POI 索引，保证地图和交互列表可以独立于网络显示；随后创建 `PoiNetworkClient` 并通过 `ConnectAsync` 恢复玩家坐标、启用服务器状态同步和交互请求。`OnUpdate` 先执行营地补刷，再调用 `PumpEvents` 分发 NetworkKit 推送，最后按玩家位置同步 chunk；服务器不可用时保持 `isAvailable=false`，但已扫描的静态 POI 仍保留，待网络恢复后再执行服务器请求。
+> 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：`GameplayKit` 先注册 ServiceSystem，WorldSystem 在调用点通过 `Core.Gameplay.GetSystem<IServiceSystem>()` 获取接口；`AfterNew` 注册怪物营地死亡监听并生成初始史莱姆，`InitializeAsync` 首先扫描场景并建立本地 POI 索引，保证地图和交互列表可以独立于网络显示；随后调用业务接口 `EnterWorldAsync`，由 ServiceSystem 内部完成连接与 JoinRoom，再恢复玩家坐标并启用服务器同步。WorldSystem 的全部异步调用都传入自身生命周期令牌，释放后 continuation 不再修改集合或 Unity 对象。ServiceSystem 把 NetworkKit 意外断线转换为世界不可用通知，WorldSystem 随即停止上传、拉取和交互；本地 POI 仍保留。
 
 ### 5.3 激活与失活
 - **初始化**：`LoadFromScene` 为每个合法 `PoiMono` 创建 `PoiEntity` 或 `NpcEntity`，注册到 EntitySystem 并保留场景 GameObject，不在 AOI 阶段重复实例化或销毁。
@@ -253,7 +256,7 @@ public class PoiComponent : IComponent
 ### 6.3 各类型 Logic
 - 统一行为接口由 `ILogic` 提供；以 **`PoiLogic` 基类 + 各类型子类** 表达差异。`PoiLogic` 提供读取 `Poi`/`Config` 的入口与默认空实现（在 `PoiLogic.cs`）。
 - 可刷新三类（采集物/地图Boss/怪物营地）共用 **`RespawnablePoiLogic`** 基类：`Consume()` 后按 `Config` 配置的重生周期倒计时，`OnUpdate` 到期自动重生。
-- 各类型由 `PoiLogicFactory` 创建（`PoiLogicFactory.cs`）；关键状态变化经静态事件总线 `EventHandler<T>` 广播（`PoiEvents.cs`：`PoiOpenedEvent`/`PoiCollectedEvent`/`PoiGatheredEvent`/`PoiUnlockedEvent`/`PoiDefeatedEvent`）。
+- 各类型由 `PoiLogicFactory` 创建（`PoiLogicFactory.cs`）；全局状态事实统一通过 `Core.Event` 发布，载荷实现 `IEvent` 且构造后不可变（`PoiEvents.cs`：`PoiOpenedEvent`/`PoiCollectedEvent`/`PoiGatheredEvent`/`PoiUnlockedEvent`/`PoiDefeatedEvent`）。
 
 | 类型 | 公开行为 | 状态 | 广播事件 |
 |------|---------|------|---------|

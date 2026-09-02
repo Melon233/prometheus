@@ -8,7 +8,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus
 {
     /// <summary>管理三个独立小队 Entity 的固定槽位、上场切换、输入控制权、显隐和 HUD 观察目标。</summary>
-    public sealed class TeamSystem : XSystem, IInputReceiver
+    internal sealed class TeamSystem : XSystem, ITeamSystem, IInputReceiver
     {
         /// <summary>定义当前本地小队固定支持的上场角色配置数量。</summary>
         public const int Capacity = 3;
@@ -17,7 +17,7 @@ namespace Xuan.Prometheus
         private readonly TeamMemberRuntime[] members = new TeamMemberRuntime[Capacity];
 
         /// <summary>保存单局输入系统，用于迁移当前上场成员的玩法动作租约。</summary>
-        private InputSystem inputSystem;
+        private IInputSystem inputSystem;
 
         /// <summary>保存数字键一二三的独占输入租约。</summary>
         private ControlLease teamSelectionLease;
@@ -59,7 +59,7 @@ namespace Xuan.Prometheus
         public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            inputSystem = Core.Gameplay.GetSystem<InputSystem>();
+            inputSystem = Core.Gameplay.GetSystem<IInputSystem>();
             teamSelectionLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.TeamSelection, InputContexts.Gameplay);
         }
 
@@ -119,7 +119,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>在实体正式回收前移除其小队槽位；若移除当前成员则自动切入下一个存活成员。</summary>
-        internal void UnregisterMember(Entity entity)
+        public void UnregisterMember(Entity entity)
         {
             if (!isInitialized || entity == null) return;
             int removedSlotIndex = FindMemberSlot(entity);

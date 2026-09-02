@@ -6,12 +6,12 @@ using Xuan.Prometheus.Npc;
 namespace Xuan.Prometheus.Quest
 {
     /// <summary>纯逻辑任务系统：管理配置、状态转换、事件幂等和目标进度。</summary>
-    public sealed class QuestSystem : XSystem
+    internal sealed class QuestSystem : XSystem, IQuestSystem
     {
         private readonly Dictionary<string, QuestDefinition> definitions = new Dictionary<string, QuestDefinition>();
         private readonly Dictionary<string, QuestRuntimeState> states = new Dictionary<string, QuestRuntimeState>();
         private QuestNpcAdapter npcAdapter;
-        private NpcSystem npcSystem;
+        private INpcSystem npcSystem;
 
         /// <summary>任务状态变化事件，供 UI、存档和网络适配器消费。</summary>
         public event Action<QuestStateChanged> StateChanged;

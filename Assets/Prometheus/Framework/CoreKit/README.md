@@ -34,6 +34,8 @@ EffectLibrary、输入源、RuntimeRoot、Film 绑定等单局配置或领域数
 
 Entity、Logic、纯 C# Component、Prefab Binder 和 GameObject 生命周期的目标重构方案见 `Assets/Prometheus/Framework/GameplayKit/README.md`；该文档明确标注了当前实现与目标架构的边界。
 
+项目当前 Kit、System、事件、Gateway、生命周期与 Editor 工具的硬性约束统一记录在 `Docs/ArchSpec.md`；修改成型链路时必须同步维护该规范和对应系统文档。
+
 `Core.Dispose` 按注册顺序逆序释放，因此最后注册的 `GameplayKit` 最先释放，`AssetKit` 最后释放其资源和场景句柄。
 
 ## 参数归属

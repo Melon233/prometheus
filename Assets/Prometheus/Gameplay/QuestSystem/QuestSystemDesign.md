@@ -22,6 +22,8 @@ QuestSystem 只依赖领域事件、只读状态查询和动作接口，不依�
 - `QuestNpcAdapter`：把 NPC 对话和状态事件转换为任务事件。
 - `QuestWorldAdapter`：把进入区域、POI 激活等事件转换为任务事件。
 
+`QuestSystem` 是程序集内部实现，由 `GameplayKit` 以 `IQuestSystem` 注册。`QuestNpcAdapter` 持有 `IQuestSystem`，公共 `QuestEventAdapters` 的全部入口也接收 `IQuestSystem`，因此外部发布任务事件不需要引用或向下转换具体实现。
+
 ## 事件驱动
 
 任务目标通过 `DialogueCompleted`、`FilmCompleted`、`ItemAdded`、`EnemyDefeated`、`EnteredRegion` 和 `NpcStateChanged` 等事件更新。事件必须携带稳定 ID，并进行幂等处理，避免重连或重复回调造成重复计数。

@@ -768,7 +768,7 @@ namespace Xuan.Prometheus.Effects.Tests
             AssetKit lifecycleAssetKit = new AssetKit();
             Core.Asset = lifecycleAssetKit;
             GameplayKit lifecycleGameplayKit = new GameplayKit();
-            lifecycleGameplayKit.GetSystem<EntitySystem>().AddEntity(targetEntity);
+            lifecycleGameplayKit.GetSystem<IEntitySystem>().AddEntity(targetEntity);
             try
             {
                 targetEntity.AfterNew();
@@ -1190,8 +1190,8 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That(persistentLibrary, Is.Not.Null);
                 GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRootObject.transform, persistentLibrary, "Yefa", "Slime", Array.Empty<Transform>(), 0);
                 gameplayKit.Configure(options);
-                Assert.That(gameplayKit.GetSystem<EffectSystem>().DefaultLibrary, Is.SameAs(persistentLibrary));
-                Assert.That(gameplayKit.GetSystem<CombatAudioPresentationSystem>(), Is.Not.Null, "正式 GameplayKit 必须注册单局伤害音频表现系统。");
+                Assert.That(gameplayKit.GetSystem<IEffectSystem>().DefaultLibrary, Is.SameAs(persistentLibrary));
+                Assert.That(gameplayKit.GetSystem<ICombatAudioPresentationSystem>(), Is.Not.Null, "正式 GameplayKit 必须注册单局伤害音频表现系统。");
             }
             finally
             {
@@ -1222,8 +1222,8 @@ namespace Xuan.Prometheus.Effects.Tests
             });
             try
             {
-                gameplayKit.AddSystem(effectSystem);
-                gameplayKit.AddSystem(audioSystem);
+                gameplayKit.AddSystem<IEffectSystem>(effectSystem);
+                gameplayKit.AddSystem<ICombatAudioPresentationSystem>(audioSystem);
                 effectSystem.AfterNew();
                 audioSystem.AfterNew();
                 Vector3 fatalHitPosition = new Vector3(3f, 2f, 1f);

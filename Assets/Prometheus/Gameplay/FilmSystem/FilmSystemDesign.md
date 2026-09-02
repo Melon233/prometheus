@@ -6,12 +6,14 @@ FilmSystem 负责 Timeline 演出实例的创建、绑定、播放、暂停、�
 
 ## 对外契约
 
-- `FilmSystem.Play`：使用运行时绑定和 `FilmFlowContext` 启动演出。
+- `IFilmSystem.Play`：使用运行时绑定和 `FilmFlowContext` 启动演出。
 - `FilmHandle`：管理单次演出的暂停、恢复、停止、跳过和快照捕获。
 - `FilmPlaybackSnapshot`：保存演出 ID、时间、状态和流程变量，供存档或网络层消费。
-- `FilmSystem.SnapshotCaptured`：向外部同步层发送快照通知。
+- `IFilmSystem.SnapshotCaptured`：向外部同步层发送快照通知。
 - `IFilmInteractionService`：承接对话和 QTE UI。
 - `IFilmFlowService`：承接外部事件等待。
+
+`FilmSystem` 是程序集内部实现，由 `GameplayKit` 以 `IFilmSystem` 注册。NPC、任务或其他业务只能查询和持有 `IFilmSystem`；系统内部对输入和镜头的依赖分别使用 `IInputSystem` 与 `ICameraSystem`，不向外暴露具体实现。
 
 ## 与 NPC 的关系
 

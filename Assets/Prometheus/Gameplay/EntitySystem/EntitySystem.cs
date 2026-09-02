@@ -32,7 +32,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>集中管理单局 Entity 的注册、查询、逐帧调度、安全回收和字段监听。</summary>
-    public sealed class EntitySystem : XSystem
+    internal sealed class EntitySystem : XSystem, IEntitySystem
     {
         /// <summary>保存当前单局统一使用的敌人预制体地址。</summary>
         private string enemyLocation;
@@ -264,7 +264,7 @@ namespace Xuan.Prometheus
         private void RemoveRegisteredEntity(int entityId, Entity entity)
         {
             DisposeEntityListeners(entityId);
-            if (Core.Gameplay.TryGetSystem(out TeamSystem teamSystem)) teamSystem.UnregisterMember(entity);
+            if (Core.Gameplay.TryGetSystem(out ITeamSystem teamSystem)) teamSystem.UnregisterMember(entity);
             entities.Remove(entityId);
             Count--;
             entity.MarkDespawnRequested(0f);

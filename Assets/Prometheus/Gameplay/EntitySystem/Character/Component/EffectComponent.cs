@@ -11,7 +11,7 @@ namespace Xuan.Prometheus.Component
     /// </summary>
     public sealed class EffectComponent : Component
     {
-        private EffectSystem effectSystem;
+        private IEffectSystem effectSystem;
         private Entity owner;
         private IDisposable attackTriggerRegistration;
         private IDisposable combatFlowTriggerRegistration;
@@ -44,7 +44,7 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         /// <param name="ownerSystem">从 Core.Gameplay 获取的单局 EffectSystem。</param>
         /// <param name="ownerEntity">当前组件所属的 Entity。</param>
-        public void Initialize(EffectSystem ownerSystem, Entity ownerEntity)
+        public void Initialize(IEffectSystem ownerSystem, Entity ownerEntity)
         {
             if (ownerSystem == null)
                 throw new ArgumentNullException(nameof(ownerSystem));
@@ -100,7 +100,7 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         public void DisposeBindings()
         {
-            EffectSystem activeSystem = effectSystem;
+            IEffectSystem activeSystem = effectSystem;
             Entity activeOwner = owner;
             if (activeSystem != null && !activeSystem.IsDisposed) activeSystem.Runtime.ActiveEffectsChanged -= OnActiveEffectsChanged;
             combatFlowTriggerRegistration?.Dispose();

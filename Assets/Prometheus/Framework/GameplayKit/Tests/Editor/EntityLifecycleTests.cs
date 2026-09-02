@@ -23,7 +23,7 @@ namespace Xuan.Prometheus.Tests
             assetKit = new AssetKit();
             Core.Asset = assetKit;
             gameplayKit = new GameplayKit();
-            entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            entitySystem = (EntitySystem)gameplayKit.GetSystem<IEntitySystem>();
         }
 
         /// <summary>按运行时真实依赖顺序释放 GameplayKit、AssetKit 和未被 Entity 回收的临时对象。</summary>
@@ -62,7 +62,7 @@ namespace Xuan.Prometheus.Tests
         [Test]
         public void EntitySystem_IsBuiltInAndEntityRemovalDisposesOwnedListeners()
         {
-            Assert.That(gameplayKit.GetSystem<EntitySystem>(), Is.SameAs(entitySystem));
+            Assert.That(gameplayKit.GetSystem<IEntitySystem>(), Is.SameAs(entitySystem));
             ObservableComponent component = new ObservableComponent();
             TestEntity entity = CreateEntityWithComponent(component);
             int entityId = entitySystem.AddEntity(entity);

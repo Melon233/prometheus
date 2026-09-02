@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.Protocol;
 using Xuan.Prometheus.Npc;
+using Xuan.Prometheus.Service;
 
 namespace Xuan.Prometheus.World
 {
@@ -14,17 +16,13 @@ namespace Xuan.Prometheus.World
     /// AOI（3×3 邻域 + 兴趣半径）控制显隐（不销毁场景对象）；
     /// 服务器权威：按需拉取玩家附近 chunk 的状态，交互经服务器确认（返回 true）后才做表现。
     /// </summary>
-    public sealed class WorldSystem : XSystem
+    internal sealed class WorldSystem : XSystem, IWorldSystem
     {
         /// <summary>生命周期刷新间隔，避免每帧全量遍历。</summary>
         private const float TickInterval = 0.25f;
 
         /// <summary>玩家坐标上传间隔；服务器会以独立的 3 秒定时器将房间坐标写入数据库。</summary>
         private const float PositionUploadInterval = 1f;
-
-        /// <summary>Go 服务器监听地址与端口，需与 Server/main.go 默认值及 Editor 启动脚本保持一致。</summary>
-        private const string ServerHost = "127.0.0.1";
-        private const int ServerPort = 9000;
 
         /// <summary>地图定义的 YooAsset 地址；地图拍摄工具会在 Config/Global 下生成同名资产。</summary>
         private const string MapDefinitionAddress = "WorldMapDefinition";
@@ -43,13 +41,17 @@ namespace Xuan.Prometheus.World
         private readonly Dictionary<int, Vector3> monsterCampByEntityId = new Dictionary<int, Vector3>();
         /// <summary>缓存实体更新期间收到的死亡通知，在系统更新阶段结束后逐个执行补刷。</summary>
         private readonly Queue<Vector3> pendingMonsterCampRespawns = new Queue<Vector3>();
-        private PoiNetworkClient client;
+        /// <summary>在系统释放时取消初始化、坐标上传、区块同步和交互请求，阻止异步 continuation 修改已释放状态。</summary>
+        private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource();
         private PlayerPositionPush pendingRestoredPosition;
         private float tickAccumulator;
         private float positionUploadAccumulator;
         private bool isAvailable;
         private WorldMapDefinition mapDefinition;
         private float mapZoom = 1f;
+
+        /// <summary>通过统一 Core 入口按需取得当前单局 ServiceSystem 接口，不保存或注入公共 System 实例。</summary>
+        private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>();
 
         /// <summary>AOI 网格边长，与 chunk 尺寸一致。</summary>
         public float RegionSize { get; set; } = ChunkIdCodec.ChunkSize;
@@ -108,25 +110,21 @@ namespace Xuan.Prometheus.World
             return mapDefinition.WorldToNormalized(worldPosition);
         }
 
-        /// <summary>POI 网络客户端（诊断 / 测试用）。</summary>
-        public PoiNetworkClient Client => client;
-
-        /// <summary>建立单局状态：创建客户端并异步检测服务器，仅在连接成功后扫描场景和启用系统逻辑。</summary>
+        /// <summary>建立单局状态并通过 ServiceSystem 执行一次服务器探测，仅在连接成功后启用网络同步和交互逻辑。</summary>
         public override void AfterNew()
         {
             LoadMapDefinition();
             Core.Event.AddListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
+            ServiceSystem.WorldUnavailable += OnWorldUnavailable;
             SpawnMonsterCampEnemies();
-            client = new PoiNetworkClient(ServerHost, ServerPort);
-            client.PositionRestored += OnPositionRestored;
-            InitializeAsync().Forget();
+            InitializeAsync(lifetimeCancellation.Token).Forget();
         }
 
         /// <summary>按场景中的怪物营地实例各生成一只史莱姆；该一次性本地行为不依赖 POI 服务器或语义 Id 唯一性。</summary>
         private void SpawnMonsterCampEnemies()
         {
             PoiMono[] monos = UnityEngine.Object.FindObjectsOfType<PoiMono>(true);
-            EntitySystem entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
+            IEntitySystem entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             foreach (PoiMono mono in monos)
             {
                 if (mono == null || mono.Config == null || mono.Config.PoiType != PoiType.MonsterCamp) continue;
@@ -144,16 +142,18 @@ namespace Xuan.Prometheus.World
         }
 
         /// <summary>先加载本地静态 POI，再执行服务器连接检测；地图展示不依赖服务器，网络只控制状态同步和交互请求。</summary>
-        private async UniTask InitializeAsync()
+        private async UniTask InitializeAsync(CancellationToken cancellationToken)
         {
             LoadFromScene();
             try
             {
-                JoinRoomResponse joinResponse = await client.ConnectAsync();
+                JoinRoomResponse joinResponse = await ServiceSystem.EnterWorldAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (joinResponse != null) OnPositionRestored(joinResponse.Position);
                 ApplyRestoredPosition();
                 isAvailable = true;
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             catch (Exception e)
             {
                 Debug.LogWarning($"[WorldSystem] 未检测到 POI 服务器，已暂停状态同步和交互请求，本地地图 POI 仍可显示：{e.Message}");
@@ -205,7 +205,7 @@ namespace Xuan.Prometheus.World
                 if (string.IsNullOrEmpty(cfg.Id) || poisById.ContainsKey(cfg.Id)) continue;
                 if (cfg.aoiExempt) persistentPois.Add(cfg);
                 PoiEntity entity = cfg.PoiType == PoiType.Npc ? new NpcEntity(mono.gameObject, cfg, cfg.Npc) : new PoiEntity(mono.gameObject, cfg);
-                Core.Gameplay.GetSystem<EntitySystem>().AddEntity(entity);
+                Core.Gameplay.GetSystem<IEntitySystem>().AddEntity(entity);
                 entity.AfterNew();
                 allPois.Add(entity);
                 poisById[cfg.Id] = entity;
@@ -220,7 +220,6 @@ namespace Xuan.Prometheus.World
         {
             // 先处理死亡期间排队的营地补刷，避免在 EntitySystem 遍历期间修改实体集合。
             RespawnPendingMonsterCampEnemies();
-            client?.PumpEvents();
             ApplyRestoredPosition();
             if (Core.Gameplay.Player == null || Core.Gameplay.Player.bindGo == null) return;
             Vector3 playerPos = Core.Gameplay.Player.bindGo.transform.position;
@@ -228,11 +227,15 @@ namespace Xuan.Prometheus.World
             positionUploadAccumulator += dt;
             if (tickAccumulator < TickInterval) return;
             tickAccumulator = 0f;
-            if (!isAvailable) return;
+            if (!isAvailable || !ServiceSystem.IsWorldAvailable)
+            {
+                isAvailable = false;
+                return;
+            }
             if (positionUploadAccumulator >= PositionUploadInterval)
             {
                 positionUploadAccumulator = 0f;
-                UploadPlayerPositionAsync(playerPos).Forget();
+                UploadPlayerPositionAsync(playerPos, lifetimeCancellation.Token).Forget();
             }
             RefreshAt(playerPos);
             SyncNearbyChunks(playerPos);
@@ -245,15 +248,18 @@ namespace Xuan.Prometheus.World
         }
 
         /// <summary>上传玩家当前坐标，保证服务器 3 秒持久化周期使用的是最新移动位置。</summary>
-        private async UniTask UploadPlayerPositionAsync(Vector3 position)
+        private async UniTask UploadPlayerPositionAsync(Vector3 position, CancellationToken cancellationToken)
         {
             try
             {
-                await client.UploadPositionAsync(position);
+                await ServiceSystem.UploadPositionAsync(position, cancellationToken);
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             catch (Exception e)
             {
-                Debug.LogWarning($"[WorldSystem] 玩家坐标上传失败：{e.Message}");
+                bool shouldLog = isAvailable;
+                if (!ServiceSystem.IsWorldAvailable) isAvailable = false;
+                if (shouldLog) Debug.LogWarning($"[WorldSystem] 玩家坐标上传失败：{e.Message}");
             }
         }
 
@@ -261,7 +267,7 @@ namespace Xuan.Prometheus.World
         private void RespawnPendingMonsterCampEnemies()
         {
             if (pendingMonsterCampRespawns.Count == 0) return;
-            EntitySystem entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
+            IEntitySystem entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             while (pendingMonsterCampRespawns.Count > 0)
             {
                 Vector3 campPosition = pendingMonsterCampRespawns.Dequeue();
@@ -285,16 +291,17 @@ namespace Xuan.Prometheus.World
                 int chunkId = ChunkIdCodec.Encode(nx, nz);
                 if (syncedChunks.Contains(chunkId)) continue;
                 syncedChunks.Add(chunkId);
-                PullChunkAsync(chunkId).Forget();
+                PullChunkAsync(chunkId, lifetimeCancellation.Token).Forget();
             }
         }
 
         /// <summary>异步拉取指定 chunk 的状态并按 Id 应用到本地实体。</summary>
-        private async UniTask PullChunkAsync(int chunkId)
+        private async UniTask PullChunkAsync(int chunkId, CancellationToken cancellationToken)
         {
             try
             {
-                PullChunkResponse response = await client.PullChunkAsync(chunkId);
+                PullChunkResponse response = await ServiceSystem.PullChunkAsync(chunkId, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 foreach (PoiState state in response.States)
                 {
                     if (poisById.TryGetValue(state.Id, out PoiEntity entity))
@@ -305,9 +312,12 @@ namespace Xuan.Prometheus.World
                 }
                 Debug.Log($"WorldSystem: chunk {chunkId} synced {response.States.Count} states.");
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             catch (Exception e)
             {
-                Debug.LogError($"[WorldSystem] 拉取 chunk {chunkId} 失败：{e.Message}");
+                bool shouldLog = isAvailable;
+                if (!ServiceSystem.IsWorldAvailable) isAvailable = false;
+                if (shouldLog) Debug.LogError($"[WorldSystem] 拉取 chunk {chunkId} 失败：{e.Message}");
             }
         }
 
@@ -317,11 +327,12 @@ namespace Xuan.Prometheus.World
         /// <returns>服务器是否确认成功。</returns>
         public async UniTask<bool> TryInteractAsync(PoiEntity entity, PoiOp op)
         {
-            if (!isAvailable || client == null || entity == null) return false;
+            if (!isAvailable || entity == null) return false;
             Debug.Log($"[交互] 请求服务器 {entity.Config.Id} op={op}");
             try
             {
-                InteractResponse response = await client.InteractAsync(entity.Config.Id, op);
+                InteractResponse response = await ServiceSystem.InteractAsync(entity.Config.Id, (Xuan.Prometheus.Protocol.PoiOp)(int)op, lifetimeCancellation.Token);
+                lifetimeCancellation.Token.ThrowIfCancellationRequested();
                 Debug.Log($"[交互] 服务器响应 {entity.Config.Id} => success={response.Success}");
                 if (!response.Success) return false;
                 PoiStateApplier.Apply(entity, response.State); // 服务器确认后按最新状态做表现
@@ -329,9 +340,12 @@ namespace Xuan.Prometheus.World
                 PublishMapPoiChanged(entity.Config.Id);
                 return true;
             }
+            catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested) { return false; }
             catch (Exception e)
             {
-                Debug.LogError($"[WorldSystem] 交互请求失败：{e.Message}");
+                bool shouldLog = isAvailable;
+                if (!ServiceSystem.IsWorldAvailable) isAvailable = false;
+                if (shouldLog) Debug.LogError($"[WorldSystem] 交互请求失败：{e.Message}");
                 return false;
             }
         }
@@ -359,7 +373,7 @@ namespace Xuan.Prometheus.World
             if (entity.Config.PoiType != PoiType.Statue && entity.Config.PoiType != PoiType.TeleAnchor) return false;
             if (Core.Gameplay.Player == null || Core.Gameplay.Player.bindGo == null) return false;
             Vector3 targetPosition = entity.bindGo.transform.position;
-            PlayerEntity player = Core.Gameplay.Player;
+            Entity player = Core.Gameplay.Player;
             CharacterController characterController = player.bindGo.GetComponent<CharacterController>();
             if (characterController != null) characterController.enabled = false;
             player.bindGo.transform.position = targetPosition;
@@ -432,9 +446,11 @@ namespace Xuan.Prometheus.World
             return Vector3.Distance(poiPos, playerPos) <= InterestRadius;
         }
 
-        /// <summary>释放网络客户端。</summary>
+        /// <summary>释放世界事件和单局缓存；ServiceSystem 及其 Push 订阅由 GameplayKit 独立释放。</summary>
         public override void Dispose()
         {
+            lifetimeCancellation.Cancel();
+            ServiceSystem.WorldUnavailable -= OnWorldUnavailable;
             Core.Event.RemoveListener<EntityDiedEvent>(Event.EntityDied, OnEntityDied);
             monsterCampByEntityId.Clear();
             pendingMonsterCampRespawns.Clear();
@@ -442,9 +458,9 @@ namespace Xuan.Prometheus.World
             mapDefinition = null;
             mapZoom = 1f;
             isAvailable = false;
-            if (client != null) client.PositionRestored -= OnPositionRestored;
-            client?.Dispose();
-            client = null;
         }
+
+        /// <summary>在 ServiceSystem 报告连接失效时立即停止本局全部后续世界网络轮询和交互。</summary>
+        private void OnWorldUnavailable() { isAvailable = false; }
     }
 }

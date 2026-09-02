@@ -5,9 +5,10 @@ namespace Xuan.Prometheus.Quest
     /// <summary>将 NPC 交互请求转换为任务领域事件，不把任务规则写入 NpcLogic。</summary>
     internal sealed class QuestNpcAdapter
     {
-        private readonly QuestSystem questSystem;
+        private readonly IQuestSystem questSystem;
 
-        internal QuestNpcAdapter(QuestSystem questSystem) { this.questSystem = questSystem; }
+        /// <summary>创建只依赖任务公共契约的 NPC 事件适配器。</summary>
+        internal QuestNpcAdapter(IQuestSystem questSystem) { this.questSystem = questSystem; }
 
         /// <summary>发布稳定 NPC ID 和交互入口组成的任务事件。</summary>
         internal void OnInteractionRequested(NpcInteractionContext context)

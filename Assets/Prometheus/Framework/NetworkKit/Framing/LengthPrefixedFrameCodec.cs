@@ -7,7 +7,7 @@ using Xuan.Prometheus.NetworkKit.Transport;
 namespace Xuan.Prometheus.NetworkKit.Framing
 {
     /// <summary>处理 4 字节大端长度前缀，解决 TCP 粘包和半包，不解析帧体内容。</summary>
-    public static class LengthPrefixedFrameCodec
+    internal static class LengthPrefixedFrameCodec
     {
         /// <summary>单帧最大字节数，与服务器限制保持一致。</summary>
         public const int MaxFrameBytes = 16 * 1024 * 1024;

@@ -38,10 +38,10 @@
 ### 3. 游戏启动同步
 `WorldSystem.AfterNew`：
 
-- 先通过 `PoiNetworkClient.ConnectAsync` 执行一次 POI 服务器连接检测；连接成功后才扫描场景、注册 POI 实体并启用更新与交互逻辑。
-- 初始化检测失败时仅记录一次 Warning，并保持 `WorldSystem` 禁用；本局不再执行 AOI 刷新、区块同步或服务器交互，避免服务器未启动时持续输出连接错误。
-- 扫描场景 `PoiMono` 绑定 `PoiEntity`，按 **PoiId** 建立索引 `poisByPoiId`。
-- 调 `sync.PullAll()` 取全部 `PoiState`，**按 poiId** 匹配实体，经 `PoiStateApplier.Apply` 写入对应 Logic。
+- 先扫描场景 `PoiMono`、注册 `PoiEntity` 并按 **PoiId** 建立索引，使地图展示与本地 AOI 不依赖服务器。
+- 再通过 `Core.Gameplay.GetSystem<IServiceSystem>().EnterWorldAsync` 进入默认世界；ServiceSystem 在该业务流程内部完成一次服务器连接检测与 JoinRoom 请求，成功后 WorldSystem 启用位置上传、区块状态同步和权威交互。
+- 初始化检测失败时仅记录一次 Warning，本局不再执行网络同步或服务器交互，避免服务器未启动时持续输出连接错误；本地 POI 仍可显示和刷新。
+- 玩家进入新区域后按 chunk 拉取 `PoiState`，按 poiId 匹配实体并经 `PoiStateApplier.Apply` 写入对应 Logic。
 
 ### 4. 交互请求确认
 客户端交互不再直接改 Logic，而是：
@@ -137,6 +137,12 @@ WorldSystem/
 
 ## 六、当前真实网络接入
 
-客户端 `PoiNetworkClient` 通过 `Framework/NetworkKit` 的 Transport → Framing → Protocol → Session/RPC → Services 分层访问服务器；`TryInteractAsync`、chunk 拉取、坐标推送和抽卡均复用同一会话。`WorldSystem.AfterNew` 显式调用 `ConnectAsync`，连接成功后才扫描场景并启用同步与交互；连接失败时保持系统禁用并记录一次告警。
+客户端 `ServiceSystem` 通过 `Framework/NetworkKit` 的 Transport → Framing → Protocol → Session/RPC 分层访问服务器，并让全部 Gameplay 业务请求与 Push 复用同一个 `INetworkClient` 会话。NetworkKit 只管理连接和通用 Packet，不解释任何业务 Body；ServiceSystem 负责进入世界、chunk 拉取、POI 交互和坐标等业务协议。World 只经 `IServiceSystem` 调用纯业务接口；它先扫描本地场景，再进入世界，失败时保留本地地图和 AOI，只关闭网络同步与服务器交互。
+
+## 接口边界
+
+`WorldSystem` 是程序集内部实现，由 `GameplayKit` 以 `IWorldSystem` 注册。网络通信统一由 `IServiceSystem` 提供，WorldSystem 不持有网络客户端，也不再向 Bag 转发库存请求。`BagSystem` 直接使用同一个 `IServiceSystem.GetItemsAsync` 并独立维护背包快照；ServiceSystem 在所有消费者之后释放底层连接。
+
+WorldSystem 与 BagSystem 不通过构造函数注入 ServiceSystem，而是在使用点经 `Core.Gameplay` 查询接口。两者把自身生命周期令牌传入 ServiceSystem，释放时取消未完成请求；ServiceSystem 收到 NetworkKit 意外断线后切换为世界不可用，WorldSystem 停止后续网络轮询。当前不自动重连。
 
 服务器侧保留 POI 状态校验与 MongoDB 持久化，网络边界由 `Server/internal/netx` 负责帧解码、request_id 关联和业务分发。

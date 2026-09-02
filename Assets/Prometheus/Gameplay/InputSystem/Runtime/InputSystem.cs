@@ -7,7 +7,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus.Input
 {
     /// <summary>在单个 GameplayKit 内集中采样输入、按动作仲裁控制权并向 Entity 或普通对象分发输入。</summary>
-    public sealed class InputSystem : XSystem
+    internal sealed class InputSystem : XSystem, IInputSystem
     {
         private static readonly InputActionMask[] AtomicActions = { InputActionMask.Move, InputActionMask.Attack, InputActionMask.Skill, InputActionMask.Ultimate, InputActionMask.Dodge, InputActionMask.Jump, InputActionMask.SpecialAttack, InputActionMask.ToggleSprint, InputActionMask.ToggleWalk, InputActionMask.Navigate, InputActionMask.Submit, InputActionMask.Cancel, InputActionMask.SelectTeamMember1, InputActionMask.SelectTeamMember2, InputActionMask.SelectTeamMember3, InputActionMask.OpenLottery, InputActionMask.OpenMiniMap, InputActionMask.OpenQuest, InputActionMask.OpenMenu, InputActionMask.OpenGuide, InputActionMask.OpenEvent, InputActionMask.OpenCharacter, InputActionMask.OpenBag };
         private readonly Dictionary<string, IInputSource> sources = new Dictionary<string, IInputSource>(StringComparer.Ordinal);
@@ -231,7 +231,7 @@ namespace Xuan.Prometheus.Input
         private void DispatchQueuedEntityButtonActions()
         {
             if (queuedEntityButtonActions.Count == 0) return;
-            EntitySystem entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
+            IEntitySystem entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             foreach (KeyValuePair<int, InputActionMask> command in queuedEntityButtonActions)
             {
                 if (!entitySystem.TryGetEntity(command.Key, out Entity entity) || !entity.IsActive) continue;

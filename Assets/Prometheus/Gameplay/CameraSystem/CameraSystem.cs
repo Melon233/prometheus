@@ -11,7 +11,7 @@ using Xuan.Prometheus.Rendering;
 namespace Xuan.Prometheus
 {
     /// <summary>集中创建并管理单局唯一的输出相机、Cinemachine 跟随镜头、音频监听器和当前角色跟随目标。</summary>
-    public sealed class CameraSystem : XSystem
+    internal sealed class CameraSystem : XSystem, ICameraSystem
     {
         /// <summary>普通玩法跟随镜头的默认优先级；演出镜头必须高于该值才能稳定接管输出。</summary>
         private const int GameplayFollowCameraPriority = 100;
@@ -58,7 +58,7 @@ namespace Xuan.Prometheus
         private FilmCameraLease activeFilmCameraLease;
 
         /// <summary>保存当前玩法世界的实体查询入口。</summary>
-        private EntitySystem entitySystem;
+        private IEntitySystem entitySystem;
 
         /// <summary>标记当前系统已经完成释放，避免失效事件继续修改相机目标。</summary>
         private bool isDisposed;
@@ -98,7 +98,7 @@ namespace Xuan.Prometheus
         public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CameraSystem));
-            entitySystem = Core.Gameplay.GetSystem<EntitySystem>();
+            entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             CreateCameraObjects();
             PrometheusRenderQualityController.QualityChanged += OnRenderQualityChanged;
             Core.Event.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);

@@ -60,7 +60,7 @@ namespace Xuan.Prometheus.Animation.Tests
             assetKit = new AssetKit();
             Core.Asset = assetKit;
             gameplayKit = new GameplayKit();
-            entitySystem = gameplayKit.GetSystem<EntitySystem>();
+            entitySystem = (EntitySystem)gameplayKit.GetSystem<IEntitySystem>();
             animationEntity = new AnimationTestEntity(slimeInstance, spineComponent, motionComponent, propertyComponent);
             entitySystem.AddEntity(animationEntity);
             animationEntity.AfterNew();
