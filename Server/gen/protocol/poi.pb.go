@@ -5,7 +5,7 @@
 // source: proto/poi.proto
 
 // 大世界 POI 客户端-服务器通信协议。
-// 传输层：TCP + 4 字节大端长度前缀 + Packet 消息体。
+// 传输层：TCP Packet = 4 字节定长 Head + 变长 Body，Head 首字段为大端 BodyLength，Body 为业务 Packet Protobuf。
 // 协议修改后需手动重新生成 Go / C# 代码：在 Server/ 目录执行 gen_proto.ps1。
 
 package protocol
@@ -1132,7 +1132,7 @@ func (x *GachaResponse) GetError() string {
 	return ""
 }
 
-// ===== 消息信封（TCP 长度前缀的帧体） =====
+// ===== 业务消息信封（传输 Packet 的变长 Body） =====
 type Packet struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 请求响应关联 ID；服务器主动推送消息使用 0。

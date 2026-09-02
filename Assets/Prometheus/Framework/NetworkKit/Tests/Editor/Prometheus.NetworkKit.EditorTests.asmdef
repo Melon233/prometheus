@@ -1,0 +1,21 @@
+{
+    "name": "Prometheus.NetworkKit.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.NetworkKit.Tests",
+    "references": [
+        "Prometheus.NetworkKit"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

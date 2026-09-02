@@ -4608,7 +4608,7 @@ namespace Xuan.Prometheus.Protocol {
   }
 
   /// <summary>
-  /// ===== 消息信封（TCP 长度前缀的帧体） =====
+  /// ===== 业务消息信封（传输 Packet 的变长 Body） =====
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Packet : pb::IMessage<Packet>

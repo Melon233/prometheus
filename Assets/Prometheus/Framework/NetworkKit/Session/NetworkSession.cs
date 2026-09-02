@@ -170,7 +170,7 @@ namespace Xuan.Prometheus.NetworkKit.Session
             if (isDisposed) throw new ObjectDisposedException(nameof(NetworkSession));
         }
 
-        /// <summary>串行写帧，保证同一连接上的多个请求不会交错写入。</summary>
+        /// <summary>串行写出 Head + Body 传输 Packet，保证同一连接上的多个请求不会交错写入。</summary>
         private async Task SendPacketAsync(Packet packet, CancellationToken cancellationToken)
         {
             byte[] frame = PacketCodec.Encode(packet);
@@ -188,15 +188,15 @@ namespace Xuan.Prometheus.NetworkKit.Session
             finally { sendLock.Release(); }
         }
 
-        /// <summary>持续读取长度帧并按 request_id 分发响应或主动推送。</summary>
+        /// <summary>持续读取定长 Head 与变长 Body，并按 request_id 分发响应或主动推送。</summary>
         private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
         {
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    byte[] body = await LengthPrefixedFrameCodec.ReadAsync(transport, cancellationToken);
-                    Packet packet = PacketCodec.Decode(body);
+                    TransportPacket transportPacket = await TransportPacketCodec.ReadAsync(transport, cancellationToken);
+                    Packet packet = PacketCodec.Decode(transportPacket);
                     if (packet.RequestId != 0 && pending.TryRemove(packet.RequestId, out TaskCompletionSource<Packet> completion)) completion.TrySetResult(packet);
                     else pushQueue.Enqueue(packet);
                 }

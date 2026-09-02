@@ -249,18 +249,16 @@ namespace Xuan.Prometheus
             ClampMapContentPosition();
         }
 
-        /// <summary>响应鼠标滚轮或触控板滚动输入，并以当前指针所在地图点作为缩放锚点。</summary>
-        private void OnMapScrolled(float delta, Vector2 screenPosition, Camera eventCamera)
+        /// <summary>响应鼠标滚轮或触控板滚动输入，并保持屏幕中心对应的地图点在缩放前后位置不变。</summary>
+        private void OnMapScrolled(float delta)
         {
             float previousZoom = zoom;
             float nextZoom = Mathf.Clamp(zoom + delta * 0.1f, MinimumZoom, MaximumZoom);
             if (Mathf.Approximately(previousZoom, nextZoom)) return;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(viewport, screenPosition, eventCamera, out Vector2 viewportPoint);
-            Vector2 mapPoint = (viewportPoint - mapContent.anchoredPosition) / previousZoom;
             zoom = nextZoom;
             worldSystem.MapZoom = zoom;
             mapContent.localScale = Vector3.one * zoom;
-            mapContent.anchoredPosition = viewportPoint - mapPoint * zoom;
+            mapContent.anchoredPosition *= nextZoom / previousZoom;
             UpdateMarkerScales();
             ClampMapContentPosition();
         }
@@ -338,7 +336,7 @@ namespace Xuan.Prometheus
             /// <summary>把滚轮增量传给地图控制器。</summary>
             public void OnScroll(PointerEventData eventData)
             {
-                owner.OnMapScrolled(eventData.scrollDelta.y, eventData.position, eventData.pressEventCamera);
+                owner.OnMapScrolled(eventData.scrollDelta.y);
             }
         }
     }

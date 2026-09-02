@@ -1,4 +1,4 @@
-// Package netx 实现 POI 的 TCP 服务：4 字节大端长度前缀 + protobuf Packet 消息体，按类型分发到 service。
+// Package netx 实现 POI 的 TCP 服务：传输 Packet 由定长 Head 和变长 Protobuf Body 组成，并按类型分发到 service。
 package netx
 
 import (
@@ -22,8 +22,23 @@ import (
 	"prometheus/internal/service"
 )
 
-// maxFrameBytes 单帧 protobuf 字节上限，防止异常长度导致无界分配。
-const maxFrameBytes = 16 * 1024 * 1024
+const (
+	// packetHeadBytes 定义传输 Packet 的固定 Head 长度；Head 首字段固定为 4 字节大端 BodyLength。
+	packetHeadBytes = 4
+	// maxPacketBodyBytes 定义单个变长 Body 的字节上限，防止异常 BodyLength 导致无界分配。
+	maxPacketBodyBytes = 16 * 1024 * 1024
+)
+
+// packetHead 描述传输 Packet 的定长 Head；BodyLength 必须是 Head 的第一字段。
+type packetHead struct {
+	bodyLength uint32
+}
+
+// transportPacket 描述网络传输边界，由定长 Head 和 Head.BodyLength 指定的变长 Body 组成。
+type transportPacket struct {
+	head packetHead
+	body []byte
+}
 
 // Server 是 POI TCP 服务器。
 type Server struct {
@@ -93,14 +108,24 @@ func (s *Server) dispatch(session *clientSession, req *protocol.Packet) []*proto
 	switch body := req.Body.(type) {
 	case *protocol.Packet_PullAll:
 		resp := &protocol.PullAllResponse{}
-		for _, p := range s.svc.PullAll() {
+		playerID, _, _ := s.sessionState(session)
+		states, err := s.svc.PullAllForPlayer(s.ctx, playerID)
+		if err != nil {
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_PullAllResp{PullAllResp: resp}}}
+		}
+		for _, p := range states {
 			resp.States = append(resp.States, toProtoState(p))
 		}
 		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_PullAllResp{PullAllResp: resp}}}
 	case *protocol.Packet_PullChunk:
 		chunkID := body.PullChunk.ChunkId
 		resp := &protocol.PullChunkResponse{ChunkId: chunkID}
-		for _, p := range s.svc.PullChunk(chunkID) {
+		playerID, _, _ := s.sessionState(session)
+		states, err := s.svc.PullChunkForPlayer(s.ctx, playerID, chunkID)
+		if err != nil {
+			return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_PullChunkResp{PullChunkResp: resp}}}
+		}
+		for _, p := range states {
 			resp.States = append(resp.States, toProtoState(p))
 		}
 		return []*protocol.Packet{{RequestId: req.RequestId, Body: &protocol.Packet_PullChunkResp{PullChunkResp: resp}}}
@@ -317,42 +342,59 @@ func positionPush(roomID string, position room.Position, ok bool) *protocol.Play
 	return &protocol.PlayerPositionPush{RoomId: roomID, PlayerId: position.PlayerID, X: position.X, Y: position.Y, Z: position.Z, ServerTimeMs: position.ServerTimeMs}
 }
 
-// readPacket 读取一帧：4 字节大端长度 + protobuf 字节。
+// readPacket 读取一个 Head + Body 传输 Packet，并把变长 Body 反序列化为业务 Packet。
 func readPacket(r *bufio.Reader) (*protocol.Packet, error) {
-	var lenBuf [4]byte
-	if _, err := io.ReadFull(r, lenBuf[:]); err != nil {
-		return nil, err
-	}
-	n := binary.BigEndian.Uint32(lenBuf[:])
-	if n == 0 || n > maxFrameBytes {
-		return nil, io.ErrUnexpectedEOF
-	}
-	body := make([]byte, n)
-	if _, err := io.ReadFull(r, body); err != nil {
+	packet, err := readTransportPacket(r)
+	if err != nil {
 		return nil, err
 	}
 	pkt := &protocol.Packet{}
-	if err := proto.Unmarshal(body, pkt); err != nil {
+	if err := proto.Unmarshal(packet.body, pkt); err != nil {
 		return nil, err
 	}
 	return pkt, nil
 }
 
-// writePacket 写出一帧：4 字节大端长度 + protobuf 字节。
+// writePacket 把业务 Packet 序列化为变长 Body，并写出包含 BodyLength 首字段的完整传输 Packet。
 func writePacket(w io.Writer, pkt *protocol.Packet) error {
 	body, err := proto.Marshal(pkt)
 	if err != nil {
 		return err
 	}
-	if len(body) == 0 || len(body) > maxFrameBytes {
-		return fmt.Errorf("invalid frame length: %d", len(body))
+	return writeTransportPacket(w, transportPacket{head: packetHead{bodyLength: uint32(len(body))}, body: body})
+}
+
+// readTransportPacket 先精确读取定长 Head，再根据首字段 BodyLength 精确读取变长 Body。
+func readTransportPacket(r io.Reader) (transportPacket, error) {
+	var headBytes [packetHeadBytes]byte
+	if _, err := io.ReadFull(r, headBytes[:]); err != nil {
+		return transportPacket{}, err
 	}
-	var lenBuf [4]byte
-	binary.BigEndian.PutUint32(lenBuf[:], uint32(len(body)))
-	if err := writeFull(w, lenBuf[:]); err != nil {
+	head := packetHead{bodyLength: binary.BigEndian.Uint32(headBytes[:])}
+	if head.bodyLength == 0 || head.bodyLength > maxPacketBodyBytes {
+		return transportPacket{}, fmt.Errorf("invalid packet body length: %d", head.bodyLength)
+	}
+	body := make([]byte, head.bodyLength)
+	if _, err := io.ReadFull(r, body); err != nil {
+		return transportPacket{}, err
+	}
+	return transportPacket{head: head, body: body}, nil
+}
+
+// writeTransportPacket 按定长 Head 在前、变长 Body 在后的布局写出完整 Packet。
+func writeTransportPacket(w io.Writer, packet transportPacket) error {
+	if packet.head.bodyLength == 0 || packet.head.bodyLength > maxPacketBodyBytes {
+		return fmt.Errorf("invalid packet body length: %d", packet.head.bodyLength)
+	}
+	if uint32(len(packet.body)) != packet.head.bodyLength {
+		return fmt.Errorf("packet body length mismatch: head=%d body=%d", packet.head.bodyLength, len(packet.body))
+	}
+	var headBytes [packetHeadBytes]byte
+	binary.BigEndian.PutUint32(headBytes[:], packet.head.bodyLength)
+	if err := writeFull(w, headBytes[:]); err != nil {
 		return err
 	}
-	return writeFull(w, body)
+	return writeFull(w, packet.body)
 }
 
 // writeFull 循环写出全部字节，避免合法 Writer 返回短写导致客户端收到截断帧。

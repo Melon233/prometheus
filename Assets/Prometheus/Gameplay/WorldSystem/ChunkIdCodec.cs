@@ -8,7 +8,7 @@ namespace Xuan.Prometheus.World
     /// </summary>
     public static class ChunkIdCodec
     {
-        /// <summary>单个 chunk 的世界边长（米），与 AOI RegionSize 一致。</summary>
+        /// <summary>单个网络同步和烘焙 chunk 的世界边长（米）。</summary>
         public const int ChunkSize = 20;
 
         /// <summary>三位编码基数。</summary>

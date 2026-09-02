@@ -13,8 +13,8 @@ namespace Xuan.Prometheus.World
 {
     /// <summary>
     /// 管理大世界 POI 生命周期：以场景摆放的 PoiMono 为数据源，绑定 PoiEntity；
-    /// AOI（3×3 邻域 + 兴趣半径）控制显隐（不销毁场景对象）；
-    /// 服务器权威：按需拉取玩家附近 chunk 的状态，交互经服务器确认（返回 true）后才做表现。
+    /// 服务器权威：按需拉取玩家附近 chunk 的状态，交互经服务器确认（返回 true）后才做表现；
+    /// POI 不再按玩家距离统一显隐，消费和重生显示由各类型自身状态逻辑负责。
     /// </summary>
     internal sealed class WorldSystem : XSystem, IWorldSystem
     {
@@ -33,7 +33,6 @@ namespace Xuan.Prometheus.World
         /// <summary>交互物根节点球形触发体的半径（米）。</summary>
         private const float PoiTriggerRadius = 0.5f;
 
-        private readonly List<PoiConfig> persistentPois = new List<PoiConfig>(); // aoiExempt 常驻 POI
         private readonly List<PoiEntity> allPois = new List<PoiEntity>();
         private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>();
         private readonly HashSet<int> syncedChunks = new HashSet<int>(); // 已拉取状态的 chunkId
@@ -52,12 +51,6 @@ namespace Xuan.Prometheus.World
 
         /// <summary>通过统一 Core 入口按需取得当前单局 ServiceSystem 接口，不保存或注入公共 System 实例。</summary>
         private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>();
-
-        /// <summary>AOI 网格边长，与 chunk 尺寸一致。</summary>
-        public float RegionSize { get; set; } = ChunkIdCodec.ChunkSize;
-
-        /// <summary>AOI 兴趣半径。</summary>
-        public float InterestRadius { get; set; } = 15f;
 
         /// <summary>已加载的 POI 数量（诊断）。</summary>
         public int PoiCount => allPois.Count;
@@ -203,7 +196,6 @@ namespace Xuan.Prometheus.World
                 if (mono == null || mono.Config == null) continue;
                 PoiConfig cfg = mono.Config;
                 if (string.IsNullOrEmpty(cfg.Id) || poisById.ContainsKey(cfg.Id)) continue;
-                if (cfg.aoiExempt) persistentPois.Add(cfg);
                 PoiEntity entity = cfg.PoiType == PoiType.Npc ? new NpcEntity(mono.gameObject, cfg, cfg.Npc) : new PoiEntity(mono.gameObject, cfg);
                 Core.Gameplay.GetSystem<IEntitySystem>().AddEntity(entity);
                 entity.AfterNew();
@@ -211,11 +203,11 @@ namespace Xuan.Prometheus.World
                 poisById[cfg.Id] = entity;
                 EnsurePoiTrigger(mono.gameObject);
             }
-            Debug.Log($"WorldSystem: loaded {allPois.Count} POIs from scene, {persistentPois.Count} persistent.");
+            Debug.Log($"WorldSystem: loaded {allPois.Count} POIs from scene.");
             PublishMapPoiChanged(null);
         }
 
-        /// <summary>低频驱动生命周期：以玩家位置刷新 AOI 显隐，并拉取附近 chunk 状态。</summary>
+        /// <summary>低频驱动世界同步：上传玩家位置并拉取附近 chunk 状态，不按距离切换 POI 显隐。</summary>
         public override void OnUpdate(float dt)
         {
             // 先处理死亡期间排队的营地补刷，避免在 EntitySystem 遍历期间修改实体集合。
@@ -237,7 +229,6 @@ namespace Xuan.Prometheus.World
                 positionUploadAccumulator = 0f;
                 UploadPlayerPositionAsync(playerPos, lifetimeCancellation.Token).Forget();
             }
-            RefreshAt(playerPos);
             SyncNearbyChunks(playerPos);
         }
 
@@ -334,10 +325,14 @@ namespace Xuan.Prometheus.World
                 InteractResponse response = await ServiceSystem.InteractAsync(entity.Config.Id, (Xuan.Prometheus.Protocol.PoiOp)(int)op, lifetimeCancellation.Token);
                 lifetimeCancellation.Token.ThrowIfCancellationRequested();
                 Debug.Log($"[交互] 服务器响应 {entity.Config.Id} => success={response.Success}");
+                if (response.Success && (op == PoiOp.OpenChest || op == PoiOp.Gather)) await ChestOpenFilm.PlayAsync(entity, lifetimeCancellation.Token); // 宝箱和采集物保持可见，直到 FilmSystem 完成目标特写并恢复玩法构图。
+                if (response.State != null)
+                {
+                    PoiStateApplier.Apply(entity, response.State); // 重复操作失败时仍应用服务器最新状态，消除客户端过期表现。
+                    if (entity.IsConsumed) RemoveFromNearby(entity); // 服务器状态已消费时立即移除过期交互入口。
+                    PublishMapPoiChanged(entity.Config.Id);
+                }
                 if (!response.Success) return false;
-                PoiStateApplier.Apply(entity, response.State); // 服务器确认后按最新状态做表现
-                if (entity.IsConsumed) RemoveFromNearby(entity); // 已消失则移出交互列表
-                PublishMapPoiChanged(entity.Config.Id);
                 return true;
             }
             catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested) { return false; }
@@ -421,29 +416,6 @@ namespace Xuan.Prometheus.World
             trigger.isTrigger = true;
             trigger.radius = PoiTriggerRadius;
             poiRoot.tag = PoiTag;
-        }
-
-        /// <summary>AOI：aoiExempt 常驻显示；普通 POI 在 9 格邻域 + 兴趣半径内显示，否则隐藏（不销毁场景对象）。</summary>
-        public void RefreshAt(Vector3 playerPos)
-        {
-            int centerX = Mathf.FloorToInt(playerPos.x / RegionSize);
-            int centerY = Mathf.FloorToInt(playerPos.z / RegionSize);
-            foreach (PoiEntity entity in allPois)
-            {
-                PoiConfig cfg = entity.Config;
-                Vector3 poiPos = entity.bindGo != null ? entity.bindGo.transform.position : cfg.Position;
-                bool visible = (cfg.aoiExempt || IsInAoi(poiPos, playerPos, centerX, centerY)) && !entity.IsConsumed;
-                if (entity.bindGo != null && entity.bindGo.activeSelf != visible) entity.bindGo.SetActive(visible);
-            }
-        }
-
-        /// <summary>判断 POI 是否位于玩家 3×3 邻域 + 兴趣半径内（位置取 GameObject 实际世界坐标）。</summary>
-        private bool IsInAoi(Vector3 poiPos, Vector3 playerPos, int centerX, int centerY)
-        {
-            int px = Mathf.FloorToInt(poiPos.x / RegionSize);
-            int py = Mathf.FloorToInt(poiPos.z / RegionSize);
-            if (Mathf.Abs(px - centerX) > 1 || Mathf.Abs(py - centerY) > 1) return false;
-            return Vector3.Distance(poiPos, playerPos) <= InterestRadius;
         }
 
         /// <summary>释放世界事件和单局缓存；ServiceSystem 及其 Push 订阅由 GameplayKit 独立释放。</summary>

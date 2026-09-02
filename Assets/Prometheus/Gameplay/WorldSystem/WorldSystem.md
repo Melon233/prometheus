@@ -1,20 +1,20 @@
 # 世界系统（World System）设计
 
 > 对应 Spec：`Assets/Prometheus/Gameplay/WorldSystem/WorldSystemSpec.md`
-> 本文档为 `WorldSystem` 的落地设计，描述数据结构、编辑器/烘焙流程、运行时生命周期管理，以及与现有 `EntitySystem` 的对接方式。
+> 本文档为 `WorldSystem` 的落地设计，描述数据结构、编辑器/烘焙流程、运行时注册与状态同步，以及与现有 `EntitySystem` 的对接方式。
 
 ---
 
 ## 1. 目标与范围
 
 ### 1.1 目标
-- 管理大世界中 **8 种兴趣点（POI）** 的生命周期：传送锚点、七天神像、宝箱、神瞳、采集物、副本、地图 Boss、怪物营地。
-- 世界按网格分割，POI 归属到所在 Region，运行时**只加载/实例化玩家附近的 POI**，控制活跃实体数量。
-- `WorldSystem` 只负责**生命周期**；POI 的**具体逻辑**通过 entity-logic-component（`EntitySystem`）承载。
+- 管理大世界中各类兴趣点（POI）的场景注册、服务器状态同步和交互入口。
+- 世界按网格分割，POI 归属到所在 Region；网格只用于烘焙和服务器 chunk 状态同步，不再用于客户端 POI 显隐。
+- `WorldSystem` 负责 POI 注册和同步；消费、冷却与重生等具体状态通过 entity-logic-component（`EntitySystem`）承载。
 
 ### 1.2 范围界定
-- **做**：数据结构、烘焙生成、region 邻域 + 兴趣半径的按需激活/失活、POI 实体的实例化与回收。
-- **不做**：持久化（按 Spec 暂不考虑，每次运行用初始化数据）、各 POI 的业务细节（奖励、战斗、传送等）——它们在各类型的 Logic 内实现，本文只给出挂载方式与骨架。
+- **做**：数据结构、烘焙导出、场景 POI 注册、附近 chunk 状态同步和服务器权威交互。
+- **不做**：按玩家距离统一切换 POI 显隐、各 POI 的业务细节（奖励、战斗、传送等）。具体显隐与状态由各类型 Logic 管理，大世界资源规模问题应由独立场景/资源流送系统解决。
 
 ### 1.3 对接的现有架构
 | 现有组件 | 位置 | 在本系统中的角色 |
@@ -32,20 +32,16 @@
 ## 2. 总体流程
 
 ```
-[编辑器]                 [烘焙]                  [运行时]
-放置 PoiMono  ----烘焙-->  WorldRegionsConfig  --> 按玩家位置
-(场景摆放+配置)          (整表数据资产)            加载 9 格邻域 + 兴趣半径
-                                                     │
-                                        +--------------+--------------+
-                                        ▼                            ▼
-                                    激活: 实例化 PoiEntity        失活: 回收 PoiEntity
-                                        (Entity)                     (EntitySystem 托管)
-                                        │
-                                        ▼
-                            按 PoiType 注册 Component(数据) + Logic(行为)
+[编辑器]                    [运行时注册]                         [运行时同步]
+放置 PoiMono  ----------->  扫描全部场景 PoiMono  ----------->  按玩家附近 3x3 chunk 拉取状态
+(场景摆放+配置)             创建 PoiEntity/NpcEntity               │
+      │                     注册到 EntitySystem                    ▼
+      └----烘焙/导出------>  服务器静态定义               按 PoiId 应用到对应 Logic
+                                  │                                │
+                                  └-----------------------> 消费/冷却/重生控制具体显隐
 ```
 
-`PoiMono` 仅存在于**编辑阶段**，用于在场景里摆放与配置；运行时唯一数据源是烘焙生成的 `WorldRegionsConfig`。
+`PoiMono` 既是编辑阶段的摆放配置，也是当前运行时创建 POI Entity 的场景数据源；烘焙/导出数据用于服务器静态定义和 chunk 索引。
 
 ---
 
@@ -80,8 +76,7 @@ public class PoiConfig
 {
     public string       PoiId;             // 不可变 UUID，同步键与服务器数据库主键
     public PoiType      PoiType;           // 八种兴趣点之一
-    public Vector3      Position;          // 世界坐标（烘焙时写入，距离过滤必需）
-    public bool         aoiExempt;         // 豁免 AOI 裁剪：大体建筑（神像/副本/锚点）常驻，远离不回收
+    public Vector3      Position;          // 世界坐标（烘焙时写入，用于 chunk、地图与服务器定义）
     public StatueConfig       Statue;      // 七天神像
     public TeleAnchorConfig   TeleAnchor;  // 传送锚点
     public ChestConfig        Chest;       // 宝箱
@@ -93,7 +88,7 @@ public class PoiConfig
 }
 ```
 
-> 说明：`Position` 为设计补充字段——Spec 未显式列出坐标，但运行时做"兴趣半径距离过滤"与"region 归属"都必须用到，故在此补齐。烘焙阶段写入。
+> 说明：`Position` 为设计补充字段，用于 region/chunk 归属、地图投影和服务器静态定义；运行时场景表现位置优先读取绑定 GameObject 的实际世界坐标。
 
 ### 3.3 各类型专属 Config（每个类型一个）
 
@@ -144,7 +139,7 @@ public sealed class PoiMono : MonoBehaviour
 ```
 
 - `PoiMono` 使用 Unity 默认 Inspector，不再注册专用 `CustomEditor`；`PoiConfig` 的通用字段绘制由其 PropertyDrawer 负责。
-- **运行时**：此对象不参与逻辑。加载阶段完全基于烘焙数据，运行时场景里不应依赖 `PoiMono`。
+- **运行时**：`WorldSystem.LoadFromScene` 扫描此组件并读取 `Config`，创建绑定同一场景 GameObject 的 POI Entity；烘焙/导出数据用于服务器静态定义和空间索引。
 
 ### 4.2 烘焙工具（编辑器窗口）
 - 配置 `Region Size`（区域边长，默认 `100m`）。
@@ -159,13 +154,12 @@ public sealed class PoiMono : MonoBehaviour
 
 ## 5. 运行时生命周期
 
-### 5.1 两层加载过滤
-加载遵循 Spec 的两层过滤：
+### 5.1 运行时常驻与状态显隐
 
-1. **区域过滤**：只考虑"玩家所在 Region + 其 3×3 邻域（±1 格，共 9 个 Region）"内的 POI。
-2. **兴趣半径过滤**：在这 9 个 Region 内，仅 `distance(玩家, poi) <= InterestRadius` 的 POI 被实例化并执行逻辑。
-
-`InterestRadius` 为**独立配置项**，默认取 `RegionSize * 0.5f`（即格子边长的一半），使激活范围略小于 9 格区域，避免边界 POI 过早/过多加载。
+1. **场景注册**：初始化扫描全部场景 `PoiMono`，为每个合法配置创建 `PoiEntity` 或 `NpcEntity` 并注册到 `EntitySystem`。
+2. **不做距离显隐**：玩家移动不会统一调用 `GameObject.SetActive`，也不会按 3x3 chunk 或兴趣半径筛掉场景 POI。
+3. **状态显隐**：一次性 POI 在消费后由对应 Logic 隐藏；可刷新 POI 在冷却期间隐藏，并在计时结束时由 `RespawnablePoiLogic` 主动恢复显示。
+4. **网络同步独立**：玩家附近 3x3 chunk 仍用于拉取服务器 POI 状态，但该范围不决定场景对象是否可见。
 
 ### 5.2 WorldSystem（核心，已实现于 `Gameplay/WorldSystem/WorldSystem.cs`）
 
@@ -175,12 +169,9 @@ internal sealed class WorldSystem : XSystem, IWorldSystem
     private readonly List<PoiEntity> allPois = new List<PoiEntity>(); // 保存由场景 PoiMono 组合出的全部 POI Entity。
     private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>(); // 按语义 Id 查询当前场景 POI。
     private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource(); // 释放时取消全部世界异步操作。
-    private float tickAccumulator; // 以 0.25 秒间隔执行 AOI 与网络同步。
+    private float tickAccumulator; // 以 0.25 秒间隔执行位置上传与附近 chunk 网络同步。
 
     private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>(); // 使用点通过 Core 获取公共 System。
-
-    public float RegionSize { get; set; } = ChunkIdCodec.ChunkSize; // AOI 网格边长与服务器 chunk 保持一致。
-    public float InterestRadius { get; set; } = 15f; // 普通 POI 的世界距离显隐半径。
 
     public override void AfterNew()
     {
@@ -189,8 +180,7 @@ internal sealed class WorldSystem : XSystem, IWorldSystem
         Core.Asset.LoadAssetSync<WorldMapDefinition>("WorldMapDefinition");
     }
 
-    public override void OnUpdate(float dt) { /* 低频读取 Core.Gameplay.Player 坐标并刷新 POI 显隐与附近 chunk。 */ }
-    public void RefreshAt(Vector3 playerPos) { /* 对场景 POI 执行 3x3 邻域、兴趣半径和消费状态判断。 */ }
+    public override void OnUpdate(float dt) { /* 低频读取玩家坐标，上传位置并同步附近 3x3 chunk 状态。 */ }
 }
 ```
 
@@ -201,26 +191,25 @@ internal sealed class WorldSystem : XSystem, IWorldSystem
 
 > 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：`GameplayKit` 先注册 ServiceSystem，WorldSystem 在调用点通过 `Core.Gameplay.GetSystem<IServiceSystem>()` 获取接口；`AfterNew` 注册怪物营地死亡监听并生成初始史莱姆，`InitializeAsync` 首先扫描场景并建立本地 POI 索引，保证地图和交互列表可以独立于网络显示；随后调用业务接口 `EnterWorldAsync`，由 ServiceSystem 内部完成连接与 JoinRoom，再恢复玩家坐标并启用服务器同步。WorldSystem 的全部异步调用都传入自身生命周期令牌，释放后 continuation 不再修改集合或 Unity 对象。ServiceSystem 把 NetworkKit 意外断线转换为世界不可用通知，WorldSystem 随即停止上传、拉取和交互；本地 POI 仍保留。
 
-### 5.3 激活与失活
-- **初始化**：`LoadFromScene` 为每个合法 `PoiMono` 创建 `PoiEntity` 或 `NpcEntity`，注册到 EntitySystem 并保留场景 GameObject，不在 AOI 阶段重复实例化或销毁。
-- **显隐**：`RefreshAt` 计算 3x3 邻域和兴趣半径，通过场景 GameObject 的 `SetActive` 切换普通 POI 显示；被消费的 POI 始终隐藏。
-- **AOI 豁免（`aoiExempt`）**：常驻 POI 无视邻域和兴趣半径，但仍服从消费状态。
+### 5.3 注册与显隐
+- **初始化**：`LoadFromScene` 为每个合法 `PoiMono` 创建 `PoiEntity` 或 `NpcEntity`，注册到 EntitySystem 并保留场景 GameObject。
+- **显隐**：WorldSystem 不再依据玩家距离统一控制显隐。一次性消费、可刷新冷却和重生由具体 POI Logic 调用 `SetPoiVisible`。
 - **生命周期**：WorldSystem 释放前，POI Entity 仍由 EntitySystem 统一托管；GameplayKit 销毁时先释放全部 Entity，再逆序释放其他 System。
 
 ### 5.4 玩家位置来源
-`WorldSystem` 需要玩家世界坐标，经确认**复用 `TeamSystem` 现成成员**，不再另设位置定位器：
+`WorldSystem` 需要玩家世界坐标用于位置上传与附近 chunk 状态同步，经确认**复用 `TeamSystem` 现成成员**，不再另设位置定位器：
 
 ```csharp
-// 取 Core.Gameplay 当前玩家的世界坐标作为兴趣中心；玩家尚未创建时跳过本轮刷新。
+// 取 Core.Gameplay 当前玩家的世界坐标，用于位置上传与附近 chunk 状态同步。
 if (Core.Gameplay.Player != null && Core.Gameplay.Player.bindGo != null)
 {
     Vector3 playerPos = Core.Gameplay.Player.bindGo.transform.position;
-    RefreshAt(playerPos);
+    SyncNearbyChunks(playerPos);
 }
 ```
 
 - 切人（`TeamSystem.SwitchToSlot`）后 `ActiveMember` 已切换，下一轮 `Tick` 自动以新成员位置为准，无需额外同步。
-- `ActiveMember` 为 `null`（暂无可用成员）时跳过本轮加载，避免空引用。
+- `ActiveMember` 为 `null`（暂无可用成员）时跳过本轮位置上传与 chunk 同步。
 
 ---
 
@@ -271,6 +260,8 @@ public class PoiComponent : IComponent
 
 > 业务数据（奖励表、战斗、传送目标、副本场景）依赖尚未存在的奖励/战斗/传送系统，此处仅实现**生命周期状态、幂等切换、重生计时与事件广播**；真实业务在 `ChestLogic.Open()` 等公开方法处接入。
 
+宝箱开启和采集物采集由服务器确认成功后，`WorldSystem` 先通过 `FilmSystem` 播放同一套运行时镜头 Timeline：演出镜头从当前构图平滑靠近并对准目标 POI，再恢复原构图；FilmSystem 在整个时段屏蔽玩法输入、快捷键、HUD 点击和 UI 导航。演出自然结束后才应用服务器返回的宝箱已开启状态或采集物冷却状态，避免特写期间目标提前消失。
+
 > 与现有 `EntitySystem.CreateEnemies` 的套路一致：构造 `Entity` → `AddComp` → `AddLogic` → `AddEntity` → `AfterNew`。`PoiEntity` 复用同样的生命周期，天然获得 EntitySystem 的逐帧调度与安全回收。
 
 ---
@@ -288,7 +279,7 @@ public class PoiComponent : IComponent
 | MapBoss | `MapBossConfig` | `MapBossLogic` | 可刷新（重生） |
 | MonsterCamp | `MonsterCampConfig` | `MonsterCampLogic` | `WorldSystem` 按每个场景营地实例生成一只史莱姆；史莱姆首次致死后通过 `Core.Event` 通知并在同帧安全阶段于原营地位置补刷一只 |
 
-> 采集物与地图 Boss 通过共享基类 `RespawnablePoiLogic` 处理周期重生；怪物营地的史莱姆由 `WorldSystem` 监听全局死亡事件后立即补刷。POI 重生属逻辑层，距离显隐仍由 `WorldSystem` 管理。
+> 采集物与地图 Boss 通过共享基类 `RespawnablePoiLogic` 处理周期重生并主动恢复显示；怪物营地的史莱姆由 `WorldSystem` 监听全局死亡事件后立即补刷。WorldSystem 不再按距离管理 POI 显隐。
 
 ---
 
@@ -297,22 +288,20 @@ public class PoiComponent : IComponent
 ```
 玩家移动 -> WorldSystem.OnUpdate（低频，默认 0.25s 一跳）
   1. 取 Core.Gameplay.Player（当前上场成员）位置
-  2. RefreshAt(playerPos)：cell = floor(playerPos / RegionSize)，9 格邻域（±1）
-  3. 遍历场景已注册的 PoiEntity：
-     - 离开 9 格邻域、超出兴趣半径或已经消费：GameObject.SetActive(false)
-     - 位于邻域和兴趣半径内，或配置 aoiExempt：GameObject.SetActive(true)
-  4. 根据玩家所在 chunk 拉取附近 3x3 chunk 的服务器状态
+  2. 按固定间隔向服务器上传玩家位置
+  3. 根据玩家所在 chunk 拉取附近 3x3 chunk 的服务器状态
+  4. 按 PoiId 把状态应用到已注册的 PoiEntity；不按距离改变场景对象显隐
 ```
 
 ---
 
 ## 9. 边界情况与权衡
 
-1. **烘焙数据唯一权威**：运行时场景里不依赖 `PoiMono`，改配置只需重新烘焙，不动场景摆放，降低耦合。
-2. **距离过滤的必要性**：`Position` 虽 Spec 未列，但兴趣半径过滤和 region 归属都必须用它，属必要补充。
-3. **差量更新**：跨格时才重算，避免每帧遍历全部 POI；活跃 POI 数量始终≈兴趣半径内，可控。
-4. **帧内安全回收**：失活用 `RequestDispose` 走 EntitySystem 安全边界，避免在遍历集合时删除导致的问题（与 `EntitySystem` 既有 `isUpdatingEntities` 保护一致）。
-5. **玩家位置解耦**：不直接持有玩家对象，通过 GameplayKit 解析，便于单测与替换。
+1. **场景对象常驻**：当前场景内全部合法 POI 都会注册为 Entity，玩家距离不影响其 GameObject；大型世界的资源和场景规模应由独立流送系统处理。
+2. **坐标用途明确**：`Position` 用于 region/chunk 归属、地图投影和服务器定义，不再用于客户端显隐过滤。
+3. **网络同步去重**：`syncedChunks` 使本局每个 chunk 只拉取一次；3x3 chunk 范围只约束网络状态拉取。
+4. **状态显隐归属 Logic**：消费、冷却和重生由具体 POI Logic 控制，避免世界层覆盖业务状态。
+5. **玩家位置解耦**：不直接持有玩家对象，通过 GameplayKit 解析，便于替换。
 
 ---
 
@@ -322,11 +311,11 @@ public class PoiComponent : IComponent
 |------|------|------|
 | **P0 数据** | `PoiType`、`PoiConfig` + 8 个类型 Config、`RegionConfig`、`WorldRegionsConfig` | ✅ 已实现 |
 | **P1 烘焙** | `PoiMono` + 编辑器窗口 + `PoiConfig` 属性绘制 | ✅ 已实现 |
-| **P2 WorldSystem** | 加载烘焙数据、region 邻域 + 兴趣半径、POI 激活/失活差量 | ✅ 已实现 |
+| **P2 WorldSystem** | 场景 POI 注册、位置上传、附近 3x3 chunk 状态同步 | ✅ 已实现 |
 | **P3 PoiEntity** | `PoiEntity` + `PoiComponent` + `PoiLogic` 基类 + 工厂 | ✅ 已实现 |
 | **P4 逐类型** | 8 个 Logic（状态/幂等/重生 + 事件广播） | ✅ 已实现 |
 
-> 已全部实现并在 MainWorld 场景的测试烘焙数据上验证（激活/回收、正确挂载 Logic、各类型状态与重生、事件广播）。真实业务（奖励/战斗/传送/副本场景）待对应系统接入。
+> 当前链路已实现 POI 注册、Logic 挂载、服务器状态同步、各类型状态与重生、事件广播。真实业务（奖励/战斗/传送/副本场景）待对应系统接入。
 
 ---
 
@@ -350,9 +339,9 @@ public class PoiComponent : IComponent
 
 `WorldSystem` 同时是当前世界地图的唯一运行时数据出口。`AfterNew` 通过 AssetKit 读取 `WorldMapDefinition`，对外提供 `MapTexture`、`MapWorldLength`、`MapWorldWidth`、`MapInitialZoom`、`MapZoom`、`WorldToMapNormalized`、`TryGetPlayerPosition` 和只读 `AllPois`；HUD 小地图和 `MapPanel` 不直接访问网络客户端或 POI 内部逻辑。
 
-地图相关变化通过 `Core.Event` 发布：`WorldMapReady` 表示地图资源已解析，`WorldMapPoiChanged` 表示 POI 集合或状态变化。玩家坐标不通过高频事件传递，HUD 和 `MapPanel` 各自逐帧读取当前玩家实体的 `bindGo.transform.position`；AOI 刷新和网络同步仍按低频 tick 执行。大地图滚轮缩放以当前指针所在的视口点为锚点，缩放前后保持该地图点位于相同屏幕位置。地图纹理由编辑器菜单 `Prometheus/World/Map Capture` 生成，运行时不再创建俯拍相机和 RenderTexture。
+地图相关变化通过 `Core.Event` 发布：`WorldMapReady` 表示地图资源已解析，`WorldMapPoiChanged` 表示 POI 集合或状态变化。玩家坐标不通过高频事件传递，HUD 和 `MapPanel` 各自逐帧读取当前玩家实体的 `bindGo.transform.position`；位置上传和网络 chunk 同步仍按低频 tick 执行。大地图滚轮缩放以屏幕中心为锚点。地图纹理由编辑器菜单 `Prometheus/World/Map Capture` 生成，运行时不再创建俯拍相机和 RenderTexture。
 
 大地图的传送请求也由 `WorldSystem.TryTeleportToPoi` 统一处理。该接口只接受当前已加载且类型为 `Statue` 或 `TeleAnchor` 的 POI；传送时暂时停用玩家 `CharacterController`、写入目标位置并清空移动速度与 Root Motion，避免下一帧运动逻辑覆盖传送结果。随后 HUD 和大地图直接读取同一份实体 Transform，保证两个视图继续使用同一份世界坐标事实。
 ### NPC POI（第一阶段）
 
-当 `PoiConfig.PoiType` 为 `Npc` 时，WorldSystem 使用 `PoiConfig.Npc` 创建 `NpcEntity`，仍沿用 POI 的 AOI 激活、EntitySystem 注册和安全回收链路。NPC 身份与行为由 NpcSystem 的 `NpcDefinition`、`NpcComponent` 和 `NpcLogic` 提供；WorldSystem 不直接控制对话、镜头或任务推进。
+当 `PoiConfig.PoiType` 为 `Npc` 时，WorldSystem 使用 `PoiConfig.Npc` 创建 `NpcEntity` 并常驻注册到 EntitySystem，不再依据玩家距离激活或回收。NPC 身份与行为由 NpcSystem 的 `NpcDefinition`、`NpcComponent` 和 `NpcLogic` 提供；WorldSystem 不直接控制对话、镜头或任务推进。

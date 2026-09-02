@@ -47,7 +47,5 @@ namespace Xuan.Prometheus.World
         /// <summary>尝试把当前玩家传送到指定 POI。</summary>
         bool TryTeleportToPoi(string poiId);
 
-        /// <summary>按玩家位置刷新 POI 兴趣范围。</summary>
-        void RefreshAt(Vector3 playerPos);
     }
 }

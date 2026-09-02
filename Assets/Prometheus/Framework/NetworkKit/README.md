@@ -2,6 +2,8 @@
 
 NetworkKit 将客户端网络职责分为 Transport、Framing、Protocol 和 Session/RPC 四层。`Transport` 只收发原始字节；分帧器处理定长 Head 与变长 Body；`PacketCodec` 负责 Protobuf；`NetworkSession` 负责连接生命周期、request_id 请求关联和通用 Push 队列；这些具体实现均为程序集内部类型。
 
+传输层每个 `TransportPacket` 固定由 `[Head][Body]` 组成。`PacketHead` 当前固定为 4 字节，第一字段 `BodyLength` 使用网络大端序并描述随后变长 Body 的准确字节数；接收端先完整读取 Head，再按 `BodyLength` 完整读取 Body，因此 TCP 半包和连续 Packet 不会破坏业务消息边界。Body 是序列化后的业务 Protobuf `Packet`，`request_id` 和 oneof 消息仍属于业务协议，不进入传输 Head。
+
 `INetworkClient` 是业务无关的基础设施契约，只公开连接、主动断连、重连、通用 `Packet` 请求关联、通用 `Packet` Push 和主线程泵送。NetworkKit 不读取具体 Packet Body 的业务含义，不处理玩家 ID、加入房间、POI、背包、抽卡或位置同步，也禁止为这些业务扩展 `INetworkClient`。
 
 Gameplay 层只有 `ServiceSystem` 可以通过 `NetworkClientFactory` 创建并持有 `INetworkClient`。ServiceSystem 负责组装和解析具体业务 Packet，并向 World、Bag 等领域系统公开纯游戏业务接口；连接、断连、重连和 `PumpEvents` 等网络基础能力不得出现在 `IServiceSystem`。

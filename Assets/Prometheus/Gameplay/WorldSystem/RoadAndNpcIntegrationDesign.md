@@ -2,16 +2,16 @@
 
 ## 目标
 
-WorldSystem 负责世界区域、POI 的加载和回收。NPC 可以作为一种 POI 被 AOI 管理，但 NPC 的身份、行为和交互规则由 NpcSystem 持有。
+WorldSystem 负责扫描并注册当前场景的 POI。NPC 可以作为一种场景 POI 常驻注册，但 NPC 的身份、行为和交互规则由 NpcSystem 持有；玩家距离不再决定 NPC 的激活或回收。
 
 ## 边界
 
-- `WorldSystem`：决定 NPC 是否进入当前世界、何时实例化和何时回收。
+- `WorldSystem`：扫描场景 `PoiMono`，创建 `NpcEntity` 并注册到 EntitySystem。
 - `EntitySystem`：托管 `NpcEntity` 生命周期和逐帧逻辑。
 - `NpcSystem`：加载 NPC 定义，维护 NPC 运行时状态和交互入口。
 - `NpcLogic`：判断可交互条件并生成交互上下文。
 
-WorldSystem 不负责对话、任务推进和镜头控制；NPC 回收前必须通知 NpcSystem，使其取消未完成交互并释放订阅。
+WorldSystem 不负责对话、任务推进和镜头控制；NpcSystem 在自身生命周期结束时取消未完成交互并释放订阅。
 
 ## 数据关系
 
@@ -19,8 +19,8 @@ WorldSystem 不负责对话、任务推进和镜头控制；NPC 回收前必须�
 
 ## 事件
 
-WorldSystem 发布 POI 激活、失活和区域变化事件；NpcSystem 将这些事件转换为 NPC 可用状态变化。任务系统只消费领域事件，不直接依赖 WorldSystem 内部集合。
+NpcSystem 发布 NPC 领域状态变化；任务系统只消费领域事件，不直接依赖 WorldSystem 内部集合。WorldSystem 不再发布基于玩家距离的 POI 激活或失活事件。
 
 ## 网络与存档
 
-世界层负责区域和实体可见性，NPC 状态由服务端或存档层决定。客户端回收 NPC 表现对象不能清除 NPC 的持久状态。
+NPC 状态由服务端或存档层决定，场景表现的生命周期由 EntitySystem 与 NpcSystem 管理。若后续需要大世界分片加载，应建立独立的场景/资源流送系统，而不是恢复 POI 距离显隐 AOI。

@@ -1,12 +1,12 @@
 # 服务器网络架构
 
-服务器网络链路按 Transport/Framing/Session/Service 分层。`internal/netx` 负责 TCP 监听、连接会话、4 字节大端长度帧、Protobuf 解码和响应写入；`internal/room` 管理唯一默认房间及在线玩家坐标；`internal/service` 负责 POI、玩家背包和抽卡等权威业务。会话写入通过连接级互斥锁串行化，避免坐标推送与请求响应互相穿插。
+服务器网络链路按 Transport/Framing/Session/Service 分层。`internal/netx` 负责 TCP 监听、连接会话、Head + Body 传输 Packet、Protobuf 解码和响应写入；`internal/room` 管理唯一默认房间及在线玩家坐标；`internal/service` 负责 POI、玩家背包和抽卡等权威业务。会话写入通过连接级互斥锁串行化，避免坐标推送与请求响应互相穿插。
 
 玩家持久化采用 MongoDB `players` 集合的一玩家一文档模型，账号、背包和个人 POI 状态由同一聚合存储维护，具体字段和迁移规则见 `Server/DATABASE.md`。
 
 ## 协议
 
-协议定义位于 `Server/proto/poi.proto`，由 `Server/gen_proto.ps1` 生成 Go 和 Unity C# 类型。每个请求在 `Packet.request_id` 写入非零关联 ID，响应复制该 ID；服务器主动坐标推送使用 `request_id=0`。帧格式为 `[4 字节大端长度][Packet Protobuf 字节]`。
+协议定义位于 `Server/proto/poi.proto`，由 `Server/gen_proto.ps1` 生成 Go 和 Unity C# 类型。每个请求在业务 `Packet.request_id` 写入非零关联 ID，响应复制该 ID；服务器主动坐标推送使用 `request_id=0`。传输格式为 `[固定 Head][变长 Body]`：Head 当前固定为 4 字节，第一字段是大端 `BodyLength`；Body 是对应长度的业务 `Packet` Protobuf 字节。收包方必须先完整读取 Head，再按 `BodyLength` 完整读取 Body。
 
 ## 默认房间与坐标
 
@@ -20,6 +20,8 @@
 
 同一 TCP 连接重复发送 `JoinRoomRequest` 是幂等的；更换玩家标识时先离开旧身份再加入新身份。服务器会话身份读写受服务器锁保护，连接写入由连接级互斥锁串行化。POI 查询和交互响应、背包查询均使用独立快照，网络序列化不会直接读取正在修改的权威对象。
 
+`PullAllRequest`、`PullChunkRequest` 和 `InteractRequest` 必须使用同一连接已经加入的玩家身份。服务器按该玩家的 `players.pois` 快照返回同步状态，禁止回退读取 `default` 玩家状态；重复开启宝箱等失败响应仍携带服务器最新 POI 状态，客户端会先应用该状态再保留 `success=false` 语义，从而消除过期交互入口。
+
 ## 验证
 
-服务器侧测试位于 `internal/netx/server_test.go`、`internal/room/room_test.go` 和 `internal/service/gacha_test.go`；在 `Server` 目录执行 `go test -race ./...` 可验证单客户端坐标回推、TCP 抽卡、房间幂等加入及并发抽卡库存约束。
+服务器侧测试位于 `internal/netx/server_test.go`、`internal/room/room_test.go` 和 `internal/service/gacha_test.go`；在 `Server` 目录执行 `go test -race ./...` 可验证 Head + Body 连续 Packet 边界、单客户端坐标回推、TCP 抽卡、房间幂等加入及并发抽卡库存约束。

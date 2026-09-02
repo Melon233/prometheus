@@ -21,7 +21,7 @@
 
 `Assets/BundleCollectorSetting.asset` 为该目录配置了 `AddressByFileName + CollectAll` 收集器，因此这些 PNG 会进入 YooAsset 的 `DefaultPackage`，运行时可以通过文件名地址加载为 `Sprite`。
 
-打开大地图后，`MapPanel` 将地图纹理按 `WorldMapDefinition` 的世界长宽比例铺满全屏视口，首次缩放读取 `WorldMapDefinition.InitialZoom`（运行时限制在 1 到 4 倍）；之后的滚轮缩放写入 `WorldSystem.MapZoom`，同一局再次打开时继续使用缓存值。鼠标拖动地图内容、滚轮调整缩放；滚轮缩放以当前指针所在视口点为锚点，缩放前后保持该地图点位于相同屏幕位置。地图内容的可移动边界以地图尺寸一半为范围，允许视口在地图边缘外扩半个视口。地图标记跟随地图平移，但应用 `1 / zoom` 逆缩放保持固定屏幕尺寸。关闭按钮使用 `UI_Close`，由 Binder 自动注册 `OnCloseButtonClick`。
+打开大地图后，`MapPanel` 将地图纹理按 `WorldMapDefinition` 的世界长宽比例铺满全屏视口，首次缩放读取 `WorldMapDefinition.InitialZoom`（运行时限制在 1 到 4 倍）；之后的滚轮缩放写入 `WorldSystem.MapZoom`，同一局再次打开时继续使用缓存值。鼠标拖动地图内容、滚轮调整缩放；滚轮缩放始终以屏幕中心为锚点，缩放前后保持中心对应的地图点不变，不受鼠标位置影响。地图内容的可移动边界以地图尺寸一半为范围，允许视口在地图边缘外扩半个视口。地图标记跟随地图平移，但应用 `1 / zoom` 逆缩放保持固定屏幕尺寸。关闭按钮使用 `UI_Close`，由 Binder 自动注册 `OnCloseButtonClick`。
 
 神像和传送锚点标记使用 `Button` 绑定点击回调，点击后调用 `WorldSystem.TryTeleportToPoi`。传送成功时 `WorldSystem` 会暂停玩家 `CharacterController`、设置目标坐标并清空移动状态，HUD 和大地图在下一帧直接读取该坐标；其余 POI 只显示图标，不注册传送操作。
 

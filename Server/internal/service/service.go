@@ -155,9 +155,6 @@ func (s *Service) PullAll() []*poi.Poi {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	pois := s.byID
-	if player, ok := s.playerPois["default"]; ok {
-		pois = player
-	}
 	out := make([]*poi.Poi, 0, len(pois))
 	for _, p := range pois {
 		if p == nil || p.Retired {
@@ -168,19 +165,28 @@ func (s *Service) PullAll() []*poi.Poi {
 	return out
 }
 
+// PullAllForPlayer 返回指定玩家的全部个人 POI 状态；玩家首次请求时从聚合文档加载并补齐静态模板。
+func (s *Service) PullAllForPlayer(ctx context.Context, playerID string) ([]*poi.Poi, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	pois, err := s.playerPoisLocked(ctx, playerID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*poi.Poi, 0, len(pois))
+	for _, p := range pois {
+		if p == nil || p.Retired {
+			continue
+		}
+		out = append(out, p.Clone())
+	}
+	return out, nil
+}
+
 // PullChunk 返回指定 chunk 内的 POI 状态；chunk 无数据时返回空切片。
 func (s *Service) PullChunk(chunkID int32) []*poi.Poi {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	if player, ok := s.playerPois["default"]; ok {
-		out := make([]*poi.Poi, 0)
-		for _, p := range player {
-			if !p.Retired && p.ChunkID == chunkID {
-				out = append(out, p.Clone())
-			}
-		}
-		return out
-	}
 	if list, ok := s.byChunk[chunkID]; ok {
 		out := make([]*poi.Poi, 0, len(list))
 		for _, p := range list {
@@ -191,6 +197,23 @@ func (s *Service) PullChunk(chunkID int32) []*poi.Poi {
 		return out
 	}
 	return nil
+}
+
+// PullChunkForPlayer 返回指定玩家在目标区块内的个人 POI 状态，确保同步与后续交互读取同一玩家快照。
+func (s *Service) PullChunkForPlayer(ctx context.Context, playerID string, chunkID int32) ([]*poi.Poi, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	pois, err := s.playerPoisLocked(ctx, playerID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*poi.Poi, 0)
+	for _, p := range pois {
+		if p != nil && !p.Retired && p.ChunkID == chunkID {
+			out = append(out, p.Clone())
+		}
+	}
+	return out, nil
 }
 
 // GetItems 返回当前玩家全部物品（数量大于 0）。

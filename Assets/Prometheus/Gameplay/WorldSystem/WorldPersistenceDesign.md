@@ -19,7 +19,7 @@
 
 ### 1. 策划端导出（编辑器）
 策划在场景摆放 `PoiMono`（挂 `PoiConfig`），执行菜单 **Prometheus/World/Export POI Data (JSON)**。
-导出内容包括：**PoiId / PoiType / 坐标 Position / 旋转 Rotation / aoiExempt / 各类型专属配置**。
+导出内容包括：**PoiId / PoiType / 坐标 Position / 旋转 Rotation / 各类型专属配置**。
 
 - 缺失或非 UUID 的 Id 会生成新的 UUID，并把 Id、Region、ChunkId、Position **写回场景 `PoiMono.Config`**，随后保存场景。
 - 已有合法 UUID 永远复用；发现重复 UUID 时整批导出失败，并报告对象路径，避免复制 POI 后发生引用冲突。
@@ -38,13 +38,15 @@
 ### 3. 游戏启动同步
 `WorldSystem.AfterNew`：
 
-- 先扫描场景 `PoiMono`、注册 `PoiEntity` 并按 **PoiId** 建立索引，使地图展示与本地 AOI 不依赖服务器。
+- 先扫描场景 `PoiMono`、注册 `PoiEntity` 并按 **PoiId** 建立索引，使地图展示与本地实体注册不依赖服务器。
 - 再通过 `Core.Gameplay.GetSystem<IServiceSystem>().EnterWorldAsync` 进入默认世界；ServiceSystem 在该业务流程内部完成一次服务器连接检测与 JoinRoom 请求，成功后 WorldSystem 启用位置上传、区块状态同步和权威交互。
 - 初始化检测失败时仅记录一次 Warning，本局不再执行网络同步或服务器交互，避免服务器未启动时持续输出连接错误；本地 POI 仍可显示和刷新。
 - 玩家进入新区域后按 chunk 拉取 `PoiState`，按 poiId 匹配实体并经 `PoiStateApplier.Apply` 写入对应 Logic。
 
 ### 4. 交互请求确认
 客户端交互不再直接改 Logic，而是：
+
+区块同步和交互请求均由服务器按当前连接已经加入的玩家身份读取 `players.pois`，不得使用 `default` 玩家的状态替代当前玩家。一次性 POI 被重复操作时服务器保持 `success=false`，同时返回最新状态；客户端应用该状态以移除已经消费的交互目标。
 ```
 WorldSystem.TryInteract(entity, op)
   → sync.RequestApply(PoiInteraction{ PoiId, Op })   // 服务器校验并落库
@@ -58,7 +60,7 @@ WorldSystem.TryInteract(entity, op)
 ## 二、数据模型
 
 ### 静态定义 `PoiConfig`（客户端 + 导出）
-- `PoiId` / `PoiType` / `Position` / `Rotation` / `aoiExempt` / 各类型 Config。
+- `PoiId` / `PoiType` / `Position` / `Rotation` / 各类型 Config。
 - **不含可变状态**；`PoiId` 本身就是客户端与服务器共用的 UUID 主键。
 
 ### 服务器记录 `PoiState`（可序列化，数据库）
@@ -137,7 +139,7 @@ WorldSystem/
 
 ## 六、当前真实网络接入
 
-客户端 `ServiceSystem` 通过 `Framework/NetworkKit` 的 Transport → Framing → Protocol → Session/RPC 分层访问服务器，并让全部 Gameplay 业务请求与 Push 复用同一个 `INetworkClient` 会话。NetworkKit 只管理连接和通用 Packet，不解释任何业务 Body；ServiceSystem 负责进入世界、chunk 拉取、POI 交互和坐标等业务协议。World 只经 `IServiceSystem` 调用纯业务接口；它先扫描本地场景，再进入世界，失败时保留本地地图和 AOI，只关闭网络同步与服务器交互。
+客户端 `ServiceSystem` 通过 `Framework/NetworkKit` 的 Transport → Framing → Protocol → Session/RPC 分层访问服务器，并让全部 Gameplay 业务请求与 Push 复用同一个 `INetworkClient` 会话。NetworkKit 只管理连接和通用 Packet，不解释任何业务 Body；ServiceSystem 负责进入世界、chunk 拉取、POI 交互和坐标等业务协议。World 只经 `IServiceSystem` 调用纯业务接口；它先扫描本地场景，再进入世界，失败时保留本地地图和场景 POI，只关闭网络同步与服务器交互。
 
 ## 接口边界
 

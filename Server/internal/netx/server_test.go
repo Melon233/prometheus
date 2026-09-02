@@ -1,9 +1,9 @@
 package netx
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
-	"io"
 	"net"
 	"testing"
 
@@ -13,6 +13,37 @@ import (
 	"prometheus/internal/poi"
 	"prometheus/internal/service"
 )
+
+// TestTransportPacketContainsFixedHeadAndVariableBody 验证传输 Packet 以定长 Head 开始、首字段声明 BodyLength，并能连续解析不同长度的 Body。
+func TestTransportPacketContainsFixedHeadAndVariableBody(t *testing.T) {
+	firstBody := []byte{1, 2, 3}
+	secondBody := []byte{4, 5, 6, 7, 8}
+	var stream bytes.Buffer
+	if err := writeTransportPacket(&stream, transportPacket{head: packetHead{bodyLength: uint32(len(firstBody))}, body: firstBody}); err != nil {
+		t.Fatalf("write first transport packet: %v", err)
+	}
+	if err := writeTransportPacket(&stream, transportPacket{head: packetHead{bodyLength: uint32(len(secondBody))}, body: secondBody}); err != nil {
+		t.Fatalf("write second transport packet: %v", err)
+	}
+	encoded := stream.Bytes()
+	if got := binary.BigEndian.Uint32(encoded[:packetHeadBytes]); got != uint32(len(firstBody)) {
+		t.Fatalf("first head body length = %d, want %d", got, len(firstBody))
+	}
+	first, err := readTransportPacket(&stream)
+	if err != nil {
+		t.Fatalf("read first transport packet: %v", err)
+	}
+	second, err := readTransportPacket(&stream)
+	if err != nil {
+		t.Fatalf("read second transport packet: %v", err)
+	}
+	if first.head.bodyLength != uint32(len(firstBody)) || !bytes.Equal(first.body, firstBody) {
+		t.Fatalf("first transport packet = head:%d body:%v", first.head.bodyLength, first.body)
+	}
+	if second.head.bodyLength != uint32(len(secondBody)) || !bytes.Equal(second.body, secondBody) {
+		t.Fatalf("second transport packet = head:%d body:%v", second.head.bodyLength, second.body)
+	}
+}
 
 // TestSingleClientPositionPushIncludesSender 验证单客户端上传坐标后能收到服务器回推的自身坐标。
 func TestSingleClientPositionPushIncludesSender(t *testing.T) {
@@ -97,36 +128,23 @@ func TestJoinRoomIsIdempotentPerConnection(t *testing.T) {
 	}
 }
 
-// writeTestPacket 写出测试用长度前缀 Protobuf 帧。
+// writeTestPacket 通过正式编码链路写出测试用 Head + Body 传输 Packet。
 func writeTestPacket(t *testing.T, conn net.Conn, packet *protocol.Packet) {
 	t.Helper()
-	body, err := proto.Marshal(packet)
-	if err != nil {
-		t.Fatalf("marshal packet: %v", err)
-	}
-	var prefix [4]byte
-	binary.BigEndian.PutUint32(prefix[:], uint32(len(body)))
-	if _, err := conn.Write(prefix[:]); err != nil {
-		t.Fatalf("write prefix: %v", err)
-	}
-	if _, err := conn.Write(body); err != nil {
-		t.Fatalf("write body: %v", err)
+	if err := writePacket(conn, packet); err != nil {
+		t.Fatalf("write packet: %v", err)
 	}
 }
 
-// readTestPacket 读取测试用长度前缀 Protobuf 帧。
+// readTestPacket 通过正式分帧链路读取测试用 Head + Body 传输 Packet，并解析业务 Protobuf。
 func readTestPacket(t *testing.T, conn net.Conn) *protocol.Packet {
 	t.Helper()
-	var prefix [4]byte
-	if _, err := io.ReadFull(conn, prefix[:]); err != nil {
-		t.Fatalf("read prefix: %v", err)
-	}
-	body := make([]byte, binary.BigEndian.Uint32(prefix[:]))
-	if _, err := io.ReadFull(conn, body); err != nil {
-		t.Fatalf("read body: %v", err)
+	transport, err := readTransportPacket(conn)
+	if err != nil {
+		t.Fatalf("read transport packet: %v", err)
 	}
 	packet := &protocol.Packet{}
-	if err := proto.Unmarshal(body, packet); err != nil {
+	if err := proto.Unmarshal(transport.body, packet); err != nil {
 		t.Fatalf("unmarshal packet: %v", err)
 	}
 	return packet

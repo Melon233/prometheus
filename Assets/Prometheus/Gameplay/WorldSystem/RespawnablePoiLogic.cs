@@ -32,6 +32,7 @@ namespace Xuan.Prometheus.World
             if (Available)
             {
                 respawnAtMs = 0;
+                SetPoiVisible(true); // 显隐 AOI 已移除，冷却结束后由可刷新 POI 自身恢复场景表现。
                 HideCooldownText();
                 Debug.Log($"[交互] 重生 {Config?.Id}");
                 return;

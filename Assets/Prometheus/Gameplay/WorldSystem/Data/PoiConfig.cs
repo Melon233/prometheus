@@ -19,7 +19,7 @@ namespace Xuan.Prometheus.World
         /// <summary>八种兴趣点之一，决定运行时注入哪套 Logic/Component。</summary>
         public PoiType PoiType;
 
-        /// <summary>世界坐标，用于 chunk 归属计算与兴趣半径距离过滤。</summary>
+        /// <summary>世界坐标，用于 chunk 归属、地图投影与服务器静态定义。</summary>
         public Vector3 Position;
 
         /// <summary>世界旋转（策划导出的朝向），当前仅存储暂不应用。</summary>
@@ -27,9 +27,6 @@ namespace Xuan.Prometheus.World
 
         /// <summary>空间分区 chunkId（三位编码 chunkX*1000 + chunkY，非负）。</summary>
         public int ChunkId;
-
-        /// <summary>是否豁免 AOI 裁剪：大体建筑（七天神像/副本/传送锚点）常驻可见，远离也不回收。</summary>
-        public bool aoiExempt;
 
         /// <summary>七天神像专属配置。</summary>
         public StatueConfig Statue;

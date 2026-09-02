@@ -26,15 +26,11 @@ namespace Xuan.Prometheus.World.Editor
             if (property.isExpanded)
             {
                 SerializedProperty positionProp = property.FindPropertyRelative("Position");
-                SerializedProperty aoiExempt = property.FindPropertyRelative("aoiExempt");
                 // Position 由 GameObject transform 驱动（烘焙时写回），只读展示避免与 transform 冲突。
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUI.PropertyField(new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight), positionProp);
                 EditorGUI.EndDisabledGroup();
                 y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-                EditorGUI.PropertyField(new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight), aoiExempt);
-                y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
-
                 // 仅显示 PoiType 对应的专属 Config。
                 SerializedProperty activeConfig = GetActiveConfig(property, (PoiType)poiType.enumValueIndex);
                 if (activeConfig != null)
@@ -51,7 +47,6 @@ namespace Xuan.Prometheus.World.Editor
             float total = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing; // 折叠头
             if (!property.isExpanded) return total;
             total += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing; // Position
-            total += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing; // aoiExempt
             SerializedProperty poiType = property.FindPropertyRelative("PoiType");
             SerializedProperty activeConfig = GetActiveConfig(property, (PoiType)poiType.enumValueIndex);
             if (activeConfig != null) total += EditorGUI.GetPropertyHeight(activeConfig, true);

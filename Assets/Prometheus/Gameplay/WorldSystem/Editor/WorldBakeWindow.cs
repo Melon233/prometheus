@@ -138,7 +138,6 @@ namespace Xuan.Prometheus.World.Editor
                 Position = src.Position,
                 Rotation = src.Rotation,
                 ChunkId = src.ChunkId,
-                aoiExempt = src.aoiExempt,
                 Statue = src.Statue != null ? new StatueConfig() : null,
                 TeleAnchor = CloneTeleAnchor(src.TeleAnchor),
                 Chest = src.Chest != null ? new ChestConfig() : null,

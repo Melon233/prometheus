@@ -39,7 +39,7 @@ namespace Xuan.Prometheus.World
         /// <summary>当前是否已被消费（收集物/可刷新物交互后应消失）。默认 false，收集类与可刷新类覆盖。</summary>
         public virtual bool IsConsumed => false;
 
-        /// <summary>立即设置 POI 表现对象的显隐；收集/消费时用于立即消失，重生由 AOI 依据 IsConsumed 复现。</summary>
+        /// <summary>立即设置 POI 表现对象的显隐；收集、冷却和重生均由具体 POI 状态逻辑调用。</summary>
         protected void SetPoiVisible(bool visible)
         {
             if (Entity != null && Entity.bindGo != null && Entity.bindGo.activeSelf != visible)
