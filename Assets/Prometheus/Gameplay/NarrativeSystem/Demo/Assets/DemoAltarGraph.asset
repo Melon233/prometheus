@@ -1,0 +1,526 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1017e42cfc3707040b77382c76b28d2d, type: 3}
+  m_Name: DemoAltarGraph
+  m_EditorClassIdentifier: Runtime::Xuan.Prometheus.Narrative.StoryGraph
+  storyId: demo_altar_graph
+  stage:
+    fadeSeconds: 0.35
+    hideHud: 1
+    letterboxRatio: 0.12
+    lockInput: 1
+    freezeAiRadius: 0
+    freezeAiCenter: {x: 0, y: 0, z: 0}
+    takeCameraControl: 1
+    cameraPriority: 200
+    actors:
+    - actor:
+        kind: 4
+        id: hero
+      hasPlacement: 0
+      placement:
+        useWorldPosition: 0
+        anchorId: 
+        worldPosition: {x: 0, y: 0, z: 0}
+    - actor:
+        kind: 3
+        id: paimon
+      hasPlacement: 0
+      placement:
+        useWorldPosition: 0
+        anchorId: 
+        worldPosition: {x: 0, y: 0, z: 0}
+    - actor:
+        kind: 4
+        id: elder
+      hasPlacement: 0
+      placement:
+        useWorldPosition: 0
+        anchorId: 
+        worldPosition: {x: 0, y: 0, z: 0}
+    - actor:
+        kind: 5
+        id: altar
+      hasPlacement: 0
+      placement:
+        useWorldPosition: 0
+        anchorId: 
+        worldPosition: {x: 0, y: 0, z: 0}
+    preload:
+    - fx_spark
+    cinematics:
+    - seq_altar
+  root:
+    rid: 6557125753684885684
+  references:
+    version: 2
+    RefIds:
+    - rid: 6557125753684885684
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 6557125753684885685
+        - rid: 6557125753684885686
+        - rid: 6557125753684885687
+        - rid: 6557125753684885688
+        - rid: 6557125753684885689
+        - rid: 6557125753684885690
+        - rid: 6557125753684885691
+        - rid: 6557125753684885692
+        - rid: 6557125753684885693
+        - rid: 6557125753684885694
+        - rid: 6557125753684885695
+        - rid: 6557125753684885696
+        - rid: 6557125753684885697
+        - rid: 6557125753684885698
+        - rid: 6557125753684885699
+        - rid: 6557125753684885700
+        - rid: 6557125753684885701
+        - rid: 6557125753684885702
+        - rid: 6557125753684885703
+        - rid: 6557125753684885704
+    - rid: 6557125753684885685
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: open_camera
+        editorPosition: {x: 0, y: 0}
+        cameraId: cam_wide
+        duration: 0
+    - rid: 6557125753684885686
+      type: {class: AmbienceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: ambience
+        editorPosition: {x: 0, y: 0}
+        eventKey: demo_ambience
+        fadeInSeconds: 1.5
+        fadeOutSeconds: 1
+    - rid: 6557125753684885687
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: intro
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 0
+          id: 
+        textKey: demo.intro
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885688
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: to_paimon
+        editorPosition: {x: 0, y: 0}
+        cameraId: cam_paimon
+        duration: 0.8
+    - rid: 6557125753684885689
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: paimon_first
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 3
+          id: paimon
+        textKey: demo.p1
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments:
+        - blocking: 0
+          node:
+            rid: 6557125753684885705
+        - blocking: 0
+          node:
+            rid: 6557125753684885706
+    - rid: 6557125753684885690
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: to_hero
+        editorPosition: {x: 0, y: 0}
+        cameraId: cam_hero
+        duration: 0.8
+    - rid: 6557125753684885691
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: hero_approach
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: hero
+        textKey: demo.h1
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments:
+        - blocking: 1
+          node:
+            rid: 6557125753684885707
+    - rid: 6557125753684885692
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: hero_hint
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 0
+          id: 
+        textKey: demo.h1_hint
+        voiceKey: 
+        advance: 2
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885693
+      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: elder_run
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 6557125753684885708
+        mode: 2
+    - rid: 6557125753684885694
+      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: elder_enter
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 6557125753684885709
+        - rid: 6557125753684885710
+        mode: 0
+    - rid: 6557125753684885695
+      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: elder_idle
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 6557125753684885711
+        mode: 2
+    - rid: 6557125753684885696
+      type: {class: CinematicNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: altar_rise_a
+        editorPosition: {x: 0, y: 0}
+        location: seq_altar
+        fromCue: 
+        toCue: cue_mid
+    - rid: 6557125753684885697
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: elder_first
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: demo.e1
+        voiceKey: 
+        advance: 2
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885698
+      type: {class: CinematicNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: altar_rise_b
+        editorPosition: {x: 0, y: 0}
+        location: seq_altar
+        fromCue: 
+        toCue: 
+    - rid: 6557125753684885699
+      type: {class: CameraShakeNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: altar_shake
+        editorPosition: {x: 0, y: 0}
+        amplitude: 0.25
+        duration: 0.35
+    - rid: 6557125753684885700
+      type: {class: ChooseNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: elder_choice
+        editorPosition: {x: 0, y: 0}
+        options:
+        - rid: 6557125753684885712
+        - rid: 6557125753684885713
+        - rid: 6557125753684885714
+    - rid: 6557125753684885701
+      type: {class: IfNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: wind_branch
+        editorPosition: {x: 0, y: 0}
+        expression: flag.asked_about_wind
+        thenBranch:
+          rid: 6557125753684885715
+        elseBranch:
+          rid: 6557125753684885716
+    - rid: 6557125753684885702
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: grant_trust
+        editorPosition: {x: 0, y: 0}
+        path: var.trust
+        kind: 2
+        value: 2
+    - rid: 6557125753684885703
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: close_camera
+        editorPosition: {x: 0, y: 0}
+        cameraId: cam_wide
+        duration: 1.2
+    - rid: 6557125753684885704
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: outro
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 0
+          id: 
+        textKey: demo.outro
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885705
+      type: {class: VfxNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        location: fx_spark
+        placement:
+          followActor: 1
+          actor:
+            kind: 3
+            id: paimon
+          anchor:
+            useWorldPosition: 0
+            anchorId: 
+            worldPosition: {x: 0, y: 0, z: 0}
+          offset: {x: 0, y: 0.7, z: 0}
+        lifetime: 2
+        waitForCompletion: 0
+    - rid: 6557125753684885706
+      type: {class: SfxNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        eventKey: demo_poof
+        positional: 1
+        placement:
+          followActor: 1
+          actor:
+            kind: 3
+            id: paimon
+          anchor:
+            useWorldPosition: 0
+            anchorId: 
+            worldPosition: {x: 0, y: 0, z: 0}
+          offset: {x: 0, y: 0, z: 0}
+    - rid: 6557125753684885707
+      type: {class: MoveToNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        actor:
+          kind: 4
+          id: hero
+        destination:
+          useWorldPosition: 0
+          anchorId: hero_stand
+          worldPosition: {x: 0, y: 0, z: 0}
+        duration: 1.4
+        faceMoveDirection: 0
+    - rid: 6557125753684885708
+      type: {class: SpineAnimNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        actor:
+          kind: 4
+          id: elder
+        animationName: run
+        loop: 1
+        speed: 1
+    - rid: 6557125753684885709
+      type: {class: MoveToNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        actor:
+          kind: 4
+          id: elder
+        destination:
+          useWorldPosition: 0
+          anchorId: elder_stand
+          worldPosition: {x: 0, y: 0, z: 0}
+        duration: 1.6
+        faceMoveDirection: 0
+    - rid: 6557125753684885710
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        cameraId: cam_altar
+        duration: 1.6
+    - rid: 6557125753684885711
+      type: {class: SpineAnimNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        actor:
+          kind: 4
+          id: elder
+        animationName: idle
+        loop: 1
+        speed: 1
+    - rid: 6557125753684885712
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: opt_ask
+        editorPosition: {x: 0, y: 0}
+        textKey: demo.opt_ask
+        condition: 
+        lockedReasonKey: 
+        once: 1
+        branch:
+          rid: 6557125753684885717
+    - rid: 6557125753684885713
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: opt_secret
+        editorPosition: {x: 0, y: 0}
+        textKey: demo.opt_secret
+        condition: var.trust >= 2
+        lockedReasonKey: demo.opt_secret_locked
+        once: 0
+        branch:
+          rid: 6557125753684885718
+    - rid: 6557125753684885714
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: opt_leave
+        editorPosition: {x: 0, y: 0}
+        textKey: demo.opt_leave
+        condition: 
+        lockedReasonKey: 
+        once: 0
+        branch:
+          rid: 6557125753684885719
+    - rid: 6557125753684885715
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: paimon_learned
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 3
+          id: paimon
+        textKey: demo.p2
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885716
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: paimon_missed
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 3
+          id: paimon
+        textKey: demo.p3
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885717
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 6557125753684885720
+        - rid: 6557125753684885721
+        - rid: 6557125753684885722
+    - rid: 6557125753684885718
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 6557125753684885723
+        - rid: 6557125753684885724
+    - rid: 6557125753684885719
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: demo.e3
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885720
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: hero
+        textKey: demo.h2
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885721
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: demo.e2
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885722
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        path: flag.asked_about_wind
+        kind: 1
+        value: true
+    - rid: 6557125753684885723
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: demo.e_secret
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 6557125753684885724
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        path: flag.knows_old_name
+        kind: 1
+        value: true

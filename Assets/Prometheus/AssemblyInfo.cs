@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Prometheus.Effects.EditorTests")]
 [assembly: InternalsVisibleTo("Prometheus.Film.EditorTests")]
 [assembly: InternalsVisibleTo("Prometheus.GameplayKit.EditorTests")]
+[assembly: InternalsVisibleTo("Prometheus.Narrative.EditorTests")]
 [assembly: InternalsVisibleTo("Prometheus.Growth.EditorTests")]
 [assembly: InternalsVisibleTo("Prometheus.Input.EditorTests")]
 [assembly: InternalsVisibleTo("Prometheus.Npc.EditorTests")]

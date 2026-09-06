@@ -265,6 +265,7 @@ namespace Xuan.Prometheus
             AddSystem<ICombatAudioPresentationSystem>(new CombatAudioPresentationSystem());
             AddSystem<ICameraSystem>(new CameraSystem(startupOptions.RuntimeRoot));
             AddSystem<IFilmSystem>(new FilmSystem(startupOptions.RuntimeRoot));
+            AddSystem<Narrative.INarrativeSystem>(new Narrative.NarrativeSystem());
             AddSystem<INpcSystem>(new NpcSystem());
             AddSystem<IQuestSystem>(new Quest.QuestSystem());
             AddSystem<IWorldSystem>(new WorldSystem());

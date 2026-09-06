@@ -325,7 +325,6 @@ namespace Xuan.Prometheus.World
                 InteractResponse response = await ServiceSystem.InteractAsync(entity.Config.Id, (Xuan.Prometheus.Protocol.PoiOp)(int)op, lifetimeCancellation.Token);
                 lifetimeCancellation.Token.ThrowIfCancellationRequested();
                 Debug.Log($"[交互] 服务器响应 {entity.Config.Id} => success={response.Success}");
-                if (response.Success && (op == PoiOp.OpenChest || op == PoiOp.Gather)) await ChestOpenFilm.PlayAsync(entity, lifetimeCancellation.Token); // 宝箱和采集物保持可见，直到 FilmSystem 完成目标特写并恢复玩法构图。
                 if (response.State != null)
                 {
                     PoiStateApplier.Apply(entity, response.State); // 重复操作失败时仍应用服务器最新状态，消除客户端过期表现。
