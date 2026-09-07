@@ -4,6 +4,7 @@
 > 定位：承担任务的**决策**——什么时候开始、什么时候推进、推进以后世界变成什么样
 > 不承担：剧情演出（`NarrativeSystem`）、背包与货币写入（各自系统）、网络同步（NetworkKit）
 > 命名空间：`Xuan.Prometheus.Quest`
+> 对外接线（对话绑定解析、事件投喂、变量互投影、奖励落地）见同目录 `QuestLoopIntegration.md`
 > 日期：2026-09-07
 
 ---
@@ -29,7 +30,7 @@
 现有实现 667 行，模型是「任务 → 并行计数器目标」。它做对了三件事，应当保留：
 
 1. **纯逻辑边界**：只抛 `RewardGranted`，背包与货币写入交给外部适配器。
-2. **适配器模式**：`QuestNpcAdapter` 把 NPC 事件翻译成任务事件，任务规则不侵入 `NpcLogic`。
+2. ~~**适配器模式**：`QuestNpcAdapter` 把 NPC 事件翻译成任务事件，任务规则不侵入 `NpcLogic`。~~ **本条已作废**——应当保留的是「任务规则不侵入 NPC 逻辑」这个目的，而不是 `QuestNpcAdapter` 这个实现。剧情闭环要求 NpcSystem 反查任务状态，与本订阅叠加即成环，故搬运方向翻转为「NPC 主动上报」。详见 `QuestLoopIntegration.md` §1。
 3. **快照只存运行时状态**，不复制静态配置。
 
 但数据模型的形状不对：需要的是「**有序步骤 ×（条件, 动作）**」，现有的是「**无序计数器集合**」。从后者演进到前者，`QuestDefinition` / `QuestObjectiveDefinition` / `QuestRuntimeState` / `PublishEvent` 全部要换掉。
