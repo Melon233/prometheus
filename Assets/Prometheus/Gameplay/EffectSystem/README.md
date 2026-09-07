@@ -67,7 +67,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 ## 角色养成投影
 
-角色养成系统不直接修改最终属性。`CharaLevelLogic`、`TalentLogic`、`EquipmentLogic` 与 `WeaponLogic` 都通过 Entity 独占的永久 Effect 投影动态结果：角色等级写入攻击力 `Offset`，装备和武器从随曲线等级成长的 `TierInstance` 按 `PropertyType + PropertyModifierMode` 汇总当前固定值与系数值，天赋使用 `TalentGainModifierOperation` 修改各技能 Component 自己持有的 `ModifiableProperty` 增益系数。完整配置、公式、Debug 数据和测试入口见 `Assets/Prometheus/Gameplay/GrowthSystem/README.md`。
+角色养成系统不直接修改最终属性。`CharaLevelLogic`、`TalentLogic`、`EquipmentLogic` 与 `WeaponLogic` 都通过 Entity 独占的永久 Effect 投影动态结果：角色等级写入攻击力 `Offset`，装备和武器从随曲线等级成长的 `TierInstance` 按 `PropertyType + PropertyModifierMode` 汇总当前固定值与系数值，天赋使用 `TalentGainModifierOperation` 修改各技能 Component 自己持有的 `ModifiableProperty` 增益系数。完整配置、公式、Debug 数据和测试入口见 `Assets/Prometheus/Gameplay/EntitySystem/Character/Logic/Growth/README.md`。
 
 ## 控制状态
 

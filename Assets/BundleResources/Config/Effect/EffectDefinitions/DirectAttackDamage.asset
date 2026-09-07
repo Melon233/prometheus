@@ -32,7 +32,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 1348142047778570252
-      type: {class: DamageOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: DamageOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         amount:
           source: 2

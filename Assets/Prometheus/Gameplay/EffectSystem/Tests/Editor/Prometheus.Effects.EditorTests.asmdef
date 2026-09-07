@@ -2,6 +2,9 @@
     "name": "Prometheus.Effects.EditorTests",
     "rootNamespace": "Xuan.Prometheus.Effects.Tests",
     "references": [
+        "Prometheus.Framework",
+        "Prometheus.Gameplay",
+        "Prometheus.UI",
         "Runtime"
     ],
     "optionalUnityReferences": [

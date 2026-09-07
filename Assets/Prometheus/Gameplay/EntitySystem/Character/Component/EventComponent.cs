@@ -56,7 +56,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>保存单个实体的类型化事件监听器，仅承载事实通知而不维护可变玩法状态。</summary>
-    public class EventComponent : Component.Component
+    public class EventComponent : Component.Component, Component.IListenerHost
     {
         /// <summary>按事件具体类型保存当前实体的全部同步监听器。</summary>
         private readonly Dictionary<Type, Delegate> eventDict = new Dictionary<Type, Delegate>();

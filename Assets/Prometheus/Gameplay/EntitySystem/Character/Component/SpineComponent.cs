@@ -13,7 +13,7 @@ namespace Xuan.Prometheus.Component
     }
 
     /// <summary>作为角色唯一的纯 C# Spine 动画运行态，负责 AnimationLine 解析、优先级仲裁、序列播放和会话清理。</summary>
-    public sealed class SpineComponent : Component, IEntityBinderComponent
+    public sealed class SpineComponent : Component, IEntityBinderComponent, IAnimationHost
     {
         /// <summary>保留旧测试和外部调用的默认时长常量；运行时动画过渡不再读取该常量，而是统一查询 AnimationLibrary 矩阵。</summary>
         public const float TransitionDuration = AnimationMixDurationMatrix.FallbackDuration;
@@ -149,13 +149,27 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>判断给定会话是否仍是组件当前会话，AnimationPlayback 使用该入口排除旧 TrackEntry 回调。</summary>
-        internal bool IsPlaybackActive(AnimationPlayback playback)
+        public bool IsPlaybackActive(AnimationPlayback playback)
         {
             return playback != null && ReferenceEquals(currentPlayback, playback) && currentPlayback.Version == playback.Version;
         }
 
+        /// <summary>读取宿主实体当前世界坐标，供动画事件驱动的音效定位；表现对象尚未绑定时返回 false。</summary>
+        /// <param name="position">成功时写入实体世界坐标。</param>
+        public bool TryGetWorldPosition(out UnityEngine.Vector3 position)
+        {
+            if (Entity != null && Entity.bindGo != null)
+            {
+                position = Entity.bindGo.transform.position;
+                return true;
+            }
+
+            position = default;
+            return false;
+        }
+
         /// <summary>接收最终 TrackEntry 的自然完成通知，先释放轨道优先级所有权再通知 Logic。</summary>
-        internal void CompletePlayback(AnimationPlayback playback)
+        public void CompletePlayback(AnimationPlayback playback)
         {
             if (!IsPlaybackActive(playback)) return;
             currentPlayback = null;

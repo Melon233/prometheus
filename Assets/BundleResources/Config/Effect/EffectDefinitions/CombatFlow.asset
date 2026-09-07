@@ -37,7 +37,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 1348142047778570248
-      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         keyPolicy: 0
         customModifierKey: 
@@ -48,7 +48,7 @@ MonoBehaviour:
           multiplier: 0
           offset: 0.2
     - rid: 1348142047778570249
-      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         keyPolicy: 0
         customModifierKey: 
@@ -59,7 +59,7 @@ MonoBehaviour:
           multiplier: 0
           offset: 0.2
     - rid: 1348142047778570250
-      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         keyPolicy: 0
         customModifierKey: 
@@ -70,7 +70,7 @@ MonoBehaviour:
           multiplier: 0
           offset: 0.2
     - rid: 1348142047778570251
-      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: PropertyModifierOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         keyPolicy: 0
         customModifierKey: 

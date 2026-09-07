@@ -19,8 +19,8 @@ POI 采用**服务器权威 + chunk 分区同步**：
 ```
 ┌──────────────────── Unity 客户端 ───────────────────┐   TCP   ┌────────── Go 服务器 ──────────┐   ┌──────────┐
 │ ServiceSystem（业务协议 / 唯一 INetworkClient）     │ ──────► │ netx ─ service(PullChunk等)   │──►│ MongoDB  │
-│   ├─ IServiceSystem ─► WorldSystem（POI/AOI/位置）   │  9000   │   读导出→播种→按 chunk 索引     │   │ 两个业务集合 │
-│   └─ IServiceSystem ─► BagSystem（库存快照）         │         └───────────────────────────────┘   └──────────┘
+│   ├─ IPoiGateway ─► PoiSystem（POI/AOI/位置）   │  9000   │   读导出→播种→按 chunk 索引     │   │ 两个业务集合 │
+│   └─ IBagGateway   ─► BagSystem（库存快照）         │         └───────────────────────────────┘   └──────────┘
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -43,8 +43,8 @@ Server/                          # Go 服务器（模块名 prometheus）
 Tools/protoc/                    # protoc 编译器
 Assets/Gen/Protocol/             # protoc 生成的 C# 代码 + 程序集定义
 Assets/Plugins/Google.Protobuf/  # Google.Protobuf 运行时 dll
-Assets/Prometheus/Gameplay/WorldSystem/
-├── WorldSystem.cs               # 客户端编排：扫描场景 + AOI + chunk 按需拉取
+Assets/Prometheus/Gameplay/PoiSystem/
+├── PoiSystem.cs               # 客户端编排：扫描场景 + AOI + chunk 按需拉取
 ├── ChunkIdCodec.cs              # chunkId 编解码
 ├── PoiOp.cs / PoiExportList.cs
 ├── Data/PoiConfig.cs            # Id / Region / ChunkId / 位置旋转
@@ -52,7 +52,7 @@ Assets/Prometheus/Gameplay/WorldSystem/
 └── Editor/                      # WorldBakeWindow（导出）/ ServerProcessManager（自动启停）
 
 Assets/Prometheus/Gameplay/ServiceSystem/
-├── IServiceSystem.cs            # 纯游戏业务请求与业务 Push 契约
+├── IServiceSystem.cs            # 业务无关的会话与通用请求通道契约（领域组包见各 *Gateway.cs）
 ├── ServiceSystem.cs             # 业务组包解包、Push 分类及唯一客户端所有权
 └── ServiceSystemDesign.md       # 生命周期和扩展约束
 ```
@@ -124,7 +124,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 
 ### 6.1 启动
 
-`GameplayKit` 在其他网络消费者之前创建并注册 ServiceSystem；WorldSystem 与 BagSystem 在调用点通过 `Core.Gameplay.GetSystem<IServiceSystem>()` 获取接口，不使用构造注入。`WorldSystem.AfterNew` 先扫描场景 `PoiMono`、绑定 `PoiEntity`（按 `Id` 建索引），再通过纯业务接口 `EnterWorldAsync` 进入默认世界；ServiceSystem 在内部完成一次连接与 JoinRoom 请求。成功后启用世界同步与权威交互，失败时保留本地 POI 展示且本局不重新连接。
+组合根按 `ServiceSystem` → 各领域 Gateway → 消费者的顺序注册；PoiSystem 与 BagSystem 在调用点通过 `Core.Gameplay.GetSystem<IContract>()` 获取所需接口，不使用构造注入。`PoiSystem.AfterNew` 先扫描场景 `PoiMono`、绑定 `PoiEntity`（按 `Id` 建索引），再通过纯业务接口 `EnterWorldAsync` 进入默认世界；ServiceSystem 在内部完成一次连接与 JoinRoom 请求。成功后启用世界同步与权威交互，失败时保留本地 POI 展示且本局不重新连接。
 
 ### 6.2 chunk 按需拉取
 
@@ -136,7 +136,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 
 ### 6.4 坐标与抽卡
 
-`IServiceSystem.UploadPositionAsync(Vector3, CancellationToken)` → ServiceSystem 组装 `UpdatePositionRequest` → 默认房间广播 `PlayerPositionPush`（包含发送者自身）；NetworkKit 只上交通用 Packet，ServiceSystem 在 `OnUpdate` 调用 `PumpEvents`、识别业务 Body，并通过 `PositionReceived` 在主线程转发。接收或发送失败时，NetworkKit 同样在 `PumpEvents` 线程通知断线，ServiceSystem 切换为世界不可用且不自动重连。所有业务异步调用都携带消费方生命周期令牌，避免系统释放后继续写入状态。
+`IPoiGateway.UploadPositionAsync(Vector3, CancellationToken)` → PoiGateway 组装 `UpdatePositionRequest` 并经 `IServiceSystem.RequestAsync` 发出 → 默认房间广播 `PlayerPositionPush`（包含发送者自身）；NetworkKit 只上交通用 Packet，ServiceSystem 在 `OnUpdate` 调用 `PumpEvents` 并原样转发到 `PushReceived`，PoiGateway 识别业务 Body 后通过 `PositionReceived` 在主线程发布。接收或发送失败时，NetworkKit 同样在 `PumpEvents` 线程通知断线，ServiceSystem 切换为世界不可用且不自动重连。所有业务异步调用都携带消费方生命周期令牌，避免系统释放后继续写入状态。
 
 ---
 

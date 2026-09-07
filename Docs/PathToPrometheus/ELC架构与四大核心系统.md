@@ -366,13 +366,13 @@ EntitySystem 驱动 EnemyAiLogic
 - `Assets/Prometheus/Framework/GameplayKit/Logic.cs`：Logic 基础契约。
 - `Assets/Prometheus/Framework/GameplayKit/GameplayKit.cs`：单局 System 注册与帧循环。
 - `Assets/Prometheus/Gameplay/EntitySystem/EntitySystem.cs`：Entity 注册、更新、监听和安全回收。
-- `Assets/Prometheus/Gameplay/AnimationSystem/README.md`：动画子系统详细约束。
-- `Assets/Prometheus/Gameplay/AnimationSystem/AnimationLibrary.cs`：动画语义索引和混合矩阵。
-- `Assets/Prometheus/Gameplay/AnimationSystem/AnimationLine/AnimationLine.cs`：动画资源包装与时间轴命令。
-- `Assets/Prometheus/Gameplay/AnimationSystem/AnimationPlayback.cs`：播放会话协议。
+- `Assets/Prometheus/Gameplay/Animation/README.md`：动画子系统详细约束。
+- `Assets/Prometheus/Gameplay/Animation/AnimationLibrary.cs`：动画语义索引和混合矩阵。
+- `Assets/Prometheus/Gameplay/Animation/AnimationLine/AnimationLine.cs`：动画资源包装与时间轴命令。
+- `Assets/Prometheus/Gameplay/Animation/AnimationPlayback.cs`：播放会话协议。
 - `Assets/Prometheus/Gameplay/EntitySystem/Character/Component/SpineComponent.cs`：单 Entity 动画仲裁中心。
 - `Assets/Prometheus/Gameplay/EffectSystem/README.md`：Effect 完整规则与接入约束。
 - `Assets/Prometheus/Gameplay/EffectSystem/Runtime/EffectSystem.cs`：单局效果系统生命周期。
-- `Assets/Prometheus/Gameplay/AiSystem/EnemyAiDefinition.cs`：共享 AI 状态图定义。
+- `Assets/Prometheus/Gameplay/Ai/EnemyAiDefinition.cs`：共享 AI 状态图定义。
 - `Assets/Prometheus/Gameplay/EntitySystem/Monster/Logic/EnemyAiBrain.cs`：单敌人决策运行时与黑板。
 - `Assets/Prometheus/Gameplay/EntitySystem/Monster/Logic/EnemyAiLogic.cs`：AI 与 ELC、动画、物理、Effect 的适配层。

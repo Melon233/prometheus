@@ -9,6 +9,9 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     internal sealed class EffectSystem : XSystem, IEffectSystem
     {
+        /// <summary>本系统默认效果配置库的 YooAsset 地址；组合根据此在启动阶段异步加载。</summary>
+        public const string DefaultLibraryAddress = "EffectLibrary";
+
         private readonly int randomSeed;
         private readonly bool logTrace;
         private readonly EffectLibrary defaultLibrary;

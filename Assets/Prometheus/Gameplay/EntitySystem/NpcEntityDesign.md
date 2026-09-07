@@ -10,14 +10,14 @@
 
 ## NpcLogic 职责
 
-NpcLogic 只处理 NPC 领域逻辑：是否允许交互、选择哪个对话入口、发布 NPC 状态事件、请求 InteractionCoordinator 开始会话。它不直接调用 CameraSystem、FilmSystem 或具体 UI。
+NpcLogic 只处理 NPC 领域逻辑：是否允许交互、选择哪个对话入口、发布 NPC 状态事件、请求 InteractionCoordinator 开始会话。它不直接调用 CameraSystem、NarrativeSystem 或具体 UI。
 
 ## 交互流程
 
 ```text
 玩家进入范围 -> NpcLogic.TryBeginInteraction
 -> InteractionCoordinator 创建会话
--> FilmSystem 播放演出
+-> 叙事适配器播放演出
 -> DialogueSystem 显示对话
 -> 返回 DialogueResult
 -> NpcLogic 处理结果并发布领域事件
@@ -25,7 +25,7 @@ NpcLogic 只处理 NPC 领域逻辑：是否允许交互、选择哪个对话入
 
 ## 取消条件
 
-玩家离开范围、受击、死亡、场景卸载、NPC 回收和任务切换都可以取消会话。取消必须通过会话 CancellationToken 传递，不能只关闭 UI 而留下 Film 实例。
+玩家离开范围、受击、死亡、场景卸载、NPC 回收和任务切换都可以取消会话。取消必须通过会话 CancellationToken 传递，不能只关闭 UI 而留下演出实例。
 
 ## 任务连接
 

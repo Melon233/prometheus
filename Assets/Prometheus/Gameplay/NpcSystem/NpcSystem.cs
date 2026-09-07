@@ -1,5 +1,5 @@
 using System;
-using Xuan.Prometheus.Film;
+using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Npc
 {
@@ -7,53 +7,39 @@ namespace Xuan.Prometheus.Npc
     internal sealed class NpcSystem : XSystem, INpcSystem
     {
         private NpcInteractionContext? activeInteraction;
-        private NpcInteractionCoordinator coordinator;
 
-        /// <summary>外部适配器订阅该事件后负责启动 Film 或对话 UI。</summary>
+        /// <summary>外部适配器订阅该事件后负责启动叙事流程或对话 UI。</summary>
         public event Action<NpcInteractionContext> InteractionRequested;
 
         /// <summary>获取当前活动交互；没有活动会话时为空。</summary>
         public NpcInteractionContext? ActiveInteraction => activeInteraction;
 
-        /// <summary>通过 Core.Gameplay 建立当前单局 NPC 与演出系统的交互协调器。</summary>
-        public override void AfterNew()
-        {
-            coordinator = new NpcInteractionCoordinator(Core.Gameplay.GetSystem<IFilmSystem>(), CompleteInteractionFromCoordinator);
-            InteractionRequested += coordinator.Start;
-        }
-
         /// <summary>尝试为 NPC 创建唯一交互会话并发布请求。</summary>
-        public bool TryBeginInteraction(NpcEntity entity)
+        public bool TryBeginInteraction(PoiMono npc)
         {
-            if (coordinator == null) throw new InvalidOperationException("NpcSystem must complete AfterNew before interaction.");
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
-            if (!entity.IsActive || activeInteraction.HasValue) return false;
-            NpcDefinition definition = entity.Definition;
-            NpcInteractionContext context = new NpcInteractionContext(entity.EntityId, entity.Config.Id, definition.NpcId, definition.DefaultInteractionId);
+            if (npc == null) throw new ArgumentNullException(nameof(npc));
+            if (npc.Config == null || activeInteraction.HasValue) return false;
+            NpcDefinition definition = npc.Config.Npc;
+            if (definition == null) return false;
+            definition.Validate();
+            NpcInteractionContext context = new NpcInteractionContext(npc.Config.Id, definition.NpcId, definition.DefaultInteractionId);
             activeInteraction = context;
             InteractionRequested?.Invoke(context);
             return true;
         }
 
-        /// <summary>完成指定实体的活动交互；实体编号不匹配时保持当前会话。</summary>
-        public bool CompleteInteraction(int entityId)
+        /// <summary>完成指定 POI 的活动交互；Id 不匹配时保持当前会话。</summary>
+        public bool CompleteInteraction(string poiId)
         {
-            if (!activeInteraction.HasValue || activeInteraction.Value.EntityId != entityId) return false;
+            if (!activeInteraction.HasValue || !string.Equals(activeInteraction.Value.PoiId, poiId, StringComparison.Ordinal)) return false;
             activeInteraction = null;
             return true;
         }
 
-        /// <summary>接收协调器完成通知并忽略已完成会话的幂等返回值。</summary>
-        private void CompleteInteractionFromCoordinator(int entityId)
+        /// <summary>取消指定 POI 的活动交互，供场景卸载和外部中断使用。</summary>
+        public bool CancelInteraction(string poiId)
         {
-            CompleteInteraction(entityId);
-        }
-
-        /// <summary>取消指定实体的活动交互，供 NPC 回收和外部中断使用。</summary>
-        public bool CancelInteraction(int entityId)
-        {
-            coordinator?.Cancel(entityId);
-            return CompleteInteraction(entityId);
+            return CompleteInteraction(poiId);
         }
 
         /// <summary>释放当前会话和全部外部订阅。</summary>
@@ -61,7 +47,6 @@ namespace Xuan.Prometheus.Npc
         {
             activeInteraction = null;
             InteractionRequested = null;
-            coordinator = null;
         }
     }
 }

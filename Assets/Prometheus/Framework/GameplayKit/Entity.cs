@@ -5,22 +5,24 @@ using Xuan.Prometheus.Component;
 
 namespace Xuan.Prometheus.Logic
 {
-    /// <summary>定义 Entity 内 Logic 的逐帧执行阶段，枚举顺序就是默认执行顺序。</summary>
+    /// <summary>
+    /// 定义 Entity 内 Logic 的逐帧执行阶段，枚举顺序就是默认执行顺序。
+    /// 这里只描述与具体玩法领域无关的通用相位；任何"背包""任务""编队"之类的领域概念
+    /// 都应通过在同一相位内的注册顺序表达，而不是在框架层新增枚举值。
+    /// </summary>
     public enum OrderTag
     {
         /// <summary>最先创建或接管 Entity 的 Unity 表现对象，并发布根 Binder。</summary>
         GameObject,
+        /// <summary>采集并解析本帧输入，为后续相位准备意图。</summary>
         Input,
-        Talent,
+        /// <summary>结算持续性属性修正，使玩法相位读到稳定的最终属性。</summary>
         Buff,
+        /// <summary>执行主要玩法行为。</summary>
         Gameplay,
-        Bag,
+        /// <summary>把玩法结果转换为运动、朝向等控制输出。</summary>
         Controller,
-        Formation,
-        Build,
-        Item,
-        Quest,
-        Compound,
+        /// <summary>消费本帧全部玩法结果的收尾相位。</summary>
         AfterGameplay
     }
 
@@ -50,7 +52,7 @@ namespace Xuan.Prometheus.Logic
     }
 
     /// <summary>组合一个运行时对象的组件与 Logic，并与所属 GameplayKit 协同管理完整生命周期。</summary>
-    public abstract class Entity
+    public abstract class Entity : IEntityLifecycleController
     {
         private readonly Dictionary<Type, IComponent> comps = new Dictionary<Type, IComponent>();
         private readonly List<ILogic> logicList = new List<ILogic>();
@@ -59,6 +61,12 @@ namespace Xuan.Prometheus.Logic
         private int nextLogicRegistrationOrder;
         private int initializedLogicCount;
         private float destroyDelay;
+
+        /// <summary>登记当前实体的宿主容器，在 BindEntityId 时写入；未注册实体为空。</summary>
+        private IEntityOwner owner;
+
+        /// <summary>缓存本实体唯一的控制状态端口，使逐帧 Logic 调度不必每次遍历组件表。</summary>
+        private IControlStateProvider controlStateProvider;
 
         /// <summary>获取首次回收请求确定的表现对象延迟销毁时间，供最后释放的 GameObjectLogic 使用。</summary>
         internal float DisposeDelay => destroyDelay;
@@ -75,15 +83,30 @@ namespace Xuan.Prometheus.Logic
         /// <summary>获取当前实体是否已经进入回收流程或完成回收。</summary>
         public bool IsDespawningOrDisposed => LifecycleState == EntityLifecycleState.DespawnRequested || LifecycleState == EntityLifecycleState.Disposed;
 
-        /// <summary>当前实体绑定的场景对象；资源定位和实例化由 GameplayKit 负责。</summary>
-        public GameObject bindGo;
+        /// <summary>
+        /// 当前实体绑定的场景对象；资源定位和实例化由 GameObjectLogic 负责。
+        /// 只读对外公开：实体子类可以在构造阶段绑定既有场景对象，
+        /// 运行期的接管与解绑一律经由 BindGameObject，避免任何持有者随手改写绑定关系。
+        /// </summary>
+        public GameObject bindGo { get; protected set; }
 
-        /// <summary>由 EntitySystem 在实体初始化前写入当前单局唯一运行时编号。</summary>
-        internal void BindEntityId(int entityId)
+        /// <summary>由 GameObjectLogic 在接管或释放表现对象时写入绑定关系；解绑时传入空值。</summary>
+        /// <param name="instance">本实体当前绑定的场景对象。</param>
+        internal void BindGameObject(GameObject instance)
+        {
+            bindGo = instance;
+        }
+
+        /// <summary>由实体宿主在实体初始化前写入运行时编号并交出自身引用，使实体可以直接向宿主请求回收。</summary>
+        /// <param name="entityId">当前单局唯一的运行时编号。</param>
+        /// <param name="entityOwner">登记该实体的宿主容器。</param>
+        internal void BindEntityId(int entityId, IEntityOwner entityOwner)
         {
             if (entityId <= 0) throw new ArgumentOutOfRangeException(nameof(entityId), entityId, "Entity runtime ID must be positive.");
+            if (entityOwner == null) throw new ArgumentNullException(nameof(entityOwner));
             if (LifecycleState != EntityLifecycleState.Created) throw new InvalidOperationException($"Entity '{GetType().FullName}' cannot be registered from lifecycle state '{LifecycleState}'.");
             EntityId = entityId;
+            owner = entityOwner;
             LifecycleState = EntityLifecycleState.Registered;
         }
 
@@ -128,7 +151,7 @@ namespace Xuan.Prometheus.Logic
         {
             if (IsDespawningOrDisposed) return false;
             float safeDelay = Mathf.Max(0f, delay);
-            if (LifecycleState == EntityLifecycleState.Registered || LifecycleState == EntityLifecycleState.Active) return Core.Gameplay.GetSystem<IEntitySystem>().RequestRemoveEntity(EntityId, safeDelay);
+            if (LifecycleState == EntityLifecycleState.Registered || LifecycleState == EntityLifecycleState.Active) return owner.RequestRemoveEntity(EntityId, safeDelay);
             if (!MarkDespawnRequested(safeDelay)) return false;
             DisposeImmediately();
             return true;
@@ -138,6 +161,27 @@ namespace Xuan.Prometheus.Logic
         public void OnDispose(float delay = 2f)
         {
             RequestDispose(delay);
+        }
+
+        /// <inheritdoc />
+        /// <remarks>显式实现：只有把实体当作自己登记对象的宿主，才会写出到该端口的转换。</remarks>
+        void IEntityLifecycleController.BindEntityId(int entityId, IEntityOwner entityOwner)
+        {
+            BindEntityId(entityId, entityOwner);
+        }
+
+        /// <inheritdoc />
+        /// <remarks>显式实现：只有把实体当作自己登记对象的宿主，才会写出到该端口的转换。</remarks>
+        bool IEntityLifecycleController.MarkDespawnRequested(float delay)
+        {
+            return MarkDespawnRequested(delay);
+        }
+
+        /// <inheritdoc />
+        /// <remarks>显式实现：只有把实体当作自己登记对象的宿主，才会写出到该端口的转换。</remarks>
+        bool IEntityLifecycleController.DisposeImmediately()
+        {
+            return DisposeImmediately();
         }
 
         /// <summary>由 GameplayKit 标记首次回收请求，使 Entity 立即停止参与逐帧更新。</summary>
@@ -180,9 +224,10 @@ namespace Xuan.Prometheus.Logic
                     Debug.LogException(exception);
                 }
             }
-            if (comps.TryGetValue(typeof(EventComponent), out IComponent eventComponent) && eventComponent is EventComponent typedEventComponent) typedEventComponent.ClearListeners();
+            foreach (IComponent component in comps.Values) if (component is IListenerHost listenerHost) listenerHost.ClearListeners();
             foreach (IComponent component in comps.Values) component.Entity = null;
             foreach (ILogic logic in logicList) logic.Entity = null;
+            controlStateProvider = null;
             comps.Clear();
             logicList.Clear();
             logics.Clear();
@@ -215,15 +260,15 @@ namespace Xuan.Prometheus.Logic
             }
         }
 
-        /// <summary>根据 Logic 声明的能力需求查询 PropertyComponent；没有属性组件的基础设施实体维持原有调度行为。</summary>
+        /// <summary>根据 Logic 声明的能力需求查询控制状态端口；没有该端口的基础设施实体维持原有调度行为。</summary>
         private bool IsLogicAllowedByControlState(ILogic logic)
         {
             LogicControlRequirement requirement = logic is Logic gameplayLogic ? gameplayLogic.ControlRequirement : LogicControlRequirement.Act;
             if (requirement == LogicControlRequirement.None) return true;
-            if (!comps.TryGetValue(typeof(PropertyComponent), out IComponent component) || !(component is PropertyComponent property)) return true;
-            if ((requirement & LogicControlRequirement.Act) != 0 && !property.CanAct) return false;
-            if ((requirement & LogicControlRequirement.Move) != 0 && !property.CanMove) return false;
-            if ((requirement & LogicControlRequirement.ActiveSkill) != 0 && !property.CanUseActiveSkill) return false;
+            if (controlStateProvider == null) return true;
+            if ((requirement & LogicControlRequirement.Act) != 0 && !controlStateProvider.CanAct) return false;
+            if ((requirement & LogicControlRequirement.Move) != 0 && !controlStateProvider.CanMove) return false;
+            if ((requirement & LogicControlRequirement.ActiveSkill) != 0 && !controlStateProvider.CanUseActiveSkill) return false;
             return true;
         }
 
@@ -251,6 +296,12 @@ namespace Xuan.Prometheus.Logic
             EnsureCanCompose();
             if (ReferenceEquals(comp, null)) throw new ArgumentNullException(nameof(comp), $"Entity '{GetType().FullName}' cannot register a null component of type '{typeof(T).FullName}'.");
             comps.Add(comp.GetType(), comp);
+            if (comp is IControlStateProvider registeredControlStateProvider)
+            {
+                if (controlStateProvider != null) throw new InvalidOperationException($"Entity '{GetType().FullName}' already contains a control state provider; an entity can only have one.");
+                controlStateProvider = registeredControlStateProvider;
+            }
+
             comp.Entity = this;
         }
 

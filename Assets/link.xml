@@ -1,6 +1,13 @@
 <linker>
-    <!-- 完整保留 Runtime.asmdef 生成的 Runtime 程序集，防止 Managed Stripping 删除由反射、序列化或运行时注册间接访问的类型与成员。 -->
+    <!--
+        完整保留四个 Prometheus 运行时程序集，防止 Managed Stripping 删除由反射、序列化或运行时注册间接访问的类型与成员。
+        Android 使用 IL2CPP 且 managedStrippingLevel = High，因此拆分装配后必须逐个列出：
+        Runtime 只包含组合根，绝大多数被间接引用的类型位于下面三层。
+    -->
     <assembly fullname="Runtime" preserve="all" />
+    <assembly fullname="Prometheus.Framework" preserve="all" />
+    <assembly fullname="Prometheus.Gameplay" preserve="all" />
+    <assembly fullname="Prometheus.UI" preserve="all" />
     <!-- 完整保留 YooAsset 运行时程序集，确保资源包加载与反序列化间接访问的代码不会被 Player 裁剪。 -->
     <assembly fullname="YooAsset" preserve="all" />
     <!-- 完整保留 Input System 运行时程序集，确保当前及未来 AssetBundle 引用的屏幕输入组件不会被 Player 裁剪。 -->

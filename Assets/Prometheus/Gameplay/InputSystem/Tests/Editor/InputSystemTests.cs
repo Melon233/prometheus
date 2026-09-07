@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using Xuan.Prometheus.Bootstrap;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.OnScreen;
 using UnityEngine.UI;
@@ -23,7 +24,7 @@ namespace Xuan.Prometheus.Input.Tests
             Assert.That(typeof(MonoBehaviour).IsAssignableFrom(typeof(InputSystem)), Is.False);
         }
 
-        /// <summary>验证 GameplayKit 配置阶段会注册且只暴露一个 InputSystem。</summary>
+        /// <summary>验证玩法组合根会注册且只暴露一个 InputSystem。</summary>
         [Test]
         public void GameplayKit_RegistersUniqueInputSystem()
         {
@@ -31,11 +32,14 @@ namespace Xuan.Prometheus.Input.Tests
             EffectLibrary effectLibrary = ScriptableObject.CreateInstance<EffectLibrary>();
             AssetKit assetKit = new AssetKit();
             Core.Asset = assetKit;
+            IEventKit previousEventKit = Core.Event;
+            EventKit eventKit = new EventKit();
+            Core.Event = eventKit;
             GameplayKit gameplayKit = new GameplayKit();
+            Core.Gameplay = gameplayKit;
             try
             {
-                GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRoot.transform, effectLibrary, "Player", "Enemy", Array.Empty<Transform>(), 0);
-                gameplayKit.Configure(options);
+                new PrometheusSystemInstaller(effectLibrary).RegisterSystems(gameplayKit);
                 IInputSystem inputSystem = gameplayKit.GetSystem<IInputSystem>();
                 Assert.That(inputSystem, Is.Not.Null);
                 Assert.That(inputSystem.DefaultSourceId, Is.EqualTo(UnityInputActionSource.LocalSourceId));
@@ -43,6 +47,9 @@ namespace Xuan.Prometheus.Input.Tests
             finally
             {
                 gameplayKit.Dispose();
+                Core.Gameplay = null;
+                eventKit.Dispose();
+                Core.Event = previousEventKit;
                 assetKit.Dispose();
                 Core.Asset = null;
                 UnityEngine.Object.DestroyImmediate(effectLibrary);
@@ -239,9 +246,9 @@ namespace Xuan.Prometheus.Input.Tests
             }
         }
 
-        /// <summary>验证 HUD Prefab 只有摇杆保留 OnScreenStick，全部普通 Button 都不再挂接 OnScreenButton。</summary>
+        /// <summary>验证 HUD Prefab 的全部 Button 绑定都使用 UIKit onClick，不再挂接 OnScreenButton。</summary>
         [Test]
-        public void HudPanelPrefab_UsesClicksForButtonsAndOnScreenControlOnlyForStick()
+        public void HudPanelPrefab_UsesUIKitClicksForAllButtonBindings()
         {
             const string prefabPath = "Assets/BundleResources/UI/Hud/Prefabs/HudPanel.prefab";
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
@@ -253,10 +260,6 @@ namespace Xuan.Prometheus.Input.Tests
                 Button button = binder.Bindings[index].Component as Button;
                 if (button != null) Assert.That(button.GetComponent<OnScreenButton>(), Is.Null, $"HUD Button binding '{binder.Bindings[index].Name}' must use UIKit onClick instead of OnScreenButton.");
             }
-            OnScreenStick stick = (binder.Bindings[1].Component as Button).GetComponent<OnScreenStick>();
-            Assert.That(stick, Is.Not.Null);
-            Assert.That(stick.movementRange, Is.EqualTo(50f));
-            Assert.That(stick.behaviour, Is.EqualTo(OnScreenStick.Behaviour.RelativePositionWithStaticOrigin));
         }
 
         /// <summary>验证 InputComponent 会合并同帧输入，并能在下一输入帧开始前完整清除旧状态。</summary>

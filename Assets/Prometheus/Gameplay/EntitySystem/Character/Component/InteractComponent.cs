@@ -5,7 +5,7 @@ namespace Xuan.Prometheus.Component
 {
     /// <summary>
     /// 保存玩家当前交互半径内的可交互 POI 配置列表，并提供可监听的修订号供 UI 刷新交互栏。
-    /// 只保存纯数据配置（PoiConfig），交互时由 UI 层按 Id 解析实体，避免感应逻辑反向依赖 WorldSystem。
+    /// 只保存纯数据配置（PoiConfig），交互时由 UI 层按 Id 解析实体，避免感应逻辑反向依赖 PoiSystem。
     /// </summary>
     public sealed class InteractComponent : Component
     {

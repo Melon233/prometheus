@@ -4,7 +4,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Protocol;
-using Xuan.Prometheus.Service;
 
 namespace Xuan.Prometheus
 {
@@ -19,8 +18,8 @@ namespace Xuan.Prometheus
         /// <summary>在系统释放时取消尚未完成的背包请求，阻止响应继续修改已清空的缓存。</summary>
         private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource();
 
-        /// <summary>通过统一 Core 入口按需取得当前单局 ServiceSystem 接口，不保存或注入公共 System 实例。</summary>
-        private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>();
+        /// <summary>本领域的网络适配器；按 ARCH-SYS-005 在使用点解析，不保存或注入公共 System 实例。</summary>
+        private static IBagGateway Gateway => Core.Gameplay.GetSystem<IBagGateway>();
 
         /// <summary>背包物品列表的变化版本；UI 通过 Listen 监听它并在变化时重新读取列表。</summary>
         public ModifiableProperty RevisionProperty => revision;
@@ -35,7 +34,7 @@ namespace Xuan.Prometheus
             {
                 try
                 {
-                    GetItemsResponse response = await ServiceSystem.GetItemsAsync(operationCancellation.Token);
+                    GetItemsResponse response = await Gateway.GetItemsAsync(operationCancellation.Token);
                     operationCancellation.Token.ThrowIfCancellationRequested();
                     if (response == null) return;
                     items.Clear();

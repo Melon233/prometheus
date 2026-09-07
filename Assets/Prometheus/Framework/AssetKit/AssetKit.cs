@@ -96,8 +96,6 @@ namespace Xuan.Prometheus.Asset
         private ResourcePackage defaultPackage;
         /// <summary>持有当前通过 AssetKit 加载的场景句柄，保证场景依赖包在玩法运行期间保持有效。</summary>
         private SceneHandle activeSceneHandle;
-        /// <summary>由 Core 在并发异步初始化开始前写入的目标资源包名称。</summary>
-        private string configuredPackageName;
         private string initializedPackageName;
         private bool isInitializing;
         private bool isDisposed;
@@ -108,23 +106,12 @@ namespace Xuan.Prometheus.Asset
         public bool IsReady => !isDisposed && defaultPackage != null && defaultPackage.InitializeStatus == EOperationStatus.Succeeded && defaultPackage.PackageValid;
 
 
-        /// <summary>在 AfterNewAsync 开始前配置当前 Core 使用的唯一 YooAsset 资源包。</summary>
-        /// <param name="packageName">需要异步初始化的资源包名称。</param>
-        public void Configure(string packageName)
-        {
-            ThrowIfDisposed();
-            ValidatePackageName(packageName);
-            if (configuredPackageName != null) throw new InvalidOperationException("AssetKit can only be configured once.");
-            configuredPackageName = packageName;
-        }
-
-        /// <summary>通过现有初始化协程异步初始化配置的资源包，并向所有依赖 Kit 传播完成或失败结果。</summary>
+        /// <summary>异步初始化项目唯一的 YooAsset 资源包，并向所有依赖 Kit 传播完成或失败结果。</summary>
         public override async UniTask AfterNewAsync()
         {
-            if (configuredPackageName == null) throw new InvalidOperationException("AssetKit must be configured before AfterNewAsync.");
             try
             {
-                await Initialize(configuredPackageName).ToUniTask();
+                await Initialize(DefaultPackageName).ToUniTask();
                 initializationCompletion.TrySetResult();
             }
             catch (Exception exception)
@@ -430,7 +417,6 @@ namespace Xuan.Prometheus.Asset
             activeSceneHandle = null;
             ReleaseAllAssets();
             defaultPackage = null;
-            configuredPackageName = null;
             initializedPackageName = null;
             isInitializing = false;
             isDisposed = true;

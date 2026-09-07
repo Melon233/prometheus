@@ -32,13 +32,14 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>集中管理单局 Entity 的注册、查询、逐帧调度、安全回收和字段监听。</summary>
-    internal sealed class EntitySystem : XSystem, IEntitySystem
+    internal sealed class EntitySystem : XSystem, IEntitySystem, IEntityDriver, IEntityOwner
     {
+        /// <summary>本系统生成的敌人统一使用的预制体 YooAsset 地址。</summary>
+        private const string EnemyAddress = "Slime";
+
         /// <summary>保存当前单局统一使用的敌人预制体地址。</summary>
-        private string enemyLocation;
 
         /// <summary>保存敌人实例所属的跨场景运行时根节点。</summary>
-        private Transform enemyRuntimeRoot;
 
         /// <summary>保存全部已注册 Entity，并维持稳定的逐帧更新顺序。</summary>
         private readonly XMap<int, Entity> entities = new XMap<int, Entity>();
@@ -73,13 +74,6 @@ namespace Xuan.Prometheus
         /// <summary>获取系统是否已经完成释放。</summary>
         public bool IsDisposed => isDisposed;
 
-        /// <summary>配置当前单局的敌人实例化上下文，使初始出生点和世界 POI 可以复用同一条创建链路。</summary>
-        internal void ConfigureEnemySpawner(string location, Transform runtimeRoot)
-        {
-            enemyLocation = !string.IsNullOrWhiteSpace(location) ? location : throw new ArgumentException("Enemy asset location cannot be empty.", nameof(location));
-            enemyRuntimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
-        }
-
         /// <summary>在指定世界坐标创建、注册并初始化一只当前单局配置的史莱姆。</summary>
         public SlimeEntity SpawnEnemy(Vector3 worldPosition)
         {
@@ -87,7 +81,7 @@ namespace Xuan.Prometheus
             int entityId = 0;
             try
             {
-                SlimeEntity enemy = new SlimeEntity(enemyLocation, worldPosition, Quaternion.identity, enemyRuntimeRoot);
+                SlimeEntity enemy = new SlimeEntity(EnemyAddress, worldPosition, Quaternion.identity, PersistentRoot.Shared);
                 entityId = AddEntity(enemy);
                 enemy.AfterNew();
                 return enemy;
@@ -107,7 +101,7 @@ namespace Xuan.Prometheus
             if (isUpdatingEntities) throw new InvalidOperationException("EntitySystem cannot register an Entity while the Entity collection is updating.");
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             int entityId = nextEntityId++;
-            entity.BindEntityId(entityId);
+            ((IEntityLifecycleController)entity).BindEntityId(entityId, this);
             entities.Add(entityId, entity);
             Count++;
             return entityId;
@@ -142,7 +136,7 @@ namespace Xuan.Prometheus
             if (!entities.TryGet(entityId, out Entity entity)) return false;
             if (pendingEntityRemovals.ContainsKey(entityId)) return false;
             float safeDelay = Mathf.Max(0f, destroyDelay);
-            if (!entity.MarkDespawnRequested(safeDelay)) return false;
+            if (!((IEntityLifecycleController)entity).MarkDespawnRequested(safeDelay)) return false;
             pendingEntityRemovals.Add(entityId, safeDelay);
             return true;
         }
@@ -194,7 +188,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>由 GameplayKit 在系统前置更新前调用，处理上一阶段积累的安全回收请求。</summary>
-        internal void DrainPendingEntityRemovals()
+        public void DrainPendingRemovals()
         {
             if (isDisposed || isDisposing || pendingEntityRemovals.Count == 0) return;
             pendingEntityRemovalBuffer.Clear();
@@ -210,10 +204,10 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>由 GameplayKit 在全部 System 前置阶段结束后调用，稳定驱动当前所有 Active Entity。</summary>
-        internal void UpdateEntities(float dt)
+        public void UpdateEntities(float dt)
         {
             if (isDisposed || isDisposing) return;
-            DrainPendingEntityRemovals();
+            DrainPendingRemovals();
             isUpdatingEntities = true;
             try
             {
@@ -223,17 +217,15 @@ namespace Xuan.Prometheus
             {
                 isUpdatingEntities = false;
             }
-            DrainPendingEntityRemovals();
+            DrainPendingRemovals();
         }
 
-        /// <summary>根据玩法启动参数创建三人小队与场景敌人，并将所有实例纳入当前系统托管。</summary>
-        internal void CreateInitialEntities(GameplayStartupOptions startupOptions, TeamSystem teamSystem)
+        /// <summary>创建本局固定小队并纳入当前系统托管；场景敌人由 PoiSystem 按营地实例生成。</summary>
+        internal void CreateInitialTeam(TeamSystem teamSystem)
         {
             ThrowIfDisposed();
-            if (startupOptions == null) throw new ArgumentNullException(nameof(startupOptions));
             if (teamSystem == null) throw new ArgumentNullException(nameof(teamSystem));
-            CreateTeam(startupOptions, teamSystem);
-            CreateEnemies(startupOptions);
+            CreateTeam(teamSystem);
         }
 
         /// <summary>单局结束时先释放字段监听，再按稳定顺序释放全部 Entity。</summary>
@@ -248,8 +240,9 @@ namespace Xuan.Prometheus
             entityHandles.Clear();
             foreach (Entity entity in entities)
             {
-                entity.MarkDespawnRequested(0f);
-                entity.DisposeImmediately();
+                IEntityLifecycleController lifecycle = entity;
+                lifecycle.MarkDespawnRequested(0f);
+                lifecycle.DisposeImmediately();
             }
             pendingEntityRemovals.Clear();
             pendingEntityRemovalBuffer.Clear();
@@ -267,8 +260,9 @@ namespace Xuan.Prometheus
             if (Core.Gameplay.TryGetSystem(out ITeamSystem teamSystem)) teamSystem.UnregisterMember(entity);
             entities.Remove(entityId);
             Count--;
-            entity.MarkDespawnRequested(0f);
-            entity.DisposeImmediately();
+            IEntityLifecycleController lifecycle = entity;
+            lifecycle.MarkDespawnRequested(0f);
+            lifecycle.DisposeImmediately();
         }
 
         /// <summary>释放指定 Entity 持有的全部字段监听，避免已回收组件继续持有界面回调。</summary>
@@ -282,7 +276,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后交给 TeamSystem 原子初始化。</summary>
-        private void CreateTeam(GameplayStartupOptions startupOptions, TeamSystem teamSystem)
+        private void CreateTeam(TeamSystem teamSystem)
         {
             List<Entity> createdMembers = new List<Entity>(TeamSystem.Capacity);
             try
@@ -293,7 +287,7 @@ namespace Xuan.Prometheus
                     int entityId = 0;
                     try
                     {
-                        PlayerEntity member = new PlayerEntity(startupOptions.TeamMemberLocations[slotIndex], new Vector3(277f, 0.95f, 1068f), Quaternion.identity, startupOptions.RuntimeRoot);
+                        PlayerEntity member = new PlayerEntity(TeamSystem.MemberAddresses[slotIndex], new Vector3(277f, 0.95f, 1068f), Quaternion.identity, PersistentRoot.Shared);
                         entityId = AddEntity(member);
                         member.AfterNew();
                         createdMembers.Add(member);
@@ -317,17 +311,6 @@ namespace Xuan.Prometheus
             }
         }
 
-        /// <summary>遍历入口配置的世界坐标创建敌人，并按照启动参数限制有效实例数量。</summary>
-        private void CreateEnemies(GameplayStartupOptions startupOptions)
-        {
-            int createdCount = 0;
-            foreach (Vector3 spawnPosition in startupOptions.EnemySpawnPositions)
-            {
-                SpawnEnemy(spawnPosition);
-                createdCount++;
-                if (startupOptions.EnemySpawnLimit > 0 && createdCount >= startupOptions.EnemySpawnLimit) break;
-            }
-        }
 
         /// <summary>防止已经释放的实体系统被重新注册 Entity 或监听。</summary>
         private void ThrowIfDisposed()

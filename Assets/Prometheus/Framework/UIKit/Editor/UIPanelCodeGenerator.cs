@@ -16,8 +16,8 @@ namespace Xuan.Prometheus.Editor
     public static class UIPanelCodeGenerator
     {
         internal const int GeneratedBindingSnapshotVersion = 1;
-        private const string GeneratedBaseDirectory = "Assets/Prometheus/Framework/UIKit/Generated";
-        private const string PanelScriptDirectory = "Assets/Prometheus/Gameplay/UI";
+        /// <summary>UI 层根目录；每个面板的生成基类、业务脚本和该面板专属 Mono 统一放在 <c>&lt;根目录&gt;/&lt;面板名&gt;/</c> 下。</summary>
+        private const string PanelRootDirectory = "Assets/Prometheus/UI";
         private const string GeneratedBindingLookupPattern = "binder\\.Get<[^>\\r\\n]+>\\((\\d+), \"((?:\\\\.|[^\"\\\\])*)\"\\);";
         private const string OnScreenStickTypeName = "UnityEngine.InputSystem.OnScreen.OnScreenStick";
 
@@ -50,11 +50,11 @@ namespace Xuan.Prometheus.Editor
             string prefabPath = ResolvePrefabPath(binder);
             ValidateBinder(binder, prefabPath);
             string panelName = ToTypeIdentifier(Path.GetFileNameWithoutExtension(prefabPath));
-            string basePath = $"{GeneratedBaseDirectory}/{panelName}Base.g.cs";
-            string panelPath = $"{PanelScriptDirectory}/{panelName}.cs";
+            string panelDirectory = $"{PanelRootDirectory}/{panelName}";
+            string basePath = $"{panelDirectory}/{panelName}Base.g.cs";
+            string panelPath = $"{panelDirectory}/{panelName}.cs";
             SavePrefabStageContents(binder, prefabPath);
-            Directory.CreateDirectory(GeneratedBaseDirectory);
-            Directory.CreateDirectory(PanelScriptDirectory);
+            Directory.CreateDirectory(panelDirectory);
             File.WriteAllText(basePath, BuildPanelBaseSource(panelName, binder.Bindings), new UTF8Encoding(false));
 
             if (!File.Exists(panelPath))
@@ -108,7 +108,7 @@ namespace Xuan.Prometheus.Editor
             {
                 string prefabPath = ResolvePrefabPath(binder);
                 string panelName = ToTypeIdentifier(Path.GetFileNameWithoutExtension(prefabPath));
-                string generatedBasePath = $"{GeneratedBaseDirectory}/{panelName}Base.g.cs";
+                string generatedBasePath = $"{PanelRootDirectory}/{panelName}/{panelName}Base.g.cs";
                 if (!File.Exists(generatedBasePath))
                     return false;
 

@@ -8,7 +8,10 @@ using Xuan.Prometheus.Protocol;
 
 namespace Xuan.Prometheus.Service
 {
-    /// <summary>封装单局唯一网络客户端，在内部管理连接，并向其他玩法系统提供业务请求、响应解析和业务 Push 分发。</summary>
+    /// <summary>
+    /// 封装单局唯一网络客户端，在内部管理连接、并发与断线语义，并向各领域 Gateway 提供业务无关的通用请求通道与 Push 流。
+    /// 本类不认识任何具体玩法业务：组包与解包由对应领域的 Gateway 负责。
+    /// </summary>
     internal sealed class ServiceSystem : XSystem, IServiceSystem
     {
         /// <summary>本地开发服务器的默认回环地址。</summary>
@@ -86,7 +89,7 @@ namespace Xuan.Prometheus.Service
         public event Action WorldUnavailable;
 
         /// <inheritdoc />
-        public event Action<PlayerPositionPush> PositionReceived;
+        public event Action<Packet> PushReceived;
 
         /// <inheritdoc />
         public async UniTask<JoinRoomResponse> EnterWorldAsync(CancellationToken cancellationToken = default)
@@ -97,50 +100,11 @@ namespace Xuan.Prometheus.Service
         }
 
         /// <inheritdoc />
-        public async UniTask<PullChunkResponse> PullChunkAsync(int chunkId, CancellationToken cancellationToken = default)
+        public async UniTask<Packet> RequestAsync(Packet request, CancellationToken cancellationToken = default)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             CancellationTokenSource operationCancellation = BeginOperation(cancellationToken);
-            try { return (await RequestCoreAsync(new Packet { PullChunk = new PullChunkRequest { ChunkId = chunkId } }, operationCancellation.Token)).PullChunkResp; }
-            finally { CompleteOperation(operationCancellation); }
-        }
-
-        /// <inheritdoc />
-        public async UniTask<PullAllResponse> PullAllAsync(CancellationToken cancellationToken = default)
-        {
-            CancellationTokenSource operationCancellation = BeginOperation(cancellationToken);
-            try { return (await RequestCoreAsync(new Packet { PullAll = new PullAllRequest() }, operationCancellation.Token)).PullAllResp; }
-            finally { CompleteOperation(operationCancellation); }
-        }
-
-        /// <inheritdoc />
-        public async UniTask<InteractResponse> InteractAsync(string id, PoiOp op, CancellationToken cancellationToken = default)
-        {
-            CancellationTokenSource operationCancellation = BeginOperation(cancellationToken);
-            try { return (await RequestCoreAsync(new Packet { Interact = new InteractRequest { Id = id, Op = op } }, operationCancellation.Token)).InteractResp; }
-            finally { CompleteOperation(operationCancellation); }
-        }
-
-        /// <inheritdoc />
-        public async UniTask<GetItemsResponse> GetItemsAsync(CancellationToken cancellationToken = default)
-        {
-            CancellationTokenSource operationCancellation = BeginOperation(cancellationToken);
-            try { return (await RequestCoreAsync(new Packet { GetItems = new GetItemsRequest() }, operationCancellation.Token)).GetItemsResp; }
-            finally { CompleteOperation(operationCancellation); }
-        }
-
-        /// <inheritdoc />
-        public async UniTask<GachaResponse> DrawGachaAsync(CancellationToken cancellationToken = default)
-        {
-            CancellationTokenSource operationCancellation = BeginOperation(cancellationToken);
-            try { return (await RequestCoreAsync(new Packet { Gacha = new GachaRequest() }, operationCancellation.Token)).GachaResp; }
-            finally { CompleteOperation(operationCancellation); }
-        }
-
-        /// <inheritdoc />
-        public async UniTask<UpdatePositionResponse> UploadPositionAsync(Vector3 position, CancellationToken cancellationToken = default)
-        {
-            CancellationTokenSource operationCancellation = BeginOperation(cancellationToken);
-            try { return (await RequestCoreAsync(new Packet { UpdatePosition = new UpdatePositionRequest { X = position.x, Y = position.y, Z = position.z } }, operationCancellation.Token)).UpdatePositionResp; }
+            try { return await RequestCoreAsync(request, operationCancellation.Token); }
             finally { CompleteOperation(operationCancellation); }
         }
 
@@ -161,7 +125,7 @@ namespace Xuan.Prometheus.Service
             networkClient.PushReceived -= OnPushReceived;
             networkClient.Disconnected -= OnDisconnected;
             WorldUnavailable = null;
-            PositionReceived = null;
+            PushReceived = null;
             lifetimeCancellation.Cancel();
             bool releaseResources;
             lock (lifecycleGate)
@@ -252,10 +216,10 @@ namespace Xuan.Prometheus.Service
             }
         }
 
-        /// <summary>按业务 Push 类型分类底层通用 Packet；当前仅公开默认房间玩家位置。</summary>
+        /// <summary>把底层通用 Packet 原样转发给订阅者；按业务类型分类是各领域 Gateway 的职责。</summary>
         private void OnPushReceived(Packet packet)
         {
-            if (packet.PlayerPosition != null) PositionReceived?.Invoke(packet.PlayerPosition);
+            PushReceived?.Invoke(packet);
         }
 
         /// <summary>接收 NetworkKit 在主线程上报的意外断线，并转换为 Gameplay 层的世界不可用状态。</summary>

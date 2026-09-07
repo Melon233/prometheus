@@ -2,6 +2,7 @@
 
 > 状态：第 0~5 期已实现（见 §19 分期路线与本目录 `README.md`），第 6 期起仍为设计稿
 > 定位：取代 `Assets/Prometheus/Gameplay/FilmSystem`，承担全部剧情演出与对话表现
+> 状态：FilmSystem 已整体移除（含 `NpcInteractionCoordinator` 与 `NpcDefinition` 的三个 Film 字段）；本文中对它的引用均为设计依据的历史说明
 > 命名空间：`Xuan.Prometheus.Narrative`
 > 日期：2026-09-05
 
@@ -577,7 +578,7 @@ public enum ActorKind
 
 解析规则：
 
-- `ActiveMember` → `Core.Gameplay.Player`
+- `ActiveMember` → `Core.Gameplay.GetSystem<ITeamSystem>().ActiveMember`
 - `Npc` → 先在 `IEntitySystem` 中按 `NpcId` 查活动实体；查不到则按 `NpcDefinition` 生成 `Stunt` 替身，退出舞台时销毁。
 - 解析结果 `ActorHandle` 暴露 `Transform`、`SkeletonAnimation`、`Animator`（均可空），叶子动作按需取用。
 - **解析失败必须在 `Stage.EnterAsync` 阶段抛出**，不允许演到一半才发现角色不存在。
@@ -745,10 +746,10 @@ FilmSystem 的 `FilmPlaybackSnapshot` 与 `IFilmSystem.SnapshotCaptured` 整体�
 | 系统 | 集成方式 |
 |---|---|
 | `IInputSystem` | `StageScope` 申请 `InputContexts.Cutscene` 租约；对话确认输入通过独立 `IInputReceiver` 上报。不再手写 `HasPressed` 长表达式，改为在 `InputFrame` 上加索引器 |
-| `ICameraSystem` | 复用 `AcquireFilmCamera` 与 `FilmCameraLease`，租约挂 `StageScope` |
+| `ICameraSystem` | 复用 `AcquireCutsceneCamera` 与 `CutsceneCameraLease`，租约挂 `StageScope` |
 | `IEntitySystem` | `ActorResolver` 查活动实体 |
 | `ITeamSystem` | 解析 `ActiveMember` 与 `TeamSlot` |
-| `INpcSystem` | `NpcInteractionCoordinator` 改为向 `INarrativeSystem` 请求剧情，不再调用 `IFilmSystem.Play` |
+| `INpcSystem` | 订阅 `NpcSystem.InteractionRequested`，由叙事适配器请求剧情并在结束时回调 `CompleteInteraction` |
 | `IQuestSystem` | 剧情通过 `Emit(...)` 发布任务事件；任务通过 `INarrativeSystem` 启动剧情。两者只经事件与接口交互，互不引用内部类型 |
 | `EffectSystem` | `Vfx` 叶子的底层 |
 | FMOD | `FmodAudioRuntime.PlayOneShot` 用于一次性事件；持续事件需补 `EventInstance` 句柄层 |

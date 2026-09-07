@@ -2,7 +2,7 @@
 
 ## 定位
 
-NpcSystem 负责 NPC 定义、运行时状态、交互入口和 NPC 领域事件；NPC 的场景显隐与 POI 生命周期由 WorldSystem 负责，EntitySystem 负责实体托管。
+NpcSystem 负责 NPC 定义、运行时状态、交互入口和 NPC 领域事件；NPC 的场景显隐与 POI 生命周期由 PoiSystem 负责，EntitySystem 负责实体托管。
 
 ## 主要组件
 
@@ -14,7 +14,7 @@ NpcSystem 负责 NPC 定义、运行时状态、交互入口和 NPC 领域事件
 
 ## 依赖规则
 
-`NpcSystem` 是程序集内部实现，由 `GameplayKit` 以 `INpcSystem` 注册。系统内部的 `NpcInteractionCoordinator` 只依赖 `IFilmSystem` 和 `IEntitySystem`，不直接操作具体 `FilmSystem`、`CameraSystem` 或 Dialogue UI；DialogueSystem 负责呈现对话并返回结果。
+`NpcSystem` 是程序集内部实现，由玩法组合根以 `INpcSystem` 注册。它**不依赖任何演出系统**：交互请求通过 `InteractionRequested` 事件发布，由叙事适配器接管；NpcSystem 不直接操作 `NarrativeSystem`、`CameraSystem` 或 Dialogue UI。
 
 ## 任务接口
 
@@ -22,21 +22,21 @@ NpcSystem 负责 NPC 定义、运行时状态、交互入口和 NPC 领域事件
 
 ## 生命周期
 
-NPC 被 WorldSystem 回收时，NpcSystem 必须先取消相关交互会话，再释放事件监听和表现引用；NPC 的持久状态不能因为表现对象回收而丢失。
+NPC 被 PoiSystem 回收时，NpcSystem 必须先取消相关交互会话，再释放事件监听和表现引用；NPC 的持久状态不能因为表现对象回收而丢失。
 
 ## 第一阶段实现
 
-第一阶段已实现 `NpcDefinition`、`NpcRuntimeState`、`NpcComponent`、`NpcEntity`、`NpcLogic` 和 `NpcSystem`。`PoiType.Npc` 已接入 WorldSystem 场景加载，`NpcSystem.InteractionRequested` 提供外部演出/对话适配入口；第二阶段在此基础上接入 Film 自动播放协调器。
+第一阶段已实现 `NpcDefinition`、`NpcRuntimeState`、`NpcComponent`、`NpcEntity`、`NpcLogic` 和 `NpcSystem`。`PoiType.Npc` 已接入 PoiSystem 场景加载，`NpcSystem.InteractionRequested` 提供外部演出/对话适配入口。
 
-## 第二阶段实现
+## 交互演出的接管方式
 
-第二阶段通过 `NpcInteractionCoordinator` 将 NPC 交互请求连接到 `FilmSystem`。`NpcSystem.AfterNew` 创建协调器并订阅 `InteractionRequested`，调用 `TryBeginInteraction` 后会自动执行以下流程：
+NpcSystem 只负责**唯一交互会话的开闭**，不负责演出本身：
 
-1. 根据 `NpcInteractionContext.EntityId` 从 `EntitySystem` 定位 `NpcEntity`。
-2. 从当前 `IGameplayKit.Player` 获取玩家绑定对象，并使用 `NpcDefinition.PlayerBindingKey` 与 `NpcBindingKey` 写入 `FilmBindingContext`。
-3. 使用 `NpcDefinition.InteractionFilm` 调用 `FilmSystem.Play`，同时向 `FilmFlowContext` 写入 `NpcId` 和 `InteractionId`，供 Timeline 轨道或后续逻辑读取。
-4. 异步等待 `FilmHandle.WaitForCompletionAsync`，在 Film 完成、停止或异常退出时统一调用 `CompleteInteraction` 释放 NPC 会话占用。
+1. `TryBeginInteraction` 建立唯一活动会话并发布 `InteractionRequested`。
+2. 叙事适配器订阅该事件，自行决定播放哪段剧情、如何绑定玩家与 NPC 对象。
+3. 演出结束后适配器调用 `INpcSystem.CompleteInteraction(entityId)` 释放会话。
+4. NPC 被回收或需要外部打断时调用 `INpcSystem.CancelInteraction(entityId)`；适配器负责停止自己启动的演出并释放输入与镜头租约。
 
-当 NPC 被场景系统回收或外部逻辑需要打断演出时，应调用 `INpcSystem.CancelInteraction(entityId)`。该接口会先停止当前 Film，再清理活动交互状态，保证输入、镜头和 Timeline 资源由 `IFilmSystem` 统一释放。
+> 历史说明：早期由内部的 `NpcInteractionCoordinator` 直接驱动 `FilmSystem` 播放 Timeline 演出，`NpcDefinition` 上也带有 `interactionFilm`、`playerBindingKey`、`npcBindingKey` 三个字段。FilmSystem 已被 NarrativeSystem 取代并整体移除，协调器与这三个字段一并删除。NpcSystem 因此退回到"只发布事实、不驱动表现"的边界，这也是它原本应有的职责范围。
 
-当 `InteractionFilm` 为空时，协调器不会启动 Film，会保留 `InteractionRequested` 的外部订阅能力，适用于由 Dialogue UI 或其他交互适配器接管的 NPC。当前阶段尚未实现真实 Dialogue UI、玩家范围触发器和多入口分支配置。
+当前阶段尚未实现真实 Dialogue UI、玩家范围触发器和多入口分支配置，叙事适配器本身也尚未接入。

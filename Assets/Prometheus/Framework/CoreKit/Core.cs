@@ -15,9 +15,7 @@ namespace Xuan.Prometheus
         private readonly XMap<Type, Kit> kits = new XMap<Type, Kit>();
         /// <summary>保存确定性的初始化顺序，并在释放时按相反顺序遍历。</summary>
         private readonly List<Kit> kitInitializationOrder = new List<Kit>();
-        /// <summary>保存当前 Core 独占的具体 AssetKit，使配置阶段不需要向下转换接口。</summary>
-        private readonly AssetKit assetKit;
-        /// <summary>标记入口参数与最后注册的 GameplayKit 已经配置完成。</summary>
+        /// <summary>标记最后注册的 GameplayKit 已经配置完成。</summary>
         private bool isConfigured;
         /// <summary>标记异步资源初始化正在进行，禁止重复启动入口流程。</summary>
         private bool isInitializing;
@@ -37,35 +35,32 @@ namespace Xuan.Prometheus
 
         /// <summary>
         /// 创建唯一 Core，并先注册 AssetKit、EventKit 和 UIKit 三个基础模块。
-        /// GameplayKit 在 Configure 中使用完整入口参数创建，并作为最后一个 Kit 注册。
+        /// GameplayKit 在 Configure 中由玩法组合根创建，并作为最后一个 Kit 注册。
         /// </summary>
         public Core()
         {
             if (Current != null) throw new InvalidOperationException("A Core instance is already active.");
             Current = this;
-            assetKit = new AssetKit();
-            Asset = assetKit;
-            EventKit eventKit = new EventKit();
-            UIKit uiKit = new UIKit();
-            RegisterKit<IAssetKit>(assetKit);
-            RegisterKit<IEventKit>(eventKit);
-            RegisterKit<IUIKit>(uiKit);
+            RegisterKit<IAssetKit>(new AssetKit());
+            RegisterKit<IEventKit>(new EventKit());
+            RegisterKit<IUIKit>(new UIKit());
         }
 
         /// <summary>所有 Kit 是否都已完成异步 AfterNewAsync 和同步 AfterNew。</summary>
         public bool IsReady { get; private set; }
 
-        /// <summary>配置 AssetKit，并使用同一组外部参数创建和最后注册 GameplayKit。</summary>
-        /// <param name="options">Entry 在入口场景加载前提供的完整玩法参数。</param>
-        public void Configure(GameplayStartupOptions options)
+        /// <summary>
+        /// 创建并注册最后一个 Kit。
+        /// Core 只接受一个玩法组合根：具体由哪些 System 组成一局完全由组合根决定，
+        /// 因此框架层不需要认识任何玩法参数类型，启动链路也不再传递任何配置值。
+        /// </summary>
+        /// <param name="installer">玩法层提供的单局组合根。</param>
+        public void Configure(IGameplaySystemInstaller installer)
         {
             ThrowIfDisposed();
-            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (installer == null) throw new ArgumentNullException(nameof(installer));
             if (isConfigured) throw new InvalidOperationException("Core can only be configured once.");
-            assetKit.Configure(options.PackageName);
-            GameplayKit gameplayKit = new GameplayKit();
-            gameplayKit.Configure(options);
-            RegisterKit<IGameplayKit>(gameplayKit);
+            RegisterKit<IGameplayKit>(new GameplayKit(installer));
             isConfigured = true;
         }
 
@@ -124,6 +119,7 @@ namespace Xuan.Prometheus
             Event = null;
             UI = null;
             Gameplay = null;
+            PersistentRoot.Reset();
             isConfigured = false;
             isInitializing = false;
             isDisposed = true;
@@ -139,6 +135,21 @@ namespace Xuan.Prometheus
             if (kits.HasKey(typeof(TContract))) throw new InvalidOperationException($"A kit is already registered as '{typeof(TContract).FullName}'.");
             kits.Add(typeof(TContract), kit);
             kitInitializationOrder.Add(kit);
+            PublishStaticEntry(kit);
+        }
+
+        /// <summary>
+        /// 把刚注册的 Kit 发布到对应静态快速入口。
+        /// 这里是静态入口在正式链路上的唯一写入点：Kit 构造函数不产生任何全局副作用，
+        /// 因此 new 一个 Kit 与把它接入当前 Core 是两件可以分别发生的事。
+        /// </summary>
+        /// <param name="kit">已经通过契约校验并加入生命周期序列的 Kit 实例。</param>
+        private static void PublishStaticEntry(Kit kit)
+        {
+            if (kit is IAssetKit assetEntry) Asset = assetEntry;
+            if (kit is IEventKit eventEntry) Event = eventEntry;
+            if (kit is IUIKit uiEntry) UI = uiEntry;
+            if (kit is IGameplayKit gameplayEntry) Gameplay = gameplayEntry;
         }
 
         /// <summary>阻止已经释放的 Core 被重新初始化或查询。</summary>

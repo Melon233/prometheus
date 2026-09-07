@@ -34,7 +34,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 193762542034150001
-      type: {class: UltEnergyGainOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: UltEnergyGainOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         amount:
           baseValueSource: 0

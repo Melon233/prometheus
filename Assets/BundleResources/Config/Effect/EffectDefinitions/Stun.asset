@@ -34,6 +34,6 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 1348142047778570253
-      type: {class: ControlStateModifierOperation, ns: Xuan.Prometheus.Effects, asm: Runtime}
+      type: {class: ControlStateModifierOperation, ns: Xuan.Prometheus.Effects, asm: Prometheus.Gameplay}
       data:
         states: 1

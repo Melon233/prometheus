@@ -110,11 +110,11 @@ namespace Xuan.Prometheus
         private bool isDisposed;
 
         /// <summary>
-        /// 创建 UI 模块并注册 Core.UI；资源访问统一通过 Core.Asset，初始化顺序保证 AssetKit 已经存在。
+        /// 创建 UI 模块；静态入口由 Core 在注册时统一发布，构造函数不产生全局副作用。
+        /// 资源访问统一通过 Core.Asset，注册顺序保证 AssetKit 先于本模块可用。
         /// </summary>
         public UIKit()
         {
-            Core.UI = this;
         }
 
         /// <summary>

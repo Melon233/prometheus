@@ -25,7 +25,6 @@ namespace Xuan.Prometheus
         private const string SsgiCameraTypeName = "MF.SSGI.SSGICamera, Assembly-CSharp";
 
         /// <summary>保存玩法入口提供的常驻根节点，使相机对象与当前 Core 生命周期一致。</summary>
-        private readonly Transform runtimeRoot;
 
         /// <summary>保存当前系统创建的运行时根对象。</summary>
         private GameObject cameraSystemRoot;
@@ -48,14 +47,14 @@ namespace Xuan.Prometheus
         /// <summary>保存由 CameraSystem 创建并动态挂接到当前上场角色的跟随参考节点。</summary>
         private GameObject followTarget;
 
-        /// <summary>保存当前由 FilmSystem 独占的演出镜头；阶段一只允许一台演出镜头接管输出。</summary>
-        private CinemachineCamera activeFilmCamera;
+        /// <summary>保存当前由 叙事流程独占的演出镜头；阶段一只允许一台演出镜头接管输出。</summary>
+        private CinemachineCamera activeCutsceneCamera;
 
         /// <summary>保存演出镜头在取得租约前的优先级，以便演出结束后无损恢复场景配置。</summary>
-        private int activeFilmCameraOriginalPriority;
+        private int activeCutsceneCameraOriginalPriority;
 
         /// <summary>保存当前有效的演出镜头租约，用于拒绝未定义的并行镜头接管。</summary>
-        private FilmCameraLease activeFilmCameraLease;
+        private CutsceneCameraLease activeCutsceneCameraLease;
 
         /// <summary>保存当前玩法世界的实体查询入口。</summary>
         private IEntitySystem entitySystem;
@@ -64,10 +63,8 @@ namespace Xuan.Prometheus
         private bool isDisposed;
 
         /// <summary>使用玩法入口的常驻根节点创建相机系统配置。</summary>
-        /// <param name="runtimeRoot">承载当前单局运行时对象的根节点。</param>
-        public CameraSystem(Transform runtimeRoot)
+        public CameraSystem()
         {
-            this.runtimeRoot = runtimeRoot != null ? runtimeRoot : throw new ArgumentNullException(nameof(runtimeRoot));
         }
 
         /// <summary>获取当前单局负责实际渲染的 Unity Camera。</summary>
@@ -77,21 +74,21 @@ namespace Xuan.Prometheus
         public CinemachineCamera FollowCamera => followCamera;
 
         /// <summary>临时提高一台 Cinemachine 演出镜头的优先级，并返回负责恢复原值的独占租约。</summary>
-        /// <param name="filmCamera">由当前演出绑定提供的 Cinemachine 镜头。</param>
+        /// <param name="cutsceneCamera">由当前演出绑定提供的 Cinemachine 镜头。</param>
         /// <param name="priority">演出期间使用且必须高于普通跟随镜头的优先级。</param>
         /// <returns>演出结束时必须释放的镜头租约。</returns>
-        public FilmCameraLease AcquireFilmCamera(CinemachineCamera filmCamera, int priority)
+        public CutsceneCameraLease AcquireCutsceneCamera(CinemachineCamera cutsceneCamera, int priority)
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CameraSystem));
-            if (filmCamera == null) throw new ArgumentNullException(nameof(filmCamera));
+            if (cutsceneCamera == null) throw new ArgumentNullException(nameof(cutsceneCamera));
             int gameplayPriority = followCamera != null ? followCamera.Priority.Value : GameplayFollowCameraPriority;
-            if (priority <= gameplayPriority) throw new ArgumentOutOfRangeException(nameof(priority), priority, "Film camera priority must be greater than the gameplay follow camera priority.");
-            if (activeFilmCameraLease != null) throw new InvalidOperationException("CameraSystem phase one supports only one active film camera lease.");
-            activeFilmCamera = filmCamera;
-            activeFilmCameraOriginalPriority = filmCamera.Priority.Value;
-            activeFilmCamera.Priority = priority;
-            activeFilmCameraLease = new FilmCameraLease(this);
-            return activeFilmCameraLease;
+            if (priority <= gameplayPriority) throw new ArgumentOutOfRangeException(nameof(priority), priority, "Cutscene camera priority must be greater than the gameplay follow camera priority.");
+            if (activeCutsceneCameraLease != null) throw new InvalidOperationException("CameraSystem phase one supports only one active film camera lease.");
+            activeCutsceneCamera = cutsceneCamera;
+            activeCutsceneCameraOriginalPriority = cutsceneCamera.Priority.Value;
+            activeCutsceneCamera.Priority = priority;
+            activeCutsceneCameraLease = new CutsceneCameraLease(this);
+            return activeCutsceneCameraLease;
         }
 
         /// <summary>创建完整相机运行时对象并在初始小队成员发布前订阅切换事件。</summary>
@@ -101,15 +98,15 @@ namespace Xuan.Prometheus
             entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             CreateCameraObjects();
             PrometheusRenderQualityController.QualityChanged += OnRenderQualityChanged;
-            Core.Event.AddListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            Core.Event.AddListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
         }
 
         /// <summary>释放小队事件和全部系统创建的运行时对象；角色 Prefab 不再持有任何相机资源。</summary>
         public override void Dispose()
         {
             if (isDisposed) return;
-            activeFilmCameraLease?.Dispose();
-            Core.Event.RemoveListener<ActiveTeamMemberChangedEvent>(Event.ActiveTeamMemberChanged, OnActiveTeamMemberChanged);
+            activeCutsceneCameraLease?.Dispose();
+            Core.Event.RemoveListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
             PrometheusRenderQualityController.QualityChanged -= OnRenderQualityChanged;
             DestroyRuntimeObject(followTarget);
             DestroyRuntimeObject(cameraSystemRoot);
@@ -124,16 +121,16 @@ namespace Xuan.Prometheus
             isDisposed = true;
         }
 
-        /// <summary>由 FilmCameraLease 归还当前演出镜头并恢复申请租约前的优先级。</summary>
+        /// <summary>由 CutsceneCameraLease 归还当前演出镜头并恢复申请租约前的优先级。</summary>
         /// <param name="lease">需要与当前活动租约完全一致的归还凭据。</param>
-        internal void ReleaseFilmCamera(FilmCameraLease lease)
+        internal void ReleaseCutsceneCamera(CutsceneCameraLease lease)
         {
-            if (!ReferenceEquals(activeFilmCameraLease, lease)) return;
-            if (activeFilmCamera != null) activeFilmCamera.Priority = activeFilmCameraOriginalPriority;
-            activeFilmCameraLease.Invalidate();
-            activeFilmCameraLease = null;
-            activeFilmCamera = null;
-            activeFilmCameraOriginalPriority = 0;
+            if (!ReferenceEquals(activeCutsceneCameraLease, lease)) return;
+            if (activeCutsceneCamera != null) activeCutsceneCamera.Priority = activeCutsceneCameraOriginalPriority;
+            activeCutsceneCameraLease.Invalidate();
+            activeCutsceneCameraLease = null;
+            activeCutsceneCamera = null;
+            activeCutsceneCameraOriginalPriority = 0;
         }
 
         /// <summary>收到上场成员变化后，把唯一跟随参考节点迁移到新角色并立即对齐旧 Prefab 相机的局部姿态。</summary>
@@ -154,7 +151,7 @@ namespace Xuan.Prometheus
         private void CreateCameraObjects()
         {
             cameraSystemRoot = new GameObject("[CameraSystem]");
-            cameraSystemRoot.transform.SetParent(runtimeRoot, false);
+            cameraSystemRoot.transform.SetParent(PersistentRoot.Shared, false);
             GameObject outputCameraObject = new GameObject("Main Camera");
             outputCameraObject.tag = "MainCamera";
             outputCameraObject.transform.SetParent(cameraSystemRoot.transform, false);

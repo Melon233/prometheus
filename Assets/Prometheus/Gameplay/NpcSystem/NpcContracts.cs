@@ -16,17 +16,13 @@ namespace Xuan.Prometheus.Npc
     /// <summary>描述一次 NPC 交互请求，供对话、演出和任务适配器消费。</summary>
     public readonly struct NpcInteractionContext
     {
-        /// <summary>创建一份不暴露 NpcLogic 内部状态的交互请求。</summary>
-        public NpcInteractionContext(int entityId, string poiId, string npcId, string interactionId)
+        /// <summary>创建一份以稳定 POI Id 为键的交互请求。</summary>
+        public NpcInteractionContext(string poiId, string npcId, string interactionId)
         {
-            EntityId = entityId;
             PoiId = poiId;
             NpcId = npcId;
             InteractionId = interactionId;
         }
-
-        /// <summary>获取当前单局 NPC 实体编号。</summary>
-        public int EntityId { get; }
 
         /// <summary>获取承载 NPC 的世界 POI 标识。</summary>
         public string PoiId { get; }

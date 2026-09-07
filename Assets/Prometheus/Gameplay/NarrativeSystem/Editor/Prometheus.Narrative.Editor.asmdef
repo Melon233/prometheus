@@ -2,7 +2,9 @@
     "name": "Prometheus.Narrative.Editor",
     "rootNamespace": "Xuan.Prometheus.Narrative.Editor",
     "references": [
-        "Runtime"
+        "Prometheus.Framework",
+        "Prometheus.Gameplay",
+        "Prometheus.UI"
     ],
     "includePlatforms": [
         "Editor"

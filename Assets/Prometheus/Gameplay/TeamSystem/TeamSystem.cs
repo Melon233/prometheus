@@ -13,6 +13,9 @@ namespace Xuan.Prometheus
         /// <summary>定义当前本地小队固定支持的上场角色配置数量。</summary>
         public const int Capacity = 3;
 
+        /// <summary>每个固定小队槽位使用的角色预制体 YooAsset 地址；数量必须与 Capacity 一致。</summary>
+        public static readonly string[] MemberAddresses = { "Yefa", "Yousaer", "Senyin" };
+
         /// <summary>保存三个固定槽位的运行时成员数据。</summary>
         private readonly TeamMemberRuntime[] members = new TeamMemberRuntime[Capacity];
 
@@ -254,7 +257,7 @@ namespace Xuan.Prometheus
         /// <summary>通知所有观察者切换 EntityId；HUD 随后通过 EntitySystem 立即读取新成员当前字段。</summary>
         private void PublishActiveMemberTransition(int previousEntityId, int currentEntityId, int previousSlotIndex, int currentSlotIndex)
         {
-            Core.Event.Invoke(Event.ActiveTeamMemberChanged, new ActiveTeamMemberChangedEvent(previousEntityId, currentEntityId, previousSlotIndex, currentSlotIndex));
+            Core.Event.Invoke(new ActiveTeamMemberChangedEvent(previousEntityId, currentEntityId, previousSlotIndex, currentSlotIndex));
         }
 
         /// <summary>捕获切换瞬间的位置、朝向和速度，使新成员在同一战斗位置无缝接管。</summary>

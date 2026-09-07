@@ -33,7 +33,7 @@ namespace Xuan.Prometheus.Logic
                 binder.Validate();
                 binder.BindHost(Entity);
                 gameObjectComponent.Bind(instance, binder);
-                Entity.bindGo = instance;
+                Entity.BindGameObject(instance);
                 published = true;
                 Entity.BindComponents(binder);
             }
@@ -73,7 +73,7 @@ namespace Xuan.Prometheus.Logic
             Entity.UnbindComponents();
             if (binder != null) binder.UnbindHost(Entity);
             gameObjectComponent.Clear();
-            Entity.bindGo = null;
+            Entity.BindGameObject(null);
             if (ownership == GameObjectOwnership.Spawned && instance != null)
             {
                 if (Application.isPlaying) UnityEngine.Object.Destroy(instance, Entity.DisposeDelay);

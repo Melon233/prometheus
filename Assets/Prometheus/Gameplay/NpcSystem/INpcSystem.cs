@@ -1,4 +1,5 @@
 using System;
+using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Npc
 {
@@ -12,12 +13,12 @@ namespace Xuan.Prometheus.Npc
         NpcInteractionContext? ActiveInteraction { get; }
 
         /// <summary>尝试为指定 NPC 创建唯一交互会话。</summary>
-        bool TryBeginInteraction(NpcEntity entity);
+        bool TryBeginInteraction(PoiMono npc);
 
-        /// <summary>完成指定实体的活动交互。</summary>
-        bool CompleteInteraction(int entityId);
+        /// <summary>完成指定 POI 的活动交互。</summary>
+        bool CompleteInteraction(string poiId);
 
-        /// <summary>取消指定实体的活动交互。</summary>
-        bool CancelInteraction(int entityId);
+        /// <summary>取消指定 POI 的活动交互。</summary>
+        bool CancelInteraction(string poiId);
     }
 }

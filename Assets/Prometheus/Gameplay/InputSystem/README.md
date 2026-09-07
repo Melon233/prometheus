@@ -8,21 +8,21 @@
 
 ## 快捷键链路
 
-`UnityInputActionSource` 在运行时创建 `Gameplay` Action Map，采样键盘、鼠标和手柄并生成 `InputFrame`。`InputSystem` 按 `InputContext`、绑定优先级和 `InputDeliveryMode` 分发动作。HUD 打开类快捷键交给独立 `HudCommandSystem.ReceiveInput`，小队数字键交给 `TeamSystem.ReceiveInput`，玩法动作交给当前上场实体的 `InputComponent`。
+`UnityInputActionSource` 在运行时创建 `Gameplay` Action Map，采样键盘、鼠标和手柄并生成 `InputFrame`。`InputSystem` 按 `InputContext`、绑定优先级和 `InputDeliveryMode` 分发动作。小队数字键交给 `TeamSystem.ReceiveInput`，玩法动作交给当前上场实体的 `InputComponent`。
 
 `InputSystem` 和 `EntityInputReceiver` 不保存或注入 `IGameplayKit`。Entity 输入适配器只保存目标 `EntityId`，构造时通过 `Core.Gameplay.GetSystem<IEntitySystem>()` 取得当前实体系统，分发时按编号查询实体；System 之间的访问同样从 `Core.Gameplay` 开始，并且只查询接口契约。
 
-HUD 当前快捷键为：`L` 打开抽奖、`M` 打开小地图、`J` 打开任务、`P` 打开菜单、`G` 打开引导、`F5` 打开活动、`C` 打开角色、`B` 打开背包。数字键 `1`、`2`、`3` 切换三个固定小队槽位。技能为 `E`，大招为 `R`，跳跃为 `Space`，闪避为鼠标右键，鼠标左键只有在 GameView 屏幕范围内且未命中 UI 时才触发普通攻击；SceneView 和编辑器其他区域的点击不会进入玩法攻击。
+HUD 界面打开类快捷键已整体移除（连同 `HudCommandSystem`），界面只能由 HUD 按钮点击打开。数字键 `1`、`2`、`3` 切换三个固定小队槽位。技能为 `E`，大招为 `R`，跳跃为 `Space`，闪避为鼠标右键，鼠标左键只有在 GameView 屏幕范围内且未命中 UI 时才触发普通攻击；SceneView 和编辑器其他区域的点击不会进入玩法攻击。
 
 ## UI Button 链路
 
 `UIPanelCodeGenerator` 为 Binder 中的普通 `Button` 生成抽象点击回调，并由生成的 `PanelBase` 自动注册和移除监听。业务代码只实现对应的 `OnXxxClick`，Prefab 的 Button `On Click()` 持久化列表保持为空。与 `OnScreenStick` 同节点的 Button 不生成点击回调，因为该节点表达连续拖拽而不是离散点击。
 
-界面打开类按钮向 `HudCommandSystem.Execute` 提交命令，快捷键由该系统独立监听并调用同一入口，HudPanel 本身不实现 `IInputReceiver`。头像按钮直接调用 `TeamSystem.SwitchToSlot`。攻击、技能、大招、闪避和跳跃按钮调用 `InputSystem.QueueEntityButtonActions`，定向记录当前上场实体和离散动作；下一次输入阶段先清理上一帧输入，再通过 `InputComponent.ApplyButtonActions` 写入命令，随后 Entity Logic 在同一玩法帧消费。该定向命令不参与 InputAction 控制权仲裁。
+界面打开类按钮在 HudPanel 的点击回调中直接执行界面行为，不经过任何命令系统；HudPanel 本身不实现 `IInputReceiver`。头像按钮直接调用 `TeamSystem.SwitchToSlot`。攻击、技能、大招、闪避和跳跃按钮调用 `InputSystem.QueueEntityButtonActions`，定向记录当前上场实体和离散动作；下一次输入阶段先清理上一帧输入，再通过 `InputComponent.ApplyButtonActions` 写入命令，随后 Entity Logic 在同一玩法帧消费。该定向命令不参与 InputAction 控制权仲裁。
 
 ## 生命周期
 
-`HudCommandSystem` 在单局初始化时申请 `HudCommands` 控制租约，并在系统释放时归还；该生命周期不依赖 HudPanel 是否打开。HUD 打开时只获取点击需要的命令系统、战斗输入系统和小队系统，缓存关闭时释放字段监听，最终解绑时清空系统引用。UI 战斗点击命令在 `InputSystem` 每次输入阶段处理后清空，目标实体已经离开运行世界时该次点击随目标生命周期结束。
+HUD 打开时只获取点击需要的战斗输入系统和小队系统，缓存关闭时释放字段监听，最终解绑时清空系统引用。UI 战斗点击命令在 `InputSystem` 每次输入阶段处理后清空，目标实体已经离开运行世界时该次点击随目标生命周期结束。
 
 ## 扩展约定
 

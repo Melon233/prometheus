@@ -48,7 +48,7 @@
 | 6 | `PublishEvent` | 发奖回调若写背包并回抛物品事件，会在 `foreach` 内重入，无守卫 | **Q4/§6**：失效累积到帧末统一 flush，动作永不嵌套在变量写入里 |
 | 7 | `QuestEventType` | 封闭枚举开在核心契约上，加一种触发方式就要改核心并全量重编译 | 事件总线用「名字 + 载荷」，零枚举（§5.1） |
 
-另记：`NpcRuntimeState.Stage` 同样是从未被读写的死字段，`NpcDefinition.InteractionFilm` 仍硬引用将死的 `FilmSystem`。本次重写应顺手接管这两处（§7.3）。
+另记：`NpcRuntimeState.Stage` 同样是从未被读写的死字段。`FilmSystem` 与 `NpcDefinition.InteractionFilm` 已随 NarrativeSystem 取代 FilmSystem 一并移除，本次重写只需接管 `Stage`（§7.3）。
 
 ---
 
@@ -391,7 +391,7 @@ public enum QuestGuideKind { None, Npc, Position, Poi, Group }
 
 ### 7.3 NPC 对话分流
 
-这是任务系统与剧情系统的主要接缝，也是替换 `NpcDefinition.InteractionFilm`（当前硬引用将死的 `FilmSystem`）的地方。
+这是任务系统与剧情系统的主要接缝。`NpcDefinition.InteractionFilm` 及其绑定键字段已随 FilmSystem 一并移除，NPC 交互改由 `NpcSystem.InteractionRequested` 交给叙事适配器。
 
 ```csharp
 [Serializable]
@@ -410,7 +410,7 @@ public sealed class DialogueBinding
 
 这是**声明式绑定**（Q1 的第一类），不是动作——NPC 该说什么话永远是当前任务状态的纯函数，读档、回滚、重新进场景都自动正确。
 
-`NpcSystem` 需要的改动：`NpcDefinition` 去掉 `interactionFilm` / `playerBindingKey` / `npcBindingKey` 三个 Film 时代的字段，`NpcLogic.OnInteract` 改为向任务系统查询对话绑定。`NpcRuntimeState.Stage`（当前是死字段）转为 `npc.stage(id)` 投影的后备存储，由 `SetNpcStageAction` 写。
+`NpcSystem` 需要的改动：三个 Film 时代的字段（`interactionFilm` / `playerBindingKey` / `npcBindingKey`）已随 FilmSystem 移除；剩余改动是 `NpcLogic.OnInteract` 改为向任务系统查询对话绑定。`NpcRuntimeState.Stage`（当前是死字段）转为 `npc.stage(id)` 投影的后备存储，由 `SetNpcStageAction` 写。
 
 ---
 
@@ -498,8 +498,8 @@ QuestSystem/
 |---|---|---|
 | 1 | 内核：定义模型、条件求值、步骤推进、快照、校验器 | 纯 EditMode 可测，零 Unity 运行时依赖 |
 | 2 | 事件总线 + 触发器 + 各系统发布方接入 | 「击败 N 只怪」端到端可跑 |
-| 3 | 一次性动作 + 奖励 + 对话绑定 + 剧情触发 | 与 `NarrativeSystem` 打通，替换 `NpcDefinition.InteractionFilm` |
-| 4 | `WorldGroup`/`Suite` + 声明式世界绑定 | **剧情推进改变世界**；动 `WorldSystem` 导出管线 |
+| 3 | 一次性动作 + 奖励 + 对话绑定 + 剧情触发 | 与 `NarrativeSystem` 打通，接管 `NpcSystem.InteractionRequested` |
+| 4 | `WorldGroup`/`Suite` + 声明式世界绑定 | **剧情推进改变世界**；动 `PoiSystem` 导出管线 |
 | 5 | UI：任务列表、追踪、导航罗盘与地图标记 | |
 | 6 | 编辑器窗口 | |
 | 7 | 章节、限时、每日委托、声望 | |
@@ -516,7 +516,7 @@ QuestSystem/
 | 事件名是字符串 | 拼错不编译报错 | 常量类注册清单 + 校验第 8 条 |
 | 推进有一帧延迟 | 帧末 flush 的代价 | 需要即时性的地方调 `FlushNow()` |
 | 表达式求值成本 | 条件多时每次 flush 的求值量 | 倒排索引只重算相关步骤；表达式已有编译缓存 |
-| `WorldGroup` 要动场景数据 | 第 4 期会改 `WorldSystem` 导出管线，且 POI 是服务器权威 | §4.3 已界定正交边界；沿用 POI 的 UUID 分配机制，不发明第二套 |
+| `WorldGroup` 要动场景数据 | 第 4 期会改 `PoiSystem` 导出管线，且 POI 是服务器权威 | §4.3 已界定正交边界；沿用 POI 的 UUID 分配机制，不发明第二套 |
 | 服务器权威迁移 | 任务状态最终大概率要服务器权威，但服务器是 Go，C# 代码搬不过去 | 保持内核零 Unity 依赖、零 I/O、纯函数决策——能搬的是**模型**不是代码；现实收益是可测试性 |
 | 章节 UI 与「章节开启」演出 | 未设计 | 第 7 期，纯表现，走 `NarrativeSystem` |
 

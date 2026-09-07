@@ -2,7 +2,7 @@
 
 ## 文档状态
 
-本文描述 GameplayKit、Entity、Logic、Component 与 Unity GameObject 的当前架构。PlayerEntity、SlimeEntity 及其四个正式 Prefab 已完成根 Binder 和纯 C# ELC 迁移；`Entity.bindGo` 暂时作为旧 Logic 的只读兼容访问面保留，但实例化、绑定和释放责任已经归属 `GameObjectLogic`。
+本文描述 GameplayKit、Entity、Logic、Component 与 Unity GameObject 的当前架构。PlayerEntity、SlimeEntity 及其四个正式 Prefab 已完成根 Binder 和纯 C# ELC 迁移；`Entity.bindGo` 已收敛为只读属性（`protected set`），实体子类可在构造阶段绑定既有场景对象，运行期的接管与解绑一律经由 `Entity.BindGameObject`，实例化、绑定和释放责任归属 `GameObjectLogic`。
 
 ## 核心决策
 
@@ -36,6 +36,23 @@ Core
 ```
 
 Entity 拥有 GameObject 生命周期，`Core.Asset` 负责实际资源实例化，EntitySystem 负责生成事务、EntityId、调度和回滚。外部只提交 Entity 类型与出生参数，不接触 Prefab 实例和内部绑定引用。
+
+注意这棵树表达的是**所有权**而非依赖：`GameplayKit` 位于框架层，并不认识 `EntitySystem` 这个具体类型。两者通过 `GameplayComposition.cs` 中的三个端口协作。
+
+## 框架层与玩法层之间的组合端口
+
+`GameplayKit` 只是"按确定顺序初始化、按相位驱动、按逆序释放"的 System 容器。它通过四个端口与玩法层协作，因此框架层不持有任何具体玩法 System 的类型依赖：
+
+| 端口 | 方向 | 职责 |
+| --- | --- | --- |
+| `IGameplaySystemInstaller` | 玩法层实现 | 回答"这一局由哪些 System 组成、初始世界里有什么"。实现是 `Bootstrap/PrometheusSystemInstaller.cs` |
+| `IGameplaySystemRegistry` | GameplayKit 实现 | 向安装器开放注册能力，不必公开 GameplayKit 具体类型 |
+| `IEntityDriver` | 实体容器实现 | 让 GameplayKit 在帧内固定相位驱动实体更新与安全回收。一个 GameplayKit 中至多存在一个实现者，由架构测试 `EntityDriver_IsUnique` 保证 |
+| `IEntityOwner` | 实体容器实现 | Entity 在注册时取得宿主引用，请求自我回收不再经过任何全局查询 |
+
+此外 `IEntityLifecycleController` 把"驱动实体生命周期跃迁"表达为**显式接口实现**：`entity.DisposeImmediately()` 无法通过编译，只有明确把实体当作自己登记对象的宿主才会写出 `((IEntityLifecycleController)entity)` 这样的转换。这把原本依赖"同一个程序集"的隐式约定，变成了可检索、可审查的显式能力声明。
+
+同理，`Entity` 通过 `IControlStateProvider` 和 `IListenerHost` 两个组件端口调度和清理，而不认识 `PropertyComponent`、`EventComponent` 这些玩法层的具体组件类型。
 
 ## 职责划分
 

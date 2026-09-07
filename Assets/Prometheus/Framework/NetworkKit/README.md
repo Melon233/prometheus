@@ -6,9 +6,9 @@ NetworkKit 将客户端网络职责分为 Transport、Framing、Protocol 和 Ses
 
 `INetworkClient` 是业务无关的基础设施契约，只公开连接、主动断连、重连、通用 `Packet` 请求关联、通用 `Packet` Push 和主线程泵送。NetworkKit 不读取具体 Packet Body 的业务含义，不处理玩家 ID、加入房间、POI、背包、抽卡或位置同步，也禁止为这些业务扩展 `INetworkClient`。
 
-Gameplay 层只有 `ServiceSystem` 可以通过 `NetworkClientFactory` 创建并持有 `INetworkClient`。ServiceSystem 负责组装和解析具体业务 Packet，并向 World、Bag 等领域系统公开纯游戏业务接口；连接、断连、重连和 `PumpEvents` 等网络基础能力不得出现在 `IServiceSystem`。
+Gameplay 层只有 `ServiceSystem` 可以通过 `NetworkClientFactory` 创建并持有 `INetworkClient`。ServiceSystem 只提供业务无关的会话与通用请求通道（`EnterWorldAsync` / `RequestAsync` / `PushReceived`）；组装和解析具体业务 Packet 由各领域自己的 Gateway（`IPoiGateway`、`IBagGateway`）负责。连接、断连、重连和 `PumpEvents` 等网络基础能力不得出现在 `IServiceSystem`。
 
-WorldSystem 启动阶段通过业务接口 `IServiceSystem.EnterWorldAsync` 进入默认世界；ServiceSystem 在该业务流程内部建立底层连接并发送 JoinRoom 请求。ServiceSystem 在自身 `OnUpdate` 中调用 `PumpEvents`，接收通用 Packet 后按业务类型分类，再通过 `IServiceSystem` 的业务事件转发给主线程订阅者。
+PoiSystem 启动阶段通过业务接口 `IServiceSystem.EnterWorldAsync` 进入默认世界；ServiceSystem 在该业务流程内部建立底层连接并发送 JoinRoom 请求。ServiceSystem 在自身 `OnUpdate` 中调用 `PumpEvents`，并把通用 Packet 原样转发到 `PushReceived`；按业务类型分类由各领域 Gateway 完成，并以强类型事件在主线程发布。
 
 同一会话可以并行发起多个请求，`NetworkSession` 用 `request_id` 关联响应并用写锁串行化帧发送；主动推送统一进入队列，只有调用 `PumpEvents` 时才在调用线程触发通用 `PushReceived`。接收或发送异常会关闭传输，并通过同样在 `PumpEvents` 线程触发的业务无关 `Disconnected` 事件通知上层；主动断连不触发该事件。主动断连保留客户端实例以便显式重连，永久释放后禁止再次连接或请求。
 

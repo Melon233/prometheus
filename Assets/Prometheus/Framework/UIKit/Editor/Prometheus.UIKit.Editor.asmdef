@@ -2,7 +2,9 @@
     "name": "Prometheus.UIKit.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:16e57f450b7e31a40b7cc5d986111bbb"
+        "Prometheus.Framework",
+        "Prometheus.Gameplay",
+        "Prometheus.UI"
     ],
     "includePlatforms": [
         "Editor"

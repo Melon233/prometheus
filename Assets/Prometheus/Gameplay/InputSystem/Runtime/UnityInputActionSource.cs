@@ -31,14 +31,6 @@ namespace Xuan.Prometheus.Input
         private readonly InputAction selectTeamMember1;
         private readonly InputAction selectTeamMember2;
         private readonly InputAction selectTeamMember3;
-        private readonly InputAction openLottery;
-        private readonly InputAction openMiniMap;
-        private readonly InputAction openQuest;
-        private readonly InputAction openMenu;
-        private readonly InputAction openGuide;
-        private readonly InputAction openEvent;
-        private readonly InputAction openCharacter;
-        private readonly InputAction openBag;
         private readonly Func<bool> isPointerOverUi;
         private bool isPointerPressConsumedByUi;
         private bool isDisposed;
@@ -79,14 +71,6 @@ namespace Xuan.Prometheus.Input
             selectTeamMember1 = AddButtonAction("SelectTeamMember1", "<Keyboard>/1");
             selectTeamMember2 = AddButtonAction("SelectTeamMember2", "<Keyboard>/2");
             selectTeamMember3 = AddButtonAction("SelectTeamMember3", "<Keyboard>/3");
-            openLottery = AddButtonAction("OpenLottery", "<Keyboard>/l");
-            openMiniMap = AddButtonAction("OpenMiniMap", "<Keyboard>/m");
-            openQuest = AddButtonAction("OpenQuest", "<Keyboard>/j");
-            openMenu = AddButtonAction("OpenMenu", "<Keyboard>/p");
-            openGuide = AddButtonAction("OpenGuide", "<Keyboard>/g");
-            openEvent = AddButtonAction("OpenEvent", "<Keyboard>/f5");
-            openCharacter = AddButtonAction("OpenCharacter", "<Keyboard>/c");
-            openBag = AddButtonAction("OpenBag", "<Keyboard>/b");
             gameplayMap.Enable();
         }
 
@@ -100,7 +84,7 @@ namespace Xuan.Prometheus.Input
         public InputFrame Sample(long frameId)
         {
             InputButtonState specialAttack = default;
-            return new InputFrame(frameId, move.ReadValue<Vector2>(), navigate.ReadValue<Vector2>(), ReadAttack(), ReadButton(skill), ReadButton(ultimate), ReadButton(dodge), ReadButton(jump), specialAttack, ReadButton(toggleSprint), ReadButton(toggleWalk), ReadButton(submit), ReadButton(cancel), ReadButton(selectTeamMember1), ReadButton(selectTeamMember2), ReadButton(selectTeamMember3), ReadButton(openLottery), ReadButton(openMiniMap), ReadButton(openQuest), ReadButton(openMenu), ReadButton(openGuide), ReadButton(openEvent), ReadButton(openCharacter), ReadButton(openBag));
+            return new InputFrame(frameId, move.ReadValue<Vector2>(), navigate.ReadValue<Vector2>(), ReadAttack(), ReadButton(skill), ReadButton(ultimate), ReadButton(dodge), ReadButton(jump), specialAttack, ReadButton(toggleSprint), ReadButton(toggleWalk), ReadButton(submit), ReadButton(cancel), ReadButton(selectTeamMember1), ReadButton(selectTeamMember2), ReadButton(selectTeamMember3));
         }
 
         /// <inheritdoc />

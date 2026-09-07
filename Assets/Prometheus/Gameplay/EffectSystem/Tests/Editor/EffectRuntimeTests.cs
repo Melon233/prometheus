@@ -3,6 +3,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using Xuan.Prometheus.Bootstrap;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
@@ -768,6 +769,8 @@ namespace Xuan.Prometheus.Effects.Tests
             AssetKit lifecycleAssetKit = new AssetKit();
             Core.Asset = lifecycleAssetKit;
             GameplayKit lifecycleGameplayKit = new GameplayKit();
+            Core.Gameplay = lifecycleGameplayKit;
+            lifecycleGameplayKit.AddSystem<IEntitySystem>(new EntitySystem());
             lifecycleGameplayKit.GetSystem<IEntitySystem>().AddEntity(targetEntity);
             try
             {
@@ -810,6 +813,7 @@ namespace Xuan.Prometheus.Effects.Tests
             finally
             {
                 lifecycleGameplayKit.Dispose();
+                Core.Gameplay = null;
                 lifecycleAssetKit.Dispose();
             }
         }
@@ -1184,18 +1188,24 @@ namespace Xuan.Prometheus.Effects.Tests
             GameObject runtimeRootObject = new GameObject("EffectTest.GameplayRoot");
             AssetKit assetKit = new AssetKit();
             Core.Asset = assetKit;
+            IEventKit previousEventKit = Core.Event;
+            EventKit eventKit = new EventKit();
+            Core.Event = eventKit;
             GameplayKit gameplayKit = new GameplayKit();
+            Core.Gameplay = gameplayKit;
             try
             {
                 Assert.That(persistentLibrary, Is.Not.Null);
-                GameplayStartupOptions options = new GameplayStartupOptions(AssetKit.DefaultPackageName, runtimeRootObject.transform, persistentLibrary, "Yefa", "Slime", Array.Empty<Transform>(), 0);
-                gameplayKit.Configure(options);
+                new PrometheusSystemInstaller(persistentLibrary).RegisterSystems(gameplayKit);
                 Assert.That(gameplayKit.GetSystem<IEffectSystem>().DefaultLibrary, Is.SameAs(persistentLibrary));
-                Assert.That(gameplayKit.GetSystem<ICombatAudioPresentationSystem>(), Is.Not.Null, "正式 GameplayKit 必须注册单局伤害音频表现系统。");
+                Assert.That(gameplayKit.GetSystem<ICombatAudioPresentationSystem>(), Is.Not.Null, "正式玩法组合根必须注册单局伤害音频表现系统。");
             }
             finally
             {
                 gameplayKit.Dispose();
+                Core.Gameplay = null;
+                eventKit.Dispose();
+                Core.Event = previousEventKit;
                 assetKit.Dispose();
                 UnityEngine.Object.DestroyImmediate(runtimeRootObject);
             }
@@ -1209,6 +1219,7 @@ namespace Xuan.Prometheus.Effects.Tests
             AssetKit assetKit = new AssetKit();
             Core.Asset = assetKit;
             GameplayKit gameplayKit = new GameplayKit();
+            Core.Gameplay = gameplayKit;
             EffectSystem effectSystem = new EffectSystem(library);
             int playCount = 0;
             FmodAudioEvent playedEvent = FmodAudioEvent.None;
@@ -1243,6 +1254,7 @@ namespace Xuan.Prometheus.Effects.Tests
             finally
             {
                 gameplayKit.Dispose();
+                Core.Gameplay = null;
                 assetKit.Dispose();
                 UnityEngine.Object.DestroyImmediate(library);
             }

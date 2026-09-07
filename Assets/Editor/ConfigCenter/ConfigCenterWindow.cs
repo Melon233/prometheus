@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Xuan.Prometheus.Editor;
@@ -19,9 +18,33 @@ namespace Xuan.Prometheus.ConfigKit.Editor
         private GUIStyle folderRowStyle;
         private Texture2D selectedRowBackground;
         private List<string> configuredRoots;
+
+        /// <summary>当前索引对应的缓存目录树，仅在索引或扫描根目录变化时重建。</summary>
+        private GroupNode groupTree;
+
+        /// <summary>当前搜索和展开状态生成的扁平行列表，供滚动视口按索引直接访问。</summary>
+        private readonly List<TreeRow> visibleRows = new List<TreeRow>();
+
+        /// <summary>当前编辑器会话中的展开目录集合，避免每次绘制读取 EditorPrefs。</summary>
+        private readonly HashSet<string> expandedGroups = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>当前搜索文本直接命中的配置集合，避免绘制阶段重复执行字符串匹配。</summary>
+        private readonly HashSet<ConfigCenterEntry> matchingEntries = new HashSet<ConfigCenterEntry>();
+
+        /// <summary>等待目录树重排完成后滚动定位的配置，避免使用搜索或展开前的旧行坐标。</summary>
+        private ConfigCenterEntry pendingScrollEntry;
         private bool showRootConfiguration;
         private const string ExpandedGroupPreferencePrefix = "Prometheus.ConfigKit.ExpandedGroup.";
         private const string ShowRootConfigurationPreferenceKey = "Prometheus.ConfigKit.ShowRootConfiguration";
+
+        /// <summary>目录树每级缩进使用的固定宽度。</summary>
+        private const float TreeIndentWidth = 16f;
+
+        /// <summary>目录折叠箭头和配置叶子占位使用的固定宽度。</summary>
+        private const float FoldoutWidth = 14f;
+
+        /// <summary>视口上下额外绘制的行数，避免滚动边界出现瞬时空白。</summary>
+        private const int VisibleRowOverscan = 2;
 
         /// <summary>打开配置中心窗口。</summary>
         [MenuItem("Prometheus/Config Center", false, 10)]
@@ -31,11 +54,11 @@ namespace Xuan.Prometheus.ConfigKit.Editor
         internal static void NotifyIndexChanged(ConfigCenterIndex updatedIndex)
         {
             ConfigCenterWindow[] windows = Resources.FindObjectsOfTypeAll<ConfigCenterWindow>();
-            foreach (ConfigCenterWindow window in windows) { window.index = updatedIndex; window.Repaint(); }
+            foreach (ConfigCenterWindow window in windows) window.ApplyIndex(updatedIndex);
         }
 
         /// <summary>初始化窗口并读取派生索引；没有索引时自动执行一次完整扫描。</summary>
-        private void OnEnable() { wantsMouseMove = true; ProjectNavigationHistory.DirectorySelectionRequested += RestoreDirectorySelection; configuredRoots = ConfigCenterIndexer.GetConfiguredRoots(); showRootConfiguration = EditorPrefs.GetBool(ShowRootConfigurationPreferenceKey, false); index = ConfigCenterIndexer.Load(); if (index.entries.Count == 0) index = ConfigCenterIndexer.Rebuild(); selectedRowStyle = BuildSelectedRowStyle(); folderRowStyle = BuildFolderRowStyle(); }
+        private void OnEnable() { wantsMouseMove = true; ProjectNavigationHistory.DirectorySelectionRequested += RestoreDirectorySelection; configuredRoots = ConfigCenterIndexer.GetConfiguredRoots(); showRootConfiguration = EditorPrefs.GetBool(ShowRootConfigurationPreferenceKey, false); index = ConfigCenterIndexer.Load(); if (index.entries.Count == 0) index = ConfigCenterIndexer.Rebuild(); selectedRowStyle = BuildSelectedRowStyle(); folderRowStyle = BuildFolderRowStyle(); RebuildGroupTree(); }
 
         /// <summary>配置中心关闭时不销毁 Unity 原生 Inspector，Inspector 生命周期由 Unity 编辑器布局管理。</summary>
         private void OnDisable() { ProjectNavigationHistory.DirectorySelectionRequested -= RestoreDirectorySelection; if (selectedRowBackground != null) DestroyImmediate(selectedRowBackground); selectedRowBackground = null; selectedRowStyle = null; folderRowStyle = null; }
@@ -43,7 +66,7 @@ namespace Xuan.Prometheus.ConfigKit.Editor
         /// <summary>绘制仅包含目录树的配置中心布局；配置详情由 Unity 独立 InspectorWindow 负责显示。</summary>
         private void OnGUI()
         {
-            if (index == null) index = ConfigCenterIndexer.Load();
+            if (index == null) ApplyIndex(ConfigCenterIndexer.Load());
             DrawRootConfiguration();
             DrawToolbar();
             DrawDirectoryTree();
@@ -54,9 +77,10 @@ namespace Xuan.Prometheus.ConfigKit.Editor
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             GUILayout.Label("搜索", GUILayout.Width(35));
-            searchText = GUILayout.TextField(searchText, GUI.skin.FindStyle("ToolbarSearchTextField") ?? EditorStyles.toolbarTextField, GUILayout.MinWidth(180));
-            showRootConfiguration = GUILayout.Toggle(showRootConfiguration, "配置", EditorStyles.toolbarButton, GUILayout.Width(55));
-            EditorPrefs.SetBool(ShowRootConfigurationPreferenceKey, showRootConfiguration);
+            string updatedSearchText = GUILayout.TextField(searchText, GUI.skin.FindStyle("ToolbarSearchTextField") ?? EditorStyles.toolbarTextField, GUILayout.MinWidth(180));
+            if (!string.Equals(updatedSearchText, searchText, StringComparison.Ordinal)) { searchText = updatedSearchText; RebuildVisibleRows(); }
+            bool updatedShowRootConfiguration = GUILayout.Toggle(showRootConfiguration, "配置", EditorStyles.toolbarButton, GUILayout.Width(55));
+            if (updatedShowRootConfiguration != showRootConfiguration) { showRootConfiguration = updatedShowRootConfiguration; EditorPrefs.SetBool(ShowRootConfigurationPreferenceKey, showRootConfiguration); }
             if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(55))) { RefreshIndex(); }
             EditorGUILayout.EndHorizontal();
         }
@@ -80,29 +104,47 @@ namespace Xuan.Prometheus.ConfigKit.Editor
         }
 
         /// <summary>保存一级目录设置并立即重建配置索引，确保目录树与当前配置同步。</summary>
-        private void SaveRootConfiguration() { ConfigCenterIndexer.SaveConfiguredRoots(configuredRoots); RefreshIndex(); }
+        private void SaveRootConfiguration() { ConfigCenterIndexer.SaveConfiguredRoots(configuredRoots); configuredRoots = ConfigCenterIndexer.GetConfiguredRoots(); RefreshIndex(); }
 
         /// <summary>重建索引并清理当前选择，避免选择项来自已移除的根目录。</summary>
-        private void RefreshIndex() { index = ConfigCenterIndexer.Rebuild(); selectedEntry = null; Repaint(); }
+        private void RefreshIndex() { ApplyIndex(ConfigCenterIndexer.Rebuild()); selectedEntry = null; }
+
+        /// <summary>应用最新索引并一次性重建目录树缓存，供主动刷新和资产导入通知共用。</summary>
+        private void ApplyIndex(ConfigCenterIndex updatedIndex) { index = updatedIndex; RebuildGroupTree(); Repaint(); }
 
         /// <summary>绘制完整配置目录树；文件夹和配置资产统一在同一棵树中展示。</summary>
         private void DrawDirectoryTree()
         {
             EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
             listScroll = EditorGUILayout.BeginScrollView(listScroll);
-            DrawGroupNode(BuildGroupTree(), 0);
+            float rowHeight = EditorGUIUtility.singleLineHeight;
+            float contentHeight = visibleRows.Count * rowHeight;
+            Rect contentRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.ExpandWidth(true), GUILayout.Height(contentHeight));
+            ScrollToPendingEntry(contentRect, rowHeight);
+            int firstVisibleRow = Mathf.Clamp(Mathf.FloorToInt(listScroll.y / rowHeight) - VisibleRowOverscan, 0, visibleRows.Count);
+            int lastVisibleRow = Mathf.Clamp(Mathf.CeilToInt((listScroll.y + position.height) / rowHeight) + VisibleRowOverscan, firstVisibleRow, visibleRows.Count);
+            for (int rowIndex = firstVisibleRow; rowIndex < lastVisibleRow; rowIndex++) { DrawTreeRow(visibleRows[rowIndex], new Rect(contentRect.x, contentRect.y + rowIndex * rowHeight, contentRect.width, rowHeight)); if (UnityEngine.Event.current.type == UnityEngine.EventType.Used) break; }
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
 
-        /// <summary>根据索引中的分组路径构建目录树；每个路径段只创建一个节点，保证目录层级稳定。</summary>
-        private GroupNode BuildGroupTree()
+        /// <summary>在扁平列表完成重建后按配置的新行号滚动，定位成功或条目消失后清理一次性请求。</summary>
+        private void ScrollToPendingEntry(Rect contentRect, float rowHeight)
+        {
+            if (pendingScrollEntry == null) return;
+            int rowIndex = visibleRows.FindIndex(row => row.entry == pendingScrollEntry);
+            if (rowIndex >= 0) GUI.ScrollTo(new Rect(contentRect.x, contentRect.y + rowIndex * rowHeight, contentRect.width, rowHeight));
+            pendingScrollEntry = null;
+        }
+
+        /// <summary>根据当前索引重建稳定目录树，并预计算排序、配置数量、展开状态和搜索结果。</summary>
+        private void RebuildGroupTree()
         {
             GroupNode root = new GroupNode("全部配置", string.Empty);
-            foreach (string scanRoot in ConfigCenterIndexer.ScanRoots) root.children.Add(scanRoot, new GroupNode(scanRoot, scanRoot));
+            foreach (string scanRoot in configuredRoots) { GroupNode rootNode = new GroupNode(scanRoot, scanRoot); root.children.Add(scanRoot, rootNode); root.orderedChildren.Add(rootNode); }
             foreach (ConfigCenterEntry entry in index.entries)
             {
-                string scanRoot = ConfigCenterIndexer.GetRootPath(entry.assetPath);
+                string scanRoot = ConfigCenterIndexer.GetRootPath(entry.assetPath, configuredRoots);
                 if (string.IsNullOrEmpty(scanRoot) || !root.children.TryGetValue(scanRoot, out GroupNode rootNode)) continue;
                 GroupNode current = rootNode;
                 string[] segments = entry.groupPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
@@ -113,45 +155,48 @@ namespace Xuan.Prometheus.ConfigKit.Editor
                 }
                 current.entries.Add(entry);
             }
-            return root;
+            root.FinalizeNode(true);
+            groupTree = root;
+            LoadExpandedGroups(root);
+            RebuildVisibleRows();
         }
 
-        /// <summary>递归绘制目录节点；节点数量包含自身及全部子目录资产，展开状态按完整路径保存。</summary>
-        private void DrawGroupNode(GroupNode node, int depth)
+        /// <summary>读取当前目录树所有节点的持久化展开状态，仅在树缓存重建时访问 EditorPrefs。</summary>
+        private void LoadExpandedGroups(GroupNode node)
         {
-            if (!string.IsNullOrWhiteSpace(searchText) && !node.ContainsSearchMatch(searchText)) return;
-            int totalCount = node.GetTotalCount();
-            bool isRoot = string.IsNullOrEmpty(node.path);
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(depth * 16f);
-            bool expanded = GetGroupExpanded(node.path);
-            Rect arrowRect = GUILayoutUtility.GetRect(14f, EditorGUIUtility.singleLineHeight, GUILayout.Width(14f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
-            bool arrowPressed = UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && arrowRect.Contains(UnityEngine.Event.current.mousePosition);
-            if (arrowPressed) { SetGroupExpanded(node.path, !expanded); UnityEngine.Event.current.Use(); Repaint(); }
-            Rect arrowVisualRect = new Rect(arrowRect.x, arrowRect.y + 2.5f, arrowRect.width, arrowRect.height - 2f);
-            EditorGUI.Foldout(arrowVisualRect, arrowPressed ? !expanded : expanded, GUIContent.none, false);
-            GUIStyle style = selectedGroup == (isRoot ? "全部配置" : node.path) ? selectedRowStyle : folderRowStyle;
-            Rect rowRect = GUILayoutUtility.GetRect(new GUIContent($"{node.name} ({totalCount})"), style, GUILayout.ExpandWidth(true), GUILayout.Height(EditorGUIUtility.singleLineHeight));
-            DrawHoverBackground(rowRect, selectedGroup == (isRoot ? "全部配置" : node.path));
-            GUI.Label(rowRect, $"{node.name} ({totalCount})", style);
-            if (!arrowPressed && UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && rowRect.Contains(UnityEngine.Event.current.mousePosition)) { selectedGroup = isRoot ? "全部配置" : node.path; selectedEntry = null; ProjectNavigationHistory.RecordDirectorySelection(selectedGroup); SetGroupExpanded(node.path, !expanded); UnityEngine.Event.current.Use(); Repaint(); }
-            EditorGUILayout.EndHorizontal();
-            if (!GetGroupExpanded(node.path)) return;
-            if (isRoot) { foreach (string scanRoot in ConfigCenterIndexer.ScanRoots) DrawGroupNode(node.children[scanRoot], depth + 1); }
-            else { foreach (GroupNode child in node.children.Values.OrderBy(value => value.name, StringComparer.Ordinal)) DrawGroupNode(child, depth + 1); }
-            foreach (ConfigCenterEntry entry in node.entries.OrderBy(value => value.displayName, StringComparer.Ordinal)) DrawEntryNode(entry, depth + 1);
+            if (!string.IsNullOrEmpty(node.path) && EditorPrefs.GetBool(ExpandedGroupPreferencePrefix + node.path, false)) expandedGroups.Add(node.path);
+            foreach (GroupNode child in node.orderedChildren) LoadExpandedGroups(child);
         }
 
-        /// <summary>读取目录节点展开状态；全部配置根节点保持展开，其余目录首次出现时默认折叠。</summary>
-        private bool GetGroupExpanded(string path)
+        /// <summary>根据缓存树、搜索结果和折叠状态生成当前需要展示的扁平行列表。</summary>
+        private void RebuildVisibleRows()
         {
-            return string.IsNullOrEmpty(path) || EditorPrefs.GetBool(ExpandedGroupPreferencePrefix + path, false);
+            visibleRows.Clear();
+            matchingEntries.Clear();
+            if (groupTree == null) return;
+            groupTree.UpdateSearch(searchText, matchingEntries);
+            AppendVisibleRows(groupTree, 0);
         }
 
-        /// <summary>持久化目录节点的展开状态，使 Unity 重启或窗口重建后仍保留用户的目录折叠习惯。</summary>
-        private static void SetGroupExpanded(string path, bool expanded)
+        /// <summary>递归追加搜索命中的展开节点；目录树变化前不会重复分配、排序或统计节点。</summary>
+        private void AppendVisibleRows(GroupNode node, int depth)
         {
-            EditorPrefs.SetBool(ExpandedGroupPreferencePrefix + path, expanded);
+            if (!node.matchesSearch) return;
+            visibleRows.Add(new TreeRow(node, depth));
+            if (!IsGroupExpanded(node.path)) return;
+            foreach (GroupNode child in node.orderedChildren) AppendVisibleRows(child, depth + 1);
+            foreach (ConfigCenterEntry entry in node.entries) if (string.IsNullOrWhiteSpace(searchText) || matchingEntries.Contains(entry)) visibleRows.Add(new TreeRow(entry, depth + 1));
+        }
+
+        /// <summary>从内存缓存读取目录展开状态；根节点始终展开。</summary>
+        private bool IsGroupExpanded(string path) { return string.IsNullOrEmpty(path) || expandedGroups.Contains(path); }
+
+        /// <summary>仅在展开状态实际变化时更新内存和 EditorPrefs，避免绘制事件产生持久化访问。</summary>
+        private void SetGroupExpanded(string path, bool expanded)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+            bool changed = expanded ? expandedGroups.Add(path) : expandedGroups.Remove(path);
+            if (changed) EditorPrefs.SetBool(ExpandedGroupPreferencePrefix + path, expanded);
         }
 
         /// <summary>判断配置条目是否匹配搜索文本；搜索覆盖显示名、类型名和资产路径。</summary>
@@ -161,19 +206,43 @@ namespace Xuan.Prometheus.ConfigKit.Editor
             return entry.displayName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 || entry.typeName.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 || entry.assetPath.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        /// <summary>绘制目录树中的配置资产叶子节点；按下鼠标左键立即选择并打开独立 Inspector。</summary>
-        private void DrawEntryNode(ConfigCenterEntry entry, int depth)
+        /// <summary>绘制视口内的一行目录或配置，视口外条目只保留总高度而不参与 GUI 绘制和命中检测。</summary>
+        private void DrawTreeRow(TreeRow row, Rect rowRect)
         {
-            if (!MatchesSearch(entry, searchText)) return;
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(depth * 16f + 14f);
-            GUIStyle style = selectedEntry == entry ? selectedRowStyle : EditorStyles.label;
-            string label = $"{entry.displayName}  [{entry.typeName}]";
-            Rect rowRect = GUILayoutUtility.GetRect(new GUIContent(label), style, GUILayout.ExpandWidth(true), GUILayout.Height(EditorGUIUtility.singleLineHeight));
-            DrawHoverBackground(rowRect, selectedEntry == entry);
-            GUI.Label(rowRect, label, style);
-            if (UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && rowRect.Contains(UnityEngine.Event.current.mousePosition)) { SelectEntry(entry); UnityEngine.Event.current.Use(); GUI.ScrollTo(rowRect); }
-            EditorGUILayout.EndHorizontal();
+            if (row.group != null) { DrawGroupRow(row, rowRect); return; }
+            Rect labelRect = new Rect(rowRect.x + row.depth * TreeIndentWidth + FoldoutWidth, rowRect.y, Mathf.Max(0f, rowRect.width - row.depth * TreeIndentWidth - FoldoutWidth), rowRect.height);
+            GUIStyle style = selectedEntry == row.entry ? selectedRowStyle : EditorStyles.label;
+            DrawHoverBackground(labelRect, selectedEntry == row.entry);
+            GUI.Label(labelRect, row.label, style);
+            if (UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && labelRect.Contains(UnityEngine.Event.current.mousePosition)) { SelectEntry(row.entry); UnityEngine.Event.current.Use(); }
+        }
+
+        /// <summary>绘制视口内的目录行，并在箭头或文字被按下时更新缓存和持久化展开状态。</summary>
+        private void DrawGroupRow(TreeRow row, Rect rowRect)
+        {
+            GroupNode node = row.group;
+            bool isRoot = string.IsNullOrEmpty(node.path);
+            bool expanded = IsGroupExpanded(node.path);
+            Rect arrowRect = new Rect(rowRect.x + row.depth * TreeIndentWidth, rowRect.y, FoldoutWidth, rowRect.height);
+            Rect labelRect = new Rect(arrowRect.xMax, rowRect.y, Mathf.Max(0f, rowRect.xMax - arrowRect.xMax), rowRect.height);
+            bool arrowPressed = UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && arrowRect.Contains(UnityEngine.Event.current.mousePosition);
+            bool labelPressed = UnityEngine.Event.current.type == UnityEngine.EventType.MouseDown && labelRect.Contains(UnityEngine.Event.current.mousePosition);
+            if (arrowPressed || labelPressed)
+            {
+                string selectedPath = isRoot ? "全部配置" : node.path;
+                if (labelPressed) { selectedGroup = selectedPath; selectedEntry = null; ProjectNavigationHistory.RecordDirectorySelection(selectedGroup); }
+                SetGroupExpanded(node.path, !expanded);
+                RebuildVisibleRows();
+                expanded = IsGroupExpanded(node.path);
+                UnityEngine.Event.current.Use();
+                Repaint();
+            }
+            Rect arrowVisualRect = new Rect(arrowRect.x, arrowRect.y + 2.5f, arrowRect.width, arrowRect.height - 2f);
+            EditorGUI.Foldout(arrowVisualRect, expanded, GUIContent.none, false);
+            string groupSelection = isRoot ? "全部配置" : node.path;
+            GUIStyle style = selectedGroup == groupSelection ? selectedRowStyle : folderRowStyle;
+            DrawHoverBackground(labelRect, selectedGroup == groupSelection);
+            GUI.Label(labelRect, row.label, style);
         }
 
         /// <summary>切换当前资产并把选择同步给 Unity 独立 InspectorWindow，不在 Config Center 内嵌绘制 Inspector。</summary>
@@ -183,6 +252,7 @@ namespace Xuan.Prometheus.ConfigKit.Editor
             selectedEntry = entry;
             searchText = string.Empty;
             EnsureExpandedPath(entry);
+            pendingScrollEntry = entry;
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(entry.assetPath);
             FocusNativeInspector();
         }
@@ -192,19 +262,20 @@ namespace Xuan.Prometheus.ConfigKit.Editor
             selectedGroup = string.IsNullOrEmpty(path) ? "全部配置" : path;
             selectedEntry = null;
             searchText = string.Empty;
+            RebuildVisibleRows();
             Repaint();
         }
 
         /// <summary>展开配置所属分组的全部父级，并在清空搜索后让目录树能够立即显示该配置。</summary>
-        private static void EnsureExpandedPath(ConfigCenterEntry entry)
+        private void EnsureExpandedPath(ConfigCenterEntry entry)
         {
-            string scanRoot = ConfigCenterIndexer.GetRootPath(entry.assetPath);
+            string scanRoot = ConfigCenterIndexer.GetRootPath(entry.assetPath, configuredRoots);
             if (string.IsNullOrEmpty(scanRoot)) return;
             string[] segments = entry.groupPath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             string currentPath = scanRoot;
-            SetGroupExpanded(string.Empty, true);
             SetGroupExpanded(currentPath, true);
             foreach (string segment in segments) { currentPath = string.IsNullOrEmpty(currentPath) ? segment : currentPath + "/" + segment; SetGroupExpanded(currentPath, true); }
+            RebuildVisibleRows();
         }
 
         /// <summary>创建绿色选中行样式；使用与普通 Label 相同的内边距，避免选中后文字横向偏移。</summary>
@@ -246,11 +317,56 @@ namespace Xuan.Prometheus.ConfigKit.Editor
             public readonly List<ConfigCenterEntry> entries = new List<ConfigCenterEntry>();
             public readonly Dictionary<string, GroupNode> children = new Dictionary<string, GroupNode>(StringComparer.Ordinal);
 
-            /// <summary>计算当前节点及所有后代节点包含的配置数量。</summary>
-            public int GetTotalCount() { return entries.Count + children.Values.Sum(child => child.GetTotalCount()); }
+            /// <summary>按照窗口显示规则预先排序的直接子目录。</summary>
+            public readonly List<GroupNode> orderedChildren = new List<GroupNode>();
 
-            /// <summary>递归判断当前目录或后代目录是否包含匹配搜索条件的配置文件。</summary>
-            public bool ContainsSearchMatch(string query) { return entries.Any(entry => MatchesSearch(entry, query)) || children.Values.Any(child => child.ContainsSearchMatch(query)); }
+            /// <summary>当前目录及全部后代拥有的配置总数。</summary>
+            public int totalCount;
+
+            /// <summary>当前目录子树是否包含当前搜索文本的匹配项。</summary>
+            public bool matchesSearch;
+
+            /// <summary>一次性排序子节点和配置，并缓存包含全部后代的配置数量；根节点保留扫描目录配置顺序。</summary>
+            public int FinalizeNode(bool preserveChildOrder)
+            {
+                if (!preserveChildOrder) { orderedChildren.Clear(); orderedChildren.AddRange(children.Values); orderedChildren.Sort((left, right) => StringComparer.Ordinal.Compare(left.name, right.name)); }
+                entries.Sort((left, right) => StringComparer.Ordinal.Compare(left.displayName, right.displayName));
+                totalCount = entries.Count;
+                foreach (GroupNode child in orderedChildren) totalCount += child.FinalizeNode(false);
+                return totalCount;
+            }
+
+            /// <summary>在搜索条件变化时遍历当前子树一次，缓存目录命中状态并收集直接命中的配置条目。</summary>
+            public bool UpdateSearch(string query, HashSet<ConfigCenterEntry> matchingEntries)
+            {
+                bool hasMatch = string.IsNullOrWhiteSpace(query);
+                if (!hasMatch) foreach (ConfigCenterEntry entry in entries) if (MatchesSearch(entry, query)) { matchingEntries.Add(entry); hasMatch = true; }
+                foreach (GroupNode child in orderedChildren) if (child.UpdateSearch(query, matchingEntries)) hasMatch = true;
+                matchesSearch = hasMatch;
+                return hasMatch;
+            }
+        }
+
+        /// <summary>表示缓存后的单行目录树数据；目录行和配置行共享固定高度与缩进绘制路径。</summary>
+        private sealed class TreeRow
+        {
+            /// <summary>创建目录行并缓存包含配置数量的显示文本。</summary>
+            public TreeRow(GroupNode group, int depth) { this.group = group; this.depth = depth; label = $"{group.name} ({group.totalCount})"; }
+
+            /// <summary>创建配置资产行并缓存显示名和类型名文本。</summary>
+            public TreeRow(ConfigCenterEntry entry, int depth) { this.entry = entry; this.depth = depth; label = $"{entry.displayName}  [{entry.typeName}]"; }
+
+            /// <summary>目录行对应的节点；配置行中为空。</summary>
+            public readonly GroupNode group;
+
+            /// <summary>配置行对应的索引条目；目录行中为空。</summary>
+            public readonly ConfigCenterEntry entry;
+
+            /// <summary>当前行相对于根节点的缩进层级。</summary>
+            public readonly int depth;
+
+            /// <summary>目录计数或配置类型已经拼接完成的显示文本。</summary>
+            public readonly string label;
         }
 
         /// <summary>打开或激活 Unity 原生 InspectorWindow；其停靠位置由当前 Editor 布局和用户拖拽决定。</summary>

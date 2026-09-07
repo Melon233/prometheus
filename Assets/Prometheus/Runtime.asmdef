@@ -2,6 +2,9 @@
     "name": "Runtime",
     "rootNamespace": "",
     "references": [
+        "Prometheus.Framework",
+        "Prometheus.Gameplay",
+        "Prometheus.UI",
         "GUID:68765d262e2128e4ab49c983f3411946",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:e34a5702dd353724aa315fb8011f08c3",
@@ -13,7 +16,6 @@
         "GUID:f06555f75b070af458a003d92f9efb00",
         "GUID:15fc0a57446b3144c949da3e2b9737a9",
         "GUID:a26c7395687cc09459d55197e67f36ab",
-        "Prometheus.NetworkKit",
         "GUID:366adb08e88a4bae8efd5b125e3ccc9f"
     ],
     "includePlatforms": [],

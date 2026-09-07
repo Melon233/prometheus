@@ -23,7 +23,9 @@ namespace Xuan.Prometheus.Tests
             assetKit = new AssetKit();
             Core.Asset = assetKit;
             gameplayKit = new GameplayKit();
-            entitySystem = (EntitySystem)gameplayKit.GetSystem<IEntitySystem>();
+            Core.Gameplay = gameplayKit;
+            entitySystem = new EntitySystem();
+            gameplayKit.AddSystem<IEntitySystem>(entitySystem);
         }
 
         /// <summary>按运行时真实依赖顺序释放 GameplayKit、AssetKit 和未被 Entity 回收的临时对象。</summary>
@@ -32,6 +34,7 @@ namespace Xuan.Prometheus.Tests
         {
             gameplayKit?.Dispose();
             gameplayKit = null;
+            Core.Gameplay = null;
             entitySystem = null;
             assetKit?.Dispose();
             assetKit = null;

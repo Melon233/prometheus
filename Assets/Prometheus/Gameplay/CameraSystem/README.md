@@ -8,7 +8,7 @@
 
 ## 运行链路
 
-1. `GameplayKit.Configure` 注册 `CameraSystem`，并把 `GameplayStartupOptions.RuntimeRoot` 作为相机运行时根节点传入。
+1. 玩法组合根 `PrometheusSystemInstaller.RegisterSystems` 注册无参构造的 `CameraSystem`；相机根节点在 `AfterNew` 时挂到 `PersistentRoot.Shared` 下。
 2. `CameraSystem.AfterNew` 创建输出 `Main Camera`、`CinemachineBrain`、`CinemachineCamera`、`CinemachineFollow` 和系统持有的 `Camera Follow Target`。
 3. `TeamSystem.InitializeMembers` 默认激活第一个成员并发布 `ActiveTeamMemberChangedEvent`。
 4. `CameraSystem` 根据事件中的 `CurrentEntityId` 查询角色场景对象，把 `Camera Follow Target` 挂到角色根节点并恢复旧相机的局部旋转。
@@ -23,7 +23,7 @@
 
 ## 扩展约束
 
-- `FilmSystem` 通过 `AcquireFilmCamera` 获取一次性的演出镜头优先级租约。租约释放后，`CameraSystem` 恢复该镜头原优先级；演出代码不得直接修改输出 `Main Camera` 或长期改变玩法跟随镜头优先级。
+- 叙事流程通过 `AcquireCutsceneCamera` 获取一次性的演出镜头优先级租约。租约释放后，`CameraSystem` 恢复该镜头原优先级；演出代码不得直接修改输出 `Main Camera` 或长期改变玩法跟随镜头优先级。
 
 - 后续增加锁定、冲刺、演出或场景镜头时，应新增 Cinemachine Camera 并由 `CameraSystem` 仲裁优先级，不能把 Camera 放回角色 Prefab。
 - 普通换人继续复用当前跟随镜头，只替换跟随目标，保证位置交接和相机控制权各自只有一个来源。

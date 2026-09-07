@@ -65,7 +65,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 6557125753684885684
-      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -91,14 +91,14 @@ MonoBehaviour:
         - rid: 6557125753684885703
         - rid: 6557125753684885704
     - rid: 6557125753684885685
-      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: open_camera
         editorPosition: {x: 0, y: 0}
         cameraId: cam_wide
         duration: 0
     - rid: 6557125753684885686
-      type: {class: AmbienceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: AmbienceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: ambience
         editorPosition: {x: 0, y: 0}
@@ -106,7 +106,7 @@ MonoBehaviour:
         fadeInSeconds: 1.5
         fadeOutSeconds: 1
     - rid: 6557125753684885687
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: intro
         editorPosition: {x: 0, y: 0}
@@ -119,14 +119,14 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885688
-      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: to_paimon
         editorPosition: {x: 0, y: 0}
         cameraId: cam_paimon
         duration: 0.8
     - rid: 6557125753684885689
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: paimon_first
         editorPosition: {x: 0, y: 0}
@@ -145,14 +145,14 @@ MonoBehaviour:
           node:
             rid: 6557125753684885706
     - rid: 6557125753684885690
-      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: to_hero
         editorPosition: {x: 0, y: 0}
         cameraId: cam_hero
         duration: 0.8
     - rid: 6557125753684885691
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: hero_approach
         editorPosition: {x: 0, y: 0}
@@ -168,7 +168,7 @@ MonoBehaviour:
           node:
             rid: 6557125753684885707
     - rid: 6557125753684885692
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: hero_hint
         editorPosition: {x: 0, y: 0}
@@ -181,7 +181,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885693
-      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: elder_run
         editorPosition: {x: 0, y: 0}
@@ -189,7 +189,7 @@ MonoBehaviour:
         - rid: 6557125753684885708
         mode: 2
     - rid: 6557125753684885694
-      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: elder_enter
         editorPosition: {x: 0, y: 0}
@@ -198,7 +198,7 @@ MonoBehaviour:
         - rid: 6557125753684885710
         mode: 0
     - rid: 6557125753684885695
-      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ParallelNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: elder_idle
         editorPosition: {x: 0, y: 0}
@@ -206,7 +206,7 @@ MonoBehaviour:
         - rid: 6557125753684885711
         mode: 2
     - rid: 6557125753684885696
-      type: {class: CinematicNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CinematicNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: altar_rise_a
         editorPosition: {x: 0, y: 0}
@@ -214,7 +214,7 @@ MonoBehaviour:
         fromCue: 
         toCue: cue_mid
     - rid: 6557125753684885697
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: elder_first
         editorPosition: {x: 0, y: 0}
@@ -227,7 +227,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885698
-      type: {class: CinematicNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CinematicNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: altar_rise_b
         editorPosition: {x: 0, y: 0}
@@ -235,14 +235,14 @@ MonoBehaviour:
         fromCue: 
         toCue: 
     - rid: 6557125753684885699
-      type: {class: CameraShakeNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CameraShakeNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: altar_shake
         editorPosition: {x: 0, y: 0}
         amplitude: 0.25
         duration: 0.35
     - rid: 6557125753684885700
-      type: {class: ChooseNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ChooseNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: elder_choice
         editorPosition: {x: 0, y: 0}
@@ -251,7 +251,7 @@ MonoBehaviour:
         - rid: 6557125753684885713
         - rid: 6557125753684885714
     - rid: 6557125753684885701
-      type: {class: IfNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: IfNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: wind_branch
         editorPosition: {x: 0, y: 0}
@@ -261,7 +261,7 @@ MonoBehaviour:
         elseBranch:
           rid: 6557125753684885716
     - rid: 6557125753684885702
-      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: grant_trust
         editorPosition: {x: 0, y: 0}
@@ -269,14 +269,14 @@ MonoBehaviour:
         kind: 2
         value: 2
     - rid: 6557125753684885703
-      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: close_camera
         editorPosition: {x: 0, y: 0}
         cameraId: cam_wide
         duration: 1.2
     - rid: 6557125753684885704
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: outro
         editorPosition: {x: 0, y: 0}
@@ -289,7 +289,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885705
-      type: {class: VfxNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: VfxNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -307,7 +307,7 @@ MonoBehaviour:
         lifetime: 2
         waitForCompletion: 0
     - rid: 6557125753684885706
-      type: {class: SfxNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SfxNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -324,7 +324,7 @@ MonoBehaviour:
             worldPosition: {x: 0, y: 0, z: 0}
           offset: {x: 0, y: 0, z: 0}
     - rid: 6557125753684885707
-      type: {class: MoveToNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: MoveToNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -338,7 +338,7 @@ MonoBehaviour:
         duration: 1.4
         faceMoveDirection: 0
     - rid: 6557125753684885708
-      type: {class: SpineAnimNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SpineAnimNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -349,7 +349,7 @@ MonoBehaviour:
         loop: 1
         speed: 1
     - rid: 6557125753684885709
-      type: {class: MoveToNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: MoveToNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -363,14 +363,14 @@ MonoBehaviour:
         duration: 1.6
         faceMoveDirection: 0
     - rid: 6557125753684885710
-      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: CameraBlendNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
         cameraId: cam_altar
         duration: 1.6
     - rid: 6557125753684885711
-      type: {class: SpineAnimNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SpineAnimNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -381,7 +381,7 @@ MonoBehaviour:
         loop: 1
         speed: 1
     - rid: 6557125753684885712
-      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: opt_ask
         editorPosition: {x: 0, y: 0}
@@ -392,7 +392,7 @@ MonoBehaviour:
         branch:
           rid: 6557125753684885717
     - rid: 6557125753684885713
-      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: opt_secret
         editorPosition: {x: 0, y: 0}
@@ -403,7 +403,7 @@ MonoBehaviour:
         branch:
           rid: 6557125753684885718
     - rid: 6557125753684885714
-      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: opt_leave
         editorPosition: {x: 0, y: 0}
@@ -414,7 +414,7 @@ MonoBehaviour:
         branch:
           rid: 6557125753684885719
     - rid: 6557125753684885715
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: paimon_learned
         editorPosition: {x: 0, y: 0}
@@ -427,7 +427,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885716
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: paimon_missed
         editorPosition: {x: 0, y: 0}
@@ -440,7 +440,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885717
-      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -449,7 +449,7 @@ MonoBehaviour:
         - rid: 6557125753684885721
         - rid: 6557125753684885722
     - rid: 6557125753684885718
-      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -457,7 +457,7 @@ MonoBehaviour:
         - rid: 6557125753684885723
         - rid: 6557125753684885724
     - rid: 6557125753684885719
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -470,7 +470,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885720
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -483,7 +483,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885721
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -496,7 +496,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885722
-      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -504,7 +504,7 @@ MonoBehaviour:
         kind: 1
         value: true
     - rid: 6557125753684885723
-      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}
@@ -517,7 +517,7 @@ MonoBehaviour:
         advanceSeconds: 1
         attachments: []
     - rid: 6557125753684885724
-      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Runtime}
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
       data:
         id: 
         editorPosition: {x: 0, y: 0}

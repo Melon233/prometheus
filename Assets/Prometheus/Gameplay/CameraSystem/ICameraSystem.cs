@@ -13,6 +13,6 @@ namespace Xuan.Prometheus
         CinemachineCamera FollowCamera { get; }
 
         /// <summary>申请一份演出镜头优先级租约。</summary>
-        FilmCameraLease AcquireFilmCamera(CinemachineCamera filmCamera, int priority);
+        CutsceneCameraLease AcquireCutsceneCamera(CinemachineCamera cutsceneCamera, int priority);
     }
 }

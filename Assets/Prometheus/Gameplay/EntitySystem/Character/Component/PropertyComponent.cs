@@ -253,7 +253,7 @@ namespace Xuan.Prometheus.Component
     /// <summary>
     /// 管理实体全部可修改属性，对外只提供已经计算完成的属性结果与 modifier 操作入口。
     /// </summary>
-    public class PropertyComponent : Component, IEntityBinderComponent
+    public class PropertyComponent : Component, IEntityBinderComponent, IControlStateProvider
     {
         /// <summary>
         /// 保存 Inspector 配置的基础属性资产；组件在 Start 阶段据此建立全部属性缓存。
