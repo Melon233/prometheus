@@ -1,0 +1,139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1017e42cfc3707040b77382c76b28d2d, type: 3}
+  m_Name: StoryDemoGreet
+  m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.Narrative.StoryGraph
+  storyId: story.demo.greet
+  stage:
+    fadeSeconds: 0.35
+    hideHud: 1
+    letterboxRatio: 0.12
+    lockInput: 1
+    freezeAiRadius: 0
+    freezeAiCenter: {x: 0, y: 0, z: 0}
+    takeCameraControl: 0
+    cameraPriority: 200
+    actors: []
+    preload: []
+    cinematics: []
+  root:
+    rid: 1678049520039755946
+  references:
+    version: 2
+    RefIds:
+    - rid: 1678049520039755946
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 1678049520039755947
+        - rid: 1678049520039755948
+        - rid: 1678049520039755949
+    - rid: 1678049520039755947
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: story.demo.greet.1
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 1678049520039755948
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: story.demo.greet.2
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 1678049520039755949
+      type: {class: ChooseNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        options:
+        - rid: 1678049520039755950
+        - rid: 1678049520039755951
+    - rid: 1678049520039755950
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        textKey: story.demo.greet.opt.help
+        condition: 
+        lockedReasonKey: 
+        once: 0
+        branch:
+          rid: 1678049520039755985
+    - rid: 1678049520039755951
+      type: {class: ChoiceOptionNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        textKey: story.demo.greet.opt.leave
+        condition: 
+        lockedReasonKey: 
+        once: 0
+        branch:
+          rid: 1678049520039755953
+    - rid: 1678049520039755952
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: story.demo.greet.help
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 1678049520039755953
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: story.demo.greet.leave
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 1678049520039755985
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 1678049520039755986
+        - rid: 1678049520039755952
+    - rid: 1678049520039755986
+      type: {class: SetVariableNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        path: var.accepted
+        kind: 1
+        value: true

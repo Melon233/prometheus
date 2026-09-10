@@ -1177,14 +1177,27 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(typeof(EffectLibrary).GetMethod("PublishFireAttack", declaredInstanceMembers), Is.Null, "EffectLibrary must not expose a test-only example attack publisher.");
         }
 
+        /// <summary>验证 EffectSystem 独占配置地址与加载职责，不重新暴露 EffectLibrary 构造注入入口。</summary>
+        [Test]
+        public void EffectSystem_OwnsLibraryAddressWithoutConstructorInjection()
+        {
+            ConstructorInfo[] constructors = typeof(EffectSystem).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (ConstructorInfo constructor in constructors)
+            {
+                foreach (ParameterInfo parameter in constructor.GetParameters()) Assert.That(parameter.ParameterType, Is.Not.EqualTo(typeof(EffectLibrary)), "EffectSystem 构造函数不得接收 EffectLibrary，配置必须由 AfterNewAsync 按内部地址加载。");
+            }
+
+            FieldInfo addressField = typeof(EffectSystem).GetField("DefaultLibraryAddress", BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(addressField, Is.Not.Null, "EffectSystem 必须在内部持有默认配置地址。");
+            Assert.That(addressField.IsPrivate, Is.True, "EffectLibrary 地址不得向组合根或其他模块公开。");
+        }
+
         /// <summary>
-        /// 验证 GameplayKit 使用启动参数注入的持久化 Effect Library，而不是创建不会响应资产修改的内存回退配置。
+        /// 验证正式组合根只负责注册 EffectSystem 与依赖它的战斗音频表现系统，不向效果系统注入配置。
         /// </summary>
         [Test]
-        public void GameplayKit_UsesConfiguredPersistentEffectLibrary()
+        public void GameplayKit_RegistersEffectSystemsWithoutConfigurationInjection()
         {
-            const string libraryPath = "Assets/BundleResources/Config/Effect/EffectLibrary.asset";
-            EffectLibrary persistentLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(libraryPath);
             GameObject runtimeRootObject = new GameObject("EffectTest.GameplayRoot");
             AssetKit assetKit = new AssetKit();
             Core.Asset = assetKit;
@@ -1195,9 +1208,8 @@ namespace Xuan.Prometheus.Effects.Tests
             Core.Gameplay = gameplayKit;
             try
             {
-                Assert.That(persistentLibrary, Is.Not.Null);
-                new PrometheusSystemInstaller(persistentLibrary).RegisterSystems(gameplayKit);
-                Assert.That(gameplayKit.GetSystem<IEffectSystem>().DefaultLibrary, Is.SameAs(persistentLibrary));
+                new PrometheusSystemInstaller().Install(gameplayKit);
+                Assert.That(gameplayKit.GetSystem<IEffectSystem>(), Is.Not.Null, "正式玩法组合根必须注册单局效果系统。");
                 Assert.That(gameplayKit.GetSystem<ICombatAudioPresentationSystem>(), Is.Not.Null, "正式玩法组合根必须注册单局伤害音频表现系统。");
             }
             finally
@@ -1215,16 +1227,15 @@ namespace Xuan.Prometheus.Effects.Tests
         [Test]
         public void CombatAudioPresentation_PlaysEveryPositiveDamageIncludingFatalExactlyOnce()
         {
-            EffectLibrary library = ScriptableObject.CreateInstance<EffectLibrary>();
             AssetKit assetKit = new AssetKit();
             Core.Asset = assetKit;
             GameplayKit gameplayKit = new GameplayKit();
             Core.Gameplay = gameplayKit;
-            EffectSystem effectSystem = new EffectSystem(library);
+            EffectSystem effectSystem = new EffectSystem();
             int playCount = 0;
             FmodAudioEvent playedEvent = FmodAudioEvent.None;
             Vector3 playedPosition = default;
-            CombatAudioPresentationSystem audioSystem = new CombatAudioPresentationSystem(FmodAudioEvent.CombatSharedHit_Flesh, (audioEvent, worldPosition) =>
+            CombatAudioPresentationSystem audioSystem = new CombatAudioPresentationSystem(effectSystem, FmodAudioEvent.CombatSharedHit_Flesh, (audioEvent, worldPosition) =>
             {
                 playCount++;
                 playedEvent = audioEvent;
@@ -1256,7 +1267,6 @@ namespace Xuan.Prometheus.Effects.Tests
                 gameplayKit.Dispose();
                 Core.Gameplay = null;
                 assetKit.Dispose();
-                UnityEngine.Object.DestroyImmediate(library);
             }
         }
 

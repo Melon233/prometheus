@@ -13,6 +13,9 @@ namespace Xuan.Prometheus.Tests
     {
         private readonly List<GameObject> cleanupObjects = new List<GameObject>();
         private AssetKit assetKit;
+
+        /// <summary>实体移除会广播 EntityRemovedEvent，因此本夹具必须提供全局事件入口。</summary>
+        private EventKit eventKit;
         private GameplayKit gameplayKit;
         private EntitySystem entitySystem;
 
@@ -22,6 +25,8 @@ namespace Xuan.Prometheus.Tests
         {
             assetKit = new AssetKit();
             Core.Asset = assetKit;
+            eventKit = new EventKit();
+            Core.Event = eventKit;
             gameplayKit = new GameplayKit();
             Core.Gameplay = gameplayKit;
             entitySystem = new EntitySystem();
@@ -36,6 +41,9 @@ namespace Xuan.Prometheus.Tests
             gameplayKit = null;
             Core.Gameplay = null;
             entitySystem = null;
+            eventKit?.Dispose();
+            eventKit = null;
+            Core.Event = null;
             assetKit?.Dispose();
             assetKit = null;
             Core.Asset = null;

@@ -8,6 +8,8 @@ using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic.Talent;
+using Xuan.Prometheus.Narrative;
+using Xuan.Prometheus.Quest;
 using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus
@@ -52,6 +54,12 @@ namespace Xuan.Prometheus
 
         /// <summary>保存独立 HUD 命令系统，普通点击只负责提交命令而不监听任何快捷键。</summary>
 
+        /// <summary>保存当前单局的任务系统，供追踪条与小地图指引点读取当前追踪目标。</summary>
+        private IQuestSystem questSystem;
+
+        /// <summary>复用追踪条文本缓冲，避免每次刷新都产生临时字符串。</summary>
+        private readonly System.Text.StringBuilder trackerBuilder = new System.Text.StringBuilder(128);
+
         /// <summary>保存当前单局的大世界 POI 系统，交互点击由它向服务器提交请求。</summary>
         private IPoiSystem worldSystem;
         private IWorldMapSystem worldMapSystem;
@@ -77,10 +85,72 @@ namespace Xuan.Prometheus
         /// <summary>标记是否已经收到有效玩家位置，避免地图资源未就绪时使用未初始化坐标。</summary>
         private bool hasMinimapPlayerPosition;
 
-        /// <summary>组件绑定完成后只订阅小队成员切换事实；具体数值统一通过 EntitySystem 观察。</summary>
+        /// <summary>组件绑定完成后订阅小队成员切换与剧情 HUD 显隐事实；具体数值统一通过 EntitySystem 观察。</summary>
         protected override void OnBind()
         {
             Core.Event.AddListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
+            Core.Event.AddListener<NarrativeHudVisibilityEvent>(OnNarrativeHudVisibilityChanged);
+            QuestTitleText.font = NarrativeUiFactory.ResolveFont();
+            QuestStepText.font = QuestTitleText.font;
+        }
+
+        /// <summary>
+        /// 按当前追踪任务刷新追踪条。
+        /// 只在任务变化时调用，不逐帧重建：追踪内容是任务状态的函数，任务不变它就不变。
+        /// </summary>
+        private void RefreshQuestTracker()
+        {
+            if (questSystem == null || !questSystem.TryGetTrackedSummary(out QuestTrackSummary summary))
+            {
+                QuestTrackerRoot.gameObject.SetActive(false);
+                return;
+            }
+            QuestTrackerRoot.gameObject.SetActive(true);
+            QuestTitleText.text = ResolveText(summary.TitleTextKey);
+            QuestStepText.text = BuildStepLine(summary);
+        }
+
+        /// <summary>拼出步骤描述与它下面的目标行进度。</summary>
+        private string BuildStepLine(QuestTrackSummary summary)
+        {
+            trackerBuilder.Clear();
+            trackerBuilder.Append(ResolveText(summary.StepDescTextKey));
+            IReadOnlyList<QuestObjectiveProgress> objectives = questSystem.GetObjectiveProgress(summary.QuestId);
+            for (int index = 0; index < objectives.Count; index++)
+            {
+                QuestObjectiveProgress objective = objectives[index];
+                if (objective.Hidden) continue;
+                // 只有配了数量的目标才显示进度数字；纯叙述目标不该出现一个 0/0。
+                if (!objective.HasProgress) continue;
+                trackerBuilder.AppendLine().Append("  ").Append(ResolveText(objective.DescTextKey));
+                trackerBuilder.Append("  ").Append((int)objective.Current).Append('/').Append((int)objective.Target);
+            }
+            return trackerBuilder.ToString();
+        }
+
+        /// <summary>把文案键解析成显示文本；文本表缺条目时退回键本身，便于当场看出缺了哪一条。</summary>
+        private static string ResolveText(string textKey)
+        {
+            if (string.IsNullOrEmpty(textKey)) return string.Empty;
+            if (!Core.Gameplay.TryGetSystem(out INarrativeSystem narrative)) return textKey;
+            return narrative.Text.Get(new TextKey(textKey));
+        }
+
+        /// <summary>任务状态或步骤变化后刷新追踪条与小地图指引点。</summary>
+        private void OnQuestChanged(QuestChanged changed)
+        {
+            RefreshQuestTracker();
+            RefreshMinimap();
+        }
+
+        /// <summary>
+        /// 剧情演出期间整体隐藏 HUD。
+        /// 玩法层只陈述「要不要显示 HUD」，隐藏哪些控件由 HUD 自己决定；这里整块 Root 收起，
+        /// 因为演出接管的是整个屏幕，逐控件裁剪没有意义。
+        /// </summary>
+        private void OnNarrativeHudVisibilityChanged(NarrativeHudVisibilityEvent eventData)
+        {
+            if (Root != null) Root.SetActive(eventData.Visible);
         }
 
         /// <summary>收到上场成员变化后保存新编号，并在面板显示期间原子替换全部字段监听。</summary>
@@ -124,6 +194,9 @@ namespace Xuan.Prometheus
             if (!Core.Gameplay.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IInputSystem)}.");
             if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IPoiSystem)}.");
             if (!Core.Gameplay.TryGetSystem(out worldMapSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IWorldMapSystem)}.");
+            if (!Core.Gameplay.TryGetSystem(out questSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IQuestSystem)}.");
+            questSystem.QuestChanged += OnQuestChanged;
+            RefreshQuestTracker();
             SubscribeMinimapEvents();
             if (worldSystem.TryGetPlayerPosition(out Vector3 currentPosition))
             {
@@ -138,6 +211,7 @@ namespace Xuan.Prometheus
         /// <summary>面板进入缓存关闭状态时释放字段监听，重新打开时会从当前值立即恢复。</summary>
         protected override void OnClose()
         {
+            if (questSystem != null) questSystem.QuestChanged -= OnQuestChanged;
             UnsubscribeMinimapEvents();
             isObserving = false;
             ReleaseValueListeners();
@@ -283,6 +357,9 @@ namespace Xuan.Prometheus
             {
                 PoiMono poi = worldSystem.AllPois[index];
                 if (poi == null || poi.Config == null || poi.IsConsumed) continue;
+                // NPC 不作为通用 POI 图标出现在地图上——与原神一致，NPC 的位置由任务指引点表达，
+                // 而不是让每个村民都在地图上占一个点。
+                if (poi.Config.PoiType == PoiType.Npc) continue;
                 // POI 根节点可能挂在带有场景偏移的父节点下；运行时实际 Transform 才是静态地图拍摄所使用的权威世界坐标。
                 Vector2 poiUv = worldMapSystem.WorldToNormalized(poi.transform.position);
                 if (!WorldMapUiMath.TryGetViewportAnchor(poiUv, viewport, out Vector2 localUv)) continue;
@@ -292,12 +369,31 @@ namespace Xuan.Prometheus
                 markerRect.anchorMax = localUv;
                 markerRect.anchoredPosition = Vector2.zero;
             }
+            RebuildMinimapGuideMarker(viewport);
             if (!hasMinimapPlayerPosition || minimapPlayerMarker == null) return;
             // 视口已经以玩家坐标为中心，玩家图标固定在视口中心，保证始终可见且不会随 POI 标记偏移。
             minimapPlayerMarker.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             minimapPlayerMarker.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             minimapPlayerMarker.rectTransform.anchoredPosition = Vector2.zero;
             minimapPlayerMarker.transform.SetAsLastSibling();
+        }
+
+        /// <summary>
+        /// 在小地图上画出当前追踪任务的指引点。
+        /// 坐标换算走与大地图完全相同的 <see cref="QuestGuideLocator"/>，两处指引点因此不可能指向不同的地方。
+        /// </summary>
+        private void RebuildMinimapGuideMarker(Rect viewport)
+        {
+            if (questSystem == null || !questSystem.TryGetTrackedSummary(out QuestTrackSummary summary)) return;
+            if (!QuestGuideLocator.TryResolve(summary.Guide, out Vector3 guidePosition)) return;
+            Vector2 guideUv = worldMapSystem.WorldToNormalized(guidePosition);
+            if (!WorldMapUiMath.TryGetViewportAnchor(guideUv, viewport, out Vector2 localUv)) return;
+            GameObject markerObject = CreateMinimapMarker($"Guide_{summary.QuestId}", WorldMapIconCatalog.LoadQuestGuideIcon(), WorldMapIconCatalog.QuestGuideColor, minimapPoiRoot, new Vector2(14f, 14f));
+            RectTransform markerRect = markerObject.GetComponent<RectTransform>();
+            markerRect.anchorMin = localUv;
+            markerRect.anchorMax = localUv;
+            markerRect.anchoredPosition = Vector2.zero;
+            markerRect.localRotation = Quaternion.Euler(0f, 0f, WorldMapIconCatalog.QuestGuideRotation);
         }
 
         /// <summary>删除旧 POI 标记但保留固定在中心的玩家标记。</summary>
@@ -447,6 +543,9 @@ namespace Xuan.Prometheus
             ReleaseValueListeners();
             UnsubscribeMinimapEvents();
             Core.Event.RemoveListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
+            Core.Event.RemoveListener<NarrativeHudVisibilityEvent>(OnNarrativeHudVisibilityChanged);
+            if (questSystem != null) questSystem.QuestChanged -= OnQuestChanged;
+            questSystem = null;
             DestroyUiResource(minimapHitArea);
             DestroyUiResource(minimapMaskMaterial);
             inputSystem = null;
@@ -506,7 +605,7 @@ namespace Xuan.Prometheus
         /// <summary>点击菜单按钮时直接执行与快捷键共用的界面业务入口。</summary>
         protected override void OnMenuButtonClick()
         {
-            Debug.Log("[HUD] 主菜单界面尚未实现。");
+            Core.UI.OpenPanel<MenuPanel>();
         }
 
         /// <summary>点击跳跃按钮时提交一次跳跃玩法命令。</summary>
@@ -548,7 +647,7 @@ namespace Xuan.Prometheus
         /// <summary>点击角色按钮时直接执行与快捷键共用的界面业务入口。</summary>
         protected override void OnCharacterButtonClick()
         {
-            Debug.Log("[HUD] 角色界面尚未实现。");
+            Core.UI.OpenPanel<CharacterPanel>();
         }
 
         /// <summary>点击背包按钮时直接执行与快捷键共用的界面业务入口。</summary>

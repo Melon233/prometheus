@@ -1,0 +1,23 @@
+{
+    "name": "Prometheus.UI.Prototype.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Prometheus.Framework",
+        "Prometheus.UIKit.Editor",
+        "SuperScrollView",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "Prometheus.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

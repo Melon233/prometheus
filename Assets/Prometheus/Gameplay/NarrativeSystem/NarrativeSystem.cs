@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Xuan.Prometheus.Expression;
 
 namespace Xuan.Prometheus.Narrative
 {
@@ -13,6 +14,9 @@ namespace Xuan.Prometheus.Narrative
     /// </summary>
     internal sealed class NarrativeSystem : XSystem, INarrativeSystem
     {
+        /// <summary>全局剧情文案表的 YooAsset 地址；由本系统自己在 AfterNewAsync 加载，是私有实现细节。</summary>
+        private const string DefaultTextMapAddress = "NarrativeText";
+
         /// <summary>保存单局唯一的剧情执行器。</summary>
         private readonly StoryRunner runner = new StoryRunner();
 
@@ -34,11 +38,16 @@ namespace Xuan.Prometheus.Narrative
         /// <inheritdoc />
         public event Action<StoryPath> BeatEntered;
 
-        /// <summary>创建剧情系统并建立空的文本表与变量存储。</summary>
-        public NarrativeSystem()
+        /// <summary>创建剧情系统并建立空的文本表与变量命名空间。</summary>
+        /// <param name="sharedVariables">
+        /// 会话共享的变量存储；为空表示自建一个只含剧情命名空间的独立存储。
+        /// 正式链路由组合根传入同一个实例，任务与剧情因此写进同一份存储、按根段各管各的，
+        /// 不再需要互相注册投影。
+        /// </param>
+        public NarrativeSystem(VariableStore sharedVariables = null)
         {
             Text = new TextMap();
-            Variables = new StoryVariables();
+            Variables = new StoryVariables(sharedVariables);
         }
 
         /// <inheritdoc />
@@ -82,6 +91,19 @@ namespace Xuan.Prometheus.Narrative
                 if (context != null) context.AutoPlay = value;
                 if (view != null) view.AutoPlay = value;
             }
+        }
+
+        /// <summary>
+        /// 载入全局剧情文案表。
+        ///
+        /// 文案是**全局**资源而不是某一段剧情的资源，因此在这里一次性载入，
+        /// 而不是每次演出各自加载；剧情图本身仍然按地址随用随载。
+        /// </summary>
+        public override async UniTask AfterNewAsync()
+        {
+            TextMapAsset textMapAsset = null;
+            await Core.Asset.LoadAssetAsync<TextMapAsset>(DefaultTextMapAddress, asset => textMapAsset = asset, error => throw new InvalidOperationException(error)).ToUniTask();
+            textMapAsset.ApplyTo(Text);
         }
 
         /// <summary>订阅执行器的节拍通知。</summary>

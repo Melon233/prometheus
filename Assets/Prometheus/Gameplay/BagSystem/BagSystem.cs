@@ -19,7 +19,14 @@ namespace Xuan.Prometheus
         private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource();
 
         /// <summary>本领域的网络适配器；按 ARCH-SYS-005 在使用点解析，不保存或注入公共 System 实例。</summary>
-        private static IBagGateway Gateway => Core.Gameplay.GetSystem<IBagGateway>();
+        private readonly IBagGateway Gateway;
+
+        /// <summary>创建背包系统。</summary>
+        /// <param name="bagGateway">负责本领域组包解包的网关。</param>
+        public BagSystem(IBagGateway bagGateway)
+        {
+            Gateway = bagGateway ?? throw new System.ArgumentNullException(nameof(bagGateway));
+        }
 
         /// <summary>背包物品列表的变化版本；UI 通过 Listen 监听它并在变化时重新读取列表。</summary>
         public ModifiableProperty RevisionProperty => revision;

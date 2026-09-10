@@ -132,6 +132,21 @@ namespace Xuan.Prometheus
         protected global::SuperScrollView.LoopListView2 InteractBar { get; private set; }
 
         /// <summary>
+        /// 获取 Binder 中名为 QuestTrackerRoot 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.RectTransform QuestTrackerRoot { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 QuestTitleText 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Text QuestTitleText { get; private set; }
+
+        /// <summary>
+        /// 获取 Binder 中名为 QuestStepText 的强类型组件引用。
+        /// </summary>
+        protected global::UnityEngine.UI.Text QuestStepText { get; private set; }
+
+        /// <summary>
         /// 处理 LotteryButton 的点击事件；按钮监听由生成基类自动注册和移除。
         /// </summary>
         protected abstract void OnLotteryButtonClick();
@@ -241,6 +256,9 @@ namespace Xuan.Prometheus
             Avatar2 = binder.Get<global::UnityEngine.UI.Button>(22, "Avatar2");
             Avatar3 = binder.Get<global::UnityEngine.UI.Button>(23, "Avatar3");
             InteractBar = binder.Get<global::SuperScrollView.LoopListView2>(24, "InteractBar");
+            QuestTrackerRoot = binder.Get<global::UnityEngine.RectTransform>(25, "QuestTrackerRoot");
+            QuestTitleText = binder.Get<global::UnityEngine.UI.Text>(26, "QuestTitleText");
+            QuestStepText = binder.Get<global::UnityEngine.UI.Text>(27, "QuestStepText");
 
             LotteryButton.onClick.AddListener(OnLotteryButtonClick);
             UltButton.onClick.AddListener(OnUltButtonClick);
@@ -307,6 +325,9 @@ namespace Xuan.Prometheus
             Avatar2 = null;
             Avatar3 = null;
             InteractBar = null;
+            QuestTrackerRoot = null;
+            QuestTitleText = null;
+            QuestStepText = null;
         }
     }
 }

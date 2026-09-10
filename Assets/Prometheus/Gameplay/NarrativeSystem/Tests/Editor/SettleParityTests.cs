@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using static Xuan.Prometheus.Narrative.Story;
+using Xuan.Prometheus.Expression;
 
 namespace Xuan.Prometheus.Narrative.Tests
 {

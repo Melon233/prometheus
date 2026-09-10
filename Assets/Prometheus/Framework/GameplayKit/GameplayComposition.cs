@@ -1,5 +1,3 @@
-using Cysharp.Threading.Tasks;
-
 namespace Xuan.Prometheus
 {
     /// <summary>
@@ -9,28 +7,31 @@ namespace Xuan.Prometheus
     /// </summary>
     public interface IGameplaySystemRegistry
     {
-        /// <summary>以接口契约注册一个单局唯一 System；注册顺序即初始化顺序，释放按其逆序执行。</summary>
+        /// <summary>
+        /// 以接口契约注册一个会话内唯一的 System，并把它按契约类型返回，供后续系统直接构造注入。
+        ///
+        /// 返回契约而不是 void，是为了让组合根写成一条依赖链：
+        /// 后一个系统要用前一个，就必须先拿到前一个的返回值，于是**注册顺序由 C# 强制**，
+        /// 不再是一条需要靠注释维护的约定，依赖成环也直接变成编译错误。
+        /// </summary>
         /// <typeparam name="TContract">对外发布的 System 接口契约。</typeparam>
         /// <param name="system">由 GameplayKit 独占并负责释放的 System 实例。</param>
-        void AddSystem<TContract>(XSystem system) where TContract : class, ISystemContract;
+        /// <returns>刚注册的实例，按契约类型返回。</returns>
+        TContract AddSystem<TContract>(XSystem system) where TContract : class, ISystemContract;
     }
 
     /// <summary>
-    /// 由玩法层实现的单局组合根。
-    /// 它回答两个问题：这一局由哪些 System 组成，以及初始世界里有什么内容。
-    /// 框架层只负责在确定的生命周期时机调用它，因此框架不需要认识任何具体玩法 System。
+    /// 由玩法层实现的会话组合根。
+    ///
+    /// 它只回答一个问题：**这一局由哪些 System 组成**。
+    /// 配置资产由各 System 在自己的 AfterNewAsync 里加载，世界内容由各 System 在世界相位建立，
+    /// 因此本接口是同步的，也不再有"创建初始内容"的步骤。
     /// </summary>
     public interface IGameplaySystemInstaller
     {
-        /// <summary>
-        /// 在 AssetKit 就绪之后、同步初始化之前执行。
-        /// 负责加载本局所需的配置资产、注册全部公共 System，以及加载玩法场景。
-        /// </summary>
+        /// <summary>构造并注册本会话的全部 System；实现内只允许 new 与注册，禁止加载资源或访问已注册系统。</summary>
         /// <param name="registry">GameplayKit 提供的注册端口。</param>
-        UniTask InstallAsync(IGameplaySystemRegistry registry);
-
-        /// <summary>在全部 System 完成同步 AfterNew 之后执行，创建本局初始实体等世界内容。</summary>
-        void CreateInitialContent();
+        void Install(IGameplaySystemRegistry registry);
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 # 剧情系统在闭环中的接入
 
-> 状态：设计稿
+> 状态：**L1 已实现**（2026-09-08）；本文同时是设计说明与落地记录
 > 关系：`NarrativeSystemDesign.md` 描述剧情系统**自身**的模型与执行器（已实现）；本文只描述把它**接进玩法**所缺的东西，是前者 §15「与现有系统的集成」的落地清单
 > 闭环的端到端定义与分期见 `../NpcSystem/NpcSystemDesign.md` §9 / §10
 > 日期：2026-09-07
@@ -21,9 +21,15 @@ NpcSystem ──> INarrativeSystem.PlayAsync(root, storyId, ct)
 
 ### 铁律 R6：剧情不认识任务
 
-> **`NarrativeSystem/` 目录下不得出现 `Xuan.Prometheus.Quest` 或 `Xuan.Prometheus.Npc` 的任何类型。**
+> **`NarrativeSystem/` 下除 `Ports/Runtime/` 外，不得出现 `Xuan.Prometheus.Quest` 或 `Xuan.Prometheus.Npc` 的任何类型；
+> `Ports/Runtime/` 作为适配层可以认识玩法系统，但整个 `NarrativeSystem/` 目录**在任何位置**都不得出现 Quest 类型。**
 
-剧情影响任务的唯一通道是**变量**（`flag.*` / `var.*`，经互投影被任务条件读取）。剧情不调用任务 API，不发任务事件，不知道任务存在。
+剧情影响任务的唯一通道是**变量**（`flag.*` / `var.*`，经共享的 `VariableStore` 被任务条件读取）。剧情不调用任务 API，不发任务事件，不知道任务存在。
+
+> **修订记录（2026-09-08）**：本条最初写作「`NarrativeSystem/` 目录下不得出现 Quest 或 Npc 的任何类型」，
+> 但 L1 落地时 `Ports/Runtime/GameplayActorResolver` 必须读 `PoiConfig.Npc.NpcId` 才能把 `ActorKind.Npc` 解析成场景对象，
+> 直接违反了原文。原文把「内核」和「适配层」混为一谈——**适配层认识两侧正是它存在的理由**，
+> 一条禁止适配器认识被适配对象的规则是写错了，不是实现写错了。现按上文重新划界：内核零业务依赖，适配层只对 Quest 封闭。
 
 对偶规则见 `../QuestSystem/QuestLoopIntegration.md` 铁律 Q6 与 `../NpcSystem/NpcSystemDesign.md` 铁律 N1。
 
@@ -112,9 +118,14 @@ UI/DialoguePanel/
 
 `StageServices`（`Stage/StageServices.cs:11`）是一个纯数据容器，构造时需要 `INarrativeScreen` 与 `IActorResolver`，其余端口是可选属性。
 
-装配落在 **NpcSystem**，而不是 NarrativeSystem 自己：端口的实现要引用 `IEntitySystem`、`ICameraSystem`、`IInputSystem`、`IUIKit`，让 NarrativeSystem 装配它们等于让它认识半个玩法层，违反铁律 R6 的精神。
+装配落在适配层的 `Ports/Runtime/NarrativeRuntimePorts`，由 `NarrativePlayback` 在每次演出开始时构造、结束时释放。
 
-编排者装配自己下单时要用的服务，这是一致的。
+**不放在剧情内核**：端口实现要引用 `ICameraSystem`、`IInputSystem`、`ITeamSystem`、`IPoiSystem`，
+让 `NarrativeSystem.cs` 装配它们等于让内核认识半个玩法层。
+
+**也不放在 NpcSystem**（本文早期版本的方案）：那样每个想演一段剧情的调用方都要自己重复一遍装配，
+而装配顺序、释放顺序、特效兜底父节点这些细节全是可以出错的地方。收在一处后，
+第三期 NpcSystem 的交互编排只需调用 `NarrativePlayback.PlayAsync`。
 
 ### 3.2 `Ports/` 目录的划分
 
@@ -129,13 +140,17 @@ Ports/
 
 ---
 
-## 4. 缺口三：`quest.*` 变量投影
+## 4. 缺口三：`quest.*` 与 `flag.*` 的互读
 
-任务条件读 `flag.*` / `var.*`，剧情条件读 `quest.*`。两个存储互为投影，各存各的档。
+> **修订记录（2026-09-10，P1）**：本节原先描述的是「两个存储互为投影」，该模型已被单一 `VariableStore` 取代。
 
-`StoryVariables.AddProjection`（`Core/StoryVariables.cs:31`）已经支持这个用法，注释里给的例子恰好就是这个场景。**因此这条接线不需要改动剧情系统一行代码。**
+任务条件读 `flag.*` / `var.*`，剧情条件读 `quest.*`。两边写进**同一份** `VariableStore`，
+各自只拥有自己的根段：`StoryVariables` 拥有 `flag` 与 `var`，`QuestVariables` 拥有 `quest`。
 
-建立时机与落点见 `../QuestSystem/QuestLoopIntegration.md` §4.2：由组合根 `PrometheusSystemInstaller` 在两个系统都注册完成后建立。
+因此谁都读得到谁，却没有人需要认识谁——所有权只由路径根段决定，铁律 R6 不受影响。
+存储由组合根创建并构造注入（见 `../QuestSystem/QuestLoopIntegration.md` §4.2），**不需要任何交叉接线**。
+
+快照仍按所有者切片，因此剧情档仍只含 `flag.*` / `var.*`。
 
 ---
 
@@ -182,17 +197,80 @@ NpcSystem.InteractAsync
 
 ## 8. 本文涉及的改动清单
 
-| 文件 | 动作 |
-|---|---|
-| `../../UI/DialoguePanel/DialoguePanel.cs` | 新建，实现 `IDialogueView` |
-| `../../UI/DialoguePanel/ChoiceOptionMono.cs` | 新建 |
-| `Ports/Scene/` | 新建目录，移入现有 5 个场景端口（连 `.meta` 一起移动） |
-| `Ports/Runtime/GameplayActorResolver.cs` | 新建 |
-| `Ports/Runtime/GameplayCameraPort.cs` | 新建 |
-| `Ports/Runtime/AssetKitPort.cs` | 新建 |
-| `Ports/Runtime/GameplayVfxPort.cs` | 新建（由 `PrefabVfxPort` 去 Mono 化而来） |
-| `Ports/Runtime/GameplayWorldPort.cs` | 新建 |
-| `INarrativeSystem.cs` / `NarrativeSystem.cs` / `Core/` / `Actions/` | **不改** |
-| `Demo/` | 不改 |
+| 文件 | 动作 | 状态 |
+|---|---|---|
+| `Ports/Scene/` | 新建目录，移入 5 个场景端口（`.meta` 一起移动，GUID 已核对与 HEAD 一致） | 完成 |
+| `Ports/Runtime/NarrativeRuntimePorts.cs` | 新建：装配全套端口为一份 `StageServices` | 完成 |
+| `Ports/Runtime/NarrativeRuntimeScreen.cs` | 新建 | 完成 |
+| `Ports/Runtime/GameplayActorResolver.cs` | 新建 | 完成 |
+| `Ports/Runtime/GameplayCameraPort.cs` | 新建 | 完成 |
+| `Ports/Runtime/AssetKitPort.cs` | 新建 | 完成 |
+| `Ports/Runtime/NarrativeVfxPort.cs` | 新建（由 `PrefabVfxPort` 去 Mono 化而来） | 完成 |
+| `Ports/Runtime/GameplayWorldPort.cs` | 新建；`FreezeAi` 未实现，见 §3 | 完成 |
+| `NarrativePlayback.cs` | 新建：演一段剧情图的统一入口 | 完成 |
+| `NarrativeEvents.cs` | 新建：`NarrativeHudVisibilityEvent` | 完成 |
+| `Dialogue/IDialogueHost.cs` | 新建：对话界面宿主端口 | 完成 |
+| `../../UI/DialoguePanel/DialoguePanel.cs` | 新建，实现 `IDialogueView` | 完成 |
+| `../../UI/DialoguePanel/DialoguePanelBase.g.cs` | 由 UIKit 代码生成器产出 | 完成 |
+| `../../UI/DialoguePanel/ChoiceOptionMono.cs` | 新建 | 完成 |
+| `../../UI/DialoguePanel/DialoguePanelHost.cs` | 新建：`IDialogueHost` 的 UI 侧实现 | 完成 |
+| `../../UI/HudPanel/HudPanel.cs` | 订阅 `NarrativeHudVisibilityEvent` 并在 `OnUnbind` 退订 | 完成 |
+| `../../Bootstrap/PrometheusSystemInstaller.cs` | 安装阶段按地址加载全局文案表 | 完成 |
+| `INarrativeSystem.cs` / `NarrativeSystem.cs` / `Core/` / `Actions/` / `Demo/` | **不改** | — |
 
-剧情系统本体零改动，这是它 `Core/` + `Ports/` 分层设计得当的直接证据——接入一个新宿主只需要新增端口实现。
+剧情系统本体零改动（`NarrativeSystem.cs` 只多了一个文案表地址常量），这是 `Core/` + `Ports/` 分层设计得当的直接证据——接入一个新宿主只需要新增端口实现。
+
+---
+
+## 9. L1 落地时新增的资产与两处取舍
+
+### 9.1 资产
+
+| 资产 | 地址 | 用途 |
+|---|---|---|
+| `Assets/BundleResources/Narrative/NarrativeText.asset` | `NarrativeText` | 全局文案表，安装阶段一次性载入 |
+| `Assets/BundleResources/Narrative/StoryDemoGreet.asset` | `StoryDemoGreet` | 冒烟剧情：两句台词 + 一次二选一分支 |
+| `Assets/BundleResources/UI/Dialogue/Prefabs/DialoguePanel.prefab` | `DialoguePanel` | 对话面板预制体 |
+
+**收集器必须显式登记**：`BundleCollectorSetting.asset` 的根收集器 `Assets/BundleResources` 用的是
+`FilterRuleName: CollectPrefab`——**只收预制体**。ScriptableObject 必须单独加一条 `CollectAll` 的收集器条目，
+`Config/Effect/EffectLibrary.asset` 就是这个先例。本次为 `Assets/BundleResources/Narrative` 增加了一条同类条目；
+漏掉它的表现是运行期 `Location is invalid: 'NarrativeText'`，而不是编辑期报错。
+
+冒烟剧情的舞台声明刻意关掉了 `takeCameraControl`、参演角色留空，因此它不依赖场景里存在任何 NPC 或具名机位，
+可以在 `MainWorld` 里独立验证「对话能演出来」这一件事。
+
+### 9.2 取舍一：正文用 uGUI `Text` 而不是 TMP
+
+工程内唯一的 TMP 字体资产是 `LiberationSans SDF`，不含中文字形，中文台词会整片显示为方块。
+`NarrativeUiFactory` 早就为此改用了动态系统字体，本面板沿用同一条路径：预制体里绑的是 `UnityEngine.UI.Text`，
+字体在 `OnInitialize` 用 `NarrativeUiFactory.ResolveFont()` 解析。
+
+这是**临时取舍，不是终态**。补一个带中文字形的 TMP 字体资产后应整体换回 TMP——届时只需改预制体与重新生成
+`DialoguePanelBase.g.cs`，面板逻辑与剧情系统都不受影响。
+
+### 9.3 Play 模式实测记录（2026-09-08）
+
+在 `MainWorld` 里对 `StoryDemoGreet` 走了一遍完整链路，逐项确认：
+
+| 环节 | 结果 |
+|---|---|
+| 启动加载全局文案表 | 7 条，语言 `zh-CN` |
+| 按地址加载剧情图、构建剧情树 | 通过 |
+| 打开 `DialoguePanel` 并注入视图 | Popup 层出现面板 |
+| 进入舞台 | `HudPanel` 被隐藏（`NarrativeHudVisibilityEvent` 往返成立） |
+| 台词显示 | 说话人「蒙德长者」、正文中文正常，字体解析为 `Microsoft YaHei UI` |
+| 点击推进到第二拍 | 通过 |
+| 选项渲染 | 两项克隆自模板，模板自身保持 inactive |
+| 选中分支演绎 | 通过 |
+| 演出结束还原 | `[NarrativePorts]` / `[NarrativeScreen]` / `[NarrativeCutsceneCamera]` 全部销毁，面板进入 Cache 层，**HUD 恢复显示** |
+| 已看过集合 | `HasSeen("story.demo.greet")` 为真，跳过随之开放 |
+
+调用方是通过反射直接调 `NarrativePlayback.PlayAsync`——玩法内的正式触发点属于 L3 的 `NpcSystem.InteractAsync`，本期不引入临时入口。
+
+### 9.4 取舍二：确认输入只走全屏按钮
+
+面板顶层压了一个透明的全屏 `AdvanceBtn` 承接推进点击，没有采样键盘。
+原因是 `GameplayWorldPort` 在演出期间只锁 `InputActionMask.Gameplay`，键盘确认要走 `IInputSystem` 的
+Navigation 动作才符合工程的输入仲裁约定，而直接采样 `Keyboard.current`（演示视图的做法）会绕过它。
+本项目主目标平台是 Android，全屏点击已经是完整交互；键盘确认留到接 Navigation 动作时一并补。

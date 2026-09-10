@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e41e0700773e67c44a2c7e0b66c99c68, type: 3}
+  m_Name: QuestLostBottle
+  m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.Quest.QuestDefinition
+  questId: q_lost_bottle
+  titleTextKey: quest.lost_bottle.title
+  category: 2
+  unlockCondition: 
+  acceptMode: 1
+  resetOnAbandon: 1
+  steps:
+  - stepId: s_find
+    descTextKey: quest.lost_bottle.step.find
+    hidden: 0
+    guide:
+      kind: 3
+      targetId: 
+      position: {x: 331.32, y: 0.02, z: 1071.18}
+    objectives:
+    - objectiveId: o_find
+      descTextKey: quest.lost_bottle.obj.find
+      progressExpr: quest.q_lost_bottle.arrived
+      targetExpr: 1
+      doneExpr: 
+      hidden: 0
+    transitions:
+    - condition: quest.q_lost_bottle.arrived >= 1
+      kind: 0
+      targetStepId: s_report
+      failReason: 
+      actions: []
+    triggers:
+    - eventName: world.entered_region
+      filter: e.regionId == "windrise"
+      variablePath: quest.q_lost_bottle.arrived
+      op: 0
+      valueExpr: 1
+    dialogueBindings: []
+    enterActions: []
+  - stepId: s_report
+    descTextKey: quest.lost_bottle.step.report
+    hidden: 0
+    guide:
+      kind: 1
+      targetId: elder
+      position: {x: 0, y: 0, z: 0}
+    objectives:
+    - objectiveId: o_report
+      descTextKey: quest.lost_bottle.obj.report
+      progressExpr: quest.q_lost_bottle.reported
+      targetExpr: 1
+      doneExpr: 
+      hidden: 0
+    transitions:
+    - condition: quest.q_lost_bottle.reported >= 1
+      kind: 1
+      targetStepId: 
+      failReason: 
+      actions: []
+    triggers:
+    - eventName: npc.talk_finished
+      filter: e.bindingId == "b_report"
+      variablePath: quest.q_lost_bottle.reported
+      op: 0
+      valueExpr: 1
+    dialogueBindings:
+    - bindingId: b_report
+      npcId: elder
+      condition: 
+      priority: 20
+      storyLocation: StoryDemoReport
+      marker: 4
+      offersQuestId: 
+    enterActions: []
+  triggers: []
+  dialogueBindings:
+  - bindingId: b_offer
+    npcId: elder
+    condition: quest.q_lost_bottle.status == "Available"
+    priority: 10
+    storyLocation: StoryDemoGreet
+    marker: 1
+    offersQuestId: q_lost_bottle
+  completeActions:
+  - rid: 1678049520039755987
+  references:
+    version: 2
+    RefIds:
+    - rid: 1678049520039755987
+      type: {class: GrantRewardAction, ns: Xuan.Prometheus.Quest, asm: Prometheus.Gameplay}
+      data:
+        actionId: a_reward
+        rerunOnRollback: 0
+        type: 0
+        rewardId: apple
+        amount: 3

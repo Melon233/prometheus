@@ -25,10 +25,16 @@ namespace Xuan.Prometheus.Input
         private long currentFrameId;
         private bool isDisposed;
 
+        /// <summary>构造注入的实体容器，用于把 UI 按钮命令写回目标实体。</summary>
+        private readonly IEntitySystem entitySystem;
+
         /// <summary>创建输入系统并注册必须存在的默认输入源。</summary>
-        public InputSystem(IInputSource defaultSource)
+        /// <param name="defaultSource">本局默认输入源。</param>
+        /// <param name="entitySystem">承载输入目标的实体容器。</param>
+        public InputSystem(IInputSource defaultSource, IEntitySystem entitySystem)
         {
             if (defaultSource == null) throw new ArgumentNullException(nameof(defaultSource));
+            this.entitySystem = entitySystem ?? throw new ArgumentNullException(nameof(entitySystem));
             DefaultSourceId = ValidateSourceId(defaultSource.SourceId, nameof(defaultSource));
             RegisterSource(defaultSource);
         }
@@ -231,7 +237,6 @@ namespace Xuan.Prometheus.Input
         private void DispatchQueuedEntityButtonActions()
         {
             if (queuedEntityButtonActions.Count == 0) return;
-            IEntitySystem entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             foreach (KeyValuePair<int, InputActionMask> command in queuedEntityButtonActions)
             {
                 if (!entitySystem.TryGetEntity(command.Key, out Entity entity) || !entity.IsActive) continue;

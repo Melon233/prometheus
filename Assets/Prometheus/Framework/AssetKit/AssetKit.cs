@@ -19,6 +19,15 @@ namespace Xuan.Prometheus.Asset
         /// </summary>
         bool IsReady { get; }
 
+        /// <summary>获取资源包启动的最新进度；启动界面据此显示阶段与百分比。</summary>
+        AssetBootProgress BootProgress { get; }
+
+        /// <summary>
+        /// 资源包启动进度发生变化时触发。
+        /// 热更界面必须订阅本事件而不是自己驱动下载：热更是资源包初始化**内部**的一个阶段。
+        /// </summary>
+        event Action<AssetBootProgress> BootProgressChanged;
+
         /// <summary>
         /// 初始化指定的 YooAsset 资源包。
         /// </summary>
@@ -93,6 +102,9 @@ namespace Xuan.Prometheus.Asset
         /// <summary>向依赖 AssetKit 的其他 Kit 广播资源包异步初始化结果。</summary>
         private readonly UniTaskCompletionSource initializationCompletion = new UniTaskCompletionSource();
 
+        /// <summary>保存最近一次上报的启动进度，供晚订阅的界面立即取到当前状态。</summary>
+        private AssetBootProgress bootProgress = new AssetBootProgress(AssetBootPhase.Idle, 0f);
+
         private ResourcePackage defaultPackage;
         /// <summary>持有当前通过 AssetKit 加载的场景句柄，保证场景依赖包在玩法运行期间保持有效。</summary>
         private SceneHandle activeSceneHandle;
@@ -104,6 +116,23 @@ namespace Xuan.Prometheus.Asset
         /// 默认资源包是否已完成初始化并加载有效资源清单。
         /// </summary>
         public bool IsReady => !isDisposed && defaultPackage != null && defaultPackage.InitializeStatus == EOperationStatus.Succeeded && defaultPackage.PackageValid;
+
+        /// <inheritdoc />
+        public AssetBootProgress BootProgress => bootProgress;
+
+        /// <inheritdoc />
+        public event Action<AssetBootProgress> BootProgressChanged;
+
+        /// <summary>记录并广播一次启动进度；晚订阅的界面通过 <see cref="BootProgress"/> 取到同一份状态。</summary>
+        /// <param name="phase">当前阶段。</param>
+        /// <param name="ratio">当前阶段的完成度。</param>
+        /// <param name="downloadedBytes">已下载字节数；仅下载阶段有意义。</param>
+        /// <param name="totalBytes">需要下载的总字节数；仅下载阶段有意义。</param>
+        private void ReportBoot(AssetBootPhase phase, float ratio, long downloadedBytes = 0L, long totalBytes = 0L)
+        {
+            bootProgress = new AssetBootProgress(phase, ratio, downloadedBytes, totalBytes);
+            BootProgressChanged?.Invoke(bootProgress);
+        }
 
 
         /// <summary>异步初始化项目唯一的 YooAsset 资源包，并向所有依赖 Kit 传播完成或失败结果。</summary>
@@ -158,6 +187,7 @@ namespace Xuan.Prometheus.Asset
             isInitializing = true;
             try
             {
+                ReportBoot(AssetBootPhase.InitializingPackage, 0f);
                 if (!YooAssets.IsInitialized)
                     YooAssets.Initialize();
 
@@ -176,23 +206,38 @@ namespace Xuan.Prometheus.Asset
                         throw new InvalidOperationException($"Failed to initialize YooAsset package '{packageName}': {initializeOperation.Error}");
                 }
 
+                ReportBoot(AssetBootPhase.InitializingPackage, 1f);
                 if (!package.PackageValid)
                 {
+                    ReportBoot(AssetBootPhase.RequestingVersion, 0f);
                     RequestPackageVersionOperation versionOperation = package.RequestPackageVersionAsync();
                     yield return versionOperation;
 
                     if (versionOperation.Status != EOperationStatus.Succeeded)
                         throw new InvalidOperationException($"Failed to request YooAsset package version '{packageName}': {versionOperation.Error}");
 
+                    ReportBoot(AssetBootPhase.RequestingVersion, 1f);
+
+                    ReportBoot(AssetBootPhase.LoadingManifest, 0f);
                     LoadPackageManifestOperation manifestOperation = package.LoadPackageManifestAsync(new LoadPackageManifestOptions(versionOperation.PackageVersion, 60));
                     yield return manifestOperation;
 
                     if (manifestOperation.Status != EOperationStatus.Succeeded)
                         throw new InvalidOperationException($"Failed to load YooAsset package manifest '{packageName}': {manifestOperation.Error}");
+                    ReportBoot(AssetBootPhase.LoadingManifest, 1f);
                 }
+
+                // 热更下载阶段。它夹在「清单就绪」与「可加载」之间，是资源包初始化内部的一段，
+                // 而不是它前面或后面的一步——这决定了热更界面只能从本 Kit 拿进度。
+                //
+                // 当前播放模式（编辑器模拟 / 内置离线）不存在远端内容，因此这一段没有任何下载量。
+                // 接入热更时只需要两处改动：CreateInitializeOptions 换成 HostPlayModeOptions，
+                // 以及在这里用 package.CreateResourceDownloader(...) 驱动下载并逐帧上报字节数。
+                foreach (object step in DownloadContent(package)) yield return step;
 
                 defaultPackage = package;
                 initializedPackageName = packageName;
+                ReportBoot(AssetBootPhase.Ready, 1f);
             }
             finally
             {
@@ -204,7 +249,11 @@ namespace Xuan.Prometheus.Asset
         public async UniTask<Scene> LoadSceneAsync(string location)
         {
             ValidateLocation(location);
-            if (activeSceneHandle != null && activeSceneHandle.IsValid) throw new InvalidOperationException($"AssetKit already owns loaded scene '{activeSceneHandle.SceneName}'.");
+            // 释放上一个场景句柄而不是拒绝加载：场景以 Single 模式加载，旧场景本就会被 Unity 卸载，
+            // 继续持有它的句柄只会让旧场景的资源包永远无法回收。
+            // 世界切换的时序由调用方保证：各 System 必须先走完世界退出相位，才轮到这里卸载场景。
+            if (activeSceneHandle != null && activeSceneHandle.IsValid) activeSceneHandle.Release();
+            activeSceneHandle = null;
             SceneHandle sceneHandle = GetReadyPackage().LoadSceneAsync(location, LoadSceneMode.Single);
             await UniTask.WaitUntil(() => sceneHandle.IsDone);
             if (sceneHandle.Status != EOperationStatus.Succeeded)
@@ -549,6 +598,22 @@ namespace Xuan.Prometheus.Asset
             }
 
             Debug.LogError(error);
+        }
+
+        /// <summary>
+        /// 执行热更内容下载。
+        ///
+        /// 当前两种播放模式的资源都随包体直出，因此没有任何内容需要下载，本方法只上报一次「无下载量」。
+        /// 它仍然作为独立的一段存在，而不是等接入热更时再插进来——因为界面、进度契约和调用顺序
+        /// 都要围绕它成立；留空的是实现，不是位置。
+        /// </summary>
+        /// <param name="package">已经加载完资源清单的资源包。</param>
+        private IEnumerable<object> DownloadContent(ResourcePackage package)
+        {
+            ReportBoot(AssetBootPhase.DownloadingContent, 0f);
+            // TODO(热更)：接入 HostPlayMode 后，在此创建 ResourceDownloader，逐帧上报已下载/总字节数，
+            // 并在失败时把错误交给调用方——启动链路对下载失败必须可重试，这与配置错误的直接抛出不同。
+            yield break;
         }
 
         /// <summary>

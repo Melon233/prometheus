@@ -26,7 +26,7 @@ Runtime（Bootstrap，唯一组合根）
 | 配置 | 归属 |
 | --- | --- |
 | YooAsset 资源包名 | `AssetKit.DefaultPackageName` |
-| EffectLibrary 地址 | `EffectSystem.DefaultLibraryAddress` |
+| EffectLibrary 地址 | `EffectSystem` 的私有常量，由 `AfterNewAsync` 自行消费 |
 | 固定小队成员地址 | `TeamSystem.MemberAddresses` |
 | 敌人预制体地址 | `EntitySystem` 内部常量 |
 | 玩法场景地址 | 组合根 `PrometheusSystemInstaller` 内部常量 |
@@ -43,7 +43,7 @@ Runtime（Bootstrap，唯一组合根）
 3. `Core` 构造时依次创建并注册 `AssetKit`、`EventKit`、`UIKit`；每个 Kit 在**注册**时由 `Core` 统一发布对应静态入口。
 4. `Entry` 调用 `Core.Configure(installer)`：Core 以该安装器创建、注册最后一个 Kit `GameplayKit`。Core 只知道一个安装器，不认识任何玩法参数类型。
 5. `Entry` 调用每个 Kit 的 `AfterNewAsync`，通过 `UniTask.WhenAll` 并发等待。
-6. `AssetKit.AfterNewAsync` 初始化资源包；`GameplayKit.AfterNewAsync` 等待 AssetKit 就绪后，把组合过程完全交给安装器：加载 EffectLibrary → 按依赖顺序注册全部公共 System → 加载玩法场景。
+6. `GameplayKit.CreateSessionAsync` 等待 AssetKit 就绪，调用安装器注册全部公共 System，再并行驱动各 System 的 `AfterNewAsync`；EffectSystem 在该阶段按自己的私有地址加载 EffectLibrary。
 7. `WhenAll` 完成后，`Core.AfterNew` 按注册顺序执行每个 Kit 的同步初始化；`GameplayKit.AfterNew` 依次初始化全部 System，再由安装器 `CreateInitialContent` 创建初始实体。
 8. 全部 Kit 就绪后，`Entry` 通过 `Core.UI` 打开 `HudPanel`，并在每帧驱动 `Core.OnUpdate`。
 

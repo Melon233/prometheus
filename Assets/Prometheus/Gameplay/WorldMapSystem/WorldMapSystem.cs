@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Xuan.Prometheus.World
@@ -28,19 +29,24 @@ namespace Xuan.Prometheus.World
         /// <inheritdoc />
         public float InitialZoom => Definition == null ? 1f : Definition.InitialZoom;
 
-        /// <summary>从统一资源模块读取静态地图定义，并广播一次就绪事实供面板绑定纹理。</summary>
+        /// <summary>
+        /// 异步读取静态地图定义。
+        ///
+        /// 地图定义由拍摄工具离线生成，工程里可能尚未生成过——这不是时序错误而是一种正常的中间状态，
+        /// 因此缺失时降级为空白地图并给出提示，而不是让整个会话装配失败。
+        /// </summary>
+        public override async UniTask AfterNewAsync()
+        {
+            WorldMapDefinition loadedDefinition = null;
+            string loadError = null;
+            await Core.Asset.LoadAssetAsync<WorldMapDefinition>(MapDefinitionAddress, asset => loadedDefinition = asset, error => loadError = error).ToUniTask();
+            Definition = loadedDefinition;
+            if (loadError != null) Debug.LogWarning($"[WorldMapSystem] 未找到地图定义资源 '{MapDefinitionAddress}'，请先使用地图拍摄工具生成；地图面板将保持空白：{loadError}");
+        }
+
+        /// <summary>广播一次就绪事实供面板绑定纹理。</summary>
         public override void AfterNew()
         {
-            Definition = null;
-            try
-            {
-                Definition = Core.Asset.LoadAssetSync<WorldMapDefinition>(MapDefinitionAddress);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogWarning($"[WorldMapSystem] 未找到地图定义资源 '{MapDefinitionAddress}'，请先使用地图拍摄工具生成；地图面板将保持空白：{exception.Message}");
-            }
-
             Core.Event.Invoke(new WorldMapReadyEvent(Definition));
         }
 

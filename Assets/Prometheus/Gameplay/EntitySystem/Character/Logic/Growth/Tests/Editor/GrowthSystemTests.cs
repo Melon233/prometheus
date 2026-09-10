@@ -24,10 +24,11 @@ namespace Xuan.Prometheus.Growth.Tests
         private GameplayKit gameplayKit;
         /// <summary>保存测试独占的 EntitySystem。</summary>
         private EntitySystem entitySystem;
-        /// <summary>保存测试读取的正式 Effect 配置库。</summary>
-        private EffectLibrary effectLibrary;
-        /// <summary>保存测试独占的 EffectSystem。</summary>
-        private EffectSystem effectSystem;
+        /// <summary>保存测试独占的效果系统替身，避免绕过正式 EffectSystem 的内部资源加载职责。</summary>
+        private TestEffectSystem effectSystem;
+
+        /// <summary>实体移除会广播 EntityRemovedEvent，因此本夹具必须提供全局事件入口。</summary>
+        private EventKit eventKit;
         /// <summary>保存正式 Yefa Prefab 实例。</summary>
         private GameObject yefaInstance;
         /// <summary>保存只组合养成链路依赖的测试 Entity。</summary>
@@ -39,15 +40,16 @@ namespace Xuan.Prometheus.Growth.Tests
         {
             assetKit = new AssetKit();
             Core.Asset = assetKit;
+            eventKit = new EventKit();
+            Core.Event = eventKit;
             gameplayKit = new GameplayKit();
             Core.Gameplay = gameplayKit;
             entitySystem = new EntitySystem();
             gameplayKit.AddSystem<IEntitySystem>(entitySystem);
-            effectLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(EffectLibraryPath);
+            EffectLibrary effectLibrary = AssetDatabase.LoadAssetAtPath<EffectLibrary>(EffectLibraryPath);
             Assert.That(effectLibrary, Is.Not.Null, $"无法加载正式效果库：{EffectLibraryPath}");
-            effectSystem = new EffectSystem(effectLibrary);
+            effectSystem = new TestEffectSystem(effectLibrary);
             gameplayKit.AddSystem<IEffectSystem>(effectSystem);
-            effectSystem.AfterNew();
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(YefaPrefabPath);
             Assert.That(prefab, Is.Not.Null, $"无法加载正式角色预制体：{YefaPrefabPath}");
             yefaInstance = Object.Instantiate(prefab);
@@ -65,9 +67,11 @@ namespace Xuan.Prometheus.Growth.Tests
             Core.Gameplay = null;
             entitySystem = null;
             effectSystem = null;
+            eventKit?.Dispose();
+            eventKit = null;
+            Core.Event = null;
             assetKit?.Dispose();
             assetKit = null;
-            effectLibrary = null;
             if (yefaInstance != null) Object.DestroyImmediate(yefaInstance);
             yefaInstance = null;
             entity = null;
@@ -190,9 +194,8 @@ namespace Xuan.Prometheus.Growth.Tests
                 curveGameplayKit = new GameplayKit();
                 Core.Gameplay = curveGameplayKit;
                 curveGameplayKit.AddSystem<IEntitySystem>(new EntitySystem());
-                EffectSystem curveEffectSystem = new EffectSystem(library);
+                TestEffectSystem curveEffectSystem = new TestEffectSystem(library);
                 curveGameplayKit.AddSystem<IEffectSystem>(curveEffectSystem);
-                curveEffectSystem.AfterNew();
                 GrowthTestEntity curveEntity = new GrowthTestEntity(curveObject);
                 curveGameplayKit.GetSystem<IEntitySystem>().AddEntity(curveEntity);
                 curveEntity.AfterNew();
@@ -247,6 +250,35 @@ namespace Xuan.Prometheus.Growth.Tests
             SerializedObject serializedObject = new SerializedObject(binder);
             serializedObject.FindProperty(fieldName).objectReferenceValue = config;
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>为养成规则测试提供内存 EffectRuntime 与指定只读配置，不改变正式 EffectSystem 的资源边界。</summary>
+        private sealed class TestEffectSystem : XSystem, IEffectSystem
+        {
+            /// <summary>创建测试独占的效果运行时，并保存测试要验证的正式效果配置。</summary>
+            /// <param name="defaultLibrary">测试实体注册触发规则时使用的只读效果配置库。</param>
+            public TestEffectSystem(EffectLibrary defaultLibrary)
+            {
+                DefaultLibrary = defaultLibrary;
+                Runtime = new EffectRuntime(1977);
+            }
+
+            /// <summary>获取测试效果系统是否已经释放。</summary>
+            public bool IsDisposed { get; private set; }
+
+            /// <summary>获取测试独占的效果运行时。</summary>
+            public EffectRuntime Runtime { get; }
+
+            /// <summary>获取测试指定的只读效果配置库。</summary>
+            public EffectLibrary DefaultLibrary { get; }
+
+            /// <summary>释放测试运行时持有的效果实例和注册句柄。</summary>
+            public override void Dispose()
+            {
+                if (IsDisposed) return;
+                Runtime.Dispose();
+                IsDisposed = true;
+            }
         }
 
         /// <summary>只组合养成系统需要的纯 C# Component、根 Binder 表现和 Logic。</summary>

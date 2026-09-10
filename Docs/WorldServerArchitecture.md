@@ -32,7 +32,7 @@ POI 采用**服务器权威 + chunk 分区同步**：
 Server/                          # Go 服务器（模块名 prometheus）
 ├── main.go / go.mod / go.sum
 ├── gen_proto.ps1                # 手动重新生成协议代码（仅 proto 变更时执行）
-├── proto/poi.proto              # 协议唯一定义
+├── proto/game.proto             # 协议唯一定义
 ├── gen/protocol/poi.pb.go       # protoc 生成的 Go 代码
 ├── internal/poi/                # 领域模型：Poi 记录 + 常量 + 导出读取
 ├── internal/store/              # Store/ItemStore 接口 + MongoDB POI 与背包实现
@@ -79,7 +79,7 @@ Assets/Prometheus/Gameplay/ServiceSystem/
 
 ---
 
-## 4. 协议定义（Server/proto/poi.proto）
+## 4. 协议定义（Server/proto/game.proto）
 
 ```proto
 package poi;
@@ -155,7 +155,7 @@ message Packet { uint64 request_id=100; oneof body { ... POI / room / position /
 - **手动启动**：`cd Server && go build -o bin/server.exe . && ./bin/server.exe -addr 127.0.0.1:9000 -export "../Assets/Resources/Config/PoiExport.json"`。
 - **重新生成协议**（仅 proto 变更时）：`cd Server && ./gen_proto.ps1`。
 - **导出 POI**：Unity 菜单 `Prometheus/World/Export POI Data (JSON)`（生成语义 Id + chunkId 并写回场景）。
-- **MongoDB**：在 `docker/mongo` 执行 `docker compose up -d`；MongoDB 与 mongo-express 仅绑定回环地址，默认服务端连接串为 `mongodb://admin:admin123@localhost:27017/?authSource=admin`。
+- **MongoDB**：在 `docker/mongo` 执行 `docker compose up -d`；MongoDB 与 mongo-express 仅绑定回环地址，默认服务端连接串为 `mongodb://admin:admin123@localhost:27017/?authSource=admin`。改连本地部署的 MongoDB 时，直接改 `Server/main.go` 顶部的 `localMongoOverride` 常量（临时用途）。
 
 ---
 

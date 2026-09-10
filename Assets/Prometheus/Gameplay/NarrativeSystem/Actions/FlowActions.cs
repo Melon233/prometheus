@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Xuan.Prometheus.Expression;
 
 namespace Xuan.Prometheus.Narrative
 {

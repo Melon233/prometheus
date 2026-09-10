@@ -138,6 +138,16 @@ namespace Xuan.Prometheus.EntitySystem.Tests
             /// <summary>测试资源实现始终处于可用状态。</summary>
             public bool IsReady => true;
 
+            /// <summary>测试资源不经过启动链路，因此直接报告已就绪。</summary>
+            public AssetBootProgress BootProgress => new AssetBootProgress(AssetBootPhase.Ready, 1f);
+
+            /// <summary>测试资源不会产生启动进度变化；保留事件只为满足契约。</summary>
+            public event Action<AssetBootProgress> BootProgressChanged
+            {
+                add { }
+                remove { }
+            }
+
             /// <summary>测试资源无需异步初始化。</summary>
             public IEnumerator Initialize(string packageName = AssetKit.DefaultPackageName)
             {

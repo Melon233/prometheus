@@ -220,19 +220,43 @@ namespace Xuan.Prometheus
             DrainPendingRemovals();
         }
 
-        /// <summary>创建本局固定小队并纳入当前系统托管；场景敌人由 PoiSystem 按营地实例生成。</summary>
-        internal void CreateInitialTeam(TeamSystem teamSystem)
+        /// <summary>
+        /// 离开世界时回收全部实体。
+        ///
+        /// 这一步必须发生在场景卸载**之前**：场景以 LoadSceneMode.Single 加载，
+        /// Unity 会直接销毁旧场景的全部 GameObject，而 Entity 正包着这些 GameObject。
+        /// 不主动回收的话，下一个世界里留下的就是一批指向已销毁对象的实体。
+        /// 系统本身继续存活——它是会话级的，跨世界保留。
+        /// </summary>
+        public override void OnWorldExit()
         {
-            ThrowIfDisposed();
-            if (teamSystem == null) throw new ArgumentNullException(nameof(teamSystem));
-            CreateTeam(teamSystem);
+            if (isDisposed || isDisposing) return;
+            isDisposing = true;
+            try
+            {
+                ReleaseAllEntities();
+            }
+            finally
+            {
+                isDisposing = false;
+            }
         }
 
-        /// <summary>单局结束时先释放字段监听，再按稳定顺序释放全部 Entity。</summary>
+        /// <summary>会话结束时先释放字段监听，再按稳定顺序释放全部 Entity。</summary>
         public override void Dispose()
         {
             if (isDisposed || isDisposing) return;
             isDisposing = true;
+            ReleaseAllEntities();
+            entities.Dispose();
+            isUpdatingEntities = false;
+            isDisposed = true;
+            isDisposing = false;
+        }
+
+        /// <summary>释放全部字段监听与实体，并把计数归零；供世界退出与会话释放共用。</summary>
+        private void ReleaseAllEntities()
+        {
             ListenHandle[] handles = new ListenHandle[activeHandles.Count];
             activeHandles.CopyTo(handles);
             foreach (ListenHandle handle in handles) handle.Dispose();
@@ -244,20 +268,21 @@ namespace Xuan.Prometheus
                 lifecycle.MarkDespawnRequested(0f);
                 lifecycle.DisposeImmediately();
             }
+            // XMap.Dispose 只是清空容器，因此同一个实例可以直接承载下一个世界。
+            entities.Dispose();
             pendingEntityRemovals.Clear();
             pendingEntityRemovalBuffer.Clear();
-            entities.Dispose();
             Count = 0;
-            isUpdatingEntities = false;
-            isDisposed = true;
-            isDisposing = false;
         }
 
-        /// <summary>解除 Entity 的字段监听和小队关系，再从容器移除并执行最终清理。</summary>
+        /// <summary>解除 Entity 的字段监听，广播移除事实，再从容器移除并执行最终清理。</summary>
         private void RemoveRegisteredEntity(int entityId, Entity entity)
         {
             DisposeEntityListeners(entityId);
-            if (Core.Gameplay.TryGetSystem(out ITeamSystem teamSystem)) teamSystem.UnregisterMember(entity);
+            // 广播而不是直接调用小队系统：实体容器位于依赖图的底层，任何人都可以依赖它，
+            // 它却不能反过来依赖任何人，否则立刻成环（Team → Input → Entity）。
+            // 关心实体消失的系统自行订阅 EntityRemovedEvent。
+            Core.Event.Invoke(new EntityRemovedEvent(entityId));
             entities.Remove(entityId);
             Count--;
             IEntityLifecycleController lifecycle = entity;
@@ -274,43 +299,6 @@ namespace Xuan.Prometheus
             foreach (ListenHandle handle in handleBuffer) handle.Dispose();
             entityHandles.Remove(entityId);
         }
-
-        /// <summary>从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后交给 TeamSystem 原子初始化。</summary>
-        private void CreateTeam(TeamSystem teamSystem)
-        {
-            List<Entity> createdMembers = new List<Entity>(TeamSystem.Capacity);
-            try
-            {
-                for (int slotIndex = 0; slotIndex < TeamSystem.Capacity; slotIndex++)
-                {
-                    //UnityEditor.TransformWorldPlacementJSON:{"position":{"x":277.2999572753906,"y":1.0,"z":1068.099853515625},"rotation":{"x":0.0,"y":0.0,"z":0.0,"w":1.0000001192092896},"scale":{"x":1.0,"y":1.0,"z":1.0}}
-                    int entityId = 0;
-                    try
-                    {
-                        PlayerEntity member = new PlayerEntity(TeamSystem.MemberAddresses[slotIndex], new Vector3(277f, 0.95f, 1068f), Quaternion.identity, PersistentRoot.Shared);
-                        entityId = AddEntity(member);
-                        member.AfterNew();
-                        createdMembers.Add(member);
-                    }
-                    catch
-                    {
-                        if (entityId > 0) RemoveEntity(entityId);
-                        throw;
-                    }
-                }
-                teamSystem.InitializeMembers(createdMembers);
-            }
-            catch
-            {
-                for (int index = createdMembers.Count - 1; index >= 0; index--)
-                {
-                    Entity member = createdMembers[index];
-                    if (member != null && !member.IsDespawningOrDisposed) RemoveEntity(member.EntityId);
-                }
-                throw;
-            }
-        }
-
 
         /// <summary>防止已经释放的实体系统被重新注册 Entity 或监听。</summary>
         private void ThrowIfDisposed()

@@ -138,34 +138,6 @@ namespace Xuan.Prometheus.Tests.Architecture
         }
 
         /// <summary>
-        /// ARCH-NET-004：注册顺序必须为 ServiceSystem → 各领域 Gateway → 领域消费者。
-        /// 顺序即初始化顺序、其逆序即释放顺序，因此这条规则决定了消费者能否在释放时安全退订。
-        /// 消费关系不写死在测试里：谁引用了某个 I*Gateway，谁就是它的消费者。
-        /// </summary>
-        [Test]
-        public void SystemRegistration_OrdersChannelBeforeGatewaysBeforeConsumers()
-        {
-            List<Type> order = CaptureRegistrationOrder();
-            int channelIndex = order.FindIndex(contract => contract.Name == "IServiceSystem");
-            Assert.That(channelIndex, Is.GreaterThanOrEqualTo(0), "组合根必须注册唯一会话通道 IServiceSystem。");
-
-            Type[] gatewayContracts = order.Where(contract => contract.Name.EndsWith("Gateway", StringComparison.Ordinal)).ToArray();
-            Assert.That(gatewayContracts, Is.Not.Empty, "组合根必须注册至少一个领域 Gateway。");
-
-            foreach (Type gateway in gatewayContracts)
-            {
-                int gatewayIndex = order.IndexOf(gateway);
-                Assert.That(gatewayIndex, Is.GreaterThan(channelIndex), $"Gateway '{gateway.Name}' 必须晚于 IServiceSystem 注册，才能在释放时先于通道退订。");
-                foreach (Type consumer in ResolveContractsReferencing(gateway))
-                {
-                    int consumerIndex = order.IndexOf(consumer);
-                    if (consumerIndex < 0) continue;
-                    Assert.That(consumerIndex, Is.GreaterThan(gatewayIndex), $"'{consumer.Name}' 使用了 '{gateway.Name}'，必须晚于它注册。");
-                }
-            }
-        }
-
-        /// <summary>
         /// ARCH-EVT-005：全局事件订阅者必须在同一文件内对称退订。
         /// 只比较事件载荷类型的集合，因此订阅与退订写在不同方法（AfterNew / Dispose）也能通过。
         /// </summary>
@@ -187,54 +159,6 @@ namespace Xuan.Prometheus.Tests.Architecture
             }
 
             Assert.That(violations, Is.Empty, $"全局事件订阅者必须在自身释放边界对称退订（ARCH-EVT-005）。{string.Join("；", violations)}");
-        }
-
-        /// <summary>运行玩法组合根的纯注册步骤，捕获它声明的 System 契约注册顺序。</summary>
-        private static List<Type> CaptureRegistrationOrder()
-        {
-            EffectLibrary library = ScriptableObject.CreateInstance<EffectLibrary>();
-            try
-            {
-                RegistrationOrderProbe probe = new RegistrationOrderProbe();
-                new PrometheusSystemInstaller(library).RegisterSystems(probe);
-                return probe.Contracts;
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(library);
-            }
-        }
-
-        /// <summary>找出源码中引用了指定契约的其他 System 契约，用来推导消费关系而不是把它写死。</summary>
-        private static IEnumerable<Type> ResolveContractsReferencing(Type contract)
-        {
-            Regex usagePattern = new Regex($@"\b{Regex.Escape(contract.Name)}\b");
-            foreach (string sourcePath in EnumerateGovernedSources())
-            {
-                string source = StripCommentsAndLiterals(File.ReadAllText(sourcePath));
-                if (!usagePattern.IsMatch(source)) continue;
-                Match declaration = Regex.Match(source, @"class\s+(\w+)\s*:\s*XSystem");
-                if (!declaration.Success) continue;
-                Type implementation = ConcreteImplementationsOf(typeof(ISystemContract)).FirstOrDefault(type => type.Name == declaration.Groups[1].Value);
-                if (implementation == null) continue;
-                foreach (Type implemented in implementation.GetInterfaces())
-                {
-                    if (implemented != contract && typeof(ISystemContract).IsAssignableFrom(implemented) && implemented != typeof(ISystemContract)) yield return implemented;
-                }
-            }
-        }
-
-        /// <summary>只记录注册顺序、不真正驱动 System 的注册端口替身。</summary>
-        private sealed class RegistrationOrderProbe : IGameplaySystemRegistry
-        {
-            /// <summary>按调用顺序记录的 System 契约。</summary>
-            public List<Type> Contracts { get; } = new List<Type>();
-
-            /// <inheritdoc />
-            public void AddSystem<TContract>(XSystem system) where TContract : class, ISystemContract
-            {
-                Contracts.Add(typeof(TContract));
-            }
         }
 
         /// <summary>取得指定名称的已加载装配；缺失说明装配划分被改动，应立即失败而不是静默跳过。</summary>

@@ -6,7 +6,7 @@
 
 ## 协议
 
-协议定义位于 `Server/proto/poi.proto`，由 `Server/gen_proto.ps1` 生成 Go 和 Unity C# 类型。每个请求在业务 `Packet.request_id` 写入非零关联 ID，响应复制该 ID；服务器主动坐标推送使用 `request_id=0`。传输格式为 `[固定 Head][变长 Body]`：Head 当前固定为 4 字节，第一字段是大端 `BodyLength`；Body 是对应长度的业务 `Packet` Protobuf 字节。收包方必须先完整读取 Head，再按 `BodyLength` 完整读取 Body。
+协议定义位于 `Server/proto/game.proto`，由 `Server/gen_proto.ps1` 生成 Go 和 Unity C# 类型。每个请求在业务 `Packet.request_id` 写入非零关联 ID，响应复制该 ID；服务器主动坐标推送使用 `request_id=0`。传输格式为 `[固定 Head][变长 Body]`：Head 当前固定为 4 字节，第一字段是大端 `BodyLength`；Body 是对应长度的业务 `Packet` Protobuf 字节。收包方必须先完整读取 Head，再按 `BodyLength` 完整读取 Body。
 
 ## 默认房间与坐标
 

@@ -53,6 +53,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 - Trigger 只能产生 EffectRequest，不能直接递归执行效果。
 - 每个 GameplayKit 只注册一个 EffectSystem，多个单局上下文之间不共享 EffectRuntime。
+- EffectLibrary 的资源地址是 EffectSystem 的私有配置；EffectSystem 在 `AfterNewAsync` 中自行加载，组合根、测试和工具均不得从构造函数注入配置库。
 - EffectSystem 与 Entity Logic 不保存或注入 IGameplayKit，跨玩法模块访问统一从 `Core.Gameplay` 开始。
 - EffectDefinition 是共享只读配置，所有层数、时间和句柄必须保存在 EffectInstance。
 - 运行时动态养成使用 `EffectDefinition.CreateRuntime` 创建带 `HideAndDontSave` 的 Entity 独占定义，仍必须经过标准 `EffectInstance` 与资源句柄生命周期；替换时先移除实例，再释放临时定义。

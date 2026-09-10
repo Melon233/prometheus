@@ -65,7 +65,9 @@
 | `Actors/` | `ActorRef`、`ActorHandle`、`IActorResolver`、`Anchor` |
 | `Stage/` | 能力端口定义、`StageSpec`、`StageScope`、`Stage`、`ActorAnimationHandover` |
 | `Cinematic/` | `CinematicAction`、`CinematicCueMarker`、自研 `StorySpineTrack` |
-| `Ports/` | 端口的场景注册表实现，可直接用于测试场景与轻量关卡 |
+| `Ports/Scene/` | 端口的场景注册表实现，服务于演示场景与轻量关卡 |
+| `Ports/Runtime/` | 端口的玩法实现，对接 AssetKit / CameraSystem / InputSystem / TeamSystem / PoiSystem |
+| `NarrativePlayback.cs` | 在玩法世界演一段剧情图的统一入口：加载图 → 装配端口 → 开界面 → 进舞台 → 演出 → 逆序还原 |
 | `Core/NarrativeSnapshot.cs` | 存档格式与往返；**不含任何演出播放进度** |
 | `Demo/` | 演示场景、演示剧情、运行时构建的对话视图 |
 | `Definitions/` | `StoryGraph` 图资产、节点模型与编辑期校验 |
@@ -97,17 +99,23 @@ await using (StageScope stage = await Stage.EnterAsync(spec, services))
 
 舞台不直接依赖任何玩法系统，全部能力通过端口注入：
 
-| 端口 | 场景实现 | 正式实现应对接 |
+| 端口 | 场景实现（`Ports/Scene/`） | 玩法实现（`Ports/Runtime/`） |
 |---|---|---|
-| `INarrativeScreen` | `NarrativeScreenView` | 可直接复用 |
-| `IActorResolver` | `SceneActorResolver` | 补一个查询 `IEntitySystem` 与 `NpcDefinition` 生成替身的解析器 |
-| `INarrativeCameraPort` | `SceneCameraPort` | 包装 `ICameraSystem` + Cinemachine |
-| `INarrativeAssetPort` | `SceneAssetPort` | 包装 `IAssetKit`（YooAsset） |
-| `INarrativeVfxPort` | `PrefabVfxPort` | 可直接复用，资源改走 AssetKit |
-| `INarrativeAudioPort` | `LoggingNarrativeAudioPort` / `FmodNarrativeAudioPort` | FMOD 实现已可用，需加载对应 Bank |
-| `INarrativeWorldPort` | `SceneWorldPort` | 对接 `IInputSystem` 的 Cutscene 上下文与 AI 系统 |
+| `INarrativeScreen` | `NarrativeScreenView` | `NarrativeRuntimeScreen`：黑幕黑边复用前者，HUD 显隐改发 `NarrativeHudVisibilityEvent` |
+| `IActorResolver` | `SceneActorResolver` | `GameplayActorResolver`：队伍成员问 `ITeamSystem`，场景 NPC 问 `IPoiSystem`，锚点显式登记 |
+| `INarrativeCameraPort` | `SceneCameraPort` | `GameplayCameraPort`：自持一台 `CinemachineCamera`，经 `ICameraSystem.AcquireCutsceneCamera` 接管；具名机位复用锚点表 |
+| `INarrativeAssetPort` | `SceneAssetPort` | `AssetKitPort`：按地址异步加载，登记后随演出统一释放 |
+| `INarrativeVfxPort` | `PrefabVfxPort` | `NarrativeVfxPort`：同一套逻辑去 Mono 化，回收根节点显式传入 |
+| `INarrativeAudioPort` | `LoggingNarrativeAudioPort` | `FmodNarrativeAudioPort`：与场景无关，两处通用；需加载对应 Bank |
+| `INarrativeWorldPort` | `SceneWorldPort` | `GameplayWorldPort`：以 Cutscene 上下文申请排他输入租约；**AI 冻结尚未实现**，见下 |
+
+`NarrativeRuntimePorts` 负责把玩法实现装配成一份 `StageServices`，生命周期与一次演出严格对齐。
 
 缺省端口只有在剧情真正用到对应能力时才报错，且错误信息会指出缺少哪一个端口。
+
+**已知缺口**：`GameplayWorldPort.FreezeAi` 抛 `NotSupportedException`——没有任何系统提供「按范围枚举活动实体」的能力，
+`IEntitySystem` 只能按编号查询。剧情在补上范围查询之前必须把 `StageSpec.FreezeAiRadius` 保持为零；
+`Stage` 只在半径大于零时才调用该端口，因此这条路径不会被无意触发。
 
 ---
 

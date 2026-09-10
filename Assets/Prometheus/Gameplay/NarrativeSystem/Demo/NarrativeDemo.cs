@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Xuan.Prometheus.Expression;
 
 namespace Xuan.Prometheus.Narrative.Demo
 {

@@ -60,4 +60,6 @@
 
 服务端使用 `-players` 指定玩家集合名，默认值为 `players`。`-coll` 和 `-backpack` 不再参与默认启动链路。
 
+Mongo 连接串默认对应 `docker/mongo` 的带账号实例。临时改连本地部署（通常无账号）的 MongoDB 时，把 `main.go` 顶部的 `localMongoOverride` 常量设为形如 `mongodb://localhost:27017` 的串即可；留空则走默认 Docker 串。
+
 首次启动新版本时，会检查旧的 `poi_states` 和 `backpack` 集合；默认玩家的 POI 状态和所有旧背包玩家数据会自动导入 `players`。迁移成功后旧集合会被删除，迁移失败则不会执行删除。

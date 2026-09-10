@@ -39,5 +39,23 @@ namespace Xuan.Prometheus
         {
             return Core.Asset.LoadAssetSync<Sprite>("UI_MarkLocalAvatar");
         }
+
+        /// <summary>
+        /// 加载当前追踪任务的指引点图标。
+        ///
+        /// 目前用的是纯白占位图，由调用方染成金色并旋转 45 度成菱形——公共 Atlas 里还没有任务指引图标。
+        /// 直接画正方形会被误读成「地上有个黄色方块」，菱形至少能读出「这是个地图标记」。
+        /// 等美术出图后把这里的地址换掉、并把 <see cref="QuestGuideRotation"/> 归零即可，两处地图无需改动。
+        /// </summary>
+        public static Sprite LoadQuestGuideIcon()
+        {
+            return Core.Asset.LoadAssetSync<Sprite>("white");
+        }
+
+        /// <summary>获取任务指引点的染色；与追踪条标题同一个金色，使两处在视觉上指向同一件事。</summary>
+        public static Color QuestGuideColor => new Color(1f, 0.84f, 0.35f, 1f);
+
+        /// <summary>获取任务指引点占位图的旋转角度；换成正式图标后应归零。</summary>
+        public static float QuestGuideRotation => 45f;
     }
 }

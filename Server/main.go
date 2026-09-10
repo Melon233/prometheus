@@ -17,10 +17,25 @@ import (
 // defaultPlayerID 单隐式玩家标识（当前无登录系统，所有背包操作针对该玩家）。
 const defaultPlayerID = "default"
 
+// localMongoOverride 临时硬编码开关：非空时覆盖 -mongo 默认值，用于把服务端接到本地部署（通常无账号）的 MongoDB。
+// 留空则走 docker/mongo 带 root 账号的默认实例。仅为临时联调需要，长期方案应改用配置文件或环境变量。
+const localMongoOverride = "mongodb://localhost:27017"
+
+// dockerMongoURI 默认连接串，对应 docker/mongo/docker-compose.yml 中的带账号实例。
+const dockerMongoURI = "mongodb://admin:admin123@localhost:27017/?authSource=admin"
+
+// defaultMongoURI 解析 -mongo 的默认值：localMongoOverride 非空时优先用它，否则用 dockerMongoURI。
+func defaultMongoURI() string {
+	if localMongoOverride != "" {
+		return localMongoOverride
+	}
+	return dockerMongoURI
+}
+
 func main() {
 	var (
 		listenAddr  = flag.String("addr", "127.0.0.1:9000", "TCP 监听地址")
-		mongoURI    = flag.String("mongo", "mongodb://admin:admin123@localhost:27017/?authSource=admin", "MongoDB 连接串")
+		mongoURI    = flag.String("mongo", defaultMongoURI(), "MongoDB 连接串（默认见 localMongoOverride / dockerMongoURI）")
 		mongoDB     = flag.String("db", "prometheus", "数据库名")
 		playersColl = flag.String("players", "players", "玩家聚合集合名")
 		exportPath  = flag.String("export", "../Assets/Resources/Config/PoiExport.json", "策划导出 POI JSON 路径")

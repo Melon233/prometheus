@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Input;
@@ -14,13 +15,17 @@ namespace Xuan.Prometheus
         public const int Capacity = 3;
 
         /// <summary>每个固定小队槽位使用的角色预制体 YooAsset 地址；数量必须与 Capacity 一致。</summary>
-        public static readonly string[] MemberAddresses = { "Yefa", "Yousaer", "Senyin" };
+        /// <remarks>「小队成员是谁」是本系统的领域知识，因此地址私有；小队的创建也由本系统自己完成。</remarks>
+        private static readonly string[] MemberAddresses = { "Yefa", "Yousaer", "Senyin" };
 
         /// <summary>保存三个固定槽位的运行时成员数据。</summary>
         private readonly TeamMemberRuntime[] members = new TeamMemberRuntime[Capacity];
 
-        /// <summary>保存单局输入系统，用于迁移当前上场成员的玩法动作租约。</summary>
-        private IInputSystem inputSystem;
+        /// <summary>构造注入的输入系统，用于迁移当前上场成员的玩法动作租约。</summary>
+        private readonly IInputSystem inputSystem;
+
+        /// <summary>构造注入的实体容器，用于创建与回收本小队的成员实体。</summary>
+        private readonly IEntitySystem entitySystem;
 
         /// <summary>保存数字键一二三的独占输入租约。</summary>
         private ControlLease teamSelectionLease;
@@ -46,6 +51,15 @@ namespace Xuan.Prometheus
         /// <summary>标记当前系统是否已经释放，阻止失效输入接收者继续存活。</summary>
         private bool isDisposed;
 
+        /// <summary>创建小队系统；两个依赖都以契约注入，因此依赖关系写在签名上而不是散落在方法体里。</summary>
+        /// <param name="inputSystem">提供输入租约的输入系统。</param>
+        /// <param name="entitySystem">承载小队成员实体的实体容器。</param>
+        public TeamSystem(IInputSystem inputSystem, IEntitySystem entitySystem)
+        {
+            this.inputSystem = inputSystem ?? throw new ArgumentNullException(nameof(inputSystem));
+            this.entitySystem = entitySystem ?? throw new ArgumentNullException(nameof(entitySystem));
+        }
+
         /// <summary>获取当前上场成员的零基槽位；没有可用成员时为负一。</summary>
         public int ActiveSlotIndex => activeSlotIndex;
 
@@ -58,20 +72,87 @@ namespace Xuan.Prometheus
         /// <inheritdoc />
         public bool IsAlive => !isDisposed;
 
-        /// <summary>通过 Core.Gameplay 取得输入系统并绑定数字键选择输入，成员 Entity 随后再由 GameplayKit 创建。</summary>
+        /// <summary>绑定数字键选择输入，并订阅实体移除通知；成员实体在进入世界时才创建。</summary>
         public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            inputSystem = Core.Gameplay.GetSystem<IInputSystem>();
             teamSelectionLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.TeamSelection, InputContexts.Gameplay);
+            // 订阅而不是被实体容器直接调用：实体容器在依赖图底层，不能反过来认识小队（否则 Team 到 Input 到 Entity 成环）。
+            Core.Event.AddListener<EntityRemovedEvent>(OnEntityRemoved);
+        }
+
+        /// <summary>
+        /// 进入世界时创建三个固定槽位的成员实体并完成一次原子初始化。
+        ///
+        /// 小队成员是绑定场景的实体，因此归世界相位而不是会话相位：
+        /// 换场景时旧成员随场景销毁，进入新场景再按同一份配置重建。
+        /// </summary>
+        /// <param name="world">本次进入的世界上下文。</param>
+        public override UniTask OnWorldEnterAsync(WorldContext world)
+        {
+            if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
+            // 出生位姿由世界上下文给出而不是本系统持有：同一个世界首次进入用配置的出生点，
+            // 从副本弹回时用记录的返回点，只有持有世界栈的流程知道该用哪个。
+            CreateMembers(world.SpawnPosition, world.SpawnRotation);
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>离开世界时释放成员引用与上场输入租约；成员实体本身由实体容器统一回收。</summary>
+        public override void OnWorldExit()
+        {
+            if (isDisposed) return;
+            activeMemberInputLease?.Dispose();
+            activeMemberInputLease = null;
+            for (int slotIndex = 0; slotIndex < Capacity; slotIndex++) members[slotIndex] = null;
+            activeSlotIndex = -1;
+            pendingSlotIndex = -1;
+            pendingSwitchFrame = default;
+            hasPendingSwitchFrame = false;
+            isInitialized = false;
+        }
+
+        /// <summary>从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后原子初始化槽位。</summary>
+        /// <param name="spawnPosition">本次进入世界的出生坐标。</param>
+        /// <param name="spawnRotation">本次进入世界的出生朝向。</param>
+        private void CreateMembers(Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            List<Entity> createdMembers = new List<Entity>(Capacity);
+            try
+            {
+                for (int slotIndex = 0; slotIndex < Capacity; slotIndex++)
+                {
+                    int entityId = 0;
+                    try
+                    {
+                        PlayerEntity member = new PlayerEntity(MemberAddresses[slotIndex], spawnPosition, spawnRotation, PersistentRoot.Shared);
+                        entityId = entitySystem.AddEntity(member);
+                        member.AfterNew();
+                        createdMembers.Add(member);
+                    }
+                    catch
+                    {
+                        if (entityId > 0) entitySystem.RemoveEntity(entityId);
+                        throw;
+                    }
+                }
+                InitializeMembers(createdMembers);
+            }
+            catch
+            {
+                for (int index = createdMembers.Count - 1; index >= 0; index--)
+                {
+                    Entity member = createdMembers[index];
+                    if (member != null && !member.IsDespawningOrDisposed) entitySystem.RemoveEntity(member.EntityId);
+                }
+                throw;
+            }
         }
 
         /// <summary>把三个已经完成 Entity 初始化的成员绑定到固定槽位，并默认让第一个成员上场。</summary>
-        public void InitializeMembers(IReadOnlyList<Entity> teamMembers)
+        private void InitializeMembers(IReadOnlyList<Entity> teamMembers)
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            if (inputSystem == null) throw new InvalidOperationException("TeamSystem must complete AfterNew before members are initialized.");
-            if (isInitialized) throw new InvalidOperationException("TeamSystem members can only be initialized once.");
+            if (isInitialized) throw new InvalidOperationException("TeamSystem members can only be initialized once per world.");
             if (teamMembers == null) throw new ArgumentNullException(nameof(teamMembers));
             if (teamMembers.Count != Capacity) throw new ArgumentException($"TeamSystem requires exactly {Capacity} members.", nameof(teamMembers));
             HashSet<int> entityIds = new HashSet<int>();
@@ -122,10 +203,11 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>在实体正式回收前移除其小队槽位；若移除当前成员则自动切入下一个存活成员。</summary>
-        public void UnregisterMember(Entity entity)
+        /// <param name="evt">实体容器广播的移除通知；与本小队无关的实体会被直接忽略。</param>
+        private void OnEntityRemoved(EntityRemovedEvent evt)
         {
-            if (!isInitialized || entity == null) return;
-            int removedSlotIndex = FindMemberSlot(entity);
+            if (!isInitialized || evt == null) return;
+            int removedSlotIndex = FindMemberSlot(evt.EntityId);
             if (!IsValidSlot(removedSlotIndex)) return;
             TeamMemberRuntime removedMember = members[removedSlotIndex];
             bool removedActiveMember = removedSlotIndex == activeSlotIndex;
@@ -186,6 +268,7 @@ namespace Xuan.Prometheus
         public override void Dispose()
         {
             if (isDisposed) return;
+            Core.Event.RemoveListener<EntityRemovedEvent>(OnEntityRemoved);
             activeMemberInputLease?.Dispose();
             teamSelectionLease?.Dispose();
             activeMemberInputLease = null;
@@ -196,7 +279,6 @@ namespace Xuan.Prometheus
             pendingSwitchFrame = default;
             hasPendingSwitchFrame = false;
             isInitialized = false;
-            inputSystem = null;
             isDisposed = true;
         }
 
@@ -281,11 +363,11 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>按对象身份查找成员当前占用的固定槽位。</summary>
-        private int FindMemberSlot(Entity entity)
+        private int FindMemberSlot(int entityId)
         {
             for (int slotIndex = 0; slotIndex < Capacity; slotIndex++)
             {
-                if (members[slotIndex] != null && ReferenceEquals(members[slotIndex].Entity, entity)) return slotIndex;
+                if (members[slotIndex] != null && members[slotIndex].Entity.EntityId == entityId) return slotIndex;
             }
             return -1;
         }

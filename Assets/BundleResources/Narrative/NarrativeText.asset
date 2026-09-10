@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3f7502cc3c6280419c004c797e4b8e5, type: 3}
+  m_Name: NarrativeText
+  m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.Narrative.TextMapAsset
+  languageCode: zh-CN
+  entries:
+  - key: actor.elder.name
+    value: "\u8499\u5FB7\u957F\u8005"
+  - key: story.demo.greet.1
+    value: "\u8FDC\u9053\u800C\u6765\u7684\u65C5\u884C\u8005\uFF0C\u4F60\u7EC8\u4E8E\u5230\u4E86\u3002"
+  - key: story.demo.greet.2
+    value: "\u98CE\u8D77\u5730\u90A3\u8FB9\u51FA\u4E86\u70B9\u4E71\u5B50\u2026\u2026\u6211\u8FD9\u628A\u8001\u9AA8\u5934\u662F\u8D70\u4E0D\u52A8\u4E86\u3002"
+  - key: story.demo.greet.opt.help
+    value: "\u6211\u53BB\u770B\u770B\u3002"
+  - key: story.demo.greet.opt.leave
+    value: "\u6211\u8FD8\u6709\u522B\u7684\u4E8B\u3002"
+  - key: story.demo.greet.help
+    value: "\u597D\u5B69\u5B50\u3002\u8DEF\u4E0A\u5F53\u5FC3\uFF0C\u90A3\u8FB9\u7684\u98CE\u4E0D\u592A\u5BFB\u5E38\u3002"
+  - key: story.demo.greet.leave
+    value: "\u2026\u2026\u4E5F\u7F62\u3002\u7B49\u4F60\u6709\u7A7A\u4E86\uFF0C\u518D\u6765\u627E\u6211\u3002"
+  - key: story.demo.report.1
+    value: "\u9152\u74F6\u627E\u5230\u4E86\uFF1F\u592A\u597D\u4E86\uFF0C\u8C22\u8C22\u4F60\uFF0C\u65C5\u884C\u8005\u3002"
+  - key: story.demo.report.2
+    value: "\u8FD9\u70B9\u5FC3\u610F\u8BF7\u6536\u4E0B\uFF0C\u8DEF\u4E0A\u7528\u5F97\u7740\u3002"
+  - key: quest.lost_bottle.title
+    value: "\u9057\u5931\u7684\u9152\u74F6"
+  - key: quest.lost_bottle.step.find
+    value: "\u524D\u5F80\u98CE\u8D77\u5730\u5BFB\u627E\u9152\u74F6"
+  - key: quest.lost_bottle.step.report
+    value: "\u56DE\u53BB\u5411\u8499\u5FB7\u957F\u8005\u590D\u547D"
+  - key: quest.lost_bottle.obj.find
+    value: "\u62B5\u8FBE\u98CE\u8D77\u5730"
+  - key: quest.lost_bottle.obj.report
+    value: "\u4E0E\u8499\u5FB7\u957F\u8005\u5BF9\u8BDD"

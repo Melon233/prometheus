@@ -14,8 +14,15 @@ namespace Xuan.Prometheus.World
     /// </summary>
     internal sealed class PoiGateway : XSystem, IPoiGateway
     {
-        /// <summary>按 ARCH-SYS-005 在使用点解析当前单局会话通道，不长期保存 ServiceSystem 实例。</summary>
-        private static IServiceSystem Service => Core.Gameplay.GetSystem<IServiceSystem>();
+        /// <summary>构造注入的会话通道；依赖写在签名上，注册顺序因此由编译器强制。</summary>
+        private readonly IServiceSystem Service;
+
+        /// <summary>创建 POI 领域网关。</summary>
+        /// <param name="serviceSystem">承载本领域请求的唯一会话通道。</param>
+        public PoiGateway(IServiceSystem serviceSystem)
+        {
+            Service = serviceSystem ?? throw new System.ArgumentNullException(nameof(serviceSystem));
+        }
 
         /// <summary>记录是否已经订阅通用 Push 流，保证订阅与退订严格对称。</summary>
         private bool isPushBound;

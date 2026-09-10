@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1017e42cfc3707040b77382c76b28d2d, type: 3}
+  m_Name: StoryDemoReport
+  m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.Narrative.StoryGraph
+  storyId: story.demo.report
+  stage:
+    fadeSeconds: 0.35
+    hideHud: 1
+    letterboxRatio: 0.12
+    lockInput: 1
+    freezeAiRadius: 0
+    freezeAiCenter: {x: 0, y: 0, z: 0}
+    takeCameraControl: 0
+    cameraPriority: 200
+    actors: []
+    preload: []
+    cinematics: []
+  root:
+    rid: 1678049520039755982
+  references:
+    version: 2
+    RefIds:
+    - rid: 1678049520039755982
+      type: {class: SequenceNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        children:
+        - rid: 1678049520039755983
+        - rid: 1678049520039755984
+    - rid: 1678049520039755983
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: story.demo.report.1
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []
+    - rid: 1678049520039755984
+      type: {class: BeatNode, ns: Xuan.Prometheus.Narrative, asm: Prometheus.Gameplay}
+      data:
+        id: 
+        editorPosition: {x: 0, y: 0}
+        speaker:
+          kind: 4
+          id: elder
+        textKey: story.demo.report.2
+        voiceKey: 
+        advance: 0
+        advanceSeconds: 1
+        attachments: []

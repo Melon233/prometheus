@@ -1,36 +1,18 @@
-using System;
-
 namespace Xuan.Prometheus.Npc
 {
-    /// <summary>保存不依赖场景表现对象的 NPC 运行时状态。</summary>
-    [Serializable]
-    public sealed class NpcRuntimeState
+    /// <summary>一次 NPC 交互的结束原因。</summary>
+    public enum NpcInteractionResult
     {
-        /// <summary>NPC 是否已解锁并允许进入交互判断。</summary>
-        public bool IsUnlocked = true;
+        /// <summary>交互被拒绝：已有活动会话，或该 NPC 当前无话可说。</summary>
+        Rejected,
 
-        /// <summary>业务系统用于切换对话和任务入口的稳定阶段值。</summary>
-        public int Stage;
-    }
+        /// <summary>剧情完整演绎结束。</summary>
+        Completed,
 
-    /// <summary>描述一次 NPC 交互请求，供对话、演出和任务适配器消费。</summary>
-    public readonly struct NpcInteractionContext
-    {
-        /// <summary>创建一份以稳定 POI Id 为键的交互请求。</summary>
-        public NpcInteractionContext(string poiId, string npcId, string interactionId)
-        {
-            PoiId = poiId;
-            NpcId = npcId;
-            InteractionId = interactionId;
-        }
+        /// <summary>剧情被跳过；对世界状态而言与完整演绎等价。</summary>
+        Skipped,
 
-        /// <summary>获取承载 NPC 的世界 POI 标识。</summary>
-        public string PoiId { get; }
-
-        /// <summary>获取 NPC 稳定业务标识。</summary>
-        public string NpcId { get; }
-
-        /// <summary>获取需要由外部适配器解释的交互入口标识。</summary>
-        public string InteractionId { get; }
+        /// <summary>交互被中止：玩家退出、chunk 卸载或系统释放。</summary>
+        Aborted
     }
 }

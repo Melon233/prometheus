@@ -14,4 +14,4 @@ PoiSystem 启动阶段通过业务接口 `IServiceSystem.EnterWorldAsync` 进入
 
 由于项目运行时代码位于显式引用程序集 `Runtime` 中，`Assets/Prometheus/Runtime.asmdef` 已声明对 `Prometheus.NetworkKit` 的依赖，避免兼容外观在 Unity 编译时丢失框架引用。
 
-协议代码由 `Server/gen_proto.ps1` 从 `Server/proto/poi.proto` 生成到 `Server/gen/protocol` 和 `Assets/Gen/Protocol`，禁止手工修改生成文件。
+协议代码由 `Server/gen_proto.ps1` 从 `Server/proto/game.proto` 生成到 `Server/gen/protocol` 和 `Assets/Gen/Protocol`，禁止手工修改生成文件。

@@ -5,7 +5,6 @@ namespace Xuan.Prometheus.Bootstrap
 {
     /// <summary>
     /// 游戏的正式场景入口，只负责创建并驱动 Core 生命周期。
-    /// 启动链路不传递任何参数：资源包名由 AssetKit 固定，各资源地址由使用它的系统各自持有，
     /// 跨场景运行时对象统一挂在 PersistentRoot 下。入口只回答"由谁组合这一局"。
     /// 场景中应只存在一个 Entry，运行时跨场景保留它所在的独立根对象。
     /// </summary>
@@ -17,6 +16,15 @@ namespace Xuan.Prometheus.Bootstrap
 
         /// <summary>由当前入口创建并驱动的唯一运行时核心。</summary>
         private Core runtimeCore;
+
+        /// <summary>本次启动的流程状态机。</summary>
+        private GameFlow flow;
+
+        /// <summary>获取当前所处的启动阶段；流程尚未创建时为 Boot。</summary>
+        public GameFlowStage FlowStage => flow == null ? GameFlowStage.Boot : flow.Stage;
+
+        /// <summary>获取本次启动的流程与它持有的世界栈；启动尚未开始时为空。</summary>
+        public GameFlow Flow => flow;
 
         /// <summary>当前入口持有的 Core；Start 协程执行前可能为空。</summary>
         public Core RuntimeCore => runtimeCore;
@@ -35,18 +43,17 @@ namespace Xuan.Prometheus.Bootstrap
         }
 
         /// <summary>
-        /// 创建并配置 Core，通过 WhenAll 等待每个 Kit 的 AfterNewAsync，随后统一执行同步 AfterNew。
-        /// 组合根在这里被指定：Core 只知道一个安装器，不认识任何具体玩法 System。
+        /// 创建 Core，把启动过程整个交给 <see cref="GameFlow"/>。
+        ///
+        /// 入口本身只回答两件事：谁是唯一入口，以及由谁驱动 Core 的帧循环。
+        /// 「启动经过哪些阶段」属于流程而不属于入口，因此不写在这里。
         /// </summary>
         private async void Start()
         {
             if (current != this) return;
-
             runtimeCore = new Core();
-            runtimeCore.Configure(new PrometheusSystemInstaller());
-            await UniTask.WhenAll(runtimeCore.CreateAfterNewTasks());
-            runtimeCore.AfterNew();
-            Core.UI.OpenPanel<HudPanel>();
+            flow = new GameFlow(runtimeCore);
+            await flow.RunAsync();
         }
 
         /// <summary>将 Unity 帧循环转交给普通 C# Core，未完成初始化时 Core 不会驱动 Kit。</summary>
@@ -61,6 +68,7 @@ namespace Xuan.Prometheus.Bootstrap
             if (current != this) return;
             runtimeCore?.Dispose();
             runtimeCore = null;
+            flow = null;
             current = null;
         }
     }

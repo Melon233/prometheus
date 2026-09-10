@@ -1,11 +1,11 @@
 # NpcSystem 设计说明
 
-> 状态：设计稿。当前实现只有会话串行化（`NpcSystem.cs`，51 行）
+> 状态：**L0–L4 已实现**（2026-09-08）。交互编排、对话绑定查询、头顶标记、对话内接取、追踪与指引均已落地并在 Play 模式验证
 > 定位：NPC 的身份、**交互编排**与任务接取入口
 > 不承担：任务规则（`QuestSystem`）、演出（`NarrativeSystem`）、NPC 的场景显隐与生命周期（`PoiSystem`）
 > 命名空间：`Xuan.Prometheus.Npc`
 > 参考对象：原神的 NPC 对话分流、头顶任务标记与对话内接取
-> 日期：2026-09-07
+> 日期：2026-09-07（L0 完成于 2026-09-08，见 §9）
 
 ---
 
@@ -48,13 +48,16 @@
 
 QuestSystem 与 NarrativeSystem 都只是被调用方。这不是风格偏好——它决定了这两个系统能否脱离场景在 EditMode 下单测（现在能，且必须保持能）。
 
-### 因此必须删除的反向依赖
+### 因此必须删除的反向依赖（L0，已完成 2026-09-08）
 
 | 位置 | 内容 | 处置 |
 |---|---|---|
-| `../QuestSystem/QuestSystem.cs:26-33` | `AfterNew()` 里解析 `INpcSystem` 并订阅 `InteractionRequested` | 删除 |
-| `../QuestSystem/QuestSystem.cs:150` | `Dispose()` 里的对应退订 | 删除 |
-| `../QuestSystem/QuestNpcAdapter.cs` | 整个文件 | 删除 |
+| `../QuestSystem/QuestSystem.cs` `AfterNew()` | 解析 `INpcSystem` 并订阅 `InteractionRequested` | 已删除（`AfterNew` 重载随之整体消失） |
+| `../QuestSystem/QuestSystem.cs` `Dispose()` | 对应退订与两个字段 | 已删除 |
+| `../QuestSystem/QuestNpcAdapter.cs` | 整个文件 | 已删除 |
+| `../QuestSystem/QuestEventAdapters.cs` | 整个文件（零调用方的死代码，且引用已移除的 FilmSystem 概念） | 已删除 |
+
+`INpcSystem.InteractionRequested` 暂时保留：它当前零订阅方，由 L3 的 `InteractAsync` 一并替换。
 
 替代方案：NpcSystem 在演出结束后主动发布一条任务事件（§4.3）。方向从「任务系统偷听 NPC」翻转为「NPC 主动上报」，环随之消失。
 
@@ -168,7 +171,7 @@ PoiMono.OnInteract()                                   PoiMono.cs:80
 
 ### 4.4 剧情内部产生的分支结果
 
-剧情图里的选项会写剧情变量（`flag.*` / `var.*`）。任务条件可以直接读它们——两个系统的变量存储互为投影（`../QuestSystem/QuestSystemDesign.md` §5.2），不需要 NpcSystem 转手搬运。
+剧情图里的选项会写剧情变量（`flag.*` / `var.*`）。任务条件可以直接读它们——两个系统写进同一份 `VariableStore`，按根段各管各的（`../QuestSystem/QuestLoopIntegration.md` §4），不需要 NpcSystem 转手搬运。
 
 所以「玩家在对话里选了什么」不走事件载荷，走变量。**事件表达「发生了什么」，变量表达「现在是什么」**，两者不重叠。
 
@@ -185,7 +188,7 @@ NPC 被 `PoiSystem` 回收时必须先取消会话再回收表现对象；顺序
 ### 5.1 枚举
 
 ```csharp
-public enum NpcMarker
+public enum QuestMarker
 {
     None,                  // 无
     QuestAvailable,        // 金色感叹号：可接主线 / 传说任务
@@ -194,6 +197,9 @@ public enum NpcMarker
     QuestTurnIn            // 问号：可交付 / 可推进
 }
 ```
+
+枚举落在**任务系统**而不是 NPC 系统（本文早期版本叫它 `NpcMarker`）：标记值配在 `DialogueBinding.Marker` 上、
+由任务作者书写，让它归 NPC 系统会使任务资产反过来依赖 NPC 系统。
 
 ### 5.2 标记的来源
 
@@ -212,7 +218,27 @@ event Action<string> MarkerChanged;       // 参数为 npcId
 
 ### 5.3 表现
 
-`NpcMarkerMono` 挂在 NPC 的 POI 表现对象上，订阅 `MarkerChanged`，切换图标显隐。它属于表现层，不保存任何状态。
+`NpcMarkerMono` 挂在 NPC 的 POI 表现对象上，订阅 `MarkerChanged`，把当前标记映射到一组图标对象的显隐。
+它属于表现层，不保存任何状态，也不判断该显示什么——标记值由任务系统与对话内容一次解析同时产出。
+
+四个档位的图标对象由美术在预制体上摆好并逐个指到组件字段上；没有指定的档位就什么都不显示，
+因此这个组件在美术出图之前也能挂上去而不报错。
+
+### 5.4 追踪与指引（L4）
+
+| 部件 | 位置 | 职责 |
+|---|---|---|
+| HUD 追踪条 | `UI/HudPanel/`，绑定 `QuestTrackerRoot` / `QuestTitleText` / `QuestStepText` | 显示当前追踪任务的标题、步骤描述与目标行进度 |
+| 小地图指引点 | `HudPanel.RebuildMinimapGuideMarker` | 视口内才画，视口外自然剔除 |
+| 大地图指引点 | `MapPanel.CreateQuestGuideMarker` | 全图可见 |
+| 坐标换算 | `../PoiSystem/QuestGuideLocator` | 两处地图共用，因此不可能指向不同的地方 |
+| 区域触发器 | `../PoiSystem/RegionTriggerMono` | 玩家进入具名区域时投喂 `world.entered_region` |
+
+追踪目标由任务系统自动维护：接下第一个任务时自动追它，被追的任务结束后自动改追另一条仍在进行的线。
+玩家不必先去任务界面点一下才看得到指引——这也是任务界面尚未实现却不影响闭环可玩的原因。
+
+**导航目标存的是语义而不是坐标**：任务里写的是「去找长者」而不是「去 (123, 0, 456)」，
+换算由 `QuestGuideLocator` 在世界侧完成。于是 NPC 被挪了位置，旧存档里的导航目标依然正确。
 
 ---
 
@@ -268,22 +294,18 @@ public interface INpcSystem : ISystemContract
     /// 读取 NPC 当前的头顶标记。
     NpcMarker GetMarker(string npcId);
 
-    /// 读取 NPC 阶段值，供任务表达式的 npc.stage(id) 投影使用。
-    int GetStage(string npcId);
-
-    /// 由任务的一次性动作写入 NPC 阶段值。
-    void SetStage(string npcId, int stage);
-
     /// 执行一次完整交互：查询绑定、加载剧情、进入舞台、演出、上报、还原。
     UniTask<NpcInteractionResult> InteractAsync(PoiMono npc, CancellationToken cancellationToken = default);
 
     /// 中止当前交互；chunk 卸载与外部打断使用。
     void CancelInteraction();
-
-    string CaptureSnapshot();
-    void RestoreSnapshot(string json);
 }
 ```
+
+> **落地时的一处收窄（2026-09-08）**：`GetStage` / `SetStage` 与两个快照方法**没有实现**。
+> 它们服务于任务条件里的 `npc.stage(id)`，而那需要一个 `SetNpcStageAction` 才有人写——三者当前都不存在。
+> 先把契约摆上去只会重演本文 §2 记的那个错误：`NpcRuntimeState.Stage` 从头到尾是个没人读写的死字段。
+> 等第一条真正需要 NPC 阶段的任务出现时再一并补齐，届时 NpcSystem 才会有需要存档的状态。
 
 删除的成员及理由：
 
@@ -316,19 +338,22 @@ public interface INpcSystem : ISystemContract
 
 期号与 `../QuestSystem/QuestSystemDesign.md` §10 的任务系统期号独立，用 L（Loop）前缀区分。
 
-| 期 | 内容 | 依赖 | 完成标志 |
-|---|---|---|---|
-| **L0** | 断开反向依赖：删 `QuestNpcAdapter` 与 `QuestSystem.AfterNew` 的订阅 | — | 编译通过，QuestSystem 零向外依赖 |
-| **L1** | `DialoguePanel` 实现 `IDialogueView`；运行时 `StageServices` 装配 | — | 在 `MainWorld` 里能演一段 `StoryGraph` |
-| **L2** | 任务内核（= 任务系统第 1 期） | — | EditMode 全测通过 |
-| **L3** | `InteractAsync` 编排 + `ResolveDialogue` 查询 + 事件上报 | L1, L2 | **对话推进任务**，闭环主干贯通 |
-| **L4** | 头顶标记 + HUD 任务追踪 + 地图指引点 | L3 | 玩家不看文档也知道去哪 |
-| **L5** | 奖励落地到 `BagSystem` + 两份快照并入存档 | L3 | 读档后追踪与标记正确恢复 |
-| **L6** | `IQuestGateway`，任务状态服务器权威 | L5 | — |
+| 期 | 内容 | 依赖 | 完成标志 | 状态 |
+|---|---|---|---|---|
+| **L0** | 断开反向依赖：删 `QuestNpcAdapter` 与 `QuestSystem.AfterNew` 的订阅 | — | 编译通过，QuestSystem 零向外依赖 | **已完成 2026-09-08** |
+| **L1** | `DialoguePanel` 实现 `IDialogueView`；运行时 `StageServices` 装配 | — | 在 `MainWorld` 里能演一段 `StoryGraph` | **已完成 2026-09-08** |
+| **L2** | 任务内核（= 任务系统第 1 期） | — | EditMode 全测通过 | **已完成 2026-09-08**（18 用例） |
+| **L3** | `InteractAsync` 编排 + `ResolveDialogue` 查询 + 事件上报 | L1, L2 | **对话推进任务**，闭环主干贯通 | **已完成 2026-09-08** |
+| **L4** | 头顶标记 + HUD 任务追踪 + 地图指引点 + 区域触发器 | L3 | 玩家不看文档也知道去哪 | **已完成 2026-09-08** |
+| **L5** | 奖励落地到 `BagSystem` + 两份快照并入存档 | L3 | 读档后追踪与标记正确恢复 | 未开始 |
+| **L6** | `IQuestGateway`，任务状态服务器权威 | L5 | — | 未开始 |
 
-L1 与 L2 互不依赖，可并行。
+L1 交付内容与落地取舍见 `../NarrativeSystem/NarrativeLoopIntegration.md` §8 / §9。
+它解掉的是当时的硬性阻塞点：`NarrativeSystem.cs` 在没有注入 `IDialogueView` 时直接抛 `InvalidOperationException`，
+而当时全工程唯一的实现是 Demo 场景里的 `SimpleDialogueView` 与测试用的 `NullDialogueView`。
 
-**L1 是当前的硬性阻塞点**：`NarrativeSystem.cs:220` 在没有注入 `IDialogueView` 时直接抛 `InvalidOperationException`，而全工程唯一的实现是 Demo 场景里的 `SimpleDialogueView` 与测试用的 `NullDialogueView`。在 `MainWorld` 里现在调 `PlayAsync` 必然抛异常。
+下一步是 **L5 奖励落地与存档**：`RewardGranted` 目前仍零消费方，任务完成会发出奖励声明但没有人写进背包；
+任务与 NPC 的快照也还没有并入统一存档流程。
 
 ---
 

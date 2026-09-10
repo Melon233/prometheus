@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Xuan.Prometheus.Expression;
 
 namespace Xuan.Prometheus.Narrative
 {

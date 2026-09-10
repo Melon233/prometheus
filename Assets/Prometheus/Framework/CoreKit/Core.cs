@@ -15,8 +15,6 @@ namespace Xuan.Prometheus
         private readonly XMap<Type, Kit> kits = new XMap<Type, Kit>();
         /// <summary>保存确定性的初始化顺序，并在释放时按相反顺序遍历。</summary>
         private readonly List<Kit> kitInitializationOrder = new List<Kit>();
-        /// <summary>标记最后注册的 GameplayKit 已经配置完成。</summary>
-        private bool isConfigured;
         /// <summary>标记异步资源初始化正在进行，禁止重复启动入口流程。</summary>
         private bool isInitializing;
         /// <summary>标记当前 Core 已完成释放，阻止失效上下文继续被访问。</summary>
@@ -30,12 +28,14 @@ namespace Xuan.Prometheus
         public static IEventKit Event { get; internal set; }
         /// <summary>快速访问当前正式注册的 UI 模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
         public static IUIKit UI { get; internal set; }
-        /// <summary>快速访问最后注册并已配置的玩法模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
+        /// <summary>快速访问玩法会话工厂；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
         public static IGameplayKit Gameplay { get; internal set; }
 
         /// <summary>
-        /// 创建唯一 Core，并先注册 AssetKit、EventKit 和 UIKit 三个基础模块。
-        /// GameplayKit 在 Configure 中由玩法组合根创建，并作为最后一个 Kit 注册。
+        /// 创建唯一 Core，并注册四个基础模块。
+        /// GameplayKit 在这里就位，但它只是**会话工厂**：本次构造不产生任何玩法 System。
+        /// 具体由哪些 System 组成一局，要等登录之后由 <see cref="IGameplayKit.CreateSessionAsync"/> 决定，
+        /// 因此从启动到登录界面只需要走完 Kit 初始化，不加载任何玩法配置。
         /// </summary>
         public Core()
         {
@@ -44,32 +44,17 @@ namespace Xuan.Prometheus
             RegisterKit<IAssetKit>(new AssetKit());
             RegisterKit<IEventKit>(new EventKit());
             RegisterKit<IUIKit>(new UIKit());
+            RegisterKit<IGameplayKit>(new GameplayKit());
         }
 
         /// <summary>所有 Kit 是否都已完成异步 AfterNewAsync 和同步 AfterNew。</summary>
         public bool IsReady { get; private set; }
-
-        /// <summary>
-        /// 创建并注册最后一个 Kit。
-        /// Core 只接受一个玩法组合根：具体由哪些 System 组成一局完全由组合根决定，
-        /// 因此框架层不需要认识任何玩法参数类型，启动链路也不再传递任何配置值。
-        /// </summary>
-        /// <param name="installer">玩法层提供的单局组合根。</param>
-        public void Configure(IGameplaySystemInstaller installer)
-        {
-            ThrowIfDisposed();
-            if (installer == null) throw new ArgumentNullException(nameof(installer));
-            if (isConfigured) throw new InvalidOperationException("Core can only be configured once.");
-            RegisterKit<IGameplayKit>(new GameplayKit(installer));
-            isConfigured = true;
-        }
 
         /// <summary>为 Entry 创建所有 Kit 的异步初始化任务，使 Entry 可以通过 UniTask.WhenAll 统一等待。</summary>
         /// <returns>按照 Kit 注册顺序创建的异步初始化任务数组。</returns>
         public UniTask[] CreateAfterNewTasks()
         {
             ThrowIfDisposed();
-            if (!isConfigured) throw new InvalidOperationException("Core must be configured before creating AfterNewAsync tasks.");
             if (IsReady) throw new InvalidOperationException("Core is already initialized.");
             if (isInitializing) throw new InvalidOperationException("Core asynchronous initialization is already in progress.");
             isInitializing = true;
@@ -120,7 +105,6 @@ namespace Xuan.Prometheus
             UI = null;
             Gameplay = null;
             PersistentRoot.Reset();
-            isConfigured = false;
             isInitializing = false;
             isDisposed = true;
         }

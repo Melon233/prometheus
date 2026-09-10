@@ -8,7 +8,6 @@ using UnityEngine.InputSystem.OnScreen;
 using UnityEngine.UI;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
-using Xuan.Prometheus.Effects;
 using UnityInputSystem = UnityEngine.InputSystem.InputSystem;
 
 namespace Xuan.Prometheus.Input.Tests
@@ -29,7 +28,6 @@ namespace Xuan.Prometheus.Input.Tests
         public void GameplayKit_RegistersUniqueInputSystem()
         {
             GameObject runtimeRoot = new GameObject("InputSystemTests.RuntimeRoot");
-            EffectLibrary effectLibrary = ScriptableObject.CreateInstance<EffectLibrary>();
             AssetKit assetKit = new AssetKit();
             Core.Asset = assetKit;
             IEventKit previousEventKit = Core.Event;
@@ -39,7 +37,7 @@ namespace Xuan.Prometheus.Input.Tests
             Core.Gameplay = gameplayKit;
             try
             {
-                new PrometheusSystemInstaller(effectLibrary).RegisterSystems(gameplayKit);
+                new PrometheusSystemInstaller().Install(gameplayKit);
                 IInputSystem inputSystem = gameplayKit.GetSystem<IInputSystem>();
                 Assert.That(inputSystem, Is.Not.Null);
                 Assert.That(inputSystem.DefaultSourceId, Is.EqualTo(UnityInputActionSource.LocalSourceId));
@@ -52,7 +50,6 @@ namespace Xuan.Prometheus.Input.Tests
                 Core.Event = previousEventKit;
                 assetKit.Dispose();
                 Core.Asset = null;
-                UnityEngine.Object.DestroyImmediate(effectLibrary);
                 UnityEngine.Object.DestroyImmediate(runtimeRoot);
             }
         }
@@ -64,7 +61,7 @@ namespace Xuan.Prometheus.Input.Tests
             FakeInputSource source = new FakeInputSource("Test", new Vector2(0.75f, -0.25f), true, true);
             RecordingReceiver movementReceiver = new RecordingReceiver();
             RecordingReceiver attackReceiver = new RecordingReceiver();
-            using (InputSystem inputSystem = new InputSystem(source))
+            using (InputSystem inputSystem = new InputSystem(source, new EntitySystem()))
             {
                 inputSystem.AcquireControl(source.SourceId, movementReceiver, InputActionMask.Move, InputContexts.Gameplay);
                 inputSystem.AcquireControl(source.SourceId, attackReceiver, InputActionMask.Attack, InputContexts.Gameplay);
@@ -87,7 +84,7 @@ namespace Xuan.Prometheus.Input.Tests
             FakeInputSource source = new FakeInputSource("Test", Vector2.right, true, true);
             RecordingReceiver defaultReceiver = new RecordingReceiver();
             RecordingReceiver takeoverReceiver = new RecordingReceiver();
-            using (InputSystem inputSystem = new InputSystem(source))
+            using (InputSystem inputSystem = new InputSystem(source, new EntitySystem()))
             {
                 inputSystem.AcquireControl(source.SourceId, defaultReceiver, InputActionMask.Gameplay, InputContexts.Gameplay);
                 ControlLease takeoverLease = inputSystem.AcquireControl(source.SourceId, takeoverReceiver, InputActionMask.Move, InputContexts.Gameplay, 10);
@@ -107,7 +104,7 @@ namespace Xuan.Prometheus.Input.Tests
         public void SameTierExclusiveOverlap_IsRejected()
         {
             FakeInputSource source = new FakeInputSource("Test", Vector2.zero, false, false);
-            using (InputSystem inputSystem = new InputSystem(source))
+            using (InputSystem inputSystem = new InputSystem(source, new EntitySystem()))
             {
                 inputSystem.AcquireControl(source.SourceId, new RecordingReceiver(), InputActionMask.Move, InputContexts.Gameplay);
                 InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => inputSystem.AcquireControl(source.SourceId, new RecordingReceiver(), InputActionMask.Move | InputActionMask.Attack, InputContexts.Gameplay));
@@ -122,7 +119,7 @@ namespace Xuan.Prometheus.Input.Tests
             FakeInputSource source = new FakeInputSource("Test", Vector2.up, false, false);
             RecordingReceiver first = new RecordingReceiver();
             RecordingReceiver second = new RecordingReceiver();
-            using (InputSystem inputSystem = new InputSystem(source))
+            using (InputSystem inputSystem = new InputSystem(source, new EntitySystem()))
             {
                 inputSystem.AcquireControl(source.SourceId, first, InputActionMask.Move, InputContexts.Gameplay, 0, InputDeliveryMode.Shared);
                 inputSystem.AcquireControl(source.SourceId, second, InputActionMask.Move, InputContexts.Gameplay, 0, InputDeliveryMode.Shared);
@@ -139,7 +136,7 @@ namespace Xuan.Prometheus.Input.Tests
             FakeInputSource source = new FakeInputSource("Test", Vector2.zero, true, false);
             RecordingReceiver owner = new RecordingReceiver();
             RecordingReceiver observer = new RecordingReceiver();
-            using (InputSystem inputSystem = new InputSystem(source))
+            using (InputSystem inputSystem = new InputSystem(source, new EntitySystem()))
             {
                 inputSystem.AcquireControl(source.SourceId, owner, InputActionMask.Attack, InputContexts.Gameplay);
                 inputSystem.AcquireControl(source.SourceId, observer, InputActionMask.Attack, InputContexts.Debug, 0, InputDeliveryMode.Observe);

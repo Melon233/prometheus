@@ -11,8 +11,15 @@ namespace Xuan.Prometheus
     /// </summary>
     internal sealed class BagGateway : XSystem, IBagGateway
     {
-        /// <summary>按 ARCH-SYS-005 在使用点解析当前单局会话通道，不长期保存 ServiceSystem 实例。</summary>
-        private static IServiceSystem Service => Core.Gameplay.GetSystem<IServiceSystem>();
+        /// <summary>构造注入的会话通道；依赖写在签名上，注册顺序因此由编译器强制。</summary>
+        private readonly IServiceSystem Service;
+
+        /// <summary>创建背包领域网关。</summary>
+        /// <param name="serviceSystem">承载本领域请求的唯一会话通道。</param>
+        public BagGateway(IServiceSystem serviceSystem)
+        {
+            Service = serviceSystem ?? throw new System.ArgumentNullException(nameof(serviceSystem));
+        }
 
         /// <inheritdoc />
         public async UniTask<GetItemsResponse> GetItemsAsync(CancellationToken cancellationToken = default)

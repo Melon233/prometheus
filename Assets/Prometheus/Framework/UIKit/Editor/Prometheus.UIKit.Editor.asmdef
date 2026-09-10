@@ -4,7 +4,9 @@
     "references": [
         "Prometheus.Framework",
         "Prometheus.Gameplay",
-        "Prometheus.UI"
+        "Prometheus.UI",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Xuan.Prometheus.Effects
@@ -9,26 +10,33 @@ namespace Xuan.Prometheus.Effects
     /// </summary>
     internal sealed class EffectSystem : XSystem, IEffectSystem
     {
-        /// <summary>本系统默认效果配置库的 YooAsset 地址；组合根据此在启动阶段异步加载。</summary>
-        public const string DefaultLibraryAddress = "EffectLibrary";
+        /// <summary>本系统默认效果配置库的 YooAsset 地址；由本系统自己在 AfterNewAsync 加载，不外泄。</summary>
+        private const string DefaultLibraryAddress = "EffectLibrary";
 
         private readonly int randomSeed;
         private readonly bool logTrace;
-        private readonly EffectLibrary defaultLibrary;
+        private EffectLibrary defaultLibrary;
         private EffectRuntime runtime;
         private bool isDisposed;
 
-        /// <summary>
-        /// 创建一个单局效果系统，并显式接收正式玩法使用的持久化效果库。
-        /// </summary>
-        /// <param name="library">当前单局使用的默认效果库；必须由玩法入口显式注入。</param>
+        /// <summary>创建一个单局效果系统；默认效果库始终由本系统按内部地址加载。</summary>
         /// <param name="randomSeed">EffectRuntime 使用的确定性随机种子。</param>
         /// <param name="traceEnabled">是否把 EffectRuntime 诊断信息转发到 Unity Console。</param>
-        public EffectSystem(EffectLibrary library, int randomSeed = 1977, bool traceEnabled = false)
+        public EffectSystem(int randomSeed = 1977, bool traceEnabled = false)
         {
-            defaultLibrary = library != null ? library : throw new ArgumentNullException(nameof(library));
             this.randomSeed = randomSeed;
             logTrace = traceEnabled;
+        }
+
+        /// <summary>
+        /// 按地址加载本系统自己的配置库。
+        /// 资源地址是本系统的私有实现细节，因此由本系统自己加载而不是让组合根代劳。
+        /// </summary>
+        public override async UniTask AfterNewAsync()
+        {
+            EffectLibrary loadedLibrary = null;
+            await Core.Asset.LoadAssetAsync<EffectLibrary>(DefaultLibraryAddress, library => loadedLibrary = library, error => throw new InvalidOperationException(error)).ToUniTask();
+            defaultLibrary = loadedLibrary;
         }
 
         /// <summary>

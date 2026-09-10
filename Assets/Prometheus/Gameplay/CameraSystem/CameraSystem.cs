@@ -57,14 +57,17 @@ namespace Xuan.Prometheus
         private CutsceneCameraLease activeCutsceneCameraLease;
 
         /// <summary>保存当前玩法世界的实体查询入口。</summary>
-        private IEntitySystem entitySystem;
+        /// <summary>构造注入的实体容器，用于解析相机跟随目标。</summary>
+        private readonly IEntitySystem entitySystem;
 
         /// <summary>标记当前系统已经完成释放，避免失效事件继续修改相机目标。</summary>
         private bool isDisposed;
 
-        /// <summary>使用玩法入口的常驻根节点创建相机系统配置。</summary>
-        public CameraSystem()
+        /// <summary>创建相机系统。</summary>
+        /// <param name="entitySystem">解析跟随目标所需的实体容器。</param>
+        public CameraSystem(IEntitySystem entitySystem)
         {
+            this.entitySystem = entitySystem ?? throw new ArgumentNullException(nameof(entitySystem));
         }
 
         /// <summary>获取当前单局负责实际渲染的 Unity Camera。</summary>
@@ -95,10 +98,21 @@ namespace Xuan.Prometheus
         public override void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CameraSystem));
-            entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             CreateCameraObjects();
             PrometheusRenderQualityController.QualityChanged += OnRenderQualityChanged;
             Core.Event.AddListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
+        }
+
+        /// <summary>
+        /// 离开世界前把跟随参考节点收回系统根对象。
+        ///
+        /// 相机本体挂在 PersistentRoot 下，是会话级的；但参考节点在绑定时被挂到了**角色身下**，
+        /// 而角色随场景销毁——不收回的话，下一个世界里 followTarget 就是一个已销毁对象的引用。
+        /// </summary>
+        public override void OnWorldExit()
+        {
+            if (isDisposed) return;
+            DetachFollowTarget();
         }
 
         /// <summary>释放小队事件和全部系统创建的运行时对象；角色 Prefab 不再持有任何相机资源。</summary>
@@ -117,7 +131,6 @@ namespace Xuan.Prometheus
             outputCamera = null;
             outputCameraData = null;
             cameraSystemRoot = null;
-            entitySystem = null;
             isDisposed = true;
         }
 

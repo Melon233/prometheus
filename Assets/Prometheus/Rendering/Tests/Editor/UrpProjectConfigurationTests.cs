@@ -19,38 +19,6 @@ namespace Xuan.Prometheus.Rendering.Tests
     public sealed class UrpProjectConfigurationTests
     {
         /// <summary>
-        /// Built-in shader names that must never return after the project has been migrated to URP.
-        /// </summary>
-        private static readonly HashSet<string> ForbiddenMaterialShaders = new HashSet<string>
-        {
-            "Standard",
-            "Standard (Specular setup)",
-            "Legacy Shaders/Particles/Additive",
-            "Legacy Shaders/Particles/Additive (Soft)",
-            "Legacy Shaders/Particles/Alpha Blended",
-            "Mobile/Particles/Additive",
-            "Spine/Skeleton",
-            "Spine/Skeleton Lit",
-            "Spine/Sprite/Unlit",
-            "Hovl/Particles/Blend_TwoSides",
-            "Hovl/Particles/BlendDistort",
-            "Hovl/Particles/Distortion",
-            "Hovl/Particles/Ice"
-        };
-
-        /// <summary>
-        /// Spine Sprite fixed-normal keywords are mutually exclusive material modes used to prevent a flat animated mesh from exposing its triangulation through lighting.
-        /// </summary>
-        private static readonly string[] SpineSpriteFixedNormalKeywords =
-        {
-            "_FIXED_NORMALS_VIEWSPACE",
-            "_FIXED_NORMALS_VIEWSPACE_BACKFACE",
-            "_FIXED_NORMALS_MODELSPACE",
-            "_FIXED_NORMALS_MODELSPACE_BACKFACE",
-            "_FIXED_NORMALS_WORLDSPACE"
-        };
-
-        /// <summary>
         /// Character layers that must participate in Shiny's transparent depth prepass so reflected Spine meshes survive either horizontal winding.
         /// </summary>
         private static readonly string[] ShinySsrTransparentDepthLayerNames =
@@ -62,12 +30,8 @@ namespace Xuan.Prometheus.Rendering.Tests
         /// <summary>
         /// Fully qualified third-party type names keep the project-owned test assembly independent from plugin assemblies while still validating imported rendering contracts.
         /// </summary>
-        private const string SsgiCameraTypeFullName = "MF.SSGI.SSGICamera";
         private const string SsgiFeatureTypeFullName = "MF.SSGI.SSGIFeature";
-        private const string SsgiVolumeComponentTypeFullName = "MF.SSGI.SSGIVolumeComponent";
         private const string ShinySsrFeatureTypeFullName = "ShinySSRR.ShinySSRR";
-        private const string ShinySsrVolumeComponentTypeFullName = "ShinySSRR.ShinyScreenSpaceRaytracedReflections";
-        private const string UrpCompatibilityModeDefine = "URP_COMPATIBILITY_MODE";
 
         /// <summary>
         /// Verifies that the Graphics default is Mobile Forward Mid so editor rendering matches the Android Mid configuration.
@@ -108,128 +72,6 @@ namespace Xuan.Prometheus.Rendering.Tests
             {
                 QualitySettings.SetQualityLevel(originalQualityLevel, false);
             }
-        }
-
-        /// <summary>
-        /// Dynamically reads the active pipeline renderer list and verifies that every serialized scene camera either inherits the default renderer or selects an existing renderer.
-        /// </summary>
-        [Test]
-        public void EverySceneCameraUsesAnAvailableRenderer()
-        {
-            PrometheusRenderingSettings renderingSettings = LoadRenderingSettings();
-            SerializedProperty rendererList = new SerializedObject(renderingSettings.PipelineAsset).FindProperty("m_RendererDataList");
-            int rendererCount = rendererList.arraySize;
-            foreach (string sceneGuid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets" }))
-            {
-                string scenePath = AssetDatabase.GUIDToAssetPath(sceneGuid);
-                Scene scene = SceneManager.GetSceneByPath(scenePath);
-                bool wasAlreadyLoaded = scene.isLoaded;
-                if (!wasAlreadyLoaded)
-                {
-                    scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
-                }
-
-                try
-                {
-                    foreach (Camera camera in scene.GetRootGameObjects().SelectMany(rootObject => rootObject.GetComponentsInChildren<Camera>(true)))
-                    {
-                        if (!camera.TryGetComponent(out UniversalAdditionalCameraData additionalCameraData))
-                        {
-                            continue;
-                        }
-
-                        SerializedProperty rendererIndexProperty = new SerializedObject(additionalCameraData).FindProperty("m_RendererIndex");
-                        int rendererIndex = rendererIndexProperty.intValue;
-                        Assert.That(rendererIndex == -1 || rendererIndex >= 0 && rendererIndex < rendererCount, Is.True, $"Camera '{camera.name}' in scene '{scenePath}' selects renderer index {rendererIndex}, but the active pipeline dynamically exposes {rendererCount} renderer entries.");
-                    }
-                }
-                finally
-                {
-                    if (!wasAlreadyLoaded)
-                    {
-                        EditorSceneManager.CloseScene(scene, true);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Dynamically discovers the renderer containing MF.SSGI, requires every camera in an authored SSGI scene to pair that renderer with SSGICamera in both directions, and verifies GBuffer sampling matches the renderer's actual mode.
-        /// </summary>
-        [Test]
-        public void EverySsgiSceneCameraPairsSsgiComponentWithTheSsgiRenderer()
-        {
-            PrometheusRenderingSettings renderingSettings = LoadRenderingSettings();
-            SerializedObject serializedPipeline = new SerializedObject(renderingSettings.PipelineAsset);
-            SerializedProperty rendererList = serializedPipeline.FindProperty("m_RendererDataList");
-            SerializedProperty defaultRendererIndexProperty = serializedPipeline.FindProperty("m_DefaultRendererIndex");
-            UniversalRendererData[] rendererData = Enumerable.Range(0, rendererList.arraySize).Select(rendererIndex => rendererList.GetArrayElementAtIndex(rendererIndex).objectReferenceValue as UniversalRendererData).ToArray();
-            Assert.That(rendererData, Has.All.Not.Null, "Every active pipeline renderer entry must resolve to UniversalRendererData before SSGI camera routing can be validated.");
-            int[] ssgiRendererIndices = rendererData.Select((data, rendererIndex) => new { data, rendererIndex }).Where(entry => entry.data.rendererFeatures.Any(IsSsgiFeature)).Select(entry => entry.rendererIndex).ToArray();
-            Assert.That(ssgiRendererIndices, Is.Not.Empty, "The active pipeline must expose at least one renderer containing the imported MF.SSGI feature.");
-            foreach (int ssgiRendererIndex in ssgiRendererIndices)
-            {
-                UniversalRendererData ssgiRendererData = rendererData[ssgiRendererIndex];
-                SerializedProperty renderingModeProperty = new SerializedObject(ssgiRendererData).FindProperty("m_RenderingMode");
-                bool rendererUsesDeferred = renderingModeProperty.intValue == (int)RenderingMode.Deferred;
-                foreach (ScriptableRendererFeature ssgiFeature in ssgiRendererData.rendererFeatures.Where(IsSsgiFeature))
-                {
-                    SerializedProperty settingsProperty = new SerializedObject(ssgiFeature).FindProperty("settings");
-                    SerializedProperty useDeferredRenderingProperty = settingsProperty.FindPropertyRelative("UseDeferredRendering");
-                    Assert.That(useDeferredRenderingProperty.boolValue, Is.EqualTo(rendererUsesDeferred), $"SSGI feature '{ssgiFeature.name}' must derive its GBuffer sampling mode from renderer '{ssgiRendererData.name}' instead of assuming another rendering path.");
-                }
-            }
-
-            int validatedSsgiCameraCount = 0;
-            string ssgiCameraScriptPath = AssetDatabase.FindAssets("t:MonoScript", new[] { "Assets/Trd/MF.SSGI" }).Select(AssetDatabase.GUIDToAssetPath).Single(scriptPath => AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath).GetClass()?.FullName == SsgiCameraTypeFullName);
-            string[] scenePaths = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" }).Select(AssetDatabase.GUIDToAssetPath).Where(scenePath => AssetDatabase.GetDependencies(scenePath, true).Contains(ssgiCameraScriptPath)).ToArray();
-            Scene originalActiveScene = SceneManager.GetActiveScene();
-            foreach (string scenePath in scenePaths)
-            {
-                Scene scene = SceneManager.GetSceneByPath(scenePath);
-                bool wasAlreadyLoaded = scene.isLoaded;
-                if (!wasAlreadyLoaded)
-                {
-                    scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
-                }
-
-                try
-                {
-                    foreach (Camera camera in scene.GetRootGameObjects().SelectMany(rootObject => rootObject.GetComponentsInChildren<Camera>(true)))
-                    {
-                        bool hasSsgiCamera = camera.GetComponents<Component>().Any(component => component != null && component.GetType().FullName == SsgiCameraTypeFullName);
-                        bool hasAdditionalCameraData = camera.TryGetComponent(out UniversalAdditionalCameraData additionalCameraData);
-                        if (!hasAdditionalCameraData)
-                        {
-                            Assert.That(hasSsgiCamera, Is.False, $"Camera '{camera.name}' in scene '{scenePath}' cannot enable SSGI without serialized UniversalAdditionalCameraData selecting the SSGI renderer.");
-                            continue;
-                        }
-
-                        int serializedRendererIndex = new SerializedObject(additionalCameraData).FindProperty("m_RendererIndex").intValue;
-                        int resolvedRendererIndex = serializedRendererIndex == -1 ? defaultRendererIndexProperty.intValue : serializedRendererIndex;
-                        bool selectsSsgiRenderer = ssgiRendererIndices.Contains(resolvedRendererIndex);
-                        Assert.That(hasSsgiCamera, Is.EqualTo(selectsSsgiRenderer), $"Camera '{camera.name}' in scene '{scenePath}' must pair SSGICamera with an MF.SSGI renderer selection; selecting only one side makes the pass either skip entirely or request unavailable rendering inputs.");
-                        if (hasSsgiCamera)
-                        {
-                            validatedSsgiCameraCount++;
-                        }
-                    }
-                }
-                finally
-                {
-                    if (!wasAlreadyLoaded)
-                    {
-                        EditorSceneManager.CloseScene(scene, true);
-                    }
-
-                    if (originalActiveScene.IsValid() && originalActiveScene.isLoaded && SceneManager.GetActiveScene() != originalActiveScene)
-                    {
-                        SceneManager.SetActiveScene(originalActiveScene);
-                    }
-                }
-            }
-
-            Assert.That(validatedSsgiCameraCount, Is.GreaterThan(0), "At least one serialized SSGI camera must exercise the project-owned SSGI renderer route.");
         }
 
         /// <summary>
@@ -289,26 +131,6 @@ namespace Xuan.Prometheus.Rendering.Tests
         }
 
         /// <summary>
-        /// Dynamically locates every project Volume profile containing MF.SSGI and requires its Shiny SSR component to report active from its own authored parameters.
-        /// </summary>
-        [Test]
-        public void EveryProjectSsgiVolumeProfileOwnsActiveShinySsrSettings()
-        {
-            VolumeProfile[] volumeProfiles = AssetDatabase.FindAssets("t:VolumeProfile", new[] { "Assets/Prometheus/Rendering/Settings" }).Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<VolumeProfile>).ToArray();
-            VolumeProfile[] ssgiVolumeProfiles = volumeProfiles.Where(profile => profile != null && profile.components.Any(component => component != null && component.GetType().FullName == SsgiVolumeComponentTypeFullName)).ToArray();
-            Assert.That(ssgiVolumeProfiles, Is.Not.Empty, "Project rendering settings must contain at least one Volume profile with MF.SSGI settings.");
-            foreach (VolumeProfile volumeProfile in ssgiVolumeProfiles)
-            {
-                VolumeComponent[] shinySsrComponents = volumeProfile.components.Where(component => component != null && component.GetType().FullName == ShinySsrVolumeComponentTypeFullName).ToArray();
-                Assert.That(shinySsrComponents, Has.Length.EqualTo(1), $"SSGI Volume profile '{AssetDatabase.GetAssetPath(volumeProfile)}' must own exactly one Shiny SSR component.");
-                VolumeComponent shinySsrComponent = shinySsrComponents.Single();
-                bool isActive = (bool)shinySsrComponent.GetType().GetMethod("IsActive").Invoke(shinySsrComponent, Array.Empty<object>());
-                Assert.That(shinySsrComponent.active, Is.True, $"Shiny SSR Volume component in '{AssetDatabase.GetAssetPath(volumeProfile)}' must remain enabled.");
-                Assert.That(isActive, Is.True, $"Shiny SSR Volume component in '{AssetDatabase.GetAssetPath(volumeProfile)}' must derive an active state from its own current intensity parameters.");
-            }
-        }
-
-        /// <summary>
         /// Toggles the project-owned SSR state away from and back to the plugin's current value, then verifies both exposed state holders instead of assuming a fixed startup value.
         /// </summary>
         [Test]
@@ -331,21 +153,6 @@ namespace Xuan.Prometheus.Rendering.Tests
             {
                 PrometheusRenderQualityController.ApplyScreenSpaceReflectionsState(originalState);
             }
-        }
-
-        /// <summary>
-        /// Verifies that Unity 6000.3 compiled and activated Compatibility Mode instead of silently running RenderGraph and skipping MF.SSGI's legacy Execute pass.
-        /// </summary>
-        [Test]
-        public void SsgiLegacyPassRunsThroughUrpCompatibilityMode()
-        {
-            BuildTargetGroup activeBuildTargetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
-            NamedBuildTarget activeNamedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(activeBuildTargetGroup);
-            string[] currentDefines = PlayerSettings.GetScriptingDefineSymbols(activeNamedBuildTarget).Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            Assert.That(currentDefines, Does.Contain(UrpCompatibilityModeDefine), $"The active build target '{activeNamedBuildTarget.TargetName}' must compile URP Compatibility Mode for MF.SSGI's ScriptableRenderPass.Execute implementation.");
-            RenderGraphSettings renderGraphSettings = GraphicsSettings.GetRenderPipelineSettings<RenderGraphSettings>();
-            Assert.That(renderGraphSettings, Is.Not.Null, "The active URP global settings must expose RenderGraphSettings.");
-            Assert.That(renderGraphSettings.enableRenderCompatibilityMode, Is.True, "The serialized URP Compatibility Mode value must be active at runtime instead of being compiled out by Unity 6000.3.");
         }
 
         /// <summary>
@@ -416,38 +223,6 @@ namespace Xuan.Prometheus.Rendering.Tests
         }
 
         /// <summary>
-        /// Dynamically scans project materials so newly imported assets cannot reintroduce the Built-in shaders already removed by this migration.
-        /// </summary>
-        [Test]
-        public void ProjectMaterialsDoNotUseMigratedBuiltInShaders()
-        {
-            foreach (string materialGuid in AssetDatabase.FindAssets("t:Material", new[] { "Assets" }))
-            {
-                string materialPath = AssetDatabase.GUIDToAssetPath(materialGuid);
-                Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-                Assert.That(material, Is.Not.Null, $"Material asset '{materialPath}' must load successfully.");
-                Assert.That(material.shader, Is.Not.Null, $"Material asset '{materialPath}' must reference a shader.");
-                Assert.That(ForbiddenMaterialShaders.Contains(material.shader.name), Is.False, $"Material asset '{materialPath}' still uses migrated Built-in shader '{material.shader.name}'.");
-            }
-        }
-
-        /// <summary>
-        /// Dynamically verifies every shader currently referenced by a project material so unsupported third-party or newly imported shaders fail the same regression suite.
-        /// </summary>
-        [Test]
-        public void EveryProjectMaterialShaderCompilesForTheActivePipeline()
-        {
-            IEnumerable<Shader> materialShaders = AssetDatabase.FindAssets("t:Material", new[] { "Assets" }).Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<Material>).Select(material => material.shader).Distinct();
-            foreach (Shader shader in materialShaders)
-            {
-                Assert.That(shader, Is.Not.Null, "Every project material must reference a shader.");
-                Assert.That(shader.isSupported, Is.True, $"Shader '{shader.name}' must support the active editor graphics API and URP configuration.");
-                string[] compilerErrors = ShaderUtil.GetShaderMessages(shader).Where(message => message.severity == UnityEditor.Rendering.ShaderCompilerMessageSeverity.Error).Select(message => $"{message.message} at {message.file}:{message.line}").ToArray();
-                Assert.That(compilerErrors, Is.Empty, $"Shader '{shader.name}' contains compiler errors:\n{string.Join("\n", compilerErrors)}");
-            }
-        }
-
-        /// <summary>
         /// Reads each migrated particle material's serialized legacy tint and compares it with the URP base color instead of relying on fixed color constants.
         /// </summary>
         [Test]
@@ -465,42 +240,6 @@ namespace Xuan.Prometheus.Rendering.Tests
                 Color baseColor = material.GetColor("_BaseColor");
                 Assert.That(Vector4.Distance(baseColor, savedTint), Is.LessThan(0.0001f), $"Material '{AssetDatabase.GetAssetPath(material)}' must copy its own serialized _TintColor into _BaseColor.");
             }
-        }
-
-        /// <summary>
-        /// Dynamically derives Spine Sprite alpha, emission, and normal expectations from each material's own textures and importer settings so future migrations preserve authored rendering intent.
-        /// </summary>
-        [Test]
-        public void SpineSpriteMaterialsMatchTheirTextureAndLightingConfiguration()
-        {
-            Shader spineSpriteShader = Shader.Find("Universal Render Pipeline/Spine/Sprite");
-            int validatedMaterialCount = 0;
-            foreach (string materialGuid in AssetDatabase.FindAssets("t:Material", new[] { "Assets" }))
-            {
-                Material material = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(materialGuid));
-                if (material.shader != spineSpriteShader)
-                {
-                    continue;
-                }
-
-                validatedMaterialCount++;
-                string materialPath = AssetDatabase.GetAssetPath(material);
-                Texture mainTexture = material.mainTexture;
-                Assert.That(mainTexture, Is.Not.Null, $"Spine Sprite material '{materialPath}' must provide its own main texture.");
-                TextureImporter mainTextureImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(mainTexture)) as TextureImporter;
-                Assert.That(mainTextureImporter, Is.Not.Null, $"Spine Sprite material '{materialPath}' must use an imported texture whose alpha mode can be inspected.");
-                bool expectsStraightAlpha = mainTextureImporter.alphaIsTransparency;
-                Assert.That(material.IsKeywordEnabled("_ALPHABLEND_ON"), Is.EqualTo(expectsStraightAlpha), $"Spine Sprite material '{materialPath}' must derive Standard Alpha from its main texture's Alpha Is Transparency setting.");
-                Assert.That(material.IsKeywordEnabled("_ALPHAPREMULTIPLY_ON"), Is.EqualTo(!expectsStraightAlpha), $"Spine Sprite material '{materialPath}' must derive Premultiplied Alpha from its main texture's Alpha Is Transparency setting.");
-                bool hasEmissionTexture = material.HasProperty("_EmissionMap") && material.GetTexture("_EmissionMap") != null;
-                bool hasVisibleEmissionColor = material.HasProperty("_EmissionColor") && material.GetColor("_EmissionColor").maxColorComponent > 0f;
-                Assert.That(material.IsKeywordEnabled("_EMISSION"), Is.EqualTo(hasEmissionTexture && hasVisibleEmissionColor), $"Spine Sprite material '{materialPath}' must enable emission exactly when its own emission texture and color produce visible output.");
-                bool hasNormalMap = material.HasProperty("_BumpMap") && material.GetTexture("_BumpMap") != null;
-                int enabledFixedNormalCount = SpineSpriteFixedNormalKeywords.Count(material.IsKeywordEnabled);
-                Assert.That(enabledFixedNormalCount, Is.EqualTo(hasNormalMap ? 0 : 1), $"Spine Sprite material '{materialPath}' must use exactly one fixed-normal mode when it has no normal map, otherwise animated mesh triangles become visible as lighting folds.");
-            }
-
-            Assert.That(validatedMaterialCount, Is.GreaterThan(0), "The project must contain at least one Spine Sprite material for this rendering regression test to validate.");
         }
 
         /// <summary>

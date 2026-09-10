@@ -77,7 +77,8 @@ namespace Xuan.Prometheus.World
             {
                 case PoiType.Npc:
                     // NPC 的可交互性由 NpcSystem 的会话串行化决定，POI 侧不再重复判定解锁。
-                    if (Core.Gameplay.TryGetSystem(out INpcSystem npcSystem)) npcSystem.TryBeginInteraction(this);
+                    // 整个交互（查绑定、加载剧情、进舞台、演出、上报、还原）都在 InteractAsync 内部完成。
+                    if (Core.Gameplay.TryGetSystem(out INpcSystem npcSystem)) npcSystem.InteractAsync(this).Forget();
                     return;
                 case PoiType.Dungeon:
                     // 副本入口是纯客户端行为，不请求服务器；当前尚无副本面板。

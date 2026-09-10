@@ -1,0 +1,580 @@
+{
+  "name": "Medieval Village",
+  "voxelSize": 0.2,
+  "combineDefault": true,
+
+  "_note": "Mondstadt 风（原神）中世纪村庄。1 单位 = 5 体素。全部合并为整块网格并做面剔除；要单独调某栋，给该 instance 加 \"combine\": false。",
+
+  "palette": {
+    "grass": "#4f8f3a", "grass2": "#67ab48", "grass3": "#8ac657", "soil": "#6b4a2e", "soilDk": "#4f3623",
+    "path": "#b79a6a", "pathDk": "#8f7550", "cobble": "#9a978c", "cobbleDk": "#6f6c63", "cobbleLt": "#b8b5aa",
+    "stone": "#cfcabb", "stoneDk": "#948f80", "stoneShadow": "#6b6659", "plinth": "#8a8477",
+    "plaster": "#f2e4c2", "plasterWarm": "#ecd4a0", "plasterPink": "#e9c9b0",
+    "timber": "#40301f", "timberDk": "#2c1f13", "beam": "#5c4029",
+    "roofTeal": "#3f7d78", "roofTealDk": "#2b5a56", "roofTealLt": "#5a9d97",
+    "clay": "#b5563a", "clayDk": "#7f2f1d", "roofRidge": "#d9b866",
+    "woodLog": "#7a4a2c", "plank": "#ad7a44", "plankLt": "#c99a63",
+    "glass": "#bfe3ef", "glassDim": "#7fb8cc",
+    "shutterBlue": "#3a6ea5", "shutterRed": "#a33f36", "shutterGreen": "#4a7a44",
+    "water": "#3f86b5", "waterLt": "#6fb0d6", "foam": "#d8ecf2",
+    "gold": "#e2b23c", "goldLt": "#f2d27a", "iron": "#3d3d40", "ironDk": "#2a2a2d",
+    "banner": "#a8322d", "bannerBlue": "#2f5c8f", "bannerGold": "#d9a441",
+    "cloth": "#efe0bb", "clothStripe": "#c9463c",
+    "leaf": "#2e6b3a", "leaf2": "#3f8a45", "leaf3": "#6bb04a", "blossom": "#f2c6d8",
+    "trunk": "#5a3f28", "trunkDk": "#3f2c1c",
+    "flowerR": "#e0453a", "flowerY": "#ecc23f", "flowerW": "#f4ead2", "flowerP": "#d98ab5", "flowerB": "#5f8fd0",
+    "lantern": "#f2c66a"
+  },
+
+  "modules": {
+
+    "house_a": {
+      "_": "两层出挑 + 陡青瓦顶 + 老虎窗 + 圆形楼梯塔（带风向标）。门朝 -Z。",
+      "size": [44, 68, 36],
+      "ops": [
+        { "op": "box", "min": [3, 0, 3], "size": [30, 4, 24], "color": "plinth" },
+        { "op": "box", "min": [3, 0, 3], "size": [30, 4, 24], "color": "stoneShadow", "mode": "frameY" },
+        { "op": "box", "min": [3, 4, 3], "size": [30, 10, 24], "color": "stone", "mode": "shell" },
+        { "op": "arch", "min": [14, 4, 3], "size": [6, 9, 1], "carve": true },
+        { "op": "arch", "min": [14, 4, 2], "size": [6, 9, 1], "color": "plank" },
+        { "op": "box", "min": [13, 13, 0], "size": [8, 2, 4], "color": "beam" },
+        { "op": "roof", "min": [12, 14, -1], "size": [10, 4, 7], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "arch", "min": [6, 7, 3], "size": [4, 6, 1], "carve": true },
+        { "op": "box", "min": [6, 7, 3], "size": [4, 6, 1], "color": "glass" },
+        { "op": "arch", "min": [24, 7, 3], "size": [4, 6, 1], "carve": true },
+        { "op": "box", "min": [24, 7, 3], "size": [4, 6, 1], "color": "glass" },
+        { "op": "box", "min": [5, 7, 2], "size": [1, 6, 1], "color": "shutterBlue" },
+        { "op": "box", "min": [10, 7, 2], "size": [1, 6, 1], "color": "shutterBlue" },
+        { "op": "box", "min": [23, 7, 2], "size": [1, 6, 1], "color": "shutterBlue" },
+        { "op": "box", "min": [28, 7, 2], "size": [1, 6, 1], "color": "shutterBlue" },
+        { "op": "box", "min": [5, 12, 2], "size": [6, 2, 2], "color": "plank" },
+        { "op": "box", "min": [23, 12, 2], "size": [6, 2, 2], "color": "plank" },
+        { "op": "scatter", "min": [5, 14, 2], "size": [6, 1, 2], "colors": ["flowerR", "flowerY", "flowerW"], "chance": 0.7, "seed": 101 },
+        { "op": "scatter", "min": [23, 14, 2], "size": [6, 1, 2], "colors": ["flowerP", "flowerY", "flowerW"], "chance": 0.7, "seed": 102 },
+        { "op": "box", "min": [1, 14, 1], "size": [34, 2, 28], "color": "beam" },
+        { "op": "box", "min": [1, 16, 1], "size": [34, 12, 28], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [1, 16, 1], "size": [34, 12, 28], "color": "timber", "mode": "frameY" },
+        { "op": "box", "min": [1, 21, 1], "size": [34, 1, 28], "color": "timber", "mode": "shell" },
+        { "op": "line", "from": [3, 16, 1], "to": [10, 27, 1], "color": "timber" },
+        { "op": "line", "from": [10, 16, 1], "to": [3, 27, 1], "color": "timber" },
+        { "op": "line", "from": [24, 16, 1], "to": [31, 27, 1], "color": "timber" },
+        { "op": "line", "from": [31, 16, 1], "to": [24, 27, 1], "color": "timber" },
+        { "op": "box", "min": [6, 18, 1], "size": [4, 6, 1], "color": "glass" },
+        { "op": "box", "min": [15, 18, 1], "size": [4, 6, 1], "color": "glass" },
+        { "op": "box", "min": [24, 18, 1], "size": [4, 6, 1], "color": "glass" },
+        { "op": "box", "min": [6, 23, 1], "size": [4, 1, 2], "color": "plank" },
+        { "op": "scatter", "min": [6, 24, 1], "size": [4, 1, 2], "colors": ["flowerR", "flowerW"], "chance": 0.7, "seed": 103 },
+        { "op": "roof", "min": [-1, 28, -3], "size": [38, 18, 35], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [14, 33, -2], "size": [8, 6, 5], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [15, 35, -2], "size": [6, 3, 1], "color": "glass" },
+        { "op": "roof", "min": [13, 39, -3], "size": [10, 5, 7], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [27, 28, 18], "size": [4, 18, 4], "color": "stone" },
+        { "op": "box", "min": [26, 45, 17], "size": [6, 2, 6], "color": "stoneDk" },
+        { "op": "cyl", "center": [37, 0, 9], "r": 5.2, "height": 48, "color": "stone", "mode": "shell" },
+        { "op": "cyl", "center": [37, 0, 9], "r": 5.2, "height": 4, "color": "plinth" },
+        { "op": "box", "min": [34, 4, 3], "size": [6, 8, 2], "carve": true },
+        { "op": "arch", "min": [34, 4, 2], "size": [6, 8, 1], "color": "plank" },
+        { "op": "box", "min": [33, 16, 4], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [33, 26, 4], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [33, 36, 4], "size": [4, 5, 1], "color": "glass" },
+        { "op": "cyl", "center": [37, 48, 9], "r": 6.2, "height": 1, "color": "stoneDk" },
+        { "op": "cone", "center": [37, 49, 9], "r": 6.2, "height": 13, "color": "roofTeal", "ridge": "roofRidge" },
+        { "op": "box", "min": [36, 61, 8], "size": [1, 5, 1], "color": "iron" },
+        { "op": "box", "min": [33, 64, 8], "size": [7, 1, 1], "color": "iron" },
+        { "op": "box", "min": [38, 63, 8], "size": [3, 1, 1], "color": "gold" }
+      ]
+    },
+
+    "house_b": {
+      "_": "商铺：大拱形橱窗 + 布篷 + 悬挑招牌 + 外楼梯上二层阳台。门朝 -Z。",
+      "size": [40, 46, 34],
+      "ops": [
+        { "op": "box", "min": [2, 0, 2], "size": [32, 3, 26], "color": "plinth" },
+        { "op": "box", "min": [2, 3, 2], "size": [32, 12, 26], "color": "plaster", "mode": "shell" },
+        { "op": "box", "min": [2, 3, 2], "size": [32, 12, 26], "color": "timber", "mode": "frameY" },
+        { "op": "box", "min": [2, 9, 2], "size": [32, 1, 26], "color": "timber", "mode": "shell" },
+        { "op": "arch", "min": [5, 3, 2], "size": [14, 10, 1], "carve": true },
+        { "op": "box", "min": [5, 3, 2], "size": [14, 10, 1], "color": "glass" },
+        { "op": "box", "min": [5, 3, 2], "size": [1, 10, 1], "color": "timber" },
+        { "op": "box", "min": [11, 3, 2], "size": [1, 10, 1], "color": "timber" },
+        { "op": "box", "min": [18, 3, 2], "size": [1, 10, 1], "color": "timber" },
+        { "op": "box", "min": [4, 13, 0], "size": [16, 1, 5], "color": "beam" },
+        { "op": "box", "min": [4, 11, 4], "size": [16, 3, 1], "color": "clothStripe" },
+        { "op": "box", "min": [4, 12, 3], "size": [16, 2, 1], "color": "cloth" },
+        { "op": "arch", "min": [23, 3, 2], "size": [6, 9, 1], "carve": true },
+        { "op": "arch", "min": [23, 3, 2], "size": [6, 9, 1], "color": "plank" },
+        { "op": "box", "min": [30, 8, 1], "size": [1, 4, 1], "color": "iron" },
+        { "op": "box", "min": [27, 6, 1], "size": [4, 1, 1], "color": "iron" },
+        { "op": "box", "min": [27, 3, 1], "size": [4, 3, 1], "color": "bannerGold" },
+        { "op": "ramp", "min": [33, 3, 6], "size": [4, 12, 10], "axis": "z", "color": "plank" },
+        { "op": "box", "min": [30, 15, 4], "size": [8, 1, 14], "color": "plank" },
+        { "op": "box", "min": [30, 16, 4], "size": [1, 4, 14], "color": "woodLog" },
+        { "op": "box", "min": [30, 18, 4], "size": [8, 1, 1], "color": "woodLog" },
+        { "op": "box", "min": [2, 15, 2], "size": [32, 10, 26], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [2, 15, 2], "size": [32, 10, 26], "color": "timber", "mode": "frameY" },
+        { "op": "line", "from": [4, 15, 2], "to": [12, 24, 2], "color": "timber" },
+        { "op": "line", "from": [12, 15, 2], "to": [4, 24, 2], "color": "timber" },
+        { "op": "line", "from": [22, 15, 2], "to": [30, 24, 2], "color": "timber" },
+        { "op": "line", "from": [30, 15, 2], "to": [22, 24, 2], "color": "timber" },
+        { "op": "box", "min": [6, 18, 2], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [16, 18, 2], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [25, 18, 2], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [15, 18, 2], "size": [1, 5, 1], "color": "shutterRed" },
+        { "op": "box", "min": [20, 18, 2], "size": [1, 5, 1], "color": "shutterRed" },
+        { "op": "roof", "min": [0, 25, -2], "size": [34, 14, 31], "style": "gable", "axis": "x", "color": "clay", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [7, 25, 20], "size": [4, 14, 4], "color": "stone" },
+        { "op": "box", "min": [6, 38, 19], "size": [6, 2, 6], "color": "stoneDk" }
+      ]
+    },
+
+    "house_c": {
+      "_": "窄高塔屋，三层，木架 X 撑外露，青瓦四坡尖顶 + 顶旗。门朝 -Z。",
+      "size": [26, 60, 26],
+      "ops": [
+        { "op": "box", "min": [2, 0, 2], "size": [20, 4, 20], "color": "plinth" },
+        { "op": "box", "min": [3, 4, 3], "size": [18, 12, 16], "color": "stone", "mode": "shell" },
+        { "op": "arch", "min": [8, 4, 3], "size": [6, 9, 1], "carve": true },
+        { "op": "arch", "min": [8, 4, 2], "size": [6, 9, 1], "color": "plank" },
+        { "op": "box", "min": [7, 13, 1], "size": [8, 1, 3], "color": "beam" },
+        { "op": "box", "min": [4, 8, 3], "size": [3, 4, 1], "color": "glass" },
+        { "op": "box", "min": [15, 8, 3], "size": [3, 4, 1], "color": "glass" },
+        { "op": "box", "min": [1, 16, 1], "size": [22, 2, 22], "color": "beam" },
+        { "op": "box", "min": [1, 18, 1], "size": [22, 12, 22], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [1, 18, 1], "size": [22, 12, 22], "color": "timber", "mode": "frameY" },
+        { "op": "line", "from": [3, 18, 1], "to": [11, 29, 1], "color": "timber" },
+        { "op": "line", "from": [11, 18, 1], "to": [3, 29, 1], "color": "timber" },
+        { "op": "line", "from": [11, 18, 1], "to": [19, 29, 1], "color": "timber" },
+        { "op": "line", "from": [19, 18, 1], "to": [11, 29, 1], "color": "timber" },
+        { "op": "line", "from": [1, 18, 3], "to": [1, 29, 11], "color": "timber" },
+        { "op": "line", "from": [1, 18, 11], "to": [1, 29, 3], "color": "timber" },
+        { "op": "box", "min": [4, 21, 1], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [14, 21, 1], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [4, 26, 1], "size": [4, 1, 2], "color": "plank" },
+        { "op": "scatter", "min": [4, 27, 1], "size": [4, 1, 2], "colors": ["flowerR", "flowerY"], "chance": 0.7, "seed": 121 },
+        { "op": "box", "min": [2, 30, 2], "size": [20, 2, 22], "color": "beam" },
+        { "op": "box", "min": [2, 32, 2], "size": [20, 10, 22], "color": "plaster", "mode": "shell" },
+        { "op": "box", "min": [2, 32, 2], "size": [20, 10, 22], "color": "timber", "mode": "frameY" },
+        { "op": "line", "from": [4, 32, 2], "to": [11, 41, 2], "color": "timber" },
+        { "op": "line", "from": [11, 32, 2], "to": [4, 41, 2], "color": "timber" },
+        { "op": "line", "from": [13, 32, 2], "to": [20, 41, 2], "color": "timber" },
+        { "op": "line", "from": [20, 32, 2], "to": [13, 41, 2], "color": "timber" },
+        { "op": "box", "min": [6, 35, 2], "size": [4, 5, 1], "color": "glass" },
+        { "op": "box", "min": [13, 35, 2], "size": [4, 5, 1], "color": "glass" },
+        { "op": "roof", "min": [0, 42, 0], "size": [24, 12, 26], "style": "hip", "color": "roofTeal", "ridge": "roofRidge" },
+        { "op": "box", "min": [11, 53, 12], "size": [2, 2, 2], "color": "roofRidge" },
+        { "op": "box", "min": [11, 55, 12], "size": [1, 4, 1], "color": "iron" },
+        { "op": "box", "min": [12, 56, 12], "size": [4, 3, 1], "color": "banner" }
+      ]
+    },
+
+    "house_d": {
+      "_": "宽矮长屋 + 侧披屋（柴棚）+ 门斗 + 双老虎窗。门朝 -Z。",
+      "size": [56, 40, 34],
+      "ops": [
+        { "op": "box", "min": [2, 0, 4], "size": [44, 3, 24], "color": "plinth" },
+        { "op": "box", "min": [3, 3, 5], "size": [42, 12, 22], "color": "plaster", "mode": "shell" },
+        { "op": "box", "min": [3, 3, 5], "size": [42, 12, 22], "color": "timber", "mode": "frameY" },
+        { "op": "box", "min": [3, 8, 5], "size": [42, 1, 22], "color": "timber", "mode": "shell" },
+        { "op": "line", "from": [6, 3, 5], "to": [14, 14, 5], "color": "timber" },
+        { "op": "line", "from": [14, 3, 5], "to": [6, 14, 5], "color": "timber" },
+        { "op": "line", "from": [32, 3, 5], "to": [40, 14, 5], "color": "timber" },
+        { "op": "line", "from": [40, 3, 5], "to": [32, 14, 5], "color": "timber" },
+        { "op": "arch", "min": [21, 3, 5], "size": [6, 9, 1], "carve": true },
+        { "op": "arch", "min": [21, 3, 4], "size": [6, 9, 1], "color": "plank" },
+        { "op": "box", "min": [19, 12, 2], "size": [10, 2, 4], "color": "beam" },
+        { "op": "roof", "min": [18, 14, 1], "size": [12, 4, 6], "style": "gable", "axis": "x", "color": "clay", "ridge": "roofRidge", "solid": true },
+        { "op": "arch", "min": [8, 6, 5], "size": [4, 6, 1], "carve": true },
+        { "op": "box", "min": [8, 6, 5], "size": [4, 6, 1], "color": "glass" },
+        { "op": "arch", "min": [36, 6, 5], "size": [4, 6, 1], "carve": true },
+        { "op": "box", "min": [36, 6, 5], "size": [4, 6, 1], "color": "glass" },
+        { "op": "box", "min": [7, 6, 4], "size": [1, 6, 1], "color": "shutterGreen" },
+        { "op": "box", "min": [12, 6, 4], "size": [1, 6, 1], "color": "shutterGreen" },
+        { "op": "box", "min": [35, 6, 4], "size": [1, 6, 1], "color": "shutterGreen" },
+        { "op": "box", "min": [40, 6, 4], "size": [1, 6, 1], "color": "shutterGreen" },
+        { "op": "box", "min": [7, 11, 4], "size": [6, 2, 2], "color": "plank" },
+        { "op": "scatter", "min": [7, 13, 4], "size": [6, 1, 2], "colors": ["flowerR", "flowerY", "flowerW"], "chance": 0.7, "seed": 141 },
+        { "op": "roof", "min": [0, 15, 2], "size": [48, 15, 29], "style": "gable", "axis": "x", "color": "clay", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [10, 20, 2], "size": [7, 5, 4], "color": "plaster", "mode": "shell" },
+        { "op": "box", "min": [11, 22, 2], "size": [5, 3, 1], "color": "glass" },
+        { "op": "roof", "min": [9, 25, 1], "size": [9, 4, 6], "style": "gable", "axis": "x", "color": "clay", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [31, 20, 2], "size": [7, 5, 4], "color": "plaster", "mode": "shell" },
+        { "op": "box", "min": [32, 22, 2], "size": [5, 3, 1], "color": "glass" },
+        { "op": "roof", "min": [30, 25, 1], "size": [9, 4, 6], "style": "gable", "axis": "x", "color": "clay", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [38, 15, 20], "size": [4, 12, 4], "color": "stone" },
+        { "op": "box", "min": [37, 27, 19], "size": [6, 2, 6], "color": "stoneDk" },
+        { "op": "box", "min": [45, 2, 8], "size": [10, 1, 16], "color": "plank" },
+        { "op": "box", "min": [45, 3, 8], "size": [1, 6, 1], "color": "woodLog" },
+        { "op": "box", "min": [45, 3, 23], "size": [1, 6, 1], "color": "woodLog" },
+        { "op": "box", "min": [54, 3, 8], "size": [1, 8, 1], "color": "woodLog" },
+        { "op": "box", "min": [54, 3, 23], "size": [1, 8, 1], "color": "woodLog" },
+        { "op": "roof", "min": [44, 9, 6], "size": [12, 4, 20], "style": "gable", "axis": "z", "color": "roofTealDk", "ridge": "roofTealDk", "solid": true },
+        { "op": "box", "min": [47, 3, 10], "size": [6, 4, 5], "color": "woodLog" }
+      ]
+    },
+
+    "tavern": {
+      "_": "酒馆（天使的馈赠感）：大体量 + 双老虎窗 + 环廊阳台 + 悬挑酒招 + 烟囱。门朝 -Z。",
+      "size": [58, 56, 40],
+      "ops": [
+        { "op": "box", "min": [3, 0, 3], "size": [46, 4, 30], "color": "plinth" },
+        { "op": "box", "min": [3, 0, 3], "size": [46, 4, 30], "color": "stoneShadow", "mode": "frameY" },
+        { "op": "box", "min": [4, 4, 4], "size": [44, 12, 28], "color": "stone", "mode": "shell" },
+        { "op": "arch", "min": [22, 4, 4], "size": [8, 10, 1], "carve": true },
+        { "op": "arch", "min": [22, 4, 3], "size": [8, 10, 1], "color": "plank" },
+        { "op": "box", "min": [20, 14, 1], "size": [12, 2, 4], "color": "beam" },
+        { "op": "roof", "min": [19, 16, 0], "size": [14, 5, 6], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "arch", "min": [8, 7, 4], "size": [5, 7, 1], "carve": true },
+        { "op": "box", "min": [8, 7, 4], "size": [5, 7, 1], "color": "glass" },
+        { "op": "arch", "min": [35, 7, 4], "size": [5, 7, 1], "carve": true },
+        { "op": "box", "min": [35, 7, 4], "size": [5, 7, 1], "color": "glass" },
+        { "op": "box", "min": [7, 7, 3], "size": [1, 7, 1], "color": "shutterRed" },
+        { "op": "box", "min": [13, 7, 3], "size": [1, 7, 1], "color": "shutterRed" },
+        { "op": "box", "min": [34, 7, 3], "size": [1, 7, 1], "color": "shutterRed" },
+        { "op": "box", "min": [40, 7, 3], "size": [1, 7, 1], "color": "shutterRed" },
+        { "op": "box", "min": [2, 16, 2], "size": [48, 2, 32], "color": "beam" },
+        { "op": "box", "min": [0, 17, 0], "size": [52, 1, 36], "color": "plank" },
+        { "op": "box", "min": [0, 18, 0], "size": [1, 4, 36], "color": "woodLog" },
+        { "op": "box", "min": [51, 18, 0], "size": [1, 4, 36], "color": "woodLog" },
+        { "op": "box", "min": [0, 18, 0], "size": [52, 4, 1], "color": "woodLog" },
+        { "op": "box", "min": [0, 20, 0], "size": [52, 1, 36], "color": "woodLog" },
+        { "op": "box", "min": [4, 18, 2], "size": [44, 12, 32], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [4, 18, 2], "size": [44, 12, 32], "color": "timber", "mode": "frameY" },
+        { "op": "box", "min": [4, 23, 2], "size": [44, 1, 32], "color": "timber", "mode": "shell" },
+        { "op": "line", "from": [6, 18, 2], "to": [14, 29, 2], "color": "timber" },
+        { "op": "line", "from": [14, 18, 2], "to": [6, 29, 2], "color": "timber" },
+        { "op": "line", "from": [22, 18, 2], "to": [30, 29, 2], "color": "timber" },
+        { "op": "line", "from": [30, 18, 2], "to": [22, 29, 2], "color": "timber" },
+        { "op": "line", "from": [38, 18, 2], "to": [46, 29, 2], "color": "timber" },
+        { "op": "line", "from": [46, 18, 2], "to": [38, 29, 2], "color": "timber" },
+        { "op": "box", "min": [8, 21, 2], "size": [5, 6, 1], "color": "glass" },
+        { "op": "box", "min": [24, 21, 2], "size": [5, 6, 1], "color": "glass" },
+        { "op": "box", "min": [39, 21, 2], "size": [5, 6, 1], "color": "glass" },
+        { "op": "box", "min": [7, 26, 2], "size": [6, 1, 2], "color": "plank" },
+        { "op": "box", "min": [39, 26, 2], "size": [6, 1, 2], "color": "plank" },
+        { "op": "scatter", "min": [7, 27, 2], "size": [6, 1, 2], "colors": ["flowerR", "flowerY", "flowerW"], "chance": 0.7, "seed": 161 },
+        { "op": "scatter", "min": [39, 27, 2], "size": [6, 1, 2], "colors": ["flowerP", "flowerW"], "chance": 0.7, "seed": 162 },
+        { "op": "roof", "min": [-2, 30, -3], "size": [56, 19, 39], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [12, 35, -2], "size": [9, 7, 5], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [13, 37, -2], "size": [7, 4, 1], "color": "glass" },
+        { "op": "roof", "min": [11, 42, -3], "size": [11, 5, 7], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [31, 35, -2], "size": [9, 7, 5], "color": "plasterWarm", "mode": "shell" },
+        { "op": "box", "min": [32, 37, -2], "size": [7, 4, 1], "color": "glass" },
+        { "op": "roof", "min": [30, 42, -3], "size": [11, 5, 7], "style": "gable", "axis": "x", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "box", "min": [40, 30, 22], "size": [5, 20, 5], "color": "stone" },
+        { "op": "box", "min": [39, 49, 21], "size": [7, 2, 7], "color": "stoneDk" },
+        { "op": "box", "min": [1, 12, 14], "size": [1, 5, 1], "color": "woodLog" },
+        { "op": "box", "min": [-3, 15, 14], "size": [5, 1, 1], "color": "iron" },
+        { "op": "box", "min": [-3, 11, 14], "size": [4, 4, 1], "color": "banner" },
+        { "op": "box", "min": [-3, 11, 14], "size": [4, 1, 1], "color": "gold" }
+      ]
+    },
+
+    "cathedral": {
+      "_": "法尔科尼西教堂感：长中殿 + 玫瑰窗立面 + 高钟塔 + 尖锥塔顶金饰 + 侧扶壁 + 半圆后殿。门朝 -Z。",
+      "size": [56, 90, 92],
+      "ops": [
+        { "op": "box", "min": [4, 0, 4], "size": [40, 4, 70], "color": "plinth" },
+        { "op": "box", "min": [6, 4, 6], "size": [36, 30, 60], "color": "stone", "mode": "shell" },
+        { "op": "box", "min": [6, 4, 6], "size": [36, 30, 60], "color": "stoneDk", "mode": "frameY" },
+        { "op": "arch", "min": [18, 4, 6], "size": [12, 20, 2], "carve": true },
+        { "op": "arch", "min": [18, 4, 5], "size": [12, 20, 1], "color": "plank" },
+        { "op": "box", "min": [22, 8, 4], "size": [4, 10, 1], "color": "iron" },
+        { "op": "cyl", "center": [24, 26, 6], "r": 6.5, "height": 2, "color": "glass" },
+        { "op": "cyl", "center": [24, 26, 5], "r": 7.5, "height": 1, "color": "stoneDk", "mode": "shell" },
+        { "op": "box", "min": [17, 25, 5], "size": [15, 1, 1], "color": "stoneDk" },
+        { "op": "box", "min": [23, 18, 5], "size": [1, 15, 1], "color": "stoneDk" },
+        { "op": "box", "min": [6, 10, 16], "size": [1, 14, 4], "color": "glass" },
+        { "op": "box", "min": [6, 10, 30], "size": [1, 14, 4], "color": "glass" },
+        { "op": "box", "min": [6, 10, 44], "size": [1, 14, 4], "color": "glass" },
+        { "op": "box", "min": [41, 10, 16], "size": [1, 14, 4], "color": "glass" },
+        { "op": "box", "min": [41, 10, 30], "size": [1, 14, 4], "color": "glass" },
+        { "op": "box", "min": [41, 10, 44], "size": [1, 14, 4], "color": "glass" },
+        { "op": "box", "min": [2, 4, 14], "size": [4, 22, 4], "color": "stone" },
+        { "op": "box", "min": [2, 4, 30], "size": [4, 22, 4], "color": "stone" },
+        { "op": "box", "min": [2, 4, 46], "size": [4, 22, 4], "color": "stone" },
+        { "op": "box", "min": [42, 4, 14], "size": [4, 22, 4], "color": "stone" },
+        { "op": "box", "min": [42, 4, 30], "size": [4, 22, 4], "color": "stone" },
+        { "op": "box", "min": [42, 4, 46], "size": [4, 22, 4], "color": "stone" },
+        { "op": "roof", "min": [4, 34, 2], "size": [39, 20, 68], "style": "gable", "axis": "z", "color": "roofTeal", "ridge": "roofRidge", "solid": true },
+        { "op": "cyl", "center": [24, 4, 66], "r": 15, "height": 26, "color": "stone", "mode": "shell" },
+        { "op": "cyl", "center": [24, 10, 66], "r": 13, "height": 3, "color": "glass" },
+        { "op": "cone", "center": [24, 30, 66], "r": 16, "height": 16, "color": "roofTeal", "ridge": "roofRidge" },
+        { "op": "box", "min": [10, 4, 66], "size": [28, 26, 8], "color": "stone", "mode": "shell" },
+        { "op": "box", "min": [16, 4, 2], "size": [24, 56, 24], "color": "stone", "mode": "shell" },
+        { "op": "box", "min": [16, 4, 2], "size": [24, 56, 24], "color": "stoneDk", "mode": "frameY" },
+        { "op": "arch", "min": [22, 30, 2], "size": [12, 16, 1], "carve": true },
+        { "op": "box", "min": [22, 30, 2], "size": [12, 16, 1], "color": "glass" },
+        { "op": "arch", "min": [24, 44, 2], "size": [8, 12, 1], "carve": true },
+        { "op": "box", "min": [24, 44, 2], "size": [8, 12, 1], "color": "glassDim" },
+        { "op": "box", "min": [15, 56, 1], "size": [26, 3, 26], "color": "stoneDk" },
+        { "op": "box", "min": [14, 59, 0], "size": [2, 4, 2], "color": "stone" },
+        { "op": "box", "min": [40, 59, 0], "size": [2, 4, 2], "color": "stone" },
+        { "op": "box", "min": [14, 59, 25], "size": [2, 4, 2], "color": "stone" },
+        { "op": "box", "min": [40, 59, 25], "size": [2, 4, 2], "color": "stone" },
+        { "op": "cone", "center": [28, 62, 14], "r": 15, "height": 24, "color": "roofTeal", "ridge": "roofRidge" },
+        { "op": "box", "min": [26, 84, 12], "size": [3, 6, 1], "color": "gold" },
+        { "op": "box", "min": [24, 87, 12], "size": [7, 1, 1], "color": "gold" },
+        { "op": "box", "min": [27, 86, 12], "size": [1, 4, 3], "color": "goldLt" }
+      ]
+    },
+
+    "windmill": {
+      "_": "圆石塔风车：环廊 + 锥顶 + 四叶转轮。",
+      "size": [40, 52, 40],
+      "ops": [
+        { "op": "cyl", "center": [20, 0, 20], "r": 11, "height": 4, "color": "plinth" },
+        { "op": "cyl", "center": [20, 0, 20], "r": 9.5, "height": 34, "color": "stone", "mode": "shell" },
+        { "op": "arch", "min": [16, 4, 9], "size": [6, 9, 3], "carve": true },
+        { "op": "arch", "min": [16, 4, 9], "size": [6, 9, 1], "color": "plank" },
+        { "op": "box", "min": [17, 16, 9], "size": [4, 5, 2], "color": "glass" },
+        { "op": "box", "min": [17, 24, 9], "size": [4, 5, 2], "color": "glass" },
+        { "op": "cyl", "center": [20, 30, 20], "r": 12, "height": 1, "color": "plank" },
+        { "op": "cyl", "center": [20, 31, 20], "r": 12, "height": 3, "color": "woodLog", "mode": "shell" },
+        { "op": "cyl", "center": [20, 34, 20], "r": 10, "height": 2, "color": "stoneDk" },
+        { "op": "cone", "center": [20, 36, 20], "r": 10, "height": 14, "color": "roofTeal", "ridge": "roofRidge" },
+        { "op": "box", "min": [19, 18, 6], "size": [2, 2, 3], "color": "iron" },
+        { "op": "box", "min": [19, 4, 7], "size": [2, 30, 1], "color": "woodLog" },
+        { "op": "box", "min": [4, 18, 7], "size": [32, 2, 1], "color": "woodLog" },
+        { "op": "box", "min": [5, 8, 7], "size": [4, 22, 1], "color": "plankLt" },
+        { "op": "box", "min": [31, 10, 7], "size": [4, 22, 1], "color": "plankLt" },
+        { "op": "box", "min": [8, 30, 7], "size": [24, 4, 1], "color": "plankLt" },
+        { "op": "box", "min": [10, 5, 7], "size": [22, 4, 1], "color": "plankLt" }
+      ]
+    },
+
+    "fountain": {
+      "_": "广场喷泉/风神像感：三层石阶基 + 环形水池 + 中心石柱 + 风之螺旋饰。",
+      "size": [30, 30, 30],
+      "ops": [
+        { "op": "disc", "center": [15, 0, 15], "r": 14, "color": "cobbleLt" },
+        { "op": "disc", "center": [15, 1, 15], "r": 12, "color": "stone" },
+        { "op": "disc", "center": [15, 2, 15], "r": 10, "color": "stoneDk" },
+        { "op": "cyl", "center": [15, 3, 15], "r": 9, "height": 2, "color": "stone", "mode": "shell" },
+        { "op": "disc", "center": [15, 3, 15], "r": 8, "color": "water" },
+        { "op": "disc", "center": [15, 4, 15], "r": 7, "color": "waterLt" },
+        { "op": "cyl", "center": [15, 3, 15], "r": 3, "height": 8, "color": "stone" },
+        { "op": "disc", "center": [15, 10, 15], "r": 4, "color": "stoneDk" },
+        { "op": "disc", "center": [15, 11, 15], "r": 3, "color": "water" },
+        { "op": "cyl", "center": [15, 11, 15], "r": 1.5, "height": 10, "color": "stoneDk" },
+        { "op": "box", "min": [13, 20, 15], "size": [5, 1, 1], "color": "goldLt" },
+        { "op": "box", "min": [15, 21, 13], "size": [1, 1, 5], "color": "goldLt" },
+        { "op": "box", "min": [14, 22, 14], "size": [3, 3, 3], "color": "gold" },
+        { "op": "box", "min": [15, 25, 15], "size": [1, 3, 1], "color": "goldLt" }
+      ]
+    },
+
+    "gatetower": {
+      "_": "城门圆塔：石壳 + 环廊 + 锥顶 + 旗。",
+      "size": [22, 44, 22],
+      "ops": [
+        { "op": "cyl", "center": [11, 0, 11], "r": 9, "height": 4, "color": "plinth" },
+        { "op": "cyl", "center": [11, 0, 11], "r": 8, "height": 30, "color": "stone", "mode": "shell" },
+        { "op": "box", "min": [8, 4, 2], "size": [6, 9, 2], "carve": true },
+        { "op": "arch", "min": [8, 4, 2], "size": [6, 9, 1], "color": "plank" },
+        { "op": "box", "min": [9, 16, 2], "size": [4, 5, 2], "color": "glass" },
+        { "op": "cyl", "center": [11, 30, 11], "r": 10, "height": 1, "color": "stoneDk" },
+        { "op": "cyl", "center": [11, 31, 11], "r": 10, "height": 3, "color": "stone", "mode": "shell" },
+        { "op": "cone", "center": [11, 34, 11], "r": 9, "height": 10, "color": "roofTeal", "ridge": "roofRidge" },
+        { "op": "box", "min": [10, 43, 10], "size": [1, 4, 1], "color": "iron" },
+        { "op": "box", "min": [11, 44, 10], "size": [4, 3, 1], "color": "banner" }
+      ]
+    },
+
+    "lamp": {
+      "size": [3, 12, 3],
+      "ops": [
+        { "op": "box", "min": [1, 0, 1], "size": [1, 9, 1], "color": "iron" },
+        { "op": "box", "min": [0, 8, 0], "size": [3, 3, 3], "color": "ironDk", "mode": "shell" },
+        { "op": "box", "min": [1, 9, 1], "size": [1, 1, 1], "color": "lantern" },
+        { "op": "box", "min": [0, 11, 0], "size": [3, 1, 3], "color": "iron", "mode": "top" }
+      ]
+    },
+
+    "barrel": {
+      "size": [4, 5, 4],
+      "ops": [
+        { "op": "cyl", "center": [2, 0, 2], "r": 1.8, "height": 5, "color": "woodLog" },
+        { "op": "cyl", "center": [2, 1, 2], "r": 2.0, "height": 1, "color": "iron", "mode": "shell" },
+        { "op": "cyl", "center": [2, 3, 2], "r": 2.0, "height": 1, "color": "iron", "mode": "shell" },
+        { "op": "disc", "center": [2, 4, 2], "r": 1.6, "color": "plank" }
+      ]
+    },
+
+    "crate": {
+      "size": [4, 4, 4],
+      "ops": [
+        { "op": "box", "min": [0, 0, 0], "size": [4, 4, 4], "color": "plank", "mode": "shell" },
+        { "op": "box", "min": [0, 0, 0], "size": [4, 4, 4], "color": "woodLog", "mode": "frameY" }
+      ]
+    },
+
+    "cart": {
+      "size": [16, 8, 8],
+      "ops": [
+        { "op": "box", "min": [2, 3, 0], "size": [12, 2, 8], "color": "plank" },
+        { "op": "box", "min": [2, 5, 0], "size": [12, 3, 1], "color": "woodLog" },
+        { "op": "box", "min": [2, 5, 7], "size": [12, 3, 1], "color": "woodLog" },
+        { "op": "box", "min": [2, 5, 0], "size": [1, 3, 8], "color": "woodLog" },
+        { "op": "box", "min": [13, 5, 0], "size": [1, 3, 8], "color": "woodLog" },
+        { "op": "cyl", "center": [4, 2, 0], "r": 2.4, "height": 1, "color": "woodLog", "mode": "shell" },
+        { "op": "cyl", "center": [4, 2, 7], "r": 2.4, "height": 1, "color": "woodLog", "mode": "shell" },
+        { "op": "cyl", "center": [12, 2, 0], "r": 2.4, "height": 1, "color": "woodLog", "mode": "shell" },
+        { "op": "cyl", "center": [12, 2, 7], "r": 2.4, "height": 1, "color": "woodLog", "mode": "shell" },
+        { "op": "box", "min": [14, 4, 3], "size": [2, 1, 2], "color": "woodLog" }
+      ]
+    },
+
+    "stall": {
+      "size": [16, 14, 12],
+      "ops": [
+        { "op": "box", "min": [0, 0, 0], "size": [16, 1, 12], "color": "plank" },
+        { "op": "box", "min": [0, 1, 0], "size": [1, 8, 1], "color": "woodLog" },
+        { "op": "box", "min": [15, 1, 0], "size": [1, 8, 1], "color": "woodLog" },
+        { "op": "box", "min": [0, 1, 11], "size": [1, 8, 1], "color": "woodLog" },
+        { "op": "box", "min": [15, 1, 11], "size": [1, 8, 1], "color": "woodLog" },
+        { "op": "box", "min": [0, 4, 0], "size": [16, 1, 5], "color": "plank" },
+        { "op": "box", "min": [1, 5, 1], "size": [14, 2, 3], "color": "cloth" },
+        { "op": "roof", "min": [-1, 8, -1], "size": [18, 5, 14], "style": "gable", "axis": "x", "color": "clothStripe", "ridge": "cloth", "solid": true }
+      ]
+    },
+
+    "hedge": {
+      "size": [8, 4, 4],
+      "ops": [
+        { "op": "box", "min": [0, 0, 0], "size": [8, 4, 4], "color": "leaf2" },
+        { "op": "scatter", "min": [0, 4, 0], "size": [8, 1, 4], "colors": ["leaf3", "blossom"], "chance": 0.4, "seed": 55 }
+      ]
+    },
+
+    "tree": {
+      "_": "大树（蒙德风）：粗干 + 分叉 + 大冠。",
+      "size": [24, 34, 24],
+      "ops": [
+        { "op": "cyl", "center": [12, 0, 12], "r": 2.6, "height": 14, "color": "trunk" },
+        { "op": "line", "from": [12, 12, 12], "to": [6, 20, 8], "color": "trunk" },
+        { "op": "line", "from": [12, 12, 12], "to": [18, 19, 16], "color": "trunk" },
+        { "op": "line", "from": [12, 14, 12], "to": [14, 22, 6], "color": "trunkDk" },
+        { "op": "cyl", "center": [12, 16, 12], "r": 10, "height": 14, "color": "leaf" },
+        { "op": "cyl", "center": [7, 18, 9], "r": 6, "height": 8, "color": "leaf2" },
+        { "op": "cyl", "center": [17, 17, 15], "r": 6, "height": 8, "color": "leaf2" },
+        { "op": "cyl", "center": [12, 26, 12], "r": 6, "height": 6, "color": "leaf3" },
+        { "op": "scatter", "min": [2, 30, 2], "size": [20, 1, 20], "colors": ["leaf3", "blossom"], "chance": 0.25, "seed": 88 }
+      ]
+    },
+
+    "tree_s": {
+      "size": [14, 20, 14],
+      "ops": [
+        { "op": "cyl", "center": [7, 0, 7], "r": 1.6, "height": 8, "color": "trunk" },
+        { "op": "cyl", "center": [7, 8, 7], "r": 6, "height": 9, "color": "leaf2" },
+        { "op": "cyl", "center": [7, 15, 7], "r": 3.5, "height": 4, "color": "leaf3" }
+      ]
+    }
+  },
+
+  "build": [
+
+    { "type": "part", "name": "Ground", "ops": [
+      { "op": "box", "min": [0, 0, 0], "size": [176, 1, 150], "color": "grass" },
+      { "op": "scatter", "min": [0, 0, 0], "size": [176, 1, 150], "colors": ["grass2"], "chance": 0.34, "seed": 11 },
+      { "op": "scatter", "min": [0, 0, 0], "size": [176, 1, 150], "colors": ["grass3"], "chance": 0.10, "seed": 12 },
+      { "op": "scatter", "min": [0, 0, 0], "size": [176, 1, 150], "colors": ["soil"], "chance": 0.02, "seed": 13 },
+      { "op": "box", "min": [54, 0, 96], "size": [64, 4, 54], "color": "grass" },
+      { "op": "box", "min": [54, 0, 96], "size": [64, 4, 54], "color": "stoneShadow", "mode": "shell" },
+      { "op": "scatter", "min": [54, 4, 96], "size": [64, 1, 54], "colors": ["grass2", "grass3"], "chance": 0.4, "seed": 14 },
+      { "op": "box", "min": [78, 0, 88], "size": [20, 1, 8], "color": "stone" },
+      { "op": "ramp", "min": [78, 0, 84], "size": [20, 4, 12], "axis": "z", "color": "stone" },
+      { "op": "box", "min": [76, 3, 84], "size": [1, 3, 12], "color": "stoneDk" },
+      { "op": "box", "min": [99, 3, 84], "size": [1, 3, 12], "color": "stoneDk" }
+    ]},
+
+    { "type": "part", "name": "Roads", "ops": [
+      { "op": "box", "min": [0, 0, 58], "size": [176, 1, 14], "color": "cobble" },
+      { "op": "scatter", "min": [0, 0, 58], "size": [176, 1, 14], "colors": ["cobbleDk", "cobbleLt"], "chance": 0.4, "seed": 21 },
+      { "op": "box", "min": [58, 0, 20], "size": [56, 1, 40], "color": "cobble" },
+      { "op": "scatter", "min": [58, 0, 20], "size": [56, 1, 40], "colors": ["cobbleDk", "cobbleLt"], "chance": 0.42, "seed": 22 },
+      { "op": "box", "min": [80, 0, 60], "size": [16, 1, 26], "color": "path" },
+      { "op": "scatter", "min": [80, 0, 60], "size": [16, 1, 26], "colors": ["pathDk"], "chance": 0.35, "seed": 23 },
+      { "op": "box", "min": [18, 0, 40], "size": [40, 1, 8], "color": "path" },
+      { "op": "box", "min": [116, 0, 40], "size": [44, 1, 8], "color": "path" },
+      { "op": "scatter", "min": [18, 0, 40], "size": [142, 1, 8], "colors": ["pathDk"], "chance": 0.3, "seed": 24 },
+      { "op": "box", "min": [24, 0, 96], "size": [8, 1, 30], "color": "path" },
+      { "op": "box", "min": [148, 0, 48], "size": [8, 1, 24], "color": "path" }
+    ]},
+
+    { "type": "part", "name": "GardenPlots", "ops": [
+      { "op": "box", "min": [150, 1, 96], "size": [22, 1, 30], "color": "soil" },
+      { "op": "box", "min": [150, 1, 96], "size": [22, 2, 30], "color": "soilDk", "mode": "frameY" },
+      { "op": "scatter", "min": [151, 2, 97], "size": [20, 1, 28], "colors": ["grass3", "flowerY", "leaf3"], "chance": 0.5, "seed": 31 },
+      { "op": "box", "min": [8, 1, 120], "size": [26, 1, 22], "color": "soil" },
+      { "op": "scatter", "min": [9, 2, 121], "size": [24, 1, 20], "colors": ["grass3", "flowerR", "leaf3"], "chance": 0.5, "seed": 32 }
+    ]},
+
+    { "type": "part", "name": "Wall", "ops": [
+      { "op": "box", "min": [0, 1, 40], "size": [58, 12, 4], "color": "stone" },
+      { "op": "box", "min": [0, 1, 40], "size": [58, 3, 4], "color": "plinth" },
+      { "op": "box", "min": [114, 1, 40], "size": [62, 12, 4], "color": "stone" },
+      { "op": "box", "min": [114, 1, 40], "size": [62, 3, 4], "color": "plinth" },
+      { "op": "box", "min": [0, 13, 40], "size": [176, 3, 2], "color": "stoneDk" },
+      { "op": "box", "min": [58, 1, 40], "size": [56, 5, 4], "color": "stone" },
+      { "op": "arch", "min": [64, 6, 40], "size": [44, 18, 4], "carve": true },
+      { "op": "box", "min": [64, 6, 41], "size": [22, 18, 1], "color": "plank" },
+      { "op": "box", "min": [86, 6, 41], "size": [22, 18, 1], "color": "woodLog" }
+    ]},
+
+    { "type": "instance", "module": "gatetower", "name": "GateTower_L", "at": [40, 1, 30], "rot": 0 },
+    { "type": "instance", "module": "gatetower", "name": "GateTower_R", "at": [114, 1, 30], "rot": 0 },
+
+    { "type": "instance", "module": "house_b", "name": "Merchant",   "at": [18, 2, 12],  "rot": 0 },
+    { "type": "instance", "module": "house_c", "name": "TowerHouse", "at": [126, 2, 10], "rot": 0, "swap": { "roofTeal": "clay", "roofTealDk": "clayDk" } },
+    { "type": "instance", "module": "house_a", "name": "TownHouse",  "at": [12, 2, 82],  "rot": 0 },
+    { "type": "instance", "module": "house_d", "name": "Longhouse",  "at": [116, 2, 82], "rot": 0 },
+    { "type": "instance", "module": "tavern",  "name": "Tavern",     "at": [70, 2, 12],  "rot": 0, "swap": { "roofTeal": "clay", "roofRidge": "gold" } },
+
+    { "type": "instance", "module": "cathedral", "name": "Cathedral", "at": [66, 5, 96], "rot": 0 },
+    { "type": "instance", "module": "windmill",  "name": "Windmill",  "at": [140, 2, 100], "rot": 0 },
+    { "type": "instance", "module": "fountain",  "name": "Fountain",  "at": [72, 2, 33] },
+
+    { "type": "instance", "module": "stall", "name": "Stall_A", "at": [62, 2, 24], "rot": 0 },
+    { "type": "instance", "module": "stall", "name": "Stall_B", "at": [96, 2, 46], "rot": 0, "swap": { "clothStripe": "bannerBlue" } },
+    { "type": "instance", "module": "stall", "name": "Stall_C", "at": [104, 2, 24], "rot": 0, "swap": { "clothStripe": "shutterGreen" } },
+    { "type": "instance", "module": "cart",  "name": "Cart_A",  "at": [84, 2, 50], "rot": 0 },
+    { "type": "instance", "module": "cart",  "name": "Cart_B",  "at": [40, 2, 18], "rot": 0 },
+
+    { "type": "instance", "module": "barrel", "name": "Barrel_1", "at": [58, 2, 20], "rot": 0 },
+    { "type": "instance", "module": "barrel", "name": "Barrel_2", "at": [62, 2, 20], "rot": 0 },
+    { "type": "instance", "module": "barrel", "name": "Barrel_3", "at": [60, 2, 24], "rot": 0 },
+    { "type": "instance", "module": "barrel", "name": "Barrel_4", "at": [128, 2, 78], "rot": 0 },
+    { "type": "instance", "module": "crate",  "name": "Crate_1",  "at": [66, 2, 22], "rot": 0 },
+    { "type": "instance", "module": "crate",  "name": "Crate_2",  "at": [66, 6, 22], "rot": 0 },
+    { "type": "instance", "module": "crate",  "name": "Crate_3",  "at": [110, 2, 76], "rot": 0 },
+    { "type": "instance", "module": "crate",  "name": "Crate_4",  "at": [114, 2, 78], "rot": 0 },
+
+    { "type": "instance", "module": "lamp", "name": "Lamp_1", "at": [30, 2, 55], "rot": 0 },
+    { "type": "instance", "module": "lamp", "name": "Lamp_2", "at": [70, 2, 55], "rot": 0 },
+    { "type": "instance", "module": "lamp", "name": "Lamp_3", "at": [110, 2, 55], "rot": 0 },
+    { "type": "instance", "module": "lamp", "name": "Lamp_4", "at": [150, 2, 55], "rot": 0 },
+    { "type": "instance", "module": "lamp", "name": "Lamp_5", "at": [88, 2, 78], "rot": 0 },
+    { "type": "instance", "module": "lamp", "name": "Lamp_6", "at": [86, 6, 100], "rot": 0 },
+
+    { "type": "instance", "module": "hedge", "name": "Hedge_1", "at": [58, 2, 44], "rot": 0 },
+    { "type": "instance", "module": "hedge", "name": "Hedge_2", "at": [66, 2, 44], "rot": 0 },
+    { "type": "instance", "module": "hedge", "name": "Hedge_3", "at": [102, 2, 44], "rot": 0 },
+    { "type": "instance", "module": "hedge", "name": "Hedge_4", "at": [110, 2, 44], "rot": 0 },
+    { "type": "instance", "module": "hedge", "name": "Hedge_5", "at": [148, 2, 92], "rot": 90 },
+    { "type": "instance", "module": "hedge", "name": "Hedge_6", "at": [148, 2, 100], "rot": 90 },
+
+    { "type": "instance", "module": "tree",   "name": "Tree_1", "at": [8, 2, 30],    "rot": 0 },
+    { "type": "instance", "module": "tree",   "name": "Tree_2", "at": [150, 2, 18],  "rot": 90, "swap": { "leaf2": "leaf3" } },
+    { "type": "instance", "module": "tree",   "name": "Tree_3", "at": [40, 2, 120],  "rot": 180, "swap": { "blossom": "flowerY" } },
+    { "type": "instance", "module": "tree",   "name": "Tree_4", "at": [128, 2, 120], "rot": 270 },
+    { "type": "instance", "module": "tree_s", "name": "Tree_5", "at": [52, 2, 78],   "rot": 0 },
+    { "type": "instance", "module": "tree_s", "name": "Tree_6", "at": [100, 2, 80],  "rot": 0, "swap": { "leaf2": "leaf" } },
+    { "type": "instance", "module": "tree_s", "name": "Tree_7", "at": [60, 6, 132],  "rot": 0 },
+    { "type": "instance", "module": "tree_s", "name": "Tree_8", "at": [110, 6, 132], "rot": 0 },
+
+    { "type": "part", "name": "Props", "ops": [
+      { "op": "scatter", "min": [0, 1, 0], "size": [176, 1, 150], "colors": ["flowerR", "flowerY", "flowerW", "flowerP", "flowerB"], "chance": 0.01, "seed": 77 }
+    ]}
+  ]
+}

@@ -53,6 +53,17 @@ namespace Xuan.Prometheus.Editor
         private int editingBindingNameIndex = -1;
         private string editingBindingName = string.Empty;
         private readonly Dictionary<int, float> animatedBindingRowYPositions = new Dictionary<int, float>();
+
+        // 生成快照的 (名称, 组件 InstanceID) -> 生成索引 查找表。没有它时每行状态背景和整份变更说明
+        // 都会各自线性扫描整张生成表，N 项绑定即每帧 O(N²) 的 SerializedProperty 遍历，Inspector 一滚动就掉帧。
+        private readonly Dictionary<(string name, int componentId), int> generatedBindingIndexByKey = new Dictionary<(string, int), int>();
+
+        // 派生数据缓存：查找表、变更说明、校验信息都只依赖绑定表 / 生成快照 / 编辑与拖动状态。
+        // 每帧只算一个无分配的签名，签名不变就直接复用上一帧结果，避免滚动时每帧重扫全表和 List/string 分配。
+        private readonly List<string> cachedBindingChangeDescriptions = new List<string>();
+        private readonly List<(string message, MessageType type)> cachedValidationMessages = new List<(string, MessageType)>();
+        private int derivedStateSignature;
+        private bool hasDerivedState;
         private GUIStyle bindingInsertionGapStyle;
         private GUIStyle draggedRowBackgroundStyle;
         private GUIStyle draggedRowShadowStyle;
@@ -82,6 +93,11 @@ namespace Xuan.Prometheus.Editor
                 generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
                 generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
             }
+
+            hasDerivedState = false;                          // 强制首帧重算派生数据
+            Undo.undoRedoPerformed += InvalidateDerivedState; // 撤销/重做
+            // 层级改名或重挂会影响变更说明里的对象名与「引用在面板外」校验，这些不在无分配签名里，靠事件兜底
+            EditorApplication.hierarchyChanged += InvalidateDerivedState;
         }
 
         /// <summary>
@@ -89,6 +105,8 @@ namespace Xuan.Prometheus.Editor
         /// </summary>
         private void OnDisable()
         {
+            Undo.undoRedoPerformed -= InvalidateDerivedState;
+            EditorApplication.hierarchyChanged -= InvalidateDerivedState;
             CancelBindingDrag();
             DestroyDragPreviewResources();
             DestroyUngeneratedBindingResources();
@@ -112,12 +130,15 @@ namespace Xuan.Prometheus.Editor
             if (generatedBindingSnapshotVersionProperty == null)
                 generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
 
-            DrawBindingTable();
-            serializedObject.ApplyModifiedProperties();
             UIComponentBinder binder = (UIComponentBinder)target;
+            RefreshDerivedStateIfChanged(binder);
+
+            DrawBindingTable();
+            if (serializedObject.ApplyModifiedProperties())
+                InvalidateDerivedState();
             GUILayout.Space(10f);
             DrawRegisterAllButton(binder);
-            DrawValidationMessages(binder);
+            DrawCachedValidationMessages();
             GUILayout.Space(8f);
 
             if (DrawGeneratePanelCodeButton())
@@ -348,22 +369,123 @@ namespace Xuan.Prometheus.Editor
         private bool TryGetGeneratedBindingIndex(string bindingName, UnityEngine.Component component, out int generatedIndex)
         {
             generatedIndex = -1;
-            if (generatedBindingsProperty == null || generatedBindingSnapshotVersionProperty == null || generatedBindingSnapshotVersionProperty.intValue < UIPanelCodeGenerator.GeneratedBindingSnapshotVersion)
+            if (component == null)
                 return false;
+
+            return generatedBindingIndexByKey.TryGetValue((bindingName ?? string.Empty, component.GetInstanceID()), out generatedIndex);
+        }
+
+        /// <summary>
+        /// 按当前生成快照重建 (名称, 组件 InstanceID) -> 生成索引 查找表；版本未达标或列表缺失时置空。
+        /// 与旧线性扫描一致：同一组合重复出现时保留首个索引。
+        /// </summary>
+        private void RebuildGeneratedBindingIndexLookup()
+        {
+            generatedBindingIndexByKey.Clear();
+            if (generatedBindingsProperty == null || generatedBindingSnapshotVersionProperty == null || generatedBindingSnapshotVersionProperty.intValue < UIPanelCodeGenerator.GeneratedBindingSnapshotVersion)
+                return;
 
             for (int index = 0; index < generatedBindingsProperty.arraySize; index++)
             {
                 SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
-                string generatedName = generatedBindingProperty.FindPropertyRelative("name").stringValue;
-                UnityEngine.Component generatedComponent = generatedBindingProperty.FindPropertyRelative("component").objectReferenceValue as UnityEngine.Component;
-                if (!string.Equals(generatedName, bindingName, StringComparison.Ordinal) || generatedComponent != component)
-                    continue;
-
-                generatedIndex = index;
-                return true;
+                var key = (generatedBindingProperty.FindPropertyRelative("name").stringValue, generatedBindingProperty.FindPropertyRelative("component").objectReferenceInstanceIDValue);
+                if (!generatedBindingIndexByKey.ContainsKey(key))
+                    generatedBindingIndexByKey.Add(key, index);
             }
+        }
 
-            return false;
+        /// <summary>标记派生数据（查找表 / 变更说明 / 校验信息）失效，下一次 OnInspectorGUI 会强制重算。</summary>
+        private void InvalidateDerivedState() => hasDerivedState = false;
+
+        /// <summary>
+        /// 只在依赖项变化时重算查找表、变更说明和校验信息。依赖项 = 绑定表内容、生成快照内容与版本、
+        /// 名称草稿、拖动源与落点。签名计算不产生任何堆分配。
+        /// </summary>
+        private void RefreshDerivedStateIfChanged(UIComponentBinder binder)
+        {
+            int signature = ComputeDerivedStateSignature();
+            if (hasDerivedState && signature == derivedStateSignature)
+                return;
+
+            RebuildGeneratedBindingIndexLookup();
+            RebuildBindingChangeDescriptions();
+            RebuildValidationMessages(binder);
+            derivedStateSignature = signature;
+            hasDerivedState = true;
+        }
+
+        /// <summary>把影响派生数据的全部状态揉成一个整型签名；只读取字符串哈希与 InstanceID，不装箱不分配。</summary>
+        private int ComputeDerivedStateSignature()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + editingBindingNameIndex;
+                hash = hash * 31 + (editingBindingName == null ? 0 : editingBindingName.GetHashCode());
+                hash = hash * 31 + draggedBindingIndex;
+                hash = hash * 31 + dragInsertionIndex;
+
+                if (bindingsProperty != null)
+                {
+                    hash = hash * 31 + bindingsProperty.arraySize;
+                    for (int index = 0; index < bindingsProperty.arraySize; index++)
+                    {
+                        SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(index);
+                        string name = bindingProperty.FindPropertyRelative("name").stringValue;
+                        hash = hash * 31 + (name == null ? 0 : name.GetHashCode());
+                        hash = hash * 31 + bindingProperty.FindPropertyRelative("component").objectReferenceInstanceIDValue;
+                    }
+                }
+
+                if (generatedBindingsProperty != null && generatedBindingSnapshotVersionProperty != null)
+                {
+                    hash = hash * 31 + generatedBindingSnapshotVersionProperty.intValue;
+                    hash = hash * 31 + generatedBindingsProperty.arraySize;
+                    for (int index = 0; index < generatedBindingsProperty.arraySize; index++)
+                    {
+                        SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
+                        string name = generatedBindingProperty.FindPropertyRelative("name").stringValue;
+                        hash = hash * 31 + (name == null ? 0 : name.GetHashCode());
+                        hash = hash * 31 + generatedBindingProperty.FindPropertyRelative("component").objectReferenceInstanceIDValue;
+                    }
+                }
+
+                return hash;
+            }
+        }
+
+        /// <summary>把 <see cref="cachedValidationMessages"/> 逐条画成 HelpBox。</summary>
+        private void DrawCachedValidationMessages()
+        {
+            for (int index = 0; index < cachedValidationMessages.Count; index++)
+                EditorGUILayout.HelpBox(cachedValidationMessages[index].message, cachedValidationMessages[index].type);
+        }
+
+        /// <summary>重算空引用、空名称、重复名称和越界引用等会破坏生成代码的问题列表。</summary>
+        private void RebuildValidationMessages(UIComponentBinder binder)
+        {
+            cachedValidationMessages.Clear();
+            HashSet<string> names = new HashSet<string>(StringComparer.Ordinal);
+            IReadOnlyList<UIComponentBinding> bindings = binder.Bindings;
+            for (int index = 0; index < bindings.Count; index++)
+            {
+                UIComponentBinding binding = bindings[index];
+                if (binding == null)
+                {
+                    cachedValidationMessages.Add(($"Binding {index} is null.", MessageType.Error));
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(binding.Name))
+                    cachedValidationMessages.Add(($"Binding {index} has an empty name.", MessageType.Error));
+                else if (!names.Add(binding.Name))
+                    cachedValidationMessages.Add(($"Binding name '{binding.Name}' is duplicated.", MessageType.Error));
+
+                if (binding.Component == null)
+                    cachedValidationMessages.Add(($"Binding '{binding.Name}' does not reference a component.", MessageType.Error));
+                else if (!binding.Component.transform.IsChildOf(binder.transform))
+                    cachedValidationMessages.Add(($"Binding '{binding.Name}' references a component outside this panel prefab.", MessageType.Error));
+            }
         }
 
         /// <summary>
@@ -790,24 +912,25 @@ namespace Xuan.Prometheus.Editor
                 bindingsProperty = serializedObject.FindProperty("bindings");
                 generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
                 generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+                InvalidateDerivedState();
                 Repaint();
                 Debug.Log(addedCount > 0 ? $"[UIKit Binder] Registered {addedCount} supported component(s) in '{binder.name}'." : $"[UIKit Binder] Every supported component in '{binder.name}' is already registered.", binder);
             }
 
-            List<string> bindingChangeDescriptions = BuildBindingChangeDescriptions();
-            if (bindingChangeDescriptions.Count > 0)
-                DrawBindingChangeWarning(binder, bindingChangeDescriptions);
+            if (cachedBindingChangeDescriptions.Count > 0)
+                DrawBindingChangeWarning(binder, cachedBindingChangeDescriptions);
         }
 
         /// <summary>
-        /// 构建相对最后生成快照的逐 Bind 变更说明，能够区分新增组合、改名、替换引用、索引移动和删除。
+        /// 重算相对最后生成快照的逐 Bind 变更说明（写入 <see cref="cachedBindingChangeDescriptions"/>），
+        /// 能够区分新增组合、改名、替换引用、索引移动和删除。仅由 <see cref="RefreshDerivedStateIfChanged"/> 在依赖项变化时调用。
         /// </summary>
-        /// <returns>每个需要重新生成代码的具体 Bind 变更说明。</returns>
-        private List<string> BuildBindingChangeDescriptions()
+        private void RebuildBindingChangeDescriptions()
         {
-            List<string> changeDescriptions = new List<string>();
+            List<string> changeDescriptions = cachedBindingChangeDescriptions;
+            changeDescriptions.Clear();
             if (bindingsProperty == null)
-                return changeDescriptions;
+                return;
 
             int generatedBindingCount = CanRestoreGeneratedBindingSnapshot() ? generatedBindingsProperty.arraySize : 0;
             bool[] matchedGeneratedBindings = new bool[generatedBindingCount];
@@ -859,8 +982,6 @@ namespace Xuan.Prometheus.Editor
                 string generatedName = generatedBindingProperty.FindPropertyRelative("name").stringValue;
                 changeDescriptions.Add($"Bind \"{generatedName}\"（生成 Index {generatedIndex}）：已从当前列表删除");
             }
-
-            return changeDescriptions;
         }
 
         /// <summary>
@@ -987,6 +1108,7 @@ namespace Xuan.Prometheus.Editor
             serializedObject.Update();
             generatedBindingsProperty = serializedObject.FindProperty("generatedBindings");
             generatedBindingSnapshotVersionProperty = serializedObject.FindProperty("generatedBindingSnapshotVersion");
+            InvalidateDerivedState();
             Repaint();
         }
 
@@ -1112,33 +1234,6 @@ namespace Xuan.Prometheus.Editor
             PrefabUtility.RecordPrefabInstancePropertyModifications(component.gameObject);
         }
 
-        /// <summary>
-        /// 在 Inspector 中显示空引用、空名称和重复名称等会破坏生成代码的问题。
-        /// </summary>
-        private static void DrawValidationMessages(UIComponentBinder binder)
-        {
-            HashSet<string> names = new HashSet<string>(StringComparer.Ordinal);
-            IReadOnlyList<UIComponentBinding> bindings = binder.Bindings;
-            for (int index = 0; index < bindings.Count; index++)
-            {
-                UIComponentBinding binding = bindings[index];
-                if (binding == null)
-                {
-                    EditorGUILayout.HelpBox($"Binding {index} is null.", MessageType.Error);
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(binding.Name))
-                    EditorGUILayout.HelpBox($"Binding {index} has an empty name.", MessageType.Error);
-                else if (!names.Add(binding.Name))
-                    EditorGUILayout.HelpBox($"Binding name '{binding.Name}' is duplicated.", MessageType.Error);
-
-                if (binding.Component == null)
-                    EditorGUILayout.HelpBox($"Binding '{binding.Name}' does not reference a component.", MessageType.Error);
-                else if (!binding.Component.transform.IsChildOf(binder.transform))
-                    EditorGUILayout.HelpBox($"Binding '{binding.Name}' references a component outside this panel prefab.", MessageType.Error);
-            }
-        }
     }
 
     /// <summary>

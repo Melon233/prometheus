@@ -18,11 +18,8 @@ namespace Xuan.Prometheus.World
     /// </summary>
     internal sealed class PoiSystem : XSystem, IPoiSystem
     {
-        /// <summary>
-        /// 获取当前上场的小队成员；小队尚未建立时为空。
-        /// 按 ARCH-SYS-007，跨 System 依赖在使用点解析，不长期保存 TeamSystem 实例。
-        /// </summary>
-        private static Entity ActivePlayer => Core.Gameplay.TryGetSystem(out ITeamSystem teamSystem) ? teamSystem.ActiveMember : null;
+        /// <summary>获取当前上场的小队成员；小队尚未建立时为空。</summary>
+        private Entity ActivePlayer => teamSystem.ActiveMember;
 
         /// <summary>生命周期刷新间隔，避免每帧全量遍历。</summary>
         private const float TickInterval = 0.25f;
@@ -55,11 +52,37 @@ namespace Xuan.Prometheus.World
         private float positionUploadAccumulator;
         private bool isAvailable;
 
-        /// <summary>通过统一 Core 入口按需取得当前单局 ServiceSystem 接口，不保存或注入公共 System 实例。</summary>
-        private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>();
+        /// <summary>构造注入的唯一会话通道。</summary>
+        private readonly IServiceSystem ServiceSystem;
 
-        /// <summary>本领域的网络适配器；按 ARCH-SYS-005 在使用点解析，不长期保存实例。</summary>
-        private static IPoiGateway Gateway => Core.Gameplay.GetSystem<IPoiGateway>();
+        /// <summary>构造注入的实体容器，用于生成与回收营地敌人。</summary>
+        private readonly IEntitySystem entitySystem;
+
+        /// <summary>构造注入的小队系统，用于读取当前上场玩家的位置。</summary>
+        private readonly ITeamSystem teamSystem;
+
+        /// <summary>
+        /// 世界级取消源：进入世界时与会话级取消源级联建立，离开世界时取消。
+        /// 它保证上一个世界的在途请求不会把状态写进下一个世界——POI 状态是按场景加载的，
+        /// 只用会话级令牌的话，跨场景同名 POI 会收到属于旧世界的响应。
+        /// </summary>
+        private CancellationTokenSource worldCancellation;
+
+        /// <summary>创建 POI 系统；四个依赖都以契约注入，依赖关系因此写在签名上。</summary>
+        /// <param name="entitySystem">承载营地敌人的实体容器。</param>
+        /// <param name="teamSystem">提供当前上场玩家的小队系统。</param>
+        /// <param name="poiGateway">本领域的网络适配器。</param>
+        /// <param name="serviceSystem">承载本领域请求的唯一会话通道。</param>
+        public PoiSystem(IEntitySystem entitySystem, ITeamSystem teamSystem, IPoiGateway poiGateway, IServiceSystem serviceSystem)
+        {
+            this.entitySystem = entitySystem ?? throw new ArgumentNullException(nameof(entitySystem));
+            this.teamSystem = teamSystem ?? throw new ArgumentNullException(nameof(teamSystem));
+            Gateway = poiGateway ?? throw new ArgumentNullException(nameof(poiGateway));
+            ServiceSystem = serviceSystem ?? throw new ArgumentNullException(nameof(serviceSystem));
+        }
+
+        /// <summary>构造注入的本领域网络适配器。</summary>
+        private readonly IPoiGateway Gateway;
 
         /// <summary>已加载的 POI 数量（诊断）。</summary>
         public int PoiCount => allPois.Count;
@@ -81,20 +104,51 @@ namespace Xuan.Prometheus.World
             return false;
         }
 
-        /// <summary>建立单局状态并通过 ServiceSystem 执行一次服务器探测，仅在连接成功后启用网络同步和交互逻辑。</summary>
+        /// <summary>建立会话级订阅；POI 与营地敌人都来自场景，因此留到世界相位再建立。</summary>
         public override void AfterNew()
         {
             Core.Event.AddListener<EntityDiedEvent>(OnEntityDied);
             ServiceSystem.WorldUnavailable += OnWorldUnavailable;
+        }
+
+        /// <summary>
+        /// 进入世界时扫描场景 POI、生成营地敌人，并执行一次服务器探测。
+        ///
+        /// 这些全部依赖当前场景里摆了什么，因此属于世界相位而不是会话相位。
+        /// 写在 AfterNew 里时它能工作，只是因为场景一辈子只加载一次且恰好早于 AfterNew——那是巧合，不是设计。
+        /// </summary>
+        /// <param name="world">本次进入的世界上下文。</param>
+        public override UniTask OnWorldEnterAsync(WorldContext world)
+        {
+            worldCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token);
             SpawnMonsterCampEnemies();
-            InitializeAsync(lifetimeCancellation.Token).Forget();
+            InitializeAsync(worldCancellation.Token).Forget();
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>离开世界时取消在途请求并丢弃全部场景状态；营地敌人随实体容器统一回收。</summary>
+        public override void OnWorldExit()
+        {
+            worldCancellation?.Cancel();
+            worldCancellation?.Dispose();
+            worldCancellation = null;
+            allPois.Clear();
+            poisById.Clear();
+            syncedChunks.Clear();
+            nearbyChunks.Clear();
+            departedChunks.Clear();
+            monsterCampByEntityId.Clear();
+            pendingMonsterCampRespawns.Clear();
+            pendingRestoredPosition = null;
+            tickAccumulator = 0f;
+            positionUploadAccumulator = 0f;
+            isAvailable = false;
         }
 
         /// <summary>按场景中的怪物营地实例各生成一只史莱姆；该一次性本地行为不依赖 POI 服务器或语义 Id 唯一性。</summary>
         private void SpawnMonsterCampEnemies()
         {
             PoiMono[] monos = UnityEngine.Object.FindObjectsOfType<PoiMono>(true);
-            IEntitySystem entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             foreach (PoiMono mono in monos)
             {
                 if (mono == null || mono.Config == null || mono.Config.PoiType != PoiType.MonsterCamp) continue;
@@ -184,7 +238,7 @@ namespace Xuan.Prometheus.World
             if (positionUploadAccumulator >= PositionUploadInterval)
             {
                 positionUploadAccumulator = 0f;
-                UploadPlayerPositionAsync(playerPos, lifetimeCancellation.Token).Forget();
+                UploadPlayerPositionAsync(playerPos, worldCancellation.Token).Forget();
             }
             SyncNearbyChunks(playerPos);
         }
@@ -215,7 +269,6 @@ namespace Xuan.Prometheus.World
         private void RespawnPendingMonsterCampEnemies()
         {
             if (pendingMonsterCampRespawns.Count == 0) return;
-            IEntitySystem entitySystem = Core.Gameplay.GetSystem<IEntitySystem>();
             while (pendingMonsterCampRespawns.Count > 0)
             {
                 Vector3 campPosition = pendingMonsterCampRespawns.Dequeue();
@@ -255,7 +308,7 @@ namespace Xuan.Prometheus.World
             foreach (int chunkId in nearbyChunks)
             {
                 if (!syncedChunks.Add(chunkId)) continue;
-                PullChunkAsync(chunkId, lifetimeCancellation.Token).Forget();
+                PullChunkAsync(chunkId, worldCancellation.Token).Forget();
             }
         }
 
@@ -296,8 +349,8 @@ namespace Xuan.Prometheus.World
             Debug.Log($"[交互] 请求服务器 {poi.Config.Id} op={op}");
             try
             {
-                InteractResponse response = await Gateway.InteractAsync(poi.Config.Id, op, lifetimeCancellation.Token);
-                lifetimeCancellation.Token.ThrowIfCancellationRequested();
+                InteractResponse response = await Gateway.InteractAsync(poi.Config.Id, op, worldCancellation.Token);
+                worldCancellation.Token.ThrowIfCancellationRequested();
                 Debug.Log($"[交互] 服务器响应 {poi.Config.Id} => success={response.Success}");
                 if (response.State != null)
                 {
@@ -308,7 +361,7 @@ namespace Xuan.Prometheus.World
                 if (!response.Success) return false;
                 return true;
             }
-            catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested) { return false; }
+            catch (OperationCanceledException) { return false; }
             catch (Exception e)
             {
                 bool shouldLog = isAvailable;
@@ -395,6 +448,8 @@ namespace Xuan.Prometheus.World
         public override void Dispose()
         {
             lifetimeCancellation.Cancel();
+            worldCancellation?.Dispose();
+            worldCancellation = null;
             ServiceSystem.WorldUnavailable -= OnWorldUnavailable;
             Core.Event.RemoveListener<EntityDiedEvent>(OnEntityDied);
             monsterCampByEntityId.Clear();

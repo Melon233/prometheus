@@ -7,6 +7,9 @@ namespace Xuan.Prometheus
     /// <summary>订阅当前单局已经完成结算的伤害事实并播放命中音效，使命中反馈不再依赖受击或死亡动画是否成功切换。</summary>
     internal sealed class CombatAudioPresentationSystem : XSystem, ICombatAudioPresentationSystem
     {
+        /// <summary>构造注入的效果系统，本系统只读取它的信号流。</summary>
+        private readonly IEffectSystem effectSystem;
+
         private readonly FmodAudioEvent damageHitAudioEvent;
         private readonly Func<FmodAudioEvent, Vector3, bool> playOneShot;
         private EffectRuntime runtime;
@@ -15,8 +18,10 @@ namespace Xuan.Prometheus
         /// <summary>创建战斗音频表现系统；默认播放共享肉体命中事件，可注入兼容签名的播放器用于测试或替换音频后端。</summary>
         /// <param name="hitAudioEvent">所有实际伤害统一使用的命中音频事件。</param>
         /// <param name="audioPlayer">接收音频事件与世界坐标的一次性播放入口；为空时使用 FMOD 运行时。</param>
-        public CombatAudioPresentationSystem(FmodAudioEvent hitAudioEvent = FmodAudioEvent.CombatSharedHit_Flesh, Func<FmodAudioEvent, Vector3, bool> audioPlayer = null)
+        /// <param name="effectSystem">提供唯一 EffectRuntime 的效果系统。</param>
+        public CombatAudioPresentationSystem(IEffectSystem effectSystem, FmodAudioEvent hitAudioEvent = FmodAudioEvent.CombatSharedHit_Flesh, Func<FmodAudioEvent, Vector3, bool> audioPlayer = null)
         {
+            this.effectSystem = effectSystem ?? throw new ArgumentNullException(nameof(effectSystem));
             damageHitAudioEvent = hitAudioEvent;
             playOneShot = audioPlayer ?? FmodAudioRuntime.PlayOneShot;
         }
@@ -26,7 +31,7 @@ namespace Xuan.Prometheus
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CombatAudioPresentationSystem));
             if (runtime != null) return;
-            runtime = Core.Gameplay.GetSystem<IEffectSystem>().Runtime;
+            runtime = effectSystem.Runtime;
             runtime.SignalProcessed += OnSignalProcessed;
         }
 

@@ -9,11 +9,11 @@ $gobin = Join-Path (go env GOPATH) 'bin\protoc-gen-go.exe'   # Go 插件
 Push-Location $PSScriptRoot
 try {
     # 1. 生成 Go 代码 -> Server/gen/protocol
-    & $protoc --plugin=protoc-gen-go=$gobin --go_out=. --go_opt=module=prometheus proto/poi.proto
+    & $protoc --plugin=protoc-gen-go=$gobin --go_out=. --go_opt=module=prometheus proto/game.proto
     if ($LASTEXITCODE -ne 0) { throw "Go codegen failed (exit $LASTEXITCODE)" }
 
     # 2. 生成 C# 代码 -> Assets/Gen/Protocol
-    & $protoc --csharp_out=../Assets/Gen/Protocol proto/poi.proto
+    & $protoc --csharp_out=../Assets/Gen/Protocol proto/game.proto
     if ($LASTEXITCODE -ne 0) { throw "C# codegen failed (exit $LASTEXITCODE)" }
 }
 finally {

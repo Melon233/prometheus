@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using NUnit.Framework;
+using Xuan.Prometheus.Expression;
 
 namespace Xuan.Prometheus.Narrative.Tests
 {
@@ -103,12 +105,13 @@ namespace Xuan.Prometheus.Narrative.Tests
             Assert.That(unknownError, Does.Contain("quest"));
         }
 
-        /// <summary>验证外部只读投影可以扩展被承认的命名空间。</summary>
+        /// <summary>验证在同一存储里登记另一个命名空间即可扩展被承认的标识符范围。</summary>
         [Test]
-        public void Projection_ExtendsResolvableNamespaces()
+        public void ForeignNamespace_ExtendsResolvableNamespaces()
         {
-            StoryVariables variables = new StoryVariables();
-            variables.AddProjection(new FakeQuestProjection());
+            VariableStore store = new VariableStore();
+            StoryVariables variables = new StoryVariables(store);
+            store.Register(new FakeQuestNamespace());
             Assert.That(StoryExpression.Validate("quest.demo == \"Done\"", variables, out string error), Is.True, error);
             Assert.That(StoryExpression.Compile("quest.demo == \"Done\"").EvaluateBool(variables), Is.True);
         }
@@ -122,11 +125,17 @@ namespace Xuan.Prometheus.Narrative.Tests
             Assert.That(ReferenceEquals(first, second), Is.True);
         }
 
-        /// <summary>模拟任务系统的只读投影。</summary>
-        private sealed class FakeQuestProjection : IStoryVariableResolver
+        /// <summary>模拟任务系统的只读命名空间：只提供现算值，不接受写入。</summary>
+        private sealed class FakeQuestNamespace : IVariableNamespace
         {
             /// <inheritdoc />
-            public bool TryResolve(string path, out StoryValue value)
+            public IReadOnlyList<string> Roots { get; } = new[] { "quest" };
+
+            /// <inheritdoc />
+            public bool AllowsWrite => false;
+
+            /// <inheritdoc />
+            public bool TryResolveDerived(string path, out StoryValue value)
             {
                 if (path == "quest.demo")
                 {
@@ -138,9 +147,10 @@ namespace Xuan.Prometheus.Narrative.Tests
             }
 
             /// <inheritdoc />
-            public bool IsKnownRoot(string root)
+            public bool TryGetDefault(string path, out StoryValue value)
             {
-                return root == "quest";
+                value = StoryValue.None;
+                return false;
             }
         }
     }
