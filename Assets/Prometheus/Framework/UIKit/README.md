@@ -178,7 +178,7 @@ public sealed class MailPanelProto : UIPrototypeDefinition
 | `Spacing(v)` | 子节点间距 |
 | `Size(w, h)` / `Width(w)` / `Height(h)` | 固定尺寸 |
 | `Flex(weight = 1)` | 在父容器主轴瓜分剩余空间 |
-| `Bg(color, sliced = true)` | 底图颜色 |
+| `Bg(color, sliced = true)` | 底图颜色。`sliced` 决定用带圆角的九宫格图还是纯色填充，见「背板与边界」 |
 | `Text(s)` / `FontSize(f)` / `TextColor(c)` | 文本内容与样式 |
 | `Align(ProtoAlign)` / `VAlign(ProtoVAlign)` | 内容对齐。文本节点上控制文字对齐，容器节点上控制子节点排布；未调用的方向保持左上角 |
 | `Truncate()` | 允许省略号截断，并跳过文本溢出校验 |
@@ -220,6 +220,33 @@ ScrollBox("DetailBodyScroll")
 `ScrollBox` 内部装配 `ScrollRect` + `Viewport(RectMask2D)` + `Content(VerticalLayoutGroup + ContentSizeFitter)`，子节点挂到 Content 上由内容撑高，超过视口即滚动。
 
 固定高度且内容长度不可控的位置（列表项标题等），显式声明 `.Truncate()`。
+
+### 背板与边界
+
+`Bg(color)` 默认使用 Unity 内置的 `UISprite` 九宫格图。它**带圆角，四周还有一圈透明边**——浮在上层的卡片、按钮、列表项用它正合适，圆角本身就是想要的效果。
+
+但只要背板一直铺到屏幕（面板根）边界，圆角和那圈透明边就会在最外侧露出缝隙，透出背后的颜色。**贴边的背板一律用纯色填充**：
+
+```csharp
+Column("SideRail").Width(110f).Bg(UIProtoTheme.SurfaceDark, sliced: false)   // 铺到屏幕左边
+Column("InfoPanel").Width(460f).Bg(UIProtoTheme.PanelBgAlt)                  // 面板内浮层，保留圆角
+```
+
+判断标准很简单：
+
+> **矩形与面板根的任一条边齐平 → `sliced: false`；四周都有留白 → 保持默认。**
+
+全屏遮罩、通栏侧边栏、顶到底的主面板、分隔线都属于前者。
+
+构建期会自动拦截违反这条规则的节点：
+
+```
+MenuPanelProto: 'Root/SideRail/Bg' uses a sliced background but reaches the panel edge.
+The placeholder sprite has rounded corners and a transparent border, which leaves a
+visible gap at the screen edge. Use Bg(color, sliced: false) for surfaces that run to the edge.
+```
+
+检查只对**面板**生效，且跳过遮罩内的滚动内容：条目 Prefab 的根就是卡片本身，底图铺满整张卡是对的；滚动内容会随滚动越过面板范围，并不是真的贴在边界上。
 
 ## 绑定与代码生成
 
@@ -279,6 +306,7 @@ ScrollBox("DetailBodyScroll")
 
 - 任何 `RectTransform` 尺寸为零即失败（`ScrollRect` 的 Content 由运行时撑开，豁免）
 - 文本放不下即失败，除非声明了 `Truncate()`
+- 与面板边界齐平的节点不得使用九宫格底图（见「背板与边界」）
 - `Button` 的 persistent `onClick` 列表必须为空
 - 字体材质必须已作为子资产落盘
 

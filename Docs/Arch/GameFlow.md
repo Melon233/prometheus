@@ -302,8 +302,27 @@ Boot ─ Splash ─ HotUpdate ─ Login ─┬─ CreateSession ─ EnterWorld(M
 **启动界面由代码创建而不是摆在场景里**。它必须盖住整个启动过程，而这个过程会跨越一次场景加载，
 所以它需要 `DontDestroyOnLoad`；代码创建同样满足「随包体直出」这条真实约束（见 6.1）。
 
-**字体走系统字体**：`Font.CreateDynamicFontFromOSFont` 逐个尝试常见中文字体名。
-硬引用 `BundleResources/Font` 下的字体会把 3.1MB 字体复制进 Resources，而且那份资产在开屏这一刻同样还不可达。
+**局外相机**（`OuterCamera`，归 `GameFlow` 所有）：App 段场景里一台相机都没有——`CameraSystem`
+是 Session 段的，玩法相机要等会话建立才出现。开关点因此是**会话边界**而不是世界边界：
+玩法相机挂在 `PersistentRoot` 下、随会话存活，会话内换世界期间它一直在。
+
+它**不是"UI 相机"**：启动与登录界面都是 `ScreenSpaceOverlay` Canvas，实测没有相机也照样渲染，
+所以它唯一的职责是**清屏**。不加它现在画面也正常，靠的是启动界面那张全屏不透明底图替相机清了屏；
+这在启动界面**淡入**时会破——整体 alpha 小于 1，连底图自己都是半透明的，背后是没人清过的 backbuffer，
+编辑器里 Game view 兜底，设备上不保证。
+
+两处刻意的省略：**不打 `MainCamera` 标签**（否则 `Camera.main` 指向它，UIKit 的世界空间 Canvas 会绑错观察相机）；
+**不挂 `AudioListener`**（玩法相机自带一个，两个并存会产生重复监听器警告；局外没有音频播放，没有监听器是正确状态）。
+
+**开屏只显示 logo，不显示任何文字。** logo 从 `Resources/UI/BootLogo` 加载——这正是 6.1 那条约束的直接后果：
+`BundleResources` 下的资产在开屏这一刻还不可达。进度条与状态文字属于**随后的热更阶段**，
+由 `BindProgress` 淡入，开屏期间整个进度分组 alpha 为 0。开屏是品牌画面，不该混进加载信息。
+
+当前 logo 是程序生成的**占位标识**（金色圆环 + 火焰）。美术出图后替换同名资源即可，代码不用动。
+工程里唯一现成的 logo 是 `Art/原神/UI_Img_ChapterLogo.png`——那是参考素材，不能用作本作开屏。
+
+**状态文字走系统字体**：`Font.CreateDynamicFontFromOSFont` 逐个尝试常见中文字体名。
+硬引用 `BundleResources/Font` 下的字体会把 3.1MB 字体复制进 Resources，而且那份资产在这一刻同样还不可达。
 登录界面则正常使用 bundle 里的 `HYWenHei-85W`——它在资源包就绪之后。
 
 ### 6.1 开屏与热更界面不能用 UIKit

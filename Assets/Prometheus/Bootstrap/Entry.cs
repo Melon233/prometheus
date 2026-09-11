@@ -68,6 +68,7 @@ namespace Xuan.Prometheus.Bootstrap
             if (current != this) return;
             runtimeCore?.Dispose();
             runtimeCore = null;
+            flow?.Dispose();
             flow = null;
             current = null;
         }

@@ -75,7 +75,7 @@ namespace Xuan.Prometheus.UI.Prototype
         {
             return Column("SideRail")
                 .Width(110f)
-                .Bg(UIProtoTheme.SurfaceDark)
+                .Bg(UIProtoTheme.SurfaceDark, false)
                 .Padding(18, 18, 20, 20)
                 .Spacing(20f)
                 .Align(ProtoAlign.Center)
@@ -112,7 +112,7 @@ namespace Xuan.Prometheus.UI.Prototype
         {
             return Column("MainPanel")
                 .Width(700f)
-                .Bg(UIProtoTheme.PanelBg)
+                .Bg(UIProtoTheme.PanelBg, false)
                 .Padding(20, 20, 20, 20)
                 .Spacing(16f)
                 .Add(BuildProfileCard(), BuildMenuGrid());

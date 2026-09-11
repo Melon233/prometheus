@@ -569,23 +569,25 @@ namespace Xuan.Prometheus.Editor.Prototype
                     throw new InvalidOperationException(definitionName + ": button '" + node.Name + "' has persistent onClick entries; UIKit requires that list to stay empty.");
             });
 
-            ValidateRealizedSizes(panelRoot.transform, panelRoot.transform, definitionName);
+            // 边界检查只对面板有意义：条目 Prefab 的根就是卡片本身，底图铺满整张卡片是正确的。
+            ValidateRealizedSizes(panelRoot.transform, panelRoot.transform, definitionName, root.Role == ProtoRole.Panel);
         }
 
         /// <summary>
         /// 检查实例化结果中每一个 RectTransform 的尺寸，覆盖底图和内部文本这类不出现在结构树里的实现节点。
         /// 滚动视图的 Content 由列表组件在运行时撑开，因此不参与检查。
         /// </summary>
-        private static void ValidateRealizedSizes(Transform transform, Transform panelRoot, string definitionName)
+        private static void ValidateRealizedSizes(Transform transform, Transform panelRoot, string definitionName, bool checkEdges)
         {
             RectTransform rect = transform as RectTransform;
             if (rect != null && !IsRuntimeSized(rect) && (rect.rect.width <= 0.5f || rect.rect.height <= 0.5f))
                 throw new InvalidOperationException(definitionName + ": '" + GetPath(rect.transform, panelRoot) + "' resolved to a zero size (" + rect.rect.width.ToString("0.#") + "x" + rect.rect.height.ToString("0.#") + ").");
 
             ValidateTextFits(transform, panelRoot, definitionName);
+            if (checkEdges) ValidateEdgeBackground(transform, panelRoot, definitionName);
 
             for (int index = 0; index < transform.childCount; index++)
-                ValidateRealizedSizes(transform.GetChild(index), panelRoot, definitionName);
+                ValidateRealizedSizes(transform.GetChild(index), panelRoot, definitionName, checkEdges);
         }
 
         /// <summary>
@@ -603,6 +605,55 @@ namespace Xuan.Prometheus.Editor.Prototype
             if (required <= rect.rect.height + 1f) return;
 
             throw new InvalidOperationException(definitionName + ": text '" + GetPath(transform, panelRoot) + "' needs " + required.ToString("0") + "px but only has " + rect.rect.height.ToString("0") + "px. Give it more height, put it inside a ScrollBox, or mark it Truncate() if clipping is intended.");
+        }
+
+        /// <summary>
+        /// 拦截贴到面板边界却使用九宫格底图的节点。
+        /// 占位用的内置 UISprite 带圆角和一圈透明边，作为卡片底图没问题，
+        /// 但铺到屏幕边界时圆角与透明边会在最外圈露出缝隙，且不会报错。
+        /// </summary>
+        private static void ValidateEdgeBackground(Transform transform, Transform panelRoot, string definitionName)
+        {
+            Image image = transform.GetComponent<Image>();
+            if (image == null || image.type != Image.Type.Sliced) return;
+            RectTransform rect = transform as RectTransform;
+            RectTransform panelRect = panelRoot as RectTransform;
+            if (rect == null || panelRect == null) return;
+            // 遮罩内的内容会随滚动超出面板范围，它们并不真的贴在屏幕边界上。
+            if (IsClipped(transform)) return;
+            if (!SitsFlushWithPanelEdge(rect, panelRect)) return;
+
+            throw new InvalidOperationException(definitionName + ": '" + GetPath(transform, panelRoot) + "' uses a sliced background but reaches the panel edge. The placeholder sprite has rounded corners and a transparent border, which leaves a visible gap at the screen edge. Use Bg(color, sliced: false) for surfaces that run to the edge.");
+        }
+
+        /// <summary>判断节点是否处在某个遮罩之内。</summary>
+        private static bool IsClipped(Transform transform)
+        {
+            Transform current = transform.parent;
+            while (current != null)
+            {
+                if (current.GetComponent<RectMask2D>() != null) return true;
+                current = current.parent;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 判断节点的矩形是否与面板根的某条边界齐平。
+        /// 只匹配“恰好对齐”，不包括超出面板范围的情况，后者是被裁剪的内容而不是铺到边界的背板。
+        /// </summary>
+        private static bool SitsFlushWithPanelEdge(RectTransform rect, RectTransform panelRect)
+        {
+            const float Tolerance = 0.5f;
+            Vector3[] corners = new Vector3[4];
+            Vector3[] panelCorners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            panelRect.GetWorldCorners(panelCorners);
+            return Mathf.Abs(corners[0].x - panelCorners[0].x) <= Tolerance
+                || Mathf.Abs(corners[0].y - panelCorners[0].y) <= Tolerance
+                || Mathf.Abs(corners[2].x - panelCorners[2].x) <= Tolerance
+                || Mathf.Abs(corners[2].y - panelCorners[2].y) <= Tolerance;
         }
 
         /// <summary>判断一个节点的尺寸是否由运行时组件负责计算。</summary>

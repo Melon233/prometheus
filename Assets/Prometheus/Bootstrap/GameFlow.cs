@@ -52,6 +52,13 @@ namespace Xuan.Prometheus.Bootstrap
         private UniTask kitInitialization;
 
         /// <summary>
+        /// 局外相机：在玩法相机存在之前保证屏幕有人清。
+        /// 它的开关点是**会话边界**而不是世界边界——玩法相机挂在 PersistentRoot 下、随会话存活，
+        /// 因此会话内换世界期间它一直在，用不着局外相机顶上。
+        /// </summary>
+        private readonly OuterCamera outerCamera = new OuterCamera();
+
+        /// <summary>
         /// 本次启动的世界栈。
         /// 它随流程存活而不是随会话存活：登出重登会重建会话，但「现在在哪个世界、从哪来的」
         /// 由流程负责重置，因此栈归流程持有。
@@ -89,9 +96,11 @@ namespace Xuan.Prometheus.Bootstrap
             }
         }
 
-        /// <summary>建立启动界面并让资源包初始化立刻开始跑。</summary>
+        /// <summary>建立局外相机与启动界面，并让资源包初始化立刻开始跑。</summary>
         private UniTask<GameFlowStage> RunBootAsync()
         {
+            // 相机必须先于启动界面就位：界面是淡入的，淡入期间背后需要有人清屏。
+            outerCamera.Ensure();
             bootScreen = CreateBootScreen();
             // 只启动、不等待：等待发生在 HotUpdate 阶段，中间这段时间用来播开屏。
             kitInitialization = UniTask.WhenAll(core.CreateAfterNewTasks());
@@ -133,9 +142,28 @@ namespace Xuan.Prometheus.Bootstrap
         {
             // Session 段：构造全部 System，各自加载自己的配置。
             await Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller());
+            // 会话建立的同时 CameraSystem 已经创建了玩法相机，清屏责任就此移交，局外相机让位。
+            outerCamera.SetActive(false);
             // World 段：进入栈底世界。具体是哪个场景、出生在哪，由世界目录决定，流程不写死。
             await Worlds.EnterMainWorldAsync();
             return GameFlowStage.Running;
+        }
+
+        /// <summary>
+        /// 会话销毁后重新接管清屏。
+        /// 「返回登录」会销毁会话，玩法相机随 <c>CameraSystem.Dispose</c> 一起消失，
+        /// 屏幕从那一刻起又没人清了——因此这条与 <see cref="RunEnterWorldAsync"/> 里的让位是一对。
+        /// 登录流程接入登出时调用它。
+        /// </summary>
+        public void ResumeOuterCamera()
+        {
+            outerCamera.Ensure();
+        }
+
+        /// <summary>释放流程持有的运行时对象；由入口在销毁时调用。</summary>
+        public void Dispose()
+        {
+            outerCamera.Dispose();
         }
 
         /// <summary>
