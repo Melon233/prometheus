@@ -75,7 +75,14 @@ namespace Xuan.Prometheus
         public event Action<AnimationPlayback, Spine.Event> EventReceived;
 
         /// <summary>当 AnimationLine 时间轴触发强类型玩法命令时发布，碰撞盒等行为不需要解释 Spine 事件名称。</summary>
-        public event Action<AnimationPlayback, AnimationLineEventCommand> CommandReceived;
+        /// <summary>
+        /// 当前会话收到一条强类型玩法命令。
+        ///
+        /// 第三个参数是策划在 `AnimationLine` 编辑器里给该事件填的 `floatValue`，原样透传。
+        /// 动画层不解释它的含义：命中窗口把它读作段落窗口序号，其它命令可以另作他用。
+        /// 命令码本身占用了事件的 `Int` 通道，因此参数只能走 `Float`。
+        /// </summary>
+        public event Action<AnimationPlayback, AnimationLineEventCommand, float> CommandReceived;
 
         /// <summary>在自然完成、被抢占、主动停止或组件释放时恰好发布一次。</summary>
         public event Action<AnimationPlayback, AnimationEndReason> Finished;
@@ -150,7 +157,7 @@ namespace Xuan.Prometheus
             if (host != null && host.TryGetWorldPosition(out UnityEngine.Vector3 hostPosition) && FmodAudioRuntime.TryConsumeAnimationMarker(animationEvent, hostPosition)) return;
             if (AnimationLine.TryResolveCommand(animationEvent, out AnimationLineEventCommand command))
             {
-                CommandReceived?.Invoke(this, command);
+                CommandReceived?.Invoke(this, command, animationEvent.Float);
                 return;
             }
             EventReceived?.Invoke(this, animationEvent);

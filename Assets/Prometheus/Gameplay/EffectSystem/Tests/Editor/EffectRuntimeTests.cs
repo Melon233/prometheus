@@ -6,7 +6,10 @@ using UnityEngine;
 using Xuan.Prometheus.Bootstrap;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Elements;
+using Xuan.Prometheus.Shields;
 using Xuan.Prometheus.Logic;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Effects.Tests
 {
@@ -26,6 +29,20 @@ namespace Xuan.Prometheus.Effects.Tests
         private EffectRuntime runtime;
         private EffectExampleBundle examples;
         private IDisposable registrations;
+        /// <summary>测试独占的配表 Kit；元素系统在 AfterNew 里要读反应矩阵。</summary>
+        private ConfigKit configKit;
+        /// <summary>测试独占的元素系统；伤害结算经过它判定附着与反应。</summary>
+        private ElementSystem elementSystem;
+        /// <summary>测试独占的护盾系统；伤害在扣血前先经过它。</summary>
+        private ShieldSystem shieldSystem;
+
+        /// <summary>按表名从 AssetDatabase 读取导出的二进制表，替代运行时的资源包加载。</summary>
+        private static Luban.ByteBuf LoadTable(string tableName)
+        {
+            TextAsset asset = AssetDatabase.LoadAssetAtPath<TextAsset>($"Assets/BundleResources/Table/{tableName}.bytes");
+            Assert.That(asset, Is.Not.Null, $"无法加载导出的配表：{tableName}.bytes；请先执行 Prometheus/Luban/导出配表。");
+            return new Luban.ByteBuf(asset.bytes);
+        }
 
         /// <summary>
         /// 为每个测试创建彼此隔离的实体、属性、效果定义和确定性运行时。
@@ -40,10 +57,10 @@ namespace Xuan.Prometheus.Effects.Tests
             sourceConfig.atk = 20f;
             sourceConfig.def = 10f;
             sourceConfig.runSpeed = 3f;
-            sourceConfig.toughness = 1f;
+            sourceConfig.staggerResistance = 1f;
             sourceConfig.hp = 100f;
             targetConfig.atk = 5f;
-            targetConfig.toughness = 1f;
+            targetConfig.staggerResistance = 1f;
             targetConfig.hp = 100f;
             sourceProperty = new PropertyComponent();
             targetProperty = new PropertyComponent();
@@ -51,7 +68,13 @@ namespace Xuan.Prometheus.Effects.Tests
             targetProperty.InitializeForTests(targetConfig);
             sourceEntity = new TestEntity(sourceObject, sourceProperty);
             targetEntity = new TestEntity(targetObject, targetProperty);
-            runtime = new EffectRuntime(12345);
+            configKit = new ConfigKit();
+            Core.Config = configKit;
+            configKit.LoadFrom(LoadTable);
+            elementSystem = new ElementSystem();
+            elementSystem.AfterNew();
+            shieldSystem = new ShieldSystem();
+            runtime = new EffectRuntime(12345, elementSystem, shieldSystem);
             examples = EffectExampleFactory.CreateInMemory();
         }
 
@@ -67,6 +90,13 @@ namespace Xuan.Prometheus.Effects.Tests
             runtime = null;
             examples?.Dispose();
             examples = null;
+            elementSystem?.Dispose();
+            elementSystem = null;
+            shieldSystem?.Dispose();
+            shieldSystem = null;
+            configKit?.Dispose();
+            configKit = null;
+            Core.Config = null;
             UnityEngine.Object.DestroyImmediate(sourceConfig);
             UnityEngine.Object.DestroyImmediate(targetConfig);
             UnityEngine.Object.DestroyImmediate(sourceObject);
@@ -85,67 +115,60 @@ namespace Xuan.Prometheus.Effects.Tests
             int staggeredCount = 0;
             targetEvents.AddListener<HpChangedEvent>(change => observedHpChange = change);
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 37f, 37f, EffectTag.Attack | EffectTag.NormalAttack));
-            Assert.That(targetProperty.Hp, Is.EqualTo(63f).Within(0.0001f));
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 37f, 37f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
+            // 攻防同为 1 级，防御区固定为 0.5，因此实际扣血是请求值的一半。
+            Assert.That(targetProperty.Hp, Is.EqualTo(81.5f).Within(0.0001f));
             Assert.That(observedHpChange, Is.Not.Null);
             Assert.That(observedHpChange.oldHp, Is.EqualTo(100f).Within(0.0001f));
-            Assert.That(observedHpChange.newHp, Is.EqualTo(63f).Within(0.0001f));
+            Assert.That(observedHpChange.newHp, Is.EqualTo(81.5f).Within(0.0001f));
             Assert.That(observedHpChange.maxHp, Is.EqualTo(100f).Within(0.0001f));
             Assert.That(staggeredCount, Is.EqualTo(1), "正式默认直接伤害的打断能力 2 严格超过韧性 1，因此必须触发受击事件。");
             Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty, "即时伤害和受击事件都不得留下持续 Effect 实例。");
         }
 
         /// <summary>
-        /// 验证五行单向克制、光暗互克和物理中立组成唯一克制矩阵，所有未列出的组合都不得产生减伤或额外增伤。
-        /// </summary>
-        [Test]
-        public void DamageAttributeRules_ApplyOnlyConfiguredAdvantages()
-        {
-            Array attributes = Enum.GetValues(typeof(DamageAttribute));
-            foreach (DamageAttribute attackAttribute in attributes)
-            {
-                foreach (DamageAttribute targetAttribute in attributes)
-                {
-                    bool expectedAdvantage = attackAttribute == DamageAttribute.Fire && targetAttribute == DamageAttribute.Ice || attackAttribute == DamageAttribute.Ice && targetAttribute == DamageAttribute.Grass || attackAttribute == DamageAttribute.Grass && targetAttribute == DamageAttribute.Lightning || attackAttribute == DamageAttribute.Lightning && targetAttribute == DamageAttribute.Water || attackAttribute == DamageAttribute.Water && targetAttribute == DamageAttribute.Fire || attackAttribute == DamageAttribute.Light && targetAttribute == DamageAttribute.Dark || attackAttribute == DamageAttribute.Dark && targetAttribute == DamageAttribute.Light;
-                    DamageAttributeRelation expectedRelation = expectedAdvantage ? DamageAttributeRelation.Advantage : DamageAttributeRelation.Neutral;
-                    float expectedMultiplier = expectedAdvantage ? DamageAttributeRules.AdvantageMultiplier : 1f;
-                    Assert.That(DamageAttributeRules.GetRelation(attackAttribute, targetAttribute), Is.EqualTo(expectedRelation), $"Unexpected relation for {attackAttribute} -> {targetAttribute}.");
-                    Assert.That(DamageAttributeRules.GetMultiplier(attackAttribute, targetAttribute), Is.EqualTo(expectedMultiplier).Within(0.0001f), $"Unexpected multiplier for {attackAttribute} -> {targetAttribute}.");
-                }
-            }
-        }
-
-        /// <summary>
         /// 验证普攻与特殊攻击从物理开始，技能与大招读取角色元素，并由最高优先级和同优先级后加入的 Effect 覆盖。
         /// </summary>
         [Test]
-        public void DamageAttributeResolution_UsesActionDefaultsAndDeterministicModifiers()
+        public void DamageElementResolution_UsesActionDefaultsAndDeterministicInfusions()
         {
-            sourceConfig.elementAttribute = DamageAttribute.Water;
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Physical));
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.SpecialAttack), Is.EqualTo(DamageAttribute.Physical));
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Ultimate), Is.EqualTo(DamageAttribute.Water));
-            DamageAttributeModifier allFire = sourceProperty.AddDamageAttributeModifier(DamageAttribute.Fire, DamageActionMask.All, 1);
-            DamageAttributeModifier skillDark = sourceProperty.AddDamageAttributeModifier(DamageAttribute.Dark, DamageActionMask.Skill, 10);
-            DamageAttributeModifier skillLight = sourceProperty.AddDamageAttributeModifier(DamageAttribute.Light, DamageActionMask.Skill, 10);
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Fire));
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Light));
-            Assert.That(sourceProperty.RemoveDamageAttributeModifier(skillLight), Is.True);
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Dark));
-            Assert.That(sourceProperty.RemoveDamageAttributeModifier(skillDark), Is.True);
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Fire));
-            Assert.That(sourceProperty.RemoveDamageAttributeModifier(allFire), Is.True);
-            Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+            sourceConfig.elementAttribute = Cfg.ElementType.Hydro;
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.NormalAttack), Is.EqualTo(Cfg.ElementType.Physical));
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.SpecialAttack), Is.EqualTo(Cfg.ElementType.Physical));
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Hydro));
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Ultimate), Is.EqualTo(Cfg.ElementType.Hydro));
+            ElementInfusionModifier allFire = sourceProperty.AddElementInfusion(Cfg.ElementType.Pyro, DamageActionMask.All, 1);
+            ElementInfusionModifier skillDark = sourceProperty.AddElementInfusion(Cfg.ElementType.Geo, DamageActionMask.Skill, 10);
+            ElementInfusionModifier skillLight = sourceProperty.AddElementInfusion(Cfg.ElementType.Anemo, DamageActionMask.Skill, 10);
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.NormalAttack), Is.EqualTo(Cfg.ElementType.Pyro));
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Anemo));
+            Assert.That(sourceProperty.RemoveElementInfusion(skillLight), Is.True);
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Geo));
+            Assert.That(sourceProperty.RemoveElementInfusion(skillDark), Is.True);
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Pyro));
+            Assert.That(sourceProperty.RemoveElementInfusion(allFire), Is.True);
+            Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Hydro));
         }
 
         /// <summary>
-        /// 验证 DamageOperation 只应用一次克制独立乘区，并在 DamageApplied 中携带最终属性、关系、倍率和实际伤害。
+        /// 验证 DamageOperation 走完整条管线：目标身上的水附着让火伤触发蒸发增幅，
+        /// 同级防御区再折半，并在 DamageApplied 中携带最终元素与反应标识。
         /// </summary>
         [Test]
-        public void DamageOperation_AppliesAttributeAdvantageOnceAndPublishesResolvedContext()
+        public void DamageOperation_AppliesReactionAmplifierAndPublishesResolvedContext()
         {
-            targetConfig.elementAttribute = DamageAttribute.Ice;
+            // 暴击会让结果随运行时种子摆动，这里只验证乘区顺序，因此锁死不暴击。
+            sourceProperty.SetBaseValue(PropertyType.CritRate, 0f);
+            // 先给目标挂一层水附着，使随后的火伤命中正向蒸发（倍率 2.0）。
+            elementSystem.Apply(new ElementApplyRequest
+            {
+                SourceEntityId = sourceEntity.EntityId,
+                TargetEntityId = targetEntity.EntityId,
+                TalentId = "Tests.HydroApplication",
+                IcdPolicy = Cfg.IcdPolicy.None,
+                Element = Cfg.ElementType.Hydro,
+                Strength = Cfg.GaugeStrength.Strong
+            });
             DamageSignalCaptureOperation capture = new DamageSignalCaptureOperation();
             EffectDefinition damageEffect = ScriptableObject.CreateInstance<EffectDefinition>();
             EffectDefinition captureEffect = ScriptableObject.CreateInstance<EffectDefinition>();
@@ -153,7 +176,7 @@ namespace Xuan.Prometheus.Effects.Tests
             damageEffect.name = "Tests.FireDamage";
             captureEffect.name = "Tests.CaptureDamageApplied";
             triggerSet.name = "Tests.CaptureDamageAppliedSet";
-            damageEffect.ConfigureForTests("Tests.FireDamage", EffectTag.Attack, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Attack, EffectValueFormula.Constant(0f), DamageAttributeSource.Fixed, DamageAttribute.Fire) }, null, null, null);
+            damageEffect.ConfigureForTests("Tests.FireDamage", EffectTag.Attack, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Attack, 0, DamageElementSource.Fixed, Cfg.ElementType.Pyro) }, null, null, null);
             captureEffect.ConfigureForTests("Tests.CaptureDamageApplied", EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.AfterApply, 0, new EffectOperation[] { capture }, null, null, null);
             EffectTriggerDefinition captureTrigger = new EffectTriggerDefinition();
             captureTrigger.ConfigureForTests("Tests.OnDamageApplied.Capture", EffectSignalType.DamageApplied, EffectListenScope.Target, EffectTargetSelector.Target, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { captureEffect });
@@ -162,14 +185,14 @@ namespace Xuan.Prometheus.Effects.Tests
             try
             {
                 runtime.ApplyEffect(damageEffect, sourceEntity, targetEntity, sourceEntity);
-                Assert.That(targetProperty.Hp, Is.EqualTo(87f).Within(0.0001f));
+                // 10 基础 × 2.0 蒸发 × 0.5 同级防御区 = 10。
+                Assert.That(targetProperty.Hp, Is.EqualTo(90f).Within(0.0001f));
                 Assert.That(capture.Signal, Is.Not.Null);
-                Assert.That(capture.Signal.RequestedValue, Is.EqualTo(13f).Within(0.0001f));
-                Assert.That(capture.Signal.Value, Is.EqualTo(13f).Within(0.0001f));
-                Assert.That(capture.Signal.DamageAttribute, Is.EqualTo(DamageAttribute.Fire));
+                Assert.That(capture.Signal.RequestedValue, Is.EqualTo(10f).Within(0.0001f));
+                Assert.That(capture.Signal.Value, Is.EqualTo(10f).Within(0.0001f));
+                Assert.That(capture.Signal.DamageElement, Is.EqualTo(Cfg.ElementType.Pyro));
                 Assert.That(capture.Signal.DamageActionType, Is.EqualTo(DamageActionType.Effect));
-                Assert.That(capture.Signal.DamageAttributeRelation, Is.EqualTo(DamageAttributeRelation.Advantage));
-                Assert.That(capture.Signal.DamageAttributeMultiplier, Is.EqualTo(1.3f).Within(0.0001f));
+                Assert.That(capture.Signal.ReactionId, Is.EqualTo("VaporizeForward"));
             }
             finally
             {
@@ -184,20 +207,20 @@ namespace Xuan.Prometheus.Effects.Tests
         /// 验证持续 Effect 的伤害属性覆盖只影响配置动作范围，并在效果移除时自动恢复角色原有解析结果。
         /// </summary>
         [Test]
-        public void DamageAttributeModifierEffect_AppliesByScopeAndRollsBackOnRemove()
+        public void ElementInfusionEffect_AppliesByScopeAndRollsBackOnRemove()
         {
-            sourceConfig.elementAttribute = DamageAttribute.Water;
+            sourceConfig.elementAttribute = Cfg.ElementType.Hydro;
             EffectDefinition definition = ScriptableObject.CreateInstance<EffectDefinition>();
             definition.name = "Tests.FireNormalAttackInfusion";
-            definition.ConfigureForTests("Tests.FireNormalAttackInfusion", EffectTag.Buff | EffectTag.Attribute, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageAttributeModifierOperation(DamageAttribute.Fire, DamageActionMask.NormalAttack, 5) }, null, null, null);
+            definition.ConfigureForTests("Tests.FireNormalAttackInfusion", EffectTag.Buff | EffectTag.Attribute, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new ElementInfusionOperation(Cfg.ElementType.Pyro, DamageActionMask.NormalAttack, 5) }, null, null, null);
             try
             {
                 runtime.ApplyEffect(definition, sourceEntity, sourceEntity, sourceEntity);
-                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Fire));
-                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+                Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.NormalAttack), Is.EqualTo(Cfg.ElementType.Pyro));
+                Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Hydro));
                 runtime.RemoveAll(sourceEntity);
-                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.NormalAttack), Is.EqualTo(DamageAttribute.Physical));
-                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Water));
+                Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.NormalAttack), Is.EqualTo(Cfg.ElementType.Physical));
+                Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Hydro));
             }
             finally
             {
@@ -212,16 +235,16 @@ namespace Xuan.Prometheus.Effects.Tests
         [Test]
         public void CasterElementDamage_UsesEffectModifiedSkillAttribute()
         {
-            sourceConfig.elementAttribute = DamageAttribute.Water;
-            targetConfig.elementAttribute = DamageAttribute.Lightning;
+            sourceConfig.elementAttribute = Cfg.ElementType.Hydro;
+            targetConfig.elementAttribute = Cfg.ElementType.Electro;
             EffectDefinition infusionEffect = ScriptableObject.CreateInstance<EffectDefinition>();
             EffectDefinition damageEffect = ScriptableObject.CreateInstance<EffectDefinition>();
             EffectTriggerSet triggerSet = ScriptableObject.CreateInstance<EffectTriggerSet>();
             infusionEffect.name = "Tests.GrassSkillInfusion";
             damageEffect.name = "Tests.CasterElementDamage";
             triggerSet.name = "Tests.CasterElementDamageSet";
-            infusionEffect.ConfigureForTests("Tests.GrassSkillInfusion", EffectTag.Buff | EffectTag.Attribute, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageAttributeModifierOperation(DamageAttribute.Grass, DamageActionMask.Skill, 10) }, null, null, null);
-            damageEffect.ConfigureForTests("Tests.CasterElementDamage", EffectTag.Attack | EffectTag.Skill, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack | EffectTag.Skill, EffectValueFormula.Constant(0f), DamageAttributeSource.CasterElement) }, null, null, null);
+            infusionEffect.ConfigureForTests("Tests.GrassSkillInfusion", EffectTag.Buff | EffectTag.Attribute, EffectDurationType.Permanent, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new ElementInfusionOperation(Cfg.ElementType.Dendro, DamageActionMask.Skill, 10) }, null, null, null);
+            damageEffect.ConfigureForTests("Tests.CasterElementDamage", EffectTag.Attack | EffectTag.Skill, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, new EffectOperation[] { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack | EffectTag.Skill, 0, DamageElementSource.CasterElement) }, null, null, null);
             EffectTriggerDefinition damageTrigger = new EffectTriggerDefinition();
             damageTrigger.ConfigureForTests("Tests.OnSkillHit.CasterElementDamage", EffectSignalType.HitConfirmed, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, Array.Empty<EffectConditionDefinition>(), new[] { damageEffect });
             triggerSet.ConfigureForTests(new[] { damageTrigger });
@@ -229,9 +252,9 @@ namespace Xuan.Prometheus.Effects.Tests
             try
             {
                 runtime.ApplyEffect(infusionEffect, sourceEntity, sourceEntity, sourceEntity);
-                runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damageAttribute: DamageAttribute.Physical, damageActionType: DamageActionType.Skill));
-                Assert.That(sourceProperty.ResolveDamageAttribute(DamageActionType.Skill), Is.EqualTo(DamageAttribute.Grass));
-                Assert.That(targetProperty.Hp, Is.EqualTo(87f).Within(0.0001f));
+                runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.Skill, null, 0, false, false)));
+                Assert.That(sourceProperty.ResolveDamageElement(DamageActionType.Skill), Is.EqualTo(Cfg.ElementType.Dendro));
+                Assert.That(targetProperty.Hp, Is.EqualTo(95f).Within(0.0001f));
             }
             finally
             {
@@ -275,7 +298,7 @@ namespace Xuan.Prometheus.Effects.Tests
             IDisposable killedRegistration = runtime.RegisterTriggerSet(sourceEntity, killedTriggerSet);
             try
             {
-                EffectSignal fatalHit = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 150f, 150f, EffectTag.Attack | EffectTag.NormalAttack);
+                EffectSignal fatalHit = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 250f, 250f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false));
                 runtime.Publish(fatalHit);
                 runtime.Publish(fatalHit);
                 Assert.That(targetProperty.Hp, Is.EqualTo(0f));
@@ -306,16 +329,16 @@ namespace Xuan.Prometheus.Effects.Tests
         [Test]
         public void HitReaction_QualifyingDamagePublishesEveryTimeWithoutStunEffect()
         {
-            targetProperty.SetBaseValue(PropertyType.Toughness, 1f);
+            targetProperty.SetBaseValue(PropertyType.StaggerResistance, 1f);
             registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int stateChangeCount = 0;
             int staggeredCount = 0;
             targetEvents.AddListener<ControlStateChangedEvent>(_ => stateChangeCount++);
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.NormalAttack));
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
             Assert.That(staggeredCount, Is.EqualTo(1));
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.NormalAttack));
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 1f, 1f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
             Assert.That(staggeredCount, Is.EqualTo(2), "每次严格超过韧性的实际伤害都必须独立发布受击事件。");
             Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.Zero);
             Assert.That(runtime.GetActiveEffects(targetEntity), Is.Empty);
@@ -326,20 +349,115 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(stateChangeCount, Is.Zero, "没有 AttackedLogic 的纯 Effect 测试实体只接收事实事件，不应由伤害系统写入控制状态。");
         }
 
-        /// <summary>验证打断能力低于、等于和高于韧性的三个边界，只有严格高于时才发布受击事件。</summary>
+        /// <summary>
+        /// 验证分级打断的三个边界：正式直接伤害的打断等级是 2，只有严格高于抗打断等级时才打断。
+        /// 打断不成立时改发轻微受击事实，而不是什么都不发——闪白与命中特效要靠它（08 第 2.3 节）。
+        /// </summary>
         [TestCase(2.01f, false)]
         [TestCase(2f, false)]
         [TestCase(1.5f, true)]
-        public void HitReaction_InterruptPowerMustStrictlyExceedTargetToughness(float toughness, bool shouldReact)
+        public void HitReaction_StaggerLevelMustStrictlyExceedResistance(float resistance, bool shouldReact)
         {
-            targetProperty.SetBaseValue(PropertyType.Toughness, toughness);
+            targetProperty.SetBaseValue(PropertyType.StaggerResistance, resistance);
+            registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
+            targetEntity.TryGetComp(out EventComponent targetEvents);
+            int staggeredCount = 0;
+            int resistedCount = 0;
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+            targetEvents.AddListener<StaggerResistedEvent>(_ => resistedCount++);
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
+            Assert.That(staggeredCount > 0, Is.EqualTo(shouldReact));
+            Assert.That(resistedCount > 0, Is.EqualTo(!shouldReact), "两条事实互斥且必有其一。");
+            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.Zero);
+        }
+
+        /// <summary>
+        /// 验证霸体**覆盖**而不是叠加抗打断等级：本身抗打断为 0 的目标进入霸体后也打不断。
+        /// 若写成相加，抗打断 0 的小怪在霸体期间仍会被高等级攻击打断。
+        /// </summary>
+        [Test]
+        public void SuperArmor_OverridesStaggerResistanceInsteadOfAddingToIt()
+        {
+            targetProperty.SetBaseValue(PropertyType.StaggerResistance, 0f);
             registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int staggeredCount = 0;
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack));
-            Assert.That(staggeredCount > 0, Is.EqualTo(shouldReact));
-            Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.StunId), Is.Zero);
+
+            PropertyModifier armor = targetProperty.AddModifier(PropertyType.SuperArmor, PropertyModifierMode.Offset, 99f);
+            Assert.That(targetProperty.EffectiveStaggerResistance, Is.EqualTo(99f).Within(0.0001f));
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
+            Assert.That(staggeredCount, Is.Zero, "霸体期间任何等级的攻击都打不断。");
+
+            // 霸体撤下后立刻恢复原本的抗打断等级，不留残留。
+            Assert.That(targetProperty.RemoveModifier(armor), Is.True);
+            Assert.That(targetProperty.EffectiveStaggerResistance, Is.Zero);
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
+            Assert.That(staggeredCount, Is.EqualTo(1));
+        }
+
+        /// <summary>
+        /// 暴击事实必须随 DamageApplied 发布，并能被 `DamageWasCritical` 条件消费。
+        /// 这是「暴击时触发」这类武器与圣遗物被动的唯一接线点。
+        /// </summary>
+        [Test]
+        public void CriticalOutcome_IsPublishedOnDamageAppliedAndMatchesCondition()
+        {
+            sourceProperty.SetBaseValue(PropertyType.CritRate, 1f);
+            sourceProperty.SetBaseValue(PropertyType.CritDmg, 1f);
+
+            DamageSignalCaptureOperation capture = new DamageSignalCaptureOperation();
+            EffectDefinition captureEffect = ScriptableObject.CreateInstance<EffectDefinition>();
+            EffectTriggerSet triggerSet = ScriptableObject.CreateInstance<EffectTriggerSet>();
+            captureEffect.name = "Tests.CaptureCritical";
+            triggerSet.name = "Tests.CaptureCriticalSet";
+            captureEffect.ConfigureForTests("Tests.CaptureCritical", EffectTag.None, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.AfterApply, 0, new EffectOperation[] { capture }, null, null, null);
+            EffectTriggerDefinition captureTrigger = new EffectTriggerDefinition();
+            // 只在暴击时触发：条件不成立时 capture.Signal 会保持为空。
+            captureTrigger.ConfigureForTests("Tests.OnCritical.Capture", EffectSignalType.DamageApplied, EffectListenScope.Target, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.DamageWasCritical() }, new[] { captureEffect });
+            triggerSet.ConfigureForTests(new[] { captureTrigger });
+            IDisposable registration = runtime.RegisterTriggerSet(targetEntity, triggerSet);
+            try
+            {
+                registrations = runtime.RegisterTriggerSet(sourceEntity, examples.AttackTriggers);
+                runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
+
+                Assert.That(capture.Signal, Is.Not.Null, "暴击必须能被 DamageWasCritical 条件命中。");
+                Assert.That(capture.Signal.IsCritical, Is.True);
+                Assert.That(capture.Signal.Damage.IsCritical, Is.True, "转发属性与事实结构体必须一致。");
+            }
+            finally
+            {
+                registration.Dispose();
+                UnityEngine.Object.DestroyImmediate(triggerSet);
+                UnityEngine.Object.DestroyImmediate(captureEffect);
+            }
+        }
+
+        /// <summary>非暴击伤害不得命中 `DamageWasCritical` 条件。</summary>
+        [Test]
+        public void NonCriticalDamage_DoesNotMatchCriticalCondition()
+        {
+            sourceProperty.SetBaseValue(PropertyType.CritRate, 0f);
+            EffectSignal damageSignal = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack);
+
+            Assert.That(EffectConditionDefinition.DamageWasCritical().Evaluate(damageSignal), Is.False);
+        }
+
+                /// <summary>DOT 的打断等级固定为 0，因此对抗打断等级为 0 的目标也不打断（08 第 2.1 节，验收用例 H-08）。</summary>
+        [Test]
+        public void DotDamage_NeverStaggersEvenAgainstZeroResistance()
+        {
+            targetProperty.SetBaseValue(PropertyType.StaggerResistance, 0f);
+            targetEntity.TryGetComp(out EventComponent targetEvents);
+            int staggeredCount = 0;
+            targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
+
+            runtime.ApplyEffect(examples.Burning, sourceEntity, targetEntity, sourceEntity);
+            runtime.Tick(1.01f);
+
+            Assert.That(targetProperty.Hp, Is.LessThan(100f), "DOT 仍然正常扣血。");
+            Assert.That(staggeredCount, Is.Zero, "DOT 不产生任何打断。");
         }
 
         /// <summary>验证配置了打断能力但实际伤害为零时不发布受击事件。</summary>
@@ -350,7 +468,7 @@ namespace Xuan.Prometheus.Effects.Tests
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int staggeredCount = 0;
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
-            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 0f, 0f, EffectTag.Attack | EffectTag.NormalAttack));
+            runtime.Publish(new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, 0f, 0f, EffectTag.Attack | EffectTag.NormalAttack, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 2, false, false)));
             Assert.That(staggeredCount, Is.Zero);
         }
 
@@ -364,7 +482,7 @@ namespace Xuan.Prometheus.Effects.Tests
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
             runtime.ApplyEffect(examples.Burning, sourceEntity, targetEntity, sourceEntity);
             runtime.Tick(1.01f);
-            Assert.That(targetProperty.Hp, Is.EqualTo(90f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(95f).Within(0.0001f));
             Assert.That(staggeredCount, Is.Zero);
         }
 
@@ -479,7 +597,7 @@ namespace Xuan.Prometheus.Effects.Tests
             EffectDefinition ultEnergyGainDefinition = AssetDatabase.LoadAssetAtPath<EffectDefinition>(ultEnergyGainPath);
             Assert.That(persistentLibrary, Is.Not.Null);
             Assert.That(ultEnergyGainDefinition, Is.Not.Null);
-            EffectSignal normalAttackDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, "Tests.NormalAttack", damageActionType: DamageActionType.NormalAttack);
+            EffectSignal normalAttackDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.NormalAttack, "Tests.NormalAttack", damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.NormalAttack, null, 0, false, false));
             float configuredUltEnergyGain = Mathf.Max(0f, ReadConfiguredOperationFormula<UltEnergyGainOperation>(ultEnergyGainDefinition, normalAttackDamage, "amount"));
             Assert.That(configuredUltEnergyGain, Is.GreaterThan(0f), "正式 UltEnergyGain 必须配置正数大招能量增量，否则该触发链路没有可验证结果。");
             registrations = runtime.RegisterTriggerSet(sourceEntity, persistentLibrary.CombatFlowTriggers);
@@ -487,7 +605,7 @@ namespace Xuan.Prometheus.Effects.Tests
             float expectedUltEnergyAfterNormalAttack = Mathf.Min(sourceProperty.UltEnergyLimit, sourceProperty.UltEnergy + configuredUltEnergyGain);
             runtime.Publish(normalAttackDamage);
             Assert.That(sourceProperty.UltEnergy, Is.EqualTo(expectedUltEnergyAfterNormalAttack).Within(0.0001f));
-            EffectSignal skillDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damageActionType: DamageActionType.Skill);
+            EffectSignal skillDamage = new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 10f, 10f, EffectTag.Attack | EffectTag.Skill, "Tests.Skill", damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.Skill, null, 0, false, false));
             runtime.Publish(skillDamage);
             Assert.That(sourceProperty.UltEnergy, Is.EqualTo(expectedUltEnergyAfterNormalAttack).Within(0.0001f));
         }
@@ -502,7 +620,7 @@ namespace Xuan.Prometheus.Effects.Tests
             examples.Library.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
             Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.BurningId), Is.EqualTo(1));
             runtime.Tick(1.01f);
-            Assert.That(targetProperty.Hp, Is.EqualTo(70f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(85f).Within(0.0001f));
             examples.Library.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
             Assert.That(runtime.GetStackCount(targetEntity, EffectExampleFactory.BurningId), Is.EqualTo(1));
             Assert.That(runtime.GetActiveEffects(targetEntity).Count, Is.EqualTo(1), "目标只应持有刷新后的 Burning，受击不再创建持续 Effect。");
@@ -685,12 +803,12 @@ namespace Xuan.Prometheus.Effects.Tests
             Assert.That(sourceProperty.MoveSpeed, Is.EqualTo(5.5f).Within(0.0001f));
             Assert.That(sourceProperty.RemoveModifier(moveSpeedBoost), Is.True);
             Assert.That(sourceProperty.RemoveModifier(moveSpeedOffset), Is.True);
-            PropertyModifier toughnessBoost = targetProperty.AddModifier(PropertyType.Toughness, PropertyModifierMode.Boost, 0.5f);
-            PropertyModifier toughnessOffset = targetProperty.AddModifier(PropertyType.Toughness, PropertyModifierMode.Offset, 1f);
-            Assert.That(targetProperty.Toughness, Is.EqualTo(2.5f).Within(0.0001f));
-            Assert.That(targetProperty.RemoveModifier(toughnessBoost), Is.True);
-            Assert.That(targetProperty.RemoveModifier(toughnessOffset), Is.True);
-            Assert.That(targetProperty.Toughness, Is.EqualTo(1f).Within(0.0001f));
+            PropertyModifier staggerBoost = targetProperty.AddModifier(PropertyType.StaggerResistance, PropertyModifierMode.Boost, 0.5f);
+            PropertyModifier staggerOffset = targetProperty.AddModifier(PropertyType.StaggerResistance, PropertyModifierMode.Offset, 1f);
+            Assert.That(targetProperty.StaggerResistance, Is.EqualTo(2.5f).Within(0.0001f));
+            Assert.That(targetProperty.RemoveModifier(staggerBoost), Is.True);
+            Assert.That(targetProperty.RemoveModifier(staggerOffset), Is.True);
+            Assert.That(targetProperty.StaggerResistance, Is.EqualTo(1f).Within(0.0001f));
         }
 
         /// <summary>
@@ -706,7 +824,6 @@ namespace Xuan.Prometheus.Effects.Tests
             sourceProperty.AddModifier(PropertyType.DamageBoost, PropertyModifierMode.Offset, 0.5f);
             Assert.That(sourceProperty.Atk, Is.EqualTo(30f).Within(0.0001f));
             Assert.That(sourceProperty.DamageBonus, Is.EqualTo(0.5f).Within(0.0001f));
-            Assert.That(sourceProperty.GetCalculatedDamage(), Is.EqualTo(45f).Within(0.0001f));
         }
 
         /// <summary>
@@ -826,20 +943,20 @@ namespace Xuan.Prometheus.Effects.Tests
         {
             registrations = examples.Library.RegisterAllForTests(runtime, sourceEntity);
             examples.Library.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
-            Assert.That(targetProperty.Hp, Is.EqualTo(80f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(90f).Within(0.0001f));
             Assert.That(runtime.GetStackCount(sourceEntity, EffectExampleFactory.CombatFlowId), Is.EqualTo(1));
             Assert.That(sourceProperty.Atk, Is.EqualTo(22f).Within(0.0001f));
             Assert.That(sourceProperty.AtkSpeed, Is.EqualTo(1.05f).Within(0.0001f));
             runtime.Tick(1.01f);
-            Assert.That(targetProperty.Hp, Is.EqualTo(70f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(85f).Within(0.0001f));
             Assert.That(runtime.GetStackCount(sourceEntity, EffectExampleFactory.CombatFlowId), Is.EqualTo(1));
             examples.Library.PublishFireAttackForTests(runtime, sourceEntity, targetEntity);
-            Assert.That(targetProperty.Hp, Is.EqualTo(48f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(74f).Within(0.0001f));
             Assert.That(runtime.GetStackCount(sourceEntity, EffectExampleFactory.CombatFlowId), Is.EqualTo(2));
             Assert.That(sourceProperty.Atk, Is.EqualTo(24f).Within(0.0001f));
             Assert.That(sourceProperty.AtkSpeed, Is.EqualTo(1.1f).Within(0.0001f));
             runtime.Tick(3.01f);
-            Assert.That(targetProperty.Hp, Is.EqualTo(18f).Within(0.0001f));
+            Assert.That(targetProperty.Hp, Is.EqualTo(59f).Within(0.0001f));
             Assert.That(runtime.GetStackCount(sourceEntity, EffectExampleFactory.CombatFlowId), Is.EqualTo(0));
             Assert.That(sourceProperty.Atk, Is.EqualTo(20f).Within(0.0001f));
             Assert.That(sourceProperty.AtkSpeed, Is.EqualTo(1f).Within(0.0001f));
@@ -862,17 +979,20 @@ namespace Xuan.Prometheus.Effects.Tests
             EffectDefinition boostDefinition = AssetDatabase.LoadAssetAtPath<EffectDefinition>("Assets/BundleResources/Config/Effect/EffectDefinitions/Boost.asset");
             Assert.That(boostDefinition, Is.Not.Null);
             Assert.That(boostDefinition.BuffIcon, Is.Not.Null, "正式 Boost Buff 必须配置 HUD 图标。");
-            targetProperty.SetBaseValue(PropertyType.Toughness, 1f);
+            targetProperty.SetBaseValue(PropertyType.StaggerResistance, 1f);
             targetEntity.TryGetComp(out EventComponent targetEvents);
             int staggeredCount = 0;
             targetEvents.AddListener<StaggeredEvent>(_ => staggeredCount++);
             float sourceAttackBeforeEffect = sourceProperty.Atk;
             float sourceAttackSpeedBeforeEffect = sourceProperty.AtkSpeed;
             float targetHpBeforeEffect = targetProperty.Hp;
-            EffectSignal fireAttackSignal = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, sourceAttackBeforeEffect, sourceAttackBeforeEffect, EffectTag.Attack | EffectTag.NormalAttack, "Example.FireAttack", damageAttribute: DamageAttribute.Fire, damageActionType: DamageActionType.NormalAttack);
+            EffectSignal fireAttackSignal = new EffectSignal(EffectSignalType.HitConfirmed, sourceEntity, targetEntity, sourceEntity, sourceAttackBeforeEffect, sourceAttackBeforeEffect, EffectTag.Attack | EffectTag.NormalAttack, "Example.FireAttack", damage: new DamageFacts(Cfg.ElementType.Pyro, DamageActionType.NormalAttack, null, 0, false, false));
             float configuredDamage = ReadConfiguredDamage(persistentLibrary.DirectDamage, fireAttackSignal);
-            float expectedActualDamage = Mathf.Min(targetHpBeforeEffect, Mathf.Max(0f, configuredDamage));
-            EffectSignal damageAppliedSignal = fireAttackSignal.CreateChild(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, configuredDamage, expectedActualDamage, fireAttackSignal.Tags | persistentLibrary.DirectDamage.Tags);
+            // 配置里的公式只给出「倍率 × 缩放属性」，防御区由 DamagePipeline 在结算时再乘一次；
+            // 这里复用同一个函数而不是写死 0.5，避免防御区公式变更后用例还“通过”。
+            float expectedSettledDamage = configuredDamage * Xuan.Prometheus.Combat.DamageCalculator.DefenseMultiplier(Xuan.Prometheus.Combat.DamagePipeline.DefaultLevel, Xuan.Prometheus.Combat.DamagePipeline.DefaultLevel, 0f, 0f);
+            float expectedActualDamage = Mathf.Min(targetHpBeforeEffect, Mathf.Max(0f, expectedSettledDamage));
+            EffectSignal damageAppliedSignal = fireAttackSignal.CreateChild(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, expectedSettledDamage, expectedActualDamage, fireAttackSignal.Tags | persistentLibrary.DirectDamage.Tags);
             int expectedCombatFlowStacks = expectedActualDamage > 0f ? 1 : 0;
             float expectedAttack = expectedCombatFlowStacks == 0 ? sourceAttackBeforeEffect : CalculateConfiguredPropertyValue(persistentLibrary.CombatFlow, PropertyType.Atk, sourceAttackBeforeEffect, damageAppliedSignal);
             float expectedAttackSpeed = expectedCombatFlowStacks == 0 ? sourceAttackSpeedBeforeEffect : CalculateConfiguredPropertyValue(persistentLibrary.CombatFlow, PropertyType.AtkSpeed, sourceAttackSpeedBeforeEffect, damageAppliedSignal);
@@ -985,11 +1105,11 @@ namespace Xuan.Prometheus.Effects.Tests
                 Assert.That((int)EffectValueEntity.Source, Is.EqualTo(2));
                 Assert.That((int)EffectConditionType.CasterExists, Is.EqualTo(1));
                 Assert.That((int)EffectConditionType.SourceExists, Is.EqualTo(3));
-                Assert.That((int)EffectConditionType.DamageAttributeEquals, Is.EqualTo(9));
+                Assert.That((int)EffectConditionType.DamageElementEquals, Is.EqualTo(9));
                 Assert.That((int)EffectSignalType.EffectStacked, Is.EqualTo(6));
                 Assert.That((int)EffectSignalType.EffectRefreshed, Is.EqualTo(10));
-                Assert.That((int)DamageAttribute.Physical, Is.EqualTo(0));
-                Assert.That((int)DamageAttribute.Dark, Is.EqualTo(7));
+                Assert.That((int)Cfg.ElementType.None, Is.EqualTo(0), "元素枚举由配表生成，None 必须占 0 以免未填写的资产静默变成某个真实元素。");
+                Assert.That((int)Cfg.ElementType.Physical, Is.EqualTo(8));
                 Assert.That((int)EffectTag.SpecialAttack, Is.EqualTo(1 << 14));
                 Assert.That((int)EffectTag.Ultimate, Is.EqualTo(1 << 15));
                 EffectTriggerDefinition automaticTrigger = new EffectTriggerDefinition();
@@ -1046,7 +1166,7 @@ namespace Xuan.Prometheus.Effects.Tests
             sourceProperty.SetBaseValue(PropertyType.Gravity, 110f);
             sourceProperty.SetBaseValue(PropertyType.CoreEnergyLimit, 111f);
             sourceProperty.SetBaseValue(PropertyType.UltEnergyLimit, 112f);
-            sourceProperty.SetBaseValue(PropertyType.Toughness, 113f);
+            sourceProperty.SetBaseValue(PropertyType.StaggerResistance, 113f);
             sourceProperty.SetBaseValue(PropertyType.DamageBoost, 114f);
             sourceProperty.SetBaseValue(PropertyType.DamageTakenBoost, 115f);
             sourceProperty.OnGainCoreEnergy(12f);
@@ -1231,7 +1351,7 @@ namespace Xuan.Prometheus.Effects.Tests
             Core.Asset = assetKit;
             GameplayKit gameplayKit = new GameplayKit();
             Core.Gameplay = gameplayKit;
-            EffectSystem effectSystem = new EffectSystem();
+            EffectSystem effectSystem = new EffectSystem(elementSystem, shieldSystem);
             int playCount = 0;
             FmodAudioEvent playedEvent = FmodAudioEvent.None;
             Vector3 playedPosition = default;
@@ -1249,7 +1369,7 @@ namespace Xuan.Prometheus.Effects.Tests
                 effectSystem.AfterNew();
                 audioSystem.AfterNew();
                 Vector3 fatalHitPosition = new Vector3(3f, 2f, 1f);
-                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 150f, 100f, EffectTag.Attack, position: fatalHitPosition, wasFatal: true));
+                effectSystem.Runtime.Publish(new EffectSignal(EffectSignalType.DamageApplied, sourceEntity, targetEntity, sourceEntity, 150f, 100f, EffectTag.Attack, position: fatalHitPosition, damage: new DamageFacts(Cfg.ElementType.Physical, DamageActionType.Effect, null, 0, false, true)));
                 Assert.That(playCount, Is.EqualTo(1), "致命实际伤害必须绕过受击动画并恰好播放一次命中音效。");
                 Assert.That(playedEvent, Is.EqualTo(FmodAudioEvent.CombatSharedHit_Flesh));
                 Assert.That(playedPosition, Is.EqualTo(fatalHitPosition));
@@ -1421,7 +1541,7 @@ namespace Xuan.Prometheus.Effects.Tests
                 case EffectPropertyValue.CoreEnergyLimit: return property.CoreEnergyLimit;
                 case EffectPropertyValue.UltEnergy: return property.UltEnergy;
                 case EffectPropertyValue.UltEnergyLimit: return property.UltEnergyLimit;
-                case EffectPropertyValue.Toughness: return property.Toughness;
+                case EffectPropertyValue.Toughness: return property.StaggerResistance;
                 case EffectPropertyValue.DamageBoost: return property.DamageBonus;
                 case EffectPropertyValue.DamageTakenBoost: return property.DamageTakenBonus;
                 default: return 0f;

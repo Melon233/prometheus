@@ -30,4 +30,4 @@ EntitySystem/Monster/Logic/EnemyAiLogic  ──实现──▶  IEnemyAiAgent
 
 本目录不反向引用 `EntitySystem`。新增 AI 能力时，若需要读写实体状态，应扩展 `IEnemyAiAgent` 端口，由 `EnemyAiLogic` 实现，而不是让 Brain 直接认识 Component。
 
-项目级硬约束见 `Docs/ArchSpec.md`。
+项目级硬约束见 `Docs/Arch/ArchSpec.md`。

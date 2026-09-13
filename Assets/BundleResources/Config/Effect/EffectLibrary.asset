@@ -18,3 +18,8 @@ MonoBehaviour:
   stun: {fileID: 11400000, guid: 55696f8d904e90140a11852e12c003cb, type: 2}
   attackTriggers: {fileID: 11400000, guid: f195c3a919579a24ebddd68d9ed79aa9, type: 2}
   combatFlowTriggers: {fileID: 11400000, guid: 28c94af1feadfa740b7c5a191266a605, type: 2}
+  reactionProducts:
+  - {fileID: 11400000, guid: 69fa3b0cbea95cc43940a239ee9daf03, type: 2}
+  - {fileID: 11400000, guid: 2141f4c7634bb364e835693aeaa41ecc, type: 2}
+  - {fileID: 11400000, guid: 94a3841edf7480a4babd9c2ad07071ae, type: 2}
+  - {fileID: 11400000, guid: f21b92f13d9b4a54f985207423db0da2, type: 2}

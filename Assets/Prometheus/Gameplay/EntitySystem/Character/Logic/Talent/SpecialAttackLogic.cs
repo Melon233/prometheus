@@ -1,6 +1,8 @@
 using System;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic.Talent;
+using Xuan.Prometheus.Stamina;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Logic
 {
@@ -44,15 +46,27 @@ namespace Xuan.Prometheus.Logic
             return true;
         }
 
-        /// <summary>请求特殊攻击动画，并用 TalentConfig 的倍率、偏移和速度建立物理命中上下文。</summary>
+        /// <summary>
+        /// 请求重击动画并扣除体力。
+        ///
+        /// 体力在**动作真正开始之后**才扣：先扣再发现动画抢不到主轨的话，玩家会白白损失一次重击。
+        /// 因此顺序是「查得起 → 起手 → 扣除」，而不是「扣除 → 起手」。
+        /// </summary>
         private void TryStartSpecialAttack()
         {
             SpecialAttackExecutor configuration = SpineComponent.animationLib.specialAttackExecutor;
             if (configuration == null) return;
+
+            string talentId = ResolveTalentId("SpecialAttack");
+            Cfg.AttackSegmentRow segment = SegmentTable.Get(talentId, 0, 0);
+            IStaminaSystem staminaSystem = Core.Gameplay.GetSystem<IStaminaSystem>();
+            if (!staminaSystem.CanAfford(Entity.EntityId, segment.StaminaCost)) return;
+
             TalentAbilityValues values = specialAttackComponent.TalentConfig.SpecialAttack.Ability;
             AnimationPlayback playback = SpineComponent.TryPlay(configuration.Semantic, ActionOwner, AnimationPriority.SpecialAttack, false, values.AnimationSpeed, true);
-            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(specialAttackComponent.ColliderProxy, values.DamageMultiplier * specialAttackComponent.TalentScale, values.DamageOffset, EffectTag.Attack | EffectTag.SpecialAttack, specialAttackComponent.AbilityId, DamageActionType.SpecialAttack);
-            BeginAction(playback, hitContext, true, configuration.Vfx);
+            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(specialAttackComponent.ColliderProxy, talentId, 0, EffectTag.Attack | EffectTag.SpecialAttack, DamageActionType.SpecialAttack, specialAttackComponent.TalentScale);
+            if (!BeginAction(playback, hitContext, true, configuration.Vfx)) return;
+            staminaSystem.TryConsume(Entity.EntityId, segment.StaminaCost);
         }
 
         /// <summary>实体回收时丢弃特殊攻击组件引用。</summary>

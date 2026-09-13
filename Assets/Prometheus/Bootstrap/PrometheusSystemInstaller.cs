@@ -1,4 +1,5 @@
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Expression;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Narrative;
@@ -6,6 +7,9 @@ using Xuan.Prometheus.Npc;
 using Xuan.Prometheus.Quest;
 using Xuan.Prometheus.Service;
 using Xuan.Prometheus.World;
+using Xuan.Prometheus.Reactions;
+using Xuan.Prometheus.Shields;
+using Xuan.Prometheus.Stamina;
 
 namespace Xuan.Prometheus.Bootstrap
 {
@@ -41,8 +45,15 @@ namespace Xuan.Prometheus.Bootstrap
             IPoiGateway poiGateway = registry.AddSystem<IPoiGateway>(new PoiGateway(serviceSystem));
             IBagGateway bagGateway = registry.AddSystem<IBagGateway>(new BagGateway(serviceSystem));
 
+            // 元素系统不依赖任何其它 System：它只读配表、只改附着与 ICD，反应的数值求值在纯函数里。
+            IElementSystem elementSystem = registry.AddSystem<IElementSystem>(new ElementSystem());
+
             IInputSystem inputSystem = registry.AddSystem<IInputSystem>(new InputSystem(new UnityInputActionSource(), entitySystem));
-            IEffectSystem effectSystem = registry.AddSystem<IEffectSystem>(new EffectSystem(traceEnabled: true));
+            IShieldSystem shieldSystem = registry.AddSystem<IShieldSystem>(new ShieldSystem());
+            // 体力是重击、冲刺、攀爬、游泳与滑翔的公共约束，全队共享因此由系统持有。
+            registry.AddSystem<IStaminaSystem>(new StaminaSystem(entitySystem));
+            IEffectSystem effectSystem = registry.AddSystem<IEffectSystem>(new EffectSystem(elementSystem, shieldSystem, traceEnabled: true));
+            registry.AddSystem<IReactionProductSystem>(new ReactionProductSystem(elementSystem, entitySystem, effectSystem));
             registry.AddSystem<ICombatAudioPresentationSystem>(new CombatAudioPresentationSystem(effectSystem));
             registry.AddSystem<ICameraSystem>(new CameraSystem(entitySystem));
 

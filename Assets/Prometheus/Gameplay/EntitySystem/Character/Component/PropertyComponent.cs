@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Component
 {
@@ -56,12 +57,155 @@ namespace Xuan.Prometheus.Component
         Gravity,
         CoreEnergyLimit,
         UltEnergyLimit,
-        /// <summary>标识抵抗伤害打断的韧性属性；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
+        /// <summary>
+        /// 已被 <see cref="StaggerResistance"/> 取代的旧韧性属性位。
+        ///
+        /// 旧模型用它做「打断能力 > 韧性」的数值阈值判定，新模型改为分级比较（08 第 2.2 节）。
+        /// 枚举值是资产的序列化索引，不能删除，因此保留占位；不要再写入或读取它。
+        /// </summary>
         Toughness,
         /// <summary>标识出伤阶段按 (1 + x) 独立乘算的伤害加成系数；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
         DamageBoost,
         /// <summary>标识受伤阶段按 (1 + x) 独立乘算的受伤加成系数；追加在枚举末尾以保持已有资产的序列化索引稳定。</summary>
-        DamageTakenBoost
+        DamageTakenBoost,
+
+        // 以下属性位按 Docs/Design/Combat/05A 补齐。枚举值是 Effect 资产的序列化索引，
+        // 因此只能追加在末尾，禁止插入或重排。
+
+        /// <summary>元素精通；影响全部元素反应强度。</summary>
+        ElementalMastery,
+        /// <summary>元素充能效率；默认 1 表示百分之百。</summary>
+        EnergyRecharge,
+        /// <summary>治疗加成。</summary>
+        HealingBonus,
+        /// <summary>受治疗加成。</summary>
+        IncomingHealingBonus,
+        /// <summary>护盾强效。</summary>
+        ShieldStrength,
+        /// <summary>冷却缩减；上限一。</summary>
+        CooldownReduction,
+        /// <summary>体力消耗降低。</summary>
+        StaminaConsumptionReduction,
+        /// <summary>元素能量上限；取代 CoreEnergyLimit 与 UltEnergyLimit 的双能量模型。</summary>
+        ElementalEnergyLimit,
+
+        /// <summary>火元素伤害加成。</summary>
+        PyroDamageBonus,
+        /// <summary>水元素伤害加成。</summary>
+        HydroDamageBonus,
+        /// <summary>雷元素伤害加成。</summary>
+        ElectroDamageBonus,
+        /// <summary>冰元素伤害加成。</summary>
+        CryoDamageBonus,
+        /// <summary>草元素伤害加成。</summary>
+        DendroDamageBonus,
+        /// <summary>风元素伤害加成。</summary>
+        AnemoDamageBonus,
+        /// <summary>岩元素伤害加成。</summary>
+        GeoDamageBonus,
+        /// <summary>物理伤害加成。</summary>
+        PhysicalDamageBonus,
+        /// <summary>全伤害加成；与元素、动作加成同处一个乘区相加。</summary>
+        AllDamageBonus,
+
+        /// <summary>普通攻击伤害加成。</summary>
+        NormalAttackBonus,
+        /// <summary>重击伤害加成。</summary>
+        ChargedAttackBonus,
+        /// <summary>下落攻击伤害加成。</summary>
+        PlungeAttackBonus,
+        /// <summary>元素战技伤害加成。</summary>
+        SkillBonus,
+        /// <summary>元素爆发伤害加成。</summary>
+        BurstBonus,
+
+        /// <summary>火元素抗性。</summary>
+        PyroResistance,
+        /// <summary>水元素抗性。</summary>
+        HydroResistance,
+        /// <summary>雷元素抗性。</summary>
+        ElectroResistance,
+        /// <summary>冰元素抗性。</summary>
+        CryoResistance,
+        /// <summary>草元素抗性。</summary>
+        DendroResistance,
+        /// <summary>风元素抗性。</summary>
+        AnemoResistance,
+        /// <summary>岩元素抗性。</summary>
+        GeoResistance,
+        /// <summary>物理抗性。</summary>
+        PhysicalResistance,
+
+        /// <summary>火元素抗性削减。</summary>
+        PyroResistanceReduction,
+        /// <summary>水元素抗性削减。</summary>
+        HydroResistanceReduction,
+        /// <summary>雷元素抗性削减。</summary>
+        ElectroResistanceReduction,
+        /// <summary>冰元素抗性削减。</summary>
+        CryoResistanceReduction,
+        /// <summary>草元素抗性削减。</summary>
+        DendroResistanceReduction,
+        /// <summary>风元素抗性削减。</summary>
+        AnemoResistanceReduction,
+        /// <summary>岩元素抗性削减。</summary>
+        GeoResistanceReduction,
+        /// <summary>物理抗性削减。</summary>
+        PhysicalResistanceReduction,
+
+        /// <summary>减防；与无视防御在防御区中独立相乘。</summary>
+        DefenseReduction,
+        /// <summary>无视防御；与减防在防御区中独立相乘。</summary>
+        DefenseIgnore,
+        /// <summary>受到伤害降低；与抗性区独立。</summary>
+        DamageReduction,
+
+        /// <summary>抗打断等级；分级硬直模型中与攻击打断等级比较。</summary>
+        StaggerResistance,
+        /// <summary>霸体覆盖值；非零时覆盖抗打断等级。</summary>
+        SuperArmor,
+        /// <summary>
+        /// 已废弃的逐角色体力上限位。
+        ///
+        /// 体力池全队共享、上限全局唯一且只由七天神像提升，因此上限归 `IStaminaSystem` 持有，
+        /// 不存在「某个角色的体力上限」。枚举值是资产的序列化索引，不能删除，因此保留占位。
+        /// 角色能影响的只有消耗侧，见 <see cref="StaminaConsumptionReduction"/>。
+        /// </summary>
+        Stamina,
+
+        // 反应加成（05A 第 3.5 节）。每个反应一个独立槽位，由 ReactionMatrix 的 reactionBonusAttr 列
+        // 按名字定位；剧变类反应还会额外叠加 AllTransformativeBonus。
+
+        /// <summary>蒸发增幅倍率的加项。</summary>
+        VaporizeBonus,
+        /// <summary>融化增幅倍率的加项。</summary>
+        MeltBonus,
+        /// <summary>超载反应加成。</summary>
+        OverloadedBonus,
+        /// <summary>超导反应加成。</summary>
+        SuperconductBonus,
+        /// <summary>感电反应加成。</summary>
+        ElectroChargedBonus,
+        /// <summary>扩散反应加成。</summary>
+        SwirlBonus,
+        /// <summary>碎冰反应加成。</summary>
+        ShatteredBonus,
+        /// <summary>燃烧反应加成。</summary>
+        BurningBonus,
+        /// <summary>绽放反应加成。</summary>
+        BloomBonus,
+        /// <summary>超绽放反应加成。</summary>
+        HyperbloomBonus,
+        /// <summary>烈绽放反应加成。</summary>
+        BurgeonBonus,
+        /// <summary>结晶护盾量加成。</summary>
+        CrystallizeBonus,
+        /// <summary>超激化加成。</summary>
+        AggravateBonus,
+        /// <summary>蔓激化加成。</summary>
+        SpreadBonus,
+        /// <summary>全部剧变反应加成；与单项加成相加而非相乘。</summary>
+        AllTransformativeBonus
     }
 
     /// <summary>
@@ -69,8 +213,16 @@ namespace Xuan.Prometheus.Component
     /// </summary>
     public enum PropertyModifierMode
     {
+        /// <summary>写入百分比通道；最终值按 BaseValue × (1 + ΣBoost) 缩放。</summary>
         Boost,
-        Offset
+        /// <summary>写入固定值通道；最终值在缩放之后加算。</summary>
+        Offset,
+        /// <summary>
+        /// 写入基础值通道；与配置基础值相加后再一起被 Boost 缩放。
+        /// 角色等级与突破提供的基础属性、武器基础攻击力都走这里——
+        /// 它们必须被攻击力%这类词条放大，而 Offset 不会。追加在末尾以保持序列化索引稳定。
+        /// </summary>
+        Base
     }
 
     /// <summary>
@@ -148,6 +300,9 @@ namespace Xuan.Prometheus.Component
         /// 保存全部加算 modifier 的累计 Offset。
         /// </summary>
         private float offset;
+
+        /// <summary>保存全部 Base 通道 modifier 的累计值；它与配置基础值相加后再被 Boost 缩放。</summary>
+        private float baseAddition;
 
         /// <summary>保存当前属性的全部脏回调；只有最终值实际变化时才会通知。</summary>
         private event Action Dirty;
@@ -228,25 +383,29 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 从有效 modifier 重新汇总 Boost 和 Offset，再按 BaseValue × Boost + Offset 更新缓存。
+        /// 从有效 modifier 重新汇总三个通道，再按 (BaseValue + ΣBase) × Boost + Offset 更新缓存。
         /// </summary>
         private void Recalculate()
         {
             float previousValue = Value;
             boost = 1f;
             offset = 0f;
-            foreach (PropertyModifier modifier in modifiers)
-            {
-                if (modifier.Mode == PropertyModifierMode.Boost) boost += modifier.Value;
-                else offset += modifier.Value;
-            }
-            foreach (ModifiableValueModifier modifier in valueModifiers)
-            {
-                if (modifier.Mode == PropertyModifierMode.Boost) boost += modifier.Value;
-                else offset += modifier.Value;
-            }
-            Value = baseValue * boost + offset;
+            baseAddition = 0f;
+            foreach (PropertyModifier modifier in modifiers) Accumulate(modifier.Mode, modifier.Value);
+            foreach (ModifiableValueModifier modifier in valueModifiers) Accumulate(modifier.Mode, modifier.Value);
+            Value = (baseValue + baseAddition) * boost + offset;
             if (!Mathf.Approximately(previousValue, Value)) Dirty?.Invoke();
+        }
+
+        /// <summary>把一份 modifier 的数值累加到它所属的通道。</summary>
+        private void Accumulate(PropertyModifierMode mode, float value)
+        {
+            switch (mode)
+            {
+                case PropertyModifierMode.Boost: boost += value; break;
+                case PropertyModifierMode.Base: baseAddition += value; break;
+                default: offset += value; break;
+            }
         }
     }
 
@@ -271,87 +430,62 @@ namespace Xuan.Prometheus.Component
         /// <summary>
         /// 保存 Effect 添加的全部出伤属性覆盖；解析时按优先级和加入顺序确定唯一结果。
         /// </summary>
-        private readonly HashSet<DamageAttributeModifier> damageAttributeModifiers = new HashSet<DamageAttributeModifier>();
+        private readonly HashSet<ElementInfusionModifier> elementInfusions = new HashSet<ElementInfusionModifier>();
 
         /// <summary>
         /// 为伤害属性覆盖分配单调递增序号，使同优先级后应用者稳定胜出。
         /// </summary>
-        private long nextDamageAttributeModifierSequence;
+        private long nextElementInfusionSequence;
 
         /// <summary>
-        /// 保存攻击力的基础值、Boost、Offset 和最终值。
+        /// 按 PropertyType 索引保存全部可修改属性。
+        /// 用数组而不是逐个字段，是因为属性位会随玩法扩张持续增加；
+        /// 逐字段写法要求每加一个属性位就同步改「字段、switch 分支、访问器」三处样板，
+        /// 而这三处本可以由枚举索引直接得到。
         /// </summary>
-        private readonly ModifiableProperty atk = new ModifiableProperty();
+        private readonly ModifiableProperty[] properties = CreateProperties();
 
-        /// <summary>
-        /// 保存防御力的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty def = new ModifiableProperty();
+        /// <summary>为每个 PropertyType 创建一个属性实例；数组长度由枚举决定，新增属性位无需改动本方法。</summary>
+        private static ModifiableProperty[] CreateProperties()
+        {
+            int count = Enum.GetValues(typeof(PropertyType)).Length;
+            ModifiableProperty[] created = new ModifiableProperty[count];
+            for (int index = 0; index < count; index++) created[index] = new ModifiableProperty();
+            return created;
+        }
 
-        /// <summary>
-        /// 保存韧性的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty toughness = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存出伤阶段独立乘区的加成系数 x，最终伤害按 (1 + x) 乘算。
-        /// </summary>
-        private readonly ModifiableProperty damageBoost = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存受伤阶段独立乘区的加成系数 x，承受伤害按 (1 + x) 乘算。
-        /// </summary>
-        private readonly ModifiableProperty damageTakenBoost = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存当前移动模式速度的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty moveSpeed = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存攻击速度的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty atkSpeed = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存暴击率的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty critRate = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存暴击伤害的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty critDmg = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存最大生命值的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty maxHp = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存空中移动速度的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty airMoveSpeed = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存跳跃速度的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty jumpSpeed = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存重力加速度的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty gravity = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存核心能量上限的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty coreEnergyLimit = new ModifiableProperty();
-
-        /// <summary>
-        /// 保存终结技能量上限的基础值、Boost、Offset 和最终值。
-        /// </summary>
-        private readonly ModifiableProperty ultEnergyLimit = new ModifiableProperty();
+        /// <summary>攻击力。</summary>
+        private ModifiableProperty atk => properties[(int)PropertyType.Atk];
+        /// <summary>防御力。</summary>
+        private ModifiableProperty def => properties[(int)PropertyType.Def];
+        /// <summary>抗打断等级。</summary>
+        private ModifiableProperty staggerResistance => properties[(int)PropertyType.StaggerResistance];
+        /// <summary>霸体覆盖值。</summary>
+        private ModifiableProperty superArmor => properties[(int)PropertyType.SuperArmor];
+        /// <summary>出伤阶段独立乘区系数。</summary>
+        private ModifiableProperty damageBoost => properties[(int)PropertyType.DamageBoost];
+        /// <summary>受伤阶段独立乘区系数。</summary>
+        private ModifiableProperty damageTakenBoost => properties[(int)PropertyType.DamageTakenBoost];
+        /// <summary>当前移动模式速度。</summary>
+        private ModifiableProperty moveSpeed => properties[(int)PropertyType.MoveSpeed];
+        /// <summary>攻击速度。</summary>
+        private ModifiableProperty atkSpeed => properties[(int)PropertyType.AtkSpeed];
+        /// <summary>暴击率。</summary>
+        private ModifiableProperty critRate => properties[(int)PropertyType.CritRate];
+        /// <summary>暴击伤害。</summary>
+        private ModifiableProperty critDmg => properties[(int)PropertyType.CritDmg];
+        /// <summary>最大生命值。</summary>
+        private ModifiableProperty maxHp => properties[(int)PropertyType.MaxHp];
+        /// <summary>空中移动速度。</summary>
+        private ModifiableProperty airMoveSpeed => properties[(int)PropertyType.AirMoveSpeed];
+        /// <summary>跳跃速度。</summary>
+        private ModifiableProperty jumpSpeed => properties[(int)PropertyType.JumpSpeed];
+        /// <summary>重力加速度。</summary>
+        private ModifiableProperty gravity => properties[(int)PropertyType.Gravity];
+        /// <summary>核心能量上限。</summary>
+        private ModifiableProperty coreEnergyLimit => properties[(int)PropertyType.CoreEnergyLimit];
+        /// <summary>终结技能量上限。</summary>
+        private ModifiableProperty ultEnergyLimit => properties[(int)PropertyType.UltEnergyLimit];
 
         /// <summary>保存当前生命值，并通过统一属性脏监听向 UI 暴露变化。</summary>
         private readonly ModifiableProperty hp = new ModifiableProperty();
@@ -372,10 +506,19 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         public float Def => def.Value;
 
+        /// <summary>获取配置与运行时修改之后的抗打断等级。</summary>
+        public float StaggerResistance => staggerResistance.Value;
+
+        /// <summary>获取霸体覆盖值；零表示当前不处于霸体。</summary>
+        public float SuperArmor => superArmor.Value;
+
         /// <summary>
-        /// 获取已经应用 Boost 和 Offset 的韧性。
+        /// 获取参与打断判定的最终抗打断等级。
+        ///
+        /// 霸体**覆盖**而不是叠加抗打断等级（05A 第 3.6 节）：霸体的语义是「这段时间内任何东西都打不断我」，
+        /// 若改成相加，一个本身抗打断为 0 的小怪进入霸体后仍可能被高等级攻击打断。
         /// </summary>
-        public float Toughness => toughness.Value;
+        public float EffectiveStaggerResistance => !Mathf.Approximately(SuperArmor, 0f) ? SuperArmor : StaggerResistance;
 
         /// <summary>
         /// 获取已经应用 Boost 和 Offset 的出伤独立乘区加成系数 x。
@@ -456,7 +599,7 @@ namespace Xuan.Prometheus.Component
         public ModifiableProperty UltEnergyLimitProperty => ultEnergyLimit;
 
         /// <summary>获取 PropertyConfig 配置的角色基础元素；缺少配置时安全回退为物理。</summary>
-        public DamageAttribute ElementAttribute => propConfig == null ? DamageAttribute.Physical : propConfig.elementAttribute;
+        public Cfg.ElementType Element => propConfig == null ? Cfg.ElementType.Physical : propConfig.elementAttribute;
 
         public float CoreEnergy => coreEnergy.Value;
         public float UltEnergy => ultEnergy.Value;
@@ -509,12 +652,12 @@ namespace Xuan.Prometheus.Component
             Initialize(characterBinder.PropertyConfig);
         }
 
-        /// <summary>解除只读配置引用并清空本 Entity 生命周期持有的控制与伤害属性覆盖。</summary>
+        /// <summary>解除只读配置引用并清空本 Entity 生命周期持有的控制状态与元素附魔。</summary>
         public void Unbind()
         {
             propConfig = null;
             controlStateModifiers.Clear();
-            damageAttributeModifiers.Clear();
+            elementInfusions.Clear();
             ActiveControlStates = ControlState.None;
         }
 
@@ -564,39 +707,39 @@ namespace Xuan.Prometheus.Component
         }
 
         /// <summary>
-        /// 添加一份指定动作范围的出伤属性覆盖，并返回只能按对象身份精确移除的句柄。
+        /// 添加一份指定动作范围的元素附魔，并返回只能按对象身份精确移除的句柄。
         /// </summary>
-        public DamageAttributeModifier AddDamageAttributeModifier(DamageAttribute attribute, DamageActionMask actionMask, int priority)
+        public ElementInfusionModifier AddElementInfusion(Cfg.ElementType element, DamageActionMask actionMask, int priority)
         {
-            DamageAttributeModifier modifier = new DamageAttributeModifier(attribute, actionMask, priority, ++nextDamageAttributeModifierSequence);
-            damageAttributeModifiers.Add(modifier);
+            ElementInfusionModifier modifier = new ElementInfusionModifier(element, actionMask, priority, ++nextElementInfusionSequence);
+            elementInfusions.Add(modifier);
             return modifier;
         }
 
         /// <summary>
-        /// 按对象身份移除出伤属性覆盖，不影响其他 Effect 提供的同属性或同优先级覆盖。
+        /// 按对象身份移除元素附魔，不影响其他 Effect 提供的同元素或同优先级附魔。
         /// </summary>
-        public bool RemoveDamageAttributeModifier(DamageAttributeModifier modifier)
+        public bool RemoveElementInfusion(ElementInfusionModifier modifier)
         {
-            return modifier != null && damageAttributeModifiers.Remove(modifier);
+            return modifier != null && elementInfusions.Remove(modifier);
         }
 
         /// <summary>
-        /// 先解析动作基础属性，再让匹配动作范围的最高优先级 Effect 覆盖最终出伤属性。
+        /// 先解析动作基础元素，再让匹配动作范围的最高优先级附魔覆盖最终出伤元素。
         /// </summary>
-        public DamageAttribute ResolveDamageAttribute(DamageActionType actionType)
+        public Cfg.ElementType ResolveDamageElement(DamageActionType actionType)
         {
-            DamageAttribute resolvedAttribute = DamageAttributeRules.GetBaseAttribute(actionType, ElementAttribute);
-            DamageActionMask requiredMask = DamageAttributeRules.GetActionMask(actionType);
-            DamageAttributeModifier selectedModifier = null;
-            foreach (DamageAttributeModifier modifier in damageAttributeModifiers)
+            Cfg.ElementType resolvedElement = DamageElementRules.GetBaseElement(actionType, Element);
+            DamageActionMask requiredMask = DamageElementRules.GetActionMask(actionType);
+            ElementInfusionModifier selectedModifier = null;
+            foreach (ElementInfusionModifier modifier in elementInfusions)
             {
                 if ((modifier.ActionMask & requiredMask) == 0) continue;
                 if (selectedModifier != null && modifier.Priority < selectedModifier.Priority) continue;
                 if (selectedModifier != null && modifier.Priority == selectedModifier.Priority && modifier.Sequence < selectedModifier.Sequence) continue;
                 selectedModifier = modifier;
             }
-            return selectedModifier == null ? resolvedAttribute : selectedModifier.Attribute;
+            return selectedModifier == null ? resolvedElement : selectedModifier.Element;
         }
 
         /// <summary>
@@ -691,11 +834,14 @@ namespace Xuan.Prometheus.Component
             return consumedEnergy;
         }
         /// <summary>
-        /// 基于缓存的 Atk、CritRate 和 CritDmg 生成一次攻击伤害，并在暴击结算后按出伤独立乘区 (1 + DamageBonus) 乘算一次。
+        /// 按属性位读取已应用全部通道的最终值。
+        ///
+        /// 05A 补齐的元素伤害加成、元素抗性与抗性削减是**按元素选槽**的，槽位只能在运行时确定，
+        /// 因此这些属性不提供命名访问器，统一由本入口读取。
         /// </summary>
-        public float GetCalculatedDamage()
+        public float GetValue(PropertyType type)
         {
-            return Atk * (1f + (CritRate >= UnityEngine.Random.Range(0f, 1f) ? CritDmg : 0f)) * (1f + DamageBonus);
+            return GetProperty(type).Value;
         }
 
         /// <summary>
@@ -703,25 +849,9 @@ namespace Xuan.Prometheus.Component
         /// </summary>
         private ModifiableProperty GetProperty(PropertyType type)
         {
-            switch (type)
-            {
-                case PropertyType.Atk: return atk;
-                case PropertyType.Def: return def;
-                case PropertyType.MoveSpeed: return moveSpeed;
-                case PropertyType.AtkSpeed: return atkSpeed;
-                case PropertyType.CritRate: return critRate;
-                case PropertyType.CritDmg: return critDmg;
-                case PropertyType.MaxHp: return maxHp;
-                case PropertyType.AirMoveSpeed: return airMoveSpeed;
-                case PropertyType.JumpSpeed: return jumpSpeed;
-                case PropertyType.Gravity: return gravity;
-                case PropertyType.CoreEnergyLimit: return coreEnergyLimit;
-                case PropertyType.UltEnergyLimit: return ultEnergyLimit;
-                case PropertyType.Toughness: return toughness;
-                case PropertyType.DamageBoost: return damageBoost;
-                case PropertyType.DamageTakenBoost: return damageTakenBoost;
-                default: throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported property type.");
-            }
+            int index = (int)type;
+            if (index < 0 || index >= properties.Length) throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported property type.");
+            return properties[index];
         }
 
         /// <summary>属性上限变化后同步约束两种当前能量，保证运行态始终处于零到对应上限之间。</summary>
@@ -751,7 +881,9 @@ namespace Xuan.Prometheus.Component
         {
             atk.SetBaseValue(propConfig == null ? 0f : propConfig.atk);
             def.SetBaseValue(propConfig == null ? 0f : propConfig.def);
-            toughness.SetBaseValue(propConfig == null ? 0f : propConfig.toughness);
+            staggerResistance.SetBaseValue(propConfig == null ? 0f : propConfig.staggerResistance);
+            // 霸体只由运行时效果施加，没有静态配置来源，因此每次刷新都回到非霸体。
+            superArmor.SetBaseValue(0f);
             // 伤害加成不属于静态配置，每次刷新都从零基础值开始，仅接受运行时修改。
             damageBoost.SetBaseValue(0f);
             damageTakenBoost.SetBaseValue(0f);

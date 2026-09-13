@@ -3,6 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Prometheus.Framework",
+        "Prometheus.Config.Generated",
+        "Luban.Runtime",
         "Prometheus.NetworkKit",
         "GUID:68765d262e2128e4ab49c983f3411946",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",

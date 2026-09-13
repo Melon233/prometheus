@@ -3,46 +3,51 @@ using System.Collections.Generic;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Logic.Talent;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Logic
 {
-    /// <summary>保存一次玩家动作已经解析完成的碰撞体、伤害倍率和 EffectSignal 语义。</summary>
+    /// <summary>
+    /// 一次玩家动作已经解析完成的碰撞体与段落定位信息。
+    ///
+    /// 它**不再携带伤害倍率**：倍率与元素、附着档位、打断等级一并来自 `TbAttackSegment`，
+    /// 在命中窗口打开的那一刻按 `(TalentId, StageIndex, 窗口序号)` 查出来。
+    /// 动作开始时还不知道会开哪个窗口——一个动画里可以有多个。
+    /// </summary>
     public readonly struct PlayerCombatHitContext
     {
         /// <summary>创建一份在当前动画会话期间保持不变的命中上下文。</summary>
-        public PlayerCombatHitContext(ColliderProxy colliderProxy, float damageMultiplier, float damageOffset, EffectTag tags, string abilityId, DamageActionType damageActionType)
+        public PlayerCombatHitContext(ColliderProxy colliderProxy, string talentId, int stageIndex, EffectTag tags, DamageActionType damageActionType, float talentScale)
         {
             ColliderProxy = colliderProxy;
-            DamageMultiplier = Mathf.Max(0f, damageMultiplier);
-            DamageOffset = damageOffset;
+            TalentId = talentId ?? string.Empty;
+            StageIndex = stageIndex;
             Tags = tags;
-            AbilityId = abilityId ?? string.Empty;
             DamageActionType = damageActionType;
+            TalentScale = Mathf.Max(0f, talentScale);
         }
 
         /// <summary>获取当前命中窗口唯一允许触发信号的碰撞代理。</summary>
         public ColliderProxy ColliderProxy { get; }
 
-        /// <summary>获取当前动作对最终攻击伤害应用的非负倍率。</summary>
-        public float DamageMultiplier { get; }
+        /// <summary>
+        /// 获取天赋标识。它同时是段落表的第一个键与 ICD 分组键，
+        /// 因此同一天赋的全部连段**共用一条 ICD**——这正是原神普攻五段共享 ICD 的行为。
+        /// </summary>
+        public string TalentId { get; }
 
-        /// <summary>获取当前动作在倍率结算后追加的固定伤害偏移。</summary>
-        public float DamageOffset { get; }
+        /// <summary>获取连段序号；非连段能力为 0。</summary>
+        public int StageIndex { get; }
 
         /// <summary>获取当前动作发布到 EffectSignal 的完整标签。</summary>
         public EffectTag Tags { get; }
 
-        /// <summary>获取当前动作发布到 EffectSignal 的能力编号。</summary>
-        public string AbilityId { get; }
-
-        /// <summary>获取当前动作解析伤害属性时使用的动作类别。</summary>
+        /// <summary>获取当前动作解析伤害元素时使用的动作类别。</summary>
         public DamageActionType DamageActionType { get; }
 
-        /// <summary>把角色已经完成通用攻击计算的伤害乘以当前动作段倍率，并约束结果不小于零。</summary>
-        public float CalculateRequestedDamage(float calculatedDamage)
-        {
-            return Mathf.Max(0f, Mathf.Max(0f, calculatedDamage) * DamageMultiplier + DamageOffset);
-        }
+        /// <summary>获取天赋等级带来的倍率缩放。</summary>
+        public float TalentScale { get; }
     }
 
     /// <summary>集中管理玩家战斗动作共享的动画会话、命中窗口、移动锁、转向锁和 HitConfirmed 发布链。</summary>
@@ -56,6 +61,25 @@ namespace Xuan.Prometheus.Logic
         private bool activeHasVfx;
         private bool isHitWindowOpen;
         private bool isRotationLocked;
+        /// <summary>保存当前命中窗口对应的段落数据；窗口关闭期间为空。</summary>
+        private Cfg.AttackSegmentRow activeSegment;
+        /// <summary>段落表索引；与 CharacterGrowthTables 同样按实体各建一份，表只有数十行。</summary>
+        private AttackSegmentTable segmentTable;
+
+        /// <summary>
+        /// 按「角色 + 动作」推导天赋标识，它同时是段落表的键与 ICD 分组键。
+        ///
+        /// 不从预制体各自手填的 AbilityId 取：那样普攻每一段会拿到不同的编号，
+        /// 从而各自独立 ICD——实机表现是普攻每一段都附着，而原神是五段共用一条。
+        /// </summary>
+        protected string ResolveTalentId(string actionName)
+        {
+            string characterId = Entity.TryGetComp(out CharaLevelComponent levelComponent) ? levelComponent.CharacterId : string.Empty;
+            return string.IsNullOrEmpty(characterId) ? actionName : $"{characterId}.{actionName}";
+        }
+
+        /// <summary>获取段落表索引，供具体动作 Logic 查询自己的连段数。</summary>
+        protected AttackSegmentTable SegmentTable => segmentTable;
 
         /// <summary>获取玩家输入组件，供具体动作 Logic 消费自己的输入。</summary>
         protected InputComponent InputComponent { get; private set; }
@@ -90,6 +114,7 @@ namespace Xuan.Prometheus.Logic
             PropertyComponent = propertyComponent;
             EffectComponent = effectComponent;
             VfxComponent = vfxComponent;
+            segmentTable = new AttackSegmentTable(Core.Config.Tables);
             OnActionInitialized();
         }
 
@@ -142,10 +167,28 @@ namespace Xuan.Prometheus.Logic
             if (!Entity.IsActive || activePlayback == null || !isHitWindowOpen || source == null || other == null || !ReferenceEquals(source, activeHitContext.ColliderProxy)) return;
             if (source.cod != null && !source.cod.enabled) return;
             if (!ColliderProxy.TryGetHostEntity(other, out Entity targetEntity) || !targetEntity.TryGetComp(out PropertyComponent targetProperty) || targetProperty.IsDead || !targetEntity.IsActive || targetEntity.bindGo == null || !targetEntity.bindGo.CompareTag("Enemy")) return;
-            float requestedDamage = activeHitContext.CalculateRequestedDamage(PropertyComponent.GetCalculatedDamage());
-            DamageAttribute damageAttribute = PropertyComponent.ResolveDamageAttribute(activeHitContext.DamageActionType);
-            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, activeHitContext.Tags, activeHitContext.AbilityId, position: other.transform.position, damageAttribute: damageAttribute, damageActionType: activeHitContext.DamageActionType);
+
+            // 段落行承载本段的全部战斗数据：倍率、元素、附着档位、ICD 策略、打断等级。
+            // 信号只给出「倍率 × 缩放属性」，暴击与增伤由 DamagePipeline 在结算时处理。
+            float requestedDamage = Mathf.Max(0f, PropertyComponent.Atk * activeSegment.DamageMultiplier * activeHitContext.TalentScale + activeSegment.DamageOffset);
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity,
+                requestedDamage, requestedDamage, activeHitContext.Tags, activeHitContext.TalentId,
+                position: other.transform.position, damage: BuildDamageFacts(activeSegment, activeHitContext.DamageActionType));
             EffectComponent.Runtime.Publish(signal);
+        }
+
+        /// <summary>
+        /// 把段落行折成随命中信号发布的伤害事实。
+        ///
+        /// `FollowCharacter` 表示本段取角色元素（法器普攻、附魔后的普攻都是这个语义），
+        /// 其余取值直接使用；附魔覆盖在 `ResolveDamageElement` 里发生。
+        /// </summary>
+        private DamageFacts BuildDamageFacts(Cfg.AttackSegmentRow segment, DamageActionType actionType)
+        {
+            Cfg.ElementType element = segment.Element == Cfg.ElementType.FollowCharacter
+                ? PropertyComponent.ResolveDamageElement(actionType)
+                : segment.Element;
+            return new DamageFacts(element, actionType, null, segment.StaggerLevel, false, false, segment.GaugeStrength, segment.IcdPolicy, segment.IcdGroupId);
         }
 
         /// <summary>交互感应扩展接口的空实现：战斗动作逻辑不处理触发离开。</summary>
@@ -169,6 +212,7 @@ namespace Xuan.Prometheus.Logic
             activeHitContext = hitContext;
             activeHasVfx = hasVfx;
             activeVfx = vfx;
+            activeSegment = null;
             playback.CommandReceived += OnAnimationCommand;
             playback.Finished += OnAnimationFinished;
             AcquireMovementLock();
@@ -200,13 +244,24 @@ namespace Xuan.Prometheus.Logic
         {
         }
 
-        /// <summary>解释当前 AnimationLine 的强类型命中窗口命令，并使用当前动作独立配置的碰撞体和特效。</summary>
-        private void OnAnimationCommand(AnimationPlayback source, AnimationLineEventCommand command)
+        /// <summary>
+        /// 解释当前 AnimationLine 的强类型命中窗口命令，并按事件参数定位本窗口的段落数据。
+        /// </summary>
+        /// <param name="source">发出命令的动画会话。</param>
+        /// <param name="command">命中窗口命令。</param>
+        /// <param name="argument">
+        /// 策划在动画编辑器里填的 `floatValue`，此处读作**本动画内的命中窗口序号**。
+        /// 用动画内序号而不是段落表的全局下标：表重排或插行不会让已有动画事件指错段落。
+        /// </param>
+        private void OnAnimationCommand(AnimationPlayback source, AnimationLineEventCommand command, float argument)
         {
             if (!ReferenceEquals(source, activePlayback)) return;
             if (command == AnimationLineEventCommand.EnableHitbox)
             {
                 CloseAllBoundHitboxes();
+                // 段落缺失是配表错误：缺行的后果是这一段既不附着也不打断而伤害照常，
+                // 实机表现为「某一段手感不对」，因此在这里直接抛而不是静默跳过。
+                activeSegment = segmentTable.Get(activeHitContext.TalentId, activeHitContext.StageIndex, Mathf.RoundToInt(argument));
                 SetHitboxEnabled(activeHitContext.ColliderProxy, true);
                 isHitWindowOpen = true;
                 if (activeHasVfx) VfxComponent.Play(activeVfx);

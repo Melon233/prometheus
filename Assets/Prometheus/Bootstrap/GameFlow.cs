@@ -122,6 +122,8 @@ namespace Xuan.Prometheus.Bootstrap
             bootScreen.BindProgress(Core.Asset);
             await kitInitialization;
             core.AfterNew();
+            // 配表在此加载：资源包刚刚就绪，而全部玩法 System 还没有构造，因此没有人会读到半份配置（ARCH-CONFIG-001）。
+            Core.Config.Load();
             return GameFlowStage.Login;
         }
 

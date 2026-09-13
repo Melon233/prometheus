@@ -42,12 +42,68 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 - `AttackTriggers.asset`：攻击命中产生直接伤害，最终 `DamageApplied` 为火属性时额外施加燃烧，带 `Control` 标签时额外施加眩晕。
 - `CombatFlowTriggers.asset`：实际攻击伤害大于零时叠加战意，并通过 `LacksAnyTags(Dot)` 排除 DOT。
 
-## 伤害属性
+## 伤害元素
 
-- `DamageAttribute` 固定包含火、水、雷、冰、草、光、暗、物理八种属性，角色基础元素配置在 `PropertyConfig.elementAttribute`。
-- 普通攻击和特殊攻击默认使用物理属性，技能和大招默认使用角色元素属性；持续 `DamageAttributeModifierOperation` 可以按动作范围和优先级覆盖结果，并在 Effect 移除时自动回滚。
-- 火克冰、冰克草、草克雷、雷克水、水克火，光暗互克，物理中立；仅克制方在独立乘区获得 1.3 倍伤害，不存在被克减伤。
-- `DamageOperation` 可以继承命中信号属性、读取 Caster 当前动作属性或使用固定属性；最终属性、动作类型、克制关系和属性倍率会写入 `DamageApplied` 与 `Killed` 信号。
+元素身份统一使用配表生成的 `Prometheus.Config.ElementType`（火、水、雷、冰、草、风、岩、物理），角色基础元素配置在 `PropertyConfig.elementAttribute`。项目里**不存在第二个元素枚举**——两个枚举必须手工保持同步，迟早会错位。
+
+- 普通攻击和特殊攻击默认使用物理，技能和大招默认使用角色元素；持续 `ElementInfusionOperation` 可以按动作范围和优先级覆盖结果（即元素附魔），并在 Effect 移除时自动回滚。
+- **元素之间没有克制倍率**。元素相互作用全部由 `ReactionMatrix` 配表承载，由 `IElementSystem` 判定身份、由 `DamageCalculator` 求值。
+- `DamageOperation` 可以继承命中信号元素、读取 Caster 当前动作元素或使用固定元素；最终元素、动作类型与触发的反应标识会写入 `DamageApplied` 与 `Killed` 信号。
+
+## 伤害结算
+
+`DamageOperation` 自己不做任何数值计算，它把一次伤害交给 `Gameplay/Combat/DamagePipeline`：
+
+1. 解析最终元素（附魔在此生效）；
+2. 调用 `IElementSystem.Apply` 写入附着并取回命中的反应行；
+3. 按反应类别折算增幅乘区、激化加算或剧变独立伤害；
+4. 走 `DamageCalculator.Evaluate` 的主公式；
+5. 把主伤害落地，再把剧变伤害作为**独立的第二笔伤害**落地。
+
+暴击走 `EffectRuntime.NextCriticalRoll`（运行时自己的确定性随机源），因此伤害结果可随种子重放。
+
+`EffectRuntime` 在构造时**必须**传入 `IElementSystem`：允许它缺席会让元素反应在没有任何报错的情况下整体失效。
+
+落地本身走公共入口 `DamageSettlement.Settle`。抽出来是因为伤害不只来自命中——草原核到期引爆同样要扣血、发 `HpChanged`、发 `DamageApplied`、致死再发 `Killed`，这串顺序有第二份实现就迟早会漏掉其中一条。
+
+## 反应产物
+
+三个伪元素状态各有一个产物资产，位于 `BundleResources/Config/Effect/EffectDefinitions/`，由 `EffectLibrary` 的反应产物字段引用：
+
+| 资产 | 承载 |
+| --- | --- |
+| `Eff_Frozen` | `ControlStateModifierOperation(Stun)`，冻结期间禁止目标行动 |
+| `Eff_Quicken` | 仅 Buff 标记；超激化与蔓激化的数值全部来自反应矩阵 |
+| `Eff_Bloom_Core` | 仅 Buff 标记；引爆伤害由 `ReactionProductSystem` 按剧变公式结算 |
+| `Eff_Crystallize` | `ShieldOperation`，15 秒结晶护盾；四种结晶共用这一份，元素与吸收量随信号传入 |
+
+前三者一律配成 `Permanent`：**它们的存活时间由 `IElementSystem` 的伪元素状态决定**，在资产上再写一份时长会造成两个时钟，一旦不同步就会出现「状态没了但还冻着」。施加与撤销由 `ReactionProductSystem` 完成。
+
+`Eff_Crystallize` 相反，是 `Duration`：结晶护盾的 15 秒是一个**固定**时长，没有第二个时钟与它竞争，因此由资产持有最自然。它由 `DamageOperation` 在命中时直接施加给施加者，重复触发走 `RefreshDuration` 并重算护盾。
+
+**新增 `DamageOperation` 的行为开关时必须同步检查既有资产**：新字段在旧资产上会反序列化成默认值，而默认值通常是「关闭」。元素附着就这样在正式资产里静默关闭过一次（见 [承压接缝台账](../../../../Docs/Arch/LoadBearingSeams.md) S-03），EditMode 用例结构上发现不了——它们每次都显式传参。
+
+产物按 `EffectId` 从 `EffectLibrary.reactionProducts` 查找——「哪一行反应产出哪个 Effect」已经写在 `ReactionMatrix` 的 `effectId` 列里，代码里不再复述一遍。
+
+资产由菜单 `Prometheus/Effect System/Create Or Update Reaction Product Assets` 生成，不手写 Unity YAML。工具放在编辑器测试程序集，因为写入 `EffectDefinition` 私有序列化字段的反射入口只在那里可见——正式运行时定义保持只读。
+
+## 硬直
+
+打断是**分级比较**而不是数值阈值（08 第 2.3 节）：
+
+```text
+打断成立  ⟺  攻击打断等级 > 目标抗打断等级
+```
+
+- 攻击侧：`DamageOperation.staggerLevel`，每段攻击的固定整数配置（0 无打断 ～ 5 极强），与伤害数值无关；
+- 受击侧：`PropertyConfig.staggerResistance` → `PropertyType.StaggerResistance`；
+- 霸体：`PropertyType.SuperArmor` 非零时**覆盖**抗打断等级，任何 Effect 都能用 `PropertyModifierOperation` 写它，不需要专用操作。
+
+结算发布两条互斥的事实：打断成立发 `StaggeredEvent`（受击动画订阅），未成立发 `StaggerResistedEvent`（闪白与命中特效订阅，表现属排期第 9 步）。致死伤害与零扣血两条都不发——死亡动画会抢占受击动画，被护盾完全挡下的攻击不构成受击。
+
+剧变伤害与草原核引爆的打断等级固定为 0：打断由触发它们的那一击负责。
+
+`EffectPropertyValue.Toughness` 等旧名保留（枚举值是资产的序列化索引），但读写的已经是抗打断等级。
 
 ## 运行约束
 

@@ -6,7 +6,7 @@ Unity 6（6000.3.10f1）开放世界动作游戏项目。
 
 | 你想了解 | 读这里 |
 | --- | --- |
-| **架构硬约束**（必读） | [`Docs/ArchSpec.md`](Docs/ArchSpec.md) |
+| **架构硬约束**（必读） | [`Docs/Arch/ArchSpec.md`](Docs/Arch/ArchSpec.md) |
 | 启动链路、分层与组合根 | [`Assets/Prometheus/Framework/CoreKit/README.md`](Assets/Prometheus/Framework/CoreKit/README.md) |
 | Entity / Logic / Component 模型 | [`Assets/Prometheus/Framework/GameplayKit/README.md`](Assets/Prometheus/Framework/GameplayKit/README.md) |
 | Kit 与 System 的服务边界 | [`Assets/Prometheus/Framework/GameplayKit/SystemBoundaryDesign.md`](Assets/Prometheus/Framework/GameplayKit/SystemBoundaryDesign.md) |
@@ -46,4 +46,4 @@ dotnet build prometheus.slnx --no-restore
 #   Prometheus.Architecture.EditorTests
 ```
 
-架构约束以可执行测试的形式存在于 [`Assets/Prometheus/Tests/Architecture/`](Assets/Prometheus/Tests/Architecture/)。修改成型系统的链路时，必须同步更新对应中文文档与 `Docs/ArchSpec.md`（见 `ARCH-DOC-001`）。
+架构约束以可执行测试的形式存在于 [`Assets/Prometheus/Tests/Architecture/`](Assets/Prometheus/Tests/Architecture/)。修改成型系统的链路时，必须同步更新对应中文文档与 `Docs/Arch/ArchSpec.md`（见 `ARCH-DOC-001`）。

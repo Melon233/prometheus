@@ -68,4 +68,4 @@ Runtime（Bootstrap，唯一组合根）
 
 输入源等单局领域数据仍通过构造参数或方法参数显式传入。它们不是基础 Kit，也不属于本条跨模块访问规则。
 
-Entity、Logic、纯 C# Component、Prefab Binder 和 GameObject 生命周期见 `Assets/Prometheus/Framework/GameplayKit/README.md`。项目当前 Kit、System、事件、网络、生命周期与 Editor 工具的硬性约束统一记录在 `Docs/ArchSpec.md`；修改成型链路时必须同步维护该规范和对应系统文档。
+Entity、Logic、纯 C# Component、Prefab Binder 和 GameObject 生命周期见 `Assets/Prometheus/Framework/GameplayKit/README.md`。项目当前 Kit、System、事件、网络、生命周期与 Editor 工具的硬性约束统一记录在 `Docs/Arch/ArchSpec.md`；修改成型链路时必须同步维护该规范和对应系统文档。

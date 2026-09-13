@@ -1,0 +1,22 @@
+{
+    "name": "Prometheus.Bag.EditorTests",
+    "rootNamespace": "Xuan.Prometheus.Bag.Tests",
+    "references": [
+        "Prometheus.Framework",
+        "Prometheus.Gameplay"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

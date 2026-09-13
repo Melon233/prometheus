@@ -2,8 +2,11 @@ using System;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 using UnityEngine.Serialization;
+using Xuan.Prometheus.Combat;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Logic;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -63,33 +66,68 @@ namespace Xuan.Prometheus.Effects
         }
     }
 
-    /// <summary>
-    /// 指定 DamageOperation 从信号、直接释放者角色元素或固定配置读取最终伤害属性。
-    /// </summary>
-    public enum DamageAttributeSource
+    /// <summary>指定 DamageOperation 从命中信号还是自身配置读取攻击自身的属性。</summary>
+    public enum DamageAttackSource
     {
-        /// <summary>继承当前 EffectSignal 已经解析的伤害属性。</summary>
+        /// <summary>继承命中信号携带的段落数据；段落驱动的攻击走这条。</summary>
         InheritSignal = 0,
-        /// <summary>按当前动作类别读取直接释放者经过 Effect 覆盖后的角色出伤属性。</summary>
+        /// <summary>使用本操作自己配置的固定值；DOT、场域这类没有攻击段落的伤害走这条。</summary>
+        Fixed = 1
+    }
+
+    /// <summary>
+    /// 指定 DamageOperation 从信号、直接释放者角色元素还是固定配置读取最终伤害元素。
+    /// </summary>
+    public enum DamageElementSource
+    {
+        /// <summary>继承当前 EffectSignal 已经解析的伤害元素。</summary>
+        InheritSignal = 0,
+        /// <summary>按当前动作类别读取直接释放者经过附魔覆盖后的角色出伤元素。</summary>
         CasterElement = 1,
-        /// <summary>使用 DamageOperation 自己配置的固定伤害属性。</summary>
+        /// <summary>使用 DamageOperation 自己配置的固定伤害元素。</summary>
         Fixed = 2
     }
 
     /// <summary>
-    /// DamageOperation 计算请求伤害、结算属性克制、修改目标生命值、发布 DamageApplied，并在打断能力严格超过韧性时发布受击事实。
+    /// DamageOperation 把一次伤害交给 `DamagePipeline` 走完元素附着、反应与主公式，
+    /// 再把结果落到目标生命值上，并发布 DamageApplied 与受击事实。
+    ///
+    /// 它自己**不做任何数值计算**：乘区顺序在 `DamageCalculator`、反应判定在 `IElementSystem`。
+    /// 这里只负责取上下文、落地、发信号——包括把剧变伤害作为独立的第二笔伤害结算。
     /// </summary>
     [Serializable]
     public sealed class DamageOperation : EffectOperation
     {
+        /// <summary>配置本段伤害的 `倍率 × 缩放属性`；暴击与增伤由管线统一处理，不要写进这里。</summary>
         [SerializeField] private EffectValueFormula amount = new EffectValueFormula();
-        /// <summary>配置本次伤害用于对比目标韧性的打断能力；零表示只扣血而不打断。</summary>
-        [SerializeField] private EffectValueFormula interruptPower = new EffectValueFormula();
+        /// <summary>
+        /// 配置本段伤害的打断等级（08 第 2.1 节）：0 无打断、1 轻微、2 一般、3 较强、4 强、5 极强。
+        ///
+        /// 它是**每段攻击的固定配置**而不是数值公式：打断与伤害大小无关，
+        /// 单手剑普攻无论打出多高的数字都打不断遗迹守卫。
+        /// </summary>
+        [SerializeField, Min(0)] private int staggerLevel;
         [SerializeField] private EffectTag additionalTags = EffectTag.Attack;
-        /// <summary>配置当前操作解析唯一伤害属性时使用的数据来源。</summary>
-        [SerializeField] private DamageAttributeSource damageAttributeSource = DamageAttributeSource.InheritSignal;
-        /// <summary>仅在 Fixed 来源下使用的固定伤害属性。</summary>
-        [SerializeField] private DamageAttribute fixedDamageAttribute = DamageAttribute.Physical;
+        /// <summary>配置当前操作解析唯一伤害元素时使用的数据来源。</summary>
+        [FormerlySerializedAs("damageAttributeSource")]
+        [SerializeField] private DamageElementSource damageElementSource = DamageElementSource.InheritSignal;
+        /// <summary>仅在 Fixed 来源下使用的固定伤害元素。</summary>
+        [FormerlySerializedAs("fixedDamageAttribute")]
+        [SerializeField] private Cfg.ElementType fixedDamageElement = Cfg.ElementType.Physical;
+        /// <summary>
+        /// 配置攻击自身属性（附着档位、ICD、打断等级）的来源。
+        ///
+        /// 默认继承命中信号：这些属性属于**发起攻击的那一段**而不是结算它的 Effect——
+        /// 同一份直接伤害 Effect 被普攻、战技、爆发共用，三者的附着量与打断等级完全不同，
+        /// 写在 Effect 上就只能有一份。没有段落来源的伤害（DOT、场域）用 Fixed 自带一份。
+        /// </summary>
+        [SerializeField] private DamageAttackSource attackSource = DamageAttackSource.InheritSignal;
+        /// <summary>仅在 Fixed 来源下使用的附着强度档位。</summary>
+        [SerializeField] private Cfg.GaugeStrength gaugeStrength = Cfg.GaugeStrength.None;
+        /// <summary>仅在 Fixed 来源下使用的 ICD 策略。</summary>
+        [SerializeField] private Cfg.IcdPolicy icdPolicy = Cfg.IcdPolicy.Shared;
+        /// <summary>仅在 Fixed 来源下使用的独立 ICD 组号。</summary>
+        [SerializeField] private int icdGroupId;
 
         /// <summary>
         /// 创建默认伤害操作，供 Unity 序列化器使用。
@@ -101,13 +139,17 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建使用指定伤害公式、标签和打断能力公式的伤害操作。
         /// </summary>
-        public DamageOperation(EffectValueFormula damageAmount, EffectTag tags, EffectValueFormula damageInterruptPower = null, DamageAttributeSource attributeSource = DamageAttributeSource.InheritSignal, DamageAttribute fixedAttribute = DamageAttribute.Physical)
+        public DamageOperation(EffectValueFormula damageAmount, EffectTag tags, int damageStaggerLevel = 0, DamageElementSource elementSource = DamageElementSource.InheritSignal, Cfg.ElementType fixedElement = Cfg.ElementType.Physical, Cfg.GaugeStrength strength = Cfg.GaugeStrength.None, Cfg.IcdPolicy policy = Cfg.IcdPolicy.Shared, int groupId = 0, DamageAttackSource source = DamageAttackSource.InheritSignal)
         {
+            attackSource = source;
             amount = damageAmount ?? EffectValueFormula.Constant(0f);
             additionalTags = tags;
-            interruptPower = damageInterruptPower ?? EffectValueFormula.Constant(0f);
-            damageAttributeSource = attributeSource;
-            fixedDamageAttribute = fixedAttribute;
+            staggerLevel = damageStaggerLevel > 0 ? damageStaggerLevel : 0;
+            damageElementSource = elementSource;
+            fixedDamageElement = fixedElement;
+            gaugeStrength = strength;
+            icdPolicy = policy;
+            icdGroupId = groupId;
         }
 
         /// <summary>
@@ -117,56 +159,95 @@ namespace Xuan.Prometheus.Effects
         {
             if (context.Target == null) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
-            float requestedDamage = Mathf.Max(0f, amount.Evaluate(context));
-            float resolvedInterruptPower = Mathf.Max(0f, interruptPower.Evaluate(context));
-            DamageAttribute resolvedDamageAttribute = ResolveDamageAttribute(context);
-            DamageAttributeRelation damageAttributeRelation = DamageAttributeRules.GetRelation(resolvedDamageAttribute, property.ElementAttribute);
-            float damageAttributeMultiplier = damageAttributeRelation == DamageAttributeRelation.Advantage ? DamageAttributeRules.AdvantageMultiplier : 1f;
-            float attributedDamage = requestedDamage * damageAttributeMultiplier;
-            float oldHp = property.Hp;
-            float actualDamage = property.OnTakeDamage(attributedDamage, out bool wasFatal);
-            PublishHealthEvents(context, property, oldHp, actualDamage, wasFatal);
-            PublishStaggeredEvent(context, property, actualDamage, resolvedInterruptPower, wasFatal);
+            PropertyComponent attacker = context.Caster != null && context.Caster.TryGetComp(out PropertyComponent casterProperty) ? casterProperty : null;
+
+            DamageResolution resolution = DamagePipeline.Resolve(new DamageRequest
+            {
+                Attacker = attacker,
+                Target = property,
+                AttackerEntityId = context.Caster == null ? 0 : context.Caster.EntityId,
+                TargetEntityId = context.Target.EntityId,
+                AttackerLevel = ResolveLevel(context.Caster),
+                TargetLevel = ResolveLevel(context.Target),
+                ActionType = context.Signal.DamageActionType,
+                Element = ResolveDamageElement(context, attacker),
+                BaseDamage = Mathf.Max(0f, amount.Evaluate(context)),
+                // 本段的 ICD 身份取信号的能力编号：同一角色的普攻与战技天然是两个能力编号，
+                // 因此不需要再单独配一份天赋标识。
+                TalentId = context.Signal.AbilityId,
+                GaugeStrength = attackSource == DamageAttackSource.Fixed ? gaugeStrength : context.Signal.Damage.GaugeStrength,
+                IcdPolicy = attackSource == DamageAttackSource.Fixed ? icdPolicy : context.Signal.Damage.IcdPolicy,
+                IcdGroupId = attackSource == DamageAttackSource.Fixed ? icdGroupId : context.Signal.Damage.IcdGroupId,
+                CriticalRoll = context.Runtime.NextCriticalRoll()
+            }, context.Runtime.ElementSystem);
+
             EffectTag resultTags = context.Signal.Tags | context.Definition.Tags | additionalTags;
-            EffectSignal damageSignal = context.Signal.CreateChild(EffectSignalType.DamageApplied, context.Caster, context.Target, context.Source, attributedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, wasFatal, resolvedDamageAttribute, context.Signal.DamageActionType, damageAttributeRelation, damageAttributeMultiplier);
-            context.Runtime.EnqueueSignal(damageSignal);
-            if (wasFatal) context.Runtime.EnqueueSignal(context.Signal.CreateChild(EffectSignalType.Killed, context.Caster, context.Target, context.Source, attributedDamage, actualDamage, resultTags, context.Signal.AbilityId, context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, resolvedInterruptPower, true, resolvedDamageAttribute, context.Signal.DamageActionType, damageAttributeRelation, damageAttributeMultiplier));
+            string reactionId = resolution.Reacted ? resolution.Reaction.ReactionId : string.Empty;
+
+            DamageSettlementContext settlement = new DamageSettlementContext(context.Caster, context.Target, context.Source, context.Signal.AbilityId,
+                context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position, context.Signal);
+
+            int resolvedStaggerLevel = attackSource == DamageAttackSource.Fixed ? staggerLevel : context.Signal.Damage.StaggerLevel;
+            DamageFacts facts = new DamageFacts(resolution.Element, context.Signal.DamageActionType, reactionId, resolvedStaggerLevel, resolution.IsCritical, false);
+            DamageSettlement.Settle(context.Runtime, property, resolution.Damage, resultTags, in facts, in settlement);
+            context.Runtime.TraceDamage(context.Definition.EffectId, context.Target, resolution);
+
+            // 剧变是独立的第二笔伤害：它不吃攻击力、不吃增伤、不能暴击、不吃防御区，
+            // 打断等级也固定为 0——剧变伤害自身不打断（08 第 2.1 节），打断由触发它的那一击负责。
+            if (resolution.TransformativeDamage > 0f && !property.IsDead)
+            {
+                DamageFacts transformative = new DamageFacts(resolution.TransformativeElement, context.Signal.DamageActionType, reactionId, 0, false, false);
+                DamageSettlement.Settle(context.Runtime, property, resolution.TransformativeDamage, resultTags, in transformative, in settlement);
+            }
+
+            ApplyReactionProduct(context, in resolution, reactionId);
         }
 
         /// <summary>
-        /// 根据配置策略解析本次唯一伤害属性；缺少释放者属性组件时安全回退为物理。
+        /// 施加带数值载荷的反应产物 Effect。
+        ///
+        /// 目前唯一的使用者是结晶护盾：护盾归**施加者**而不是被打的目标，因此以 Caster 为目标施加。
+        /// 数值与元素通过信号传给产物，时长与吸收规则由产物资产和护盾系统决定，
+        /// 这样四种结晶共用一份资产，也不必让本操作认识「护盾」这个概念。
+        ///
+        /// 写入伪元素状态的那几行不走这里：它们的产物由 `ReactionProductSystem` 在状态写入时施加，
+        /// 因为那些状态的存活时间由元素系统决定而不是由这一次命中决定。
         /// </summary>
-        private DamageAttribute ResolveDamageAttribute(EffectOperationContext context)
+        private static void ApplyReactionProduct(EffectOperationContext context, in DamageResolution resolution, string reactionId)
         {
-            if (damageAttributeSource == DamageAttributeSource.Fixed) return fixedDamageAttribute;
-            if (damageAttributeSource != DamageAttributeSource.CasterElement) return context.Signal.DamageAttribute;
-            if (context.Caster == null || !context.Caster.TryGetComp(out PropertyComponent casterProperty)) return DamageAttribute.Physical;
-            return casterProperty.ResolveDamageAttribute(context.Signal.DamageActionType);
+            if (resolution.ProductValue <= 0f || string.IsNullOrEmpty(resolution.ProductEffectId) || context.Caster == null) return;
+            EffectLibrary library = Core.Gameplay.GetSystem<IEffectSystem>().DefaultLibrary;
+            EffectDefinition product = library == null ? null : library.GetReactionProduct(resolution.ProductEffectId);
+            if (product == null) return;
+
+            EffectSignal productSignal = context.Signal.CreateChild(EffectSignalType.EffectApplied, context.Caster, context.Caster, context.Source,
+                resolution.ProductValue, resolution.ProductValue, context.Signal.Tags, context.Signal.AbilityId,
+                context.Instance == null ? 0L : context.Instance.InstanceId, context.Signal.Position,
+                new DamageFacts(resolution.ProductElement, context.Signal.DamageActionType, reactionId, 0, false, false));
+            context.Runtime.EnqueueEffect(product, context.Caster, context.Caster, context.Source, productSignal, 0);
         }
 
         /// <summary>
-        /// 同步发送生命变化和死亡事实事件；受击控制与表现统一由 Stun Effect 和 ControlState 驱动。
+        /// 根据配置策略解析本次唯一伤害元素；缺少释放者属性组件时安全回退为物理。
         /// </summary>
-        private static void PublishHealthEvents(EffectOperationContext context, PropertyComponent property, float oldHp, float actualDamage, bool wasFatal)
+        private Cfg.ElementType ResolveDamageElement(EffectOperationContext context, PropertyComponent attacker)
         {
-            if (actualDamage <= 0f) return;
-            bool hasEntityEvents = context.Target.TryGetComp(out EventComponent eventComponent);
-            if (hasEntityEvents) eventComponent.Invoke(new HpChangedEvent { oldHp = oldHp, newHp = property.Hp, maxHp = property.MaxHp });
-            if (!wasFatal) return;
-            if (hasEntityEvents) eventComponent.Invoke(new DieEvent());
-            // 首次致死伤害是统一的死亡事实来源，向 Core.Event 转发实体编号供跨系统响应。
-            if (context.Target.EntityId > 0) Core.Event.Invoke(new EntityDiedEvent(context.Target.EntityId));
+            if (damageElementSource == DamageElementSource.Fixed) return fixedDamageElement;
+            if (damageElementSource != DamageElementSource.CasterElement) return context.Signal.DamageElement;
+            return attacker == null ? Cfg.ElementType.Physical : attacker.ResolveDamageElement(context.Signal.DamageActionType);
         }
 
-        /// <summary>仅在非致死实际伤害的打断能力严格大于目标韧性时发布受击事实，受击状态与结束时机交给动画会话维护。</summary>
-        private static void PublishStaggeredEvent(EffectOperationContext context, PropertyComponent property, float actualDamage, float resolvedInterruptPower, bool wasFatal)
+        /// <summary>
+        /// 读取实体等级；没有等级组件的实体按 `DamagePipeline.DefaultLevel` 处理。
+        /// 敌人等级属于 Combat 排期第 7 步，在那之前敌我同级使防御区不引入错误的等级压制。
+        /// </summary>
+        private static int ResolveLevel(Xuan.Prometheus.Logic.Entity entity)
         {
-            if (actualDamage <= 0f || wasFatal || resolvedInterruptPower <= property.Toughness) return;
-            if (!context.Target.TryGetComp(out EventComponent eventComponent)) return;
-            eventComponent.Invoke(new StaggeredEvent(actualDamage, resolvedInterruptPower, property.Toughness));
+            return entity != null && entity.TryGetComp(out CharaLevelComponent level) ? level.CurrentLevel : DamagePipeline.DefaultLevel;
         }
+
+
     }
-
     /// <summary>
     /// HealOperation 计算请求治疗量、约束目标生命上限并发布携带实际治疗量的 Healed 信号。
     /// </summary>
@@ -350,27 +431,27 @@ namespace Xuan.Prometheus.Effects
     }
 
     /// <summary>
-    /// DamageAttributeModifierOperation 为持续 Effect 登记指定动作范围的出伤属性覆盖，并由实例资源生命周期自动回滚。
+    /// ElementInfusionOperation 为持续 Effect 登记指定动作范围的元素附魔，并由实例资源生命周期自动回滚。
     /// </summary>
     [Serializable]
-    public sealed class DamageAttributeModifierOperation : EffectOperation
+    public sealed class ElementInfusionOperation : EffectOperation
     {
         /// <summary>配置 Effect 生效期间覆盖后的出伤属性。</summary>
-        [SerializeField] private DamageAttribute damageAttribute = DamageAttribute.Physical;
+        [SerializeField] private Cfg.ElementType infusionElement = Cfg.ElementType.Physical;
         /// <summary>配置当前覆盖能够影响的伤害动作范围。</summary>
         [SerializeField] private DamageActionMask actionMask = DamageActionMask.All;
         /// <summary>配置覆盖优先级；数值越大越优先。</summary>
         [SerializeField] private int priority;
 
         /// <summary>创建默认的全动作物理属性覆盖，供 Unity 序列化器使用。</summary>
-        public DamageAttributeModifierOperation()
+        public ElementInfusionOperation()
         {
         }
 
         /// <summary>创建使用指定伤害属性、动作范围和覆盖优先级的操作。</summary>
-        public DamageAttributeModifierOperation(DamageAttribute attribute, DamageActionMask mask, int modifierPriority = 0)
+        public ElementInfusionOperation(Cfg.ElementType element, DamageActionMask mask, int modifierPriority = 0)
         {
-            damageAttribute = attribute;
+            infusionElement = element;
             actionMask = mask;
             priority = modifierPriority;
         }
@@ -382,13 +463,13 @@ namespace Xuan.Prometheus.Effects
         {
             if (context.Instance == null || context.Target == null || actionMask == DamageActionMask.None) return;
             if (!context.Target.TryGetComp(out PropertyComponent property)) return;
-            context.Instance.SetResource(BuildResourceKey(actionMask), new EffectDamageAttributeModifierHandle(property, damageAttribute, actionMask, priority));
+            context.Instance.SetResource(BuildResourceKey(actionMask), new EffectElementInfusionHandle(property, infusionElement, actionMask, priority));
         }
 
         /// <summary>按动作范围生成同一 EffectInstance 内稳定的覆盖资源键。</summary>
         public static string BuildResourceKey(DamageActionMask mask)
         {
-            return $"DamageAttributeModifier:{mask}";
+            return $"ElementInfusion:{mask}";
         }
     }
 
@@ -512,19 +593,19 @@ namespace Xuan.Prometheus.Effects
     }
 
     /// <summary>
-    /// EffectDamageAttributeModifierHandle 精确拥有一份出伤属性覆盖，并保证 Effect 移除时只撤销自身贡献。
+    /// EffectElementInfusionHandle 精确拥有一份元素附魔，并保证 Effect 移除时只撤销自身贡献。
     /// </summary>
-    internal sealed class EffectDamageAttributeModifierHandle : IDisposable
+    internal sealed class EffectElementInfusionHandle : IDisposable
     {
         private readonly PropertyComponent property;
-        private readonly DamageAttributeModifier modifier;
+        private readonly ElementInfusionModifier modifier;
         private bool disposed;
 
         /// <summary>创建句柄时立即向目标 PropertyComponent 登记出伤属性覆盖。</summary>
-        public EffectDamageAttributeModifierHandle(PropertyComponent targetProperty, DamageAttribute attribute, DamageActionMask actionMask, int priority)
+        public EffectElementInfusionHandle(PropertyComponent targetProperty, Cfg.ElementType element, DamageActionMask actionMask, int priority)
         {
             property = targetProperty;
-            modifier = property == null ? null : property.AddDamageAttributeModifier(attribute, actionMask, priority);
+            modifier = property == null ? null : property.AddElementInfusion(element, actionMask, priority);
         }
 
         /// <summary>首次释放时按对象身份移除当前 Effect 持有的属性覆盖。</summary>
@@ -533,7 +614,7 @@ namespace Xuan.Prometheus.Effects
             if (disposed) return;
             disposed = true;
             if (property == null || modifier == null) return;
-            property.RemoveDamageAttributeModifier(modifier);
+            property.RemoveElementInfusion(modifier);
         }
     }
 

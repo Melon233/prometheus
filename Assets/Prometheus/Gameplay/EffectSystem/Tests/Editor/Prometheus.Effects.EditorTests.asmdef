@@ -4,6 +4,8 @@
     "references": [
         "Prometheus.Framework",
         "Prometheus.Gameplay",
+        "Luban.Runtime",
+        "Prometheus.Config.Generated",
         "Prometheus.UI",
         "Runtime"
     ],

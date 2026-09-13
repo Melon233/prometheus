@@ -17,24 +17,50 @@ namespace Xuan.Prometheus
     /// <summary>通知实体已经完成唯一一次死亡跃迁。</summary>
     public class DieEvent : IEvent { }
 
-    /// <summary>表示一次非致死实际伤害的打断能力已经严格超过目标韧性，供受击动画等一次性表现订阅。</summary>
+    /// <summary>表示一次非致死实际伤害的打断等级严格高于目标抗打断等级，供受击动画等一次性表现订阅。</summary>
     public sealed class StaggeredEvent : IEvent
     {
         /// <summary>获取触发本次打断的实际扣血量。</summary>
         public float ActualDamage { get; }
 
-        /// <summary>获取触发本次打断的伤害打断能力。</summary>
-        public float InterruptPower { get; }
+        /// <summary>获取本次伤害的打断等级。</summary>
+        public int StaggerLevel { get; }
 
-        /// <summary>获取判定时目标的最终韧性。</summary>
-        public float Toughness { get; }
+        /// <summary>获取判定时目标的最终抗打断等级，已计入霸体覆盖。</summary>
+        public float StaggerResistance { get; }
 
-        /// <summary>创建一条已经通过严格伤害与韧性判定的受击表现事实。</summary>
-        public StaggeredEvent(float actualDamage, float interruptPower, float toughness)
+        /// <summary>创建一条已经通过分级打断判定的受击表现事实。</summary>
+        public StaggeredEvent(float actualDamage, int staggerLevel, float staggerResistance)
         {
             ActualDamage = actualDamage;
-            InterruptPower = interruptPower;
-            Toughness = toughness;
+            StaggerLevel = staggerLevel;
+            StaggerResistance = staggerResistance;
+        }
+    }
+
+    /// <summary>
+    /// 表示一次伤害**没能**打断目标：目标正常受伤，但动作不中断。
+    ///
+    /// 与 <see cref="StaggeredEvent"/> 分成两条事实而不是用一个布尔字段：
+    /// 订阅打断的是动画，订阅未打断的是闪白与命中特效（08 第 2.3 节），两者没有共同的消费方。
+    /// </summary>
+    public sealed class StaggerResistedEvent : IEvent
+    {
+        /// <summary>获取本次伤害的实际扣血量。</summary>
+        public float ActualDamage { get; }
+
+        /// <summary>获取本次伤害的打断等级。</summary>
+        public int StaggerLevel { get; }
+
+        /// <summary>获取判定时目标的最终抗打断等级，已计入霸体覆盖。</summary>
+        public float StaggerResistance { get; }
+
+        /// <summary>创建一条打断未成立的受击表现事实。</summary>
+        public StaggerResistedEvent(float actualDamage, int staggerLevel, float staggerResistance)
+        {
+            ActualDamage = actualDamage;
+            StaggerLevel = staggerLevel;
+            StaggerResistance = staggerResistance;
         }
     }
 

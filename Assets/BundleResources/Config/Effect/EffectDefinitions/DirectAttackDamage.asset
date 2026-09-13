@@ -38,10 +38,10 @@ MonoBehaviour:
           source: 2
           multiplier: 1
           offset: 0
-        interruptPower:
-          source: 0
-          multiplier: 0
-          offset: 2
+        staggerLevel: 2
         additionalTags: 1
         damageAttributeSource: 0
-        fixedDamageAttribute: 0
+        fixedDamageAttribute: 8
+        gaugeStrength: 1
+        icdPolicy: 0
+        icdGroupId: 0

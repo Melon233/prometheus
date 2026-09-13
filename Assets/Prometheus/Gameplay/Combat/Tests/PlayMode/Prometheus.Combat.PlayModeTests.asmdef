@@ -1,0 +1,25 @@
+{
+    "name": "Prometheus.Combat.PlayModeTests",
+    "rootNamespace": "Xuan.Prometheus.Combat.Tests",
+    "references": [
+        "Prometheus.Framework",
+        "Prometheus.Gameplay",
+        "Prometheus.UI",
+        "Runtime",
+        "Prometheus.Config.Generated",
+        "Luban.Runtime",
+        "UniTask"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

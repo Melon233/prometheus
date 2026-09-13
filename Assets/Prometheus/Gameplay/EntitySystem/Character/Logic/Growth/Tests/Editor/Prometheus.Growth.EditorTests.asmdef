@@ -4,7 +4,9 @@
     "references": [
         "Prometheus.Framework",
         "Prometheus.Gameplay",
-        "Prometheus.UI"
+        "Prometheus.UI",
+        "Luban.Runtime",
+        "Prometheus.Config.Generated"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

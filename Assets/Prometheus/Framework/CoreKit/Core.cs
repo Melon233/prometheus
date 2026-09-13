@@ -30,6 +30,8 @@ namespace Xuan.Prometheus
         public static IUIKit UI { get; internal set; }
         /// <summary>快速访问玩法会话工厂；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
         public static IGameplayKit Gameplay { get; internal set; }
+        /// <summary>快速访问配表读取模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
+        public static IConfigKit Config { get; internal set; }
 
         /// <summary>
         /// 创建唯一 Core，并注册四个基础模块。
@@ -42,6 +44,8 @@ namespace Xuan.Prometheus
             if (Current != null) throw new InvalidOperationException("A Core instance is already active.");
             Current = this;
             RegisterKit<IAssetKit>(new AssetKit());
+            // ConfigKit 紧随 AssetKit 注册：它的表数据来自资源包，释放时必须早于 AssetKit 归还句柄。
+            RegisterKit<IConfigKit>(new ConfigKit());
             RegisterKit<IEventKit>(new EventKit());
             RegisterKit<IUIKit>(new UIKit());
             RegisterKit<IGameplayKit>(new GameplayKit());
@@ -101,6 +105,7 @@ namespace Xuan.Prometheus
             kits.Dispose();
             if (ReferenceEquals(Current, this)) Current = null;
             Asset = null;
+            Config = null;
             Event = null;
             UI = null;
             Gameplay = null;
@@ -131,6 +136,7 @@ namespace Xuan.Prometheus
         private static void PublishStaticEntry(Kit kit)
         {
             if (kit is IAssetKit assetEntry) Asset = assetEntry;
+            if (kit is IConfigKit configEntry) Config = configEntry;
             if (kit is IEventKit eventEntry) Event = eventEntry;
             if (kit is IUIKit uiEntry) UI = uiEntry;
             if (kit is IGameplayKit gameplayEntry) Gameplay = gameplayEntry;

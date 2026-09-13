@@ -19,52 +19,34 @@ namespace Xuan.Prometheus
         public float MinimumMultiplier { get; }
     }
 
-    /// <summary>保存一次非普通攻击能力使用的伤害公式与动画速度数值。</summary>
+    /// <summary>
+    /// 保存一次非普通攻击能力的动画数值。
+    ///
+    /// **伤害倍率与偏移已迁往 `TbAttackSegment`**：它们属于攻击段落，
+    /// 与元素、附着档位、打断等级同源，留在这里会让同一个数有两个出处。
+    /// </summary>
     [Serializable]
     public sealed class TalentAbilityValues
     {
-        [SerializeField, Percentage] private float damageMultiplier = 1f;
-        [SerializeField] private float damageOffset;
         [SerializeField, Min(0f)] private float animationSpeed = 1f;
-
-        /// <summary>获取能力伤害倍率。</summary>
-        public float DamageMultiplier => Mathf.Max(0f, damageMultiplier);
-
-        /// <summary>获取能力伤害固定偏移。</summary>
-        public float DamageOffset => damageOffset;
 
         /// <summary>获取能力动画速度。</summary>
         public float AnimationSpeed => Mathf.Max(0f, animationSpeed);
-
-        /// <summary>按照基础伤害乘倍率再加偏移的顺序计算非负请求伤害。</summary>
-        public float CalculateDamage(float calculatedDamage)
-        {
-            return Mathf.Max(0f, Mathf.Max(0f, calculatedDamage) * DamageMultiplier + DamageOffset);
-        }
     }
 
-    /// <summary>保存一段普通攻击独立使用的伤害倍率、固定偏移和额外效果标签。</summary>
+    /// <summary>
+    /// 保存一段普通攻击追加的效果标签。
+    ///
+    /// **伤害倍率与偏移已迁往 `TbAttackSegment`**；段数同样以段落表为准，
+    /// 本列表只负责标签这类与 Effect 语义绑定、不属于战斗数值的东西。
+    /// </summary>
     [Serializable]
     public sealed class NormalAttackTalentStage
     {
-        [SerializeField, Percentage] private float damageMultiplier = 1f;
-        [SerializeField] private float damageOffset;
         [SerializeField] private EffectTag additionalTags;
-
-        /// <summary>获取本段普通攻击伤害倍率。</summary>
-        public float DamageMultiplier => Mathf.Max(0f, damageMultiplier);
-
-        /// <summary>获取本段普通攻击伤害固定偏移。</summary>
-        public float DamageOffset => damageOffset;
 
         /// <summary>获取本段在 Attack 与 NormalAttack 之外追加的效果标签。</summary>
         public EffectTag AdditionalTags => additionalTags;
-
-        /// <summary>按照基础伤害乘倍率再加偏移的顺序计算非负请求伤害。</summary>
-        public float CalculateDamage(float calculatedDamage)
-        {
-            return Mathf.Max(0f, Mathf.Max(0f, calculatedDamage) * DamageMultiplier + DamageOffset);
-        }
     }
 
     /// <summary>集中保存普通攻击连段窗口和每一段的数值配置。</summary>
@@ -76,9 +58,6 @@ namespace Xuan.Prometheus
 
         /// <summary>获取普通攻击连段允许等待的最长时间。</summary>
         public float ComboInterval => Mathf.Max(0f, comboInterval);
-
-        /// <summary>获取已配置的普通攻击数值段数。</summary>
-        public int StageCount => stages == null ? 0 : stages.Count;
 
         /// <summary>按连段下标读取对应数值，缺少配置时明确返回失败。</summary>
         public bool TryGetStage(int stageIndex, out NormalAttackTalentStage stage)
@@ -115,6 +94,13 @@ namespace Xuan.Prometheus
         [SerializeField] private SpecialAttackTalentValues specialAttack = new SpecialAttackTalentValues();
         [SerializeField] private TalentAbilityValues skill = new TalentAbilityValues();
         [SerializeField, Min(0f)] private float skillCooldown = 5f;
+        /// <summary>
+        /// 配置元素战技的充能层数。单段技能填 1，多段充能技能填 2 或更多。
+        ///
+        /// 读取时钳到至少 1：这个字段晚于已有资产加入，旧资产会反序列化成 0，
+        /// 而 0 层的语义是「技能永远放不出来」——静默禁用一个技能是最难反查的一类失败。
+        /// </summary>
+        [SerializeField, Min(1)] private int skillChargeCount = 1;
         [SerializeField] private TalentAbilityValues ultimate = new TalentAbilityValues();
         [SerializeField, Min(0f)] private float ultimateCooldown = 10f;
         /// <summary>配置每提升一级天赋相对一级基础值增加的系数，例如 0.1 表示每级增加百分之十。</summary>
@@ -134,6 +120,9 @@ namespace Xuan.Prometheus
         /// <summary>获取技能成功释放后进入的非负冷却秒数。</summary>
         public float SkillCooldown => Mathf.Max(0f, skillCooldown);
 
+        /// <summary>获取元素战技的充能层数；至少为 1。</summary>
+        public int SkillChargeCount => Mathf.Max(1, skillChargeCount);
+
         /// <summary>获取大招全部数值。</summary>
         public TalentAbilityValues Ultimate => ultimate ?? (ultimate = new TalentAbilityValues());
 
@@ -151,6 +140,7 @@ namespace Xuan.Prometheus
         {
             talentGrowthCoefficient = Mathf.Max(0f, talentGrowthCoefficient);
             maximumTalentLevel = Mathf.Max(1, maximumTalentLevel);
+            skillChargeCount = Mathf.Max(1, skillChargeCount);
         }
     }
 }

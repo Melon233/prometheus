@@ -51,4 +51,4 @@
 
 `IServiceSystem` 与全部 `I*Gateway` 的异步接口都接受 `CancellationToken`。消费方传入自身生命周期令牌，释放时先取消未完成请求；ServiceSystem 同时维护系统级取消源和活动操作计数，最后一个异步调用退出后才释放客户端与同步原语。NetworkKit 的意外断线事件经 `PumpEvents` 回到主线程，ServiceSystem 将其转换为世界不可用状态，PoiSystem 随即停止坐标上传、区块拉取和交互。
 
-项目级硬约束见 `Docs/ArchSpec.md`。
+项目级硬约束见 `Docs/Arch/ArchSpec.md`。

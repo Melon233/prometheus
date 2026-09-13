@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Cfg = global::Prometheus.Config;
 using UnityEngine.Serialization;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
@@ -64,6 +65,10 @@ namespace Xuan.Prometheus.Effects
         Fire = 1 << 3,
         Dot = 1 << 4,
         Periodic = 1 << 5,
+        /// <summary>
+        /// 保留位，当前无人写入。暴击事实走 <see cref="DamageFacts.IsCritical"/> 而不是标签：
+        /// 标签会随子信号继承下去，一次暴击之后由它触发的后续伤害会被误标成暴击。
+        /// </summary>
         Critical = 1 << 6,
         Healing = 1 << 7,
         Buff = 1 << 8,
@@ -246,7 +251,7 @@ namespace Xuan.Prometheus.Effects
         UltEnergy = 13,
         /// <summary>运行时大招能量上限。</summary>
         UltEnergyLimit = 14,
-        /// <summary>最终韧性。</summary>
+        /// <summary>最终抗打断等级；取值名沿用 Toughness 以保持已有 Effect 资产的序列化索引稳定。</summary>
         Toughness = 15,
         /// <summary>最终出伤加成。</summary>
         DamageBoost = 16,
@@ -268,10 +273,95 @@ namespace Xuan.Prometheus.Effects
         LacksAnyTags,
         ValueGreaterThan,
         ValueGreaterThanOrEqual,
-        /// <summary>要求信号最终伤害属性等于配置属性；追加值保证已有条件资产索引稳定。</summary>
-        DamageAttributeEquals,
-        /// <summary>要求信号已经完成克制判定且关系为 Advantage。</summary>
-        DamageWasAdvantage
+        /// <summary>要求信号最终伤害元素等于配置元素；追加值保证已有条件资产索引稳定。</summary>
+        DamageElementEquals,
+        /// <summary>要求本次伤害触发了元素反应；不区分具体反应。</summary>
+        DamageTriggeredReaction,
+        /// <summary>要求本次伤害触发的反应等于配置的反应标识。</summary>
+        DamageReactionEquals,
+        /// <summary>要求本次伤害是暴击。</summary>
+        DamageWasCritical
+    }
+
+    /// <summary>
+    /// 一次伤害的全部结算事实。
+    ///
+    /// 收成一个结构体而不是继续往 `EffectSignal` 上挂平铺字段：伤害的事实维度会持续增加
+    /// （元素、反应、打断等级、暴击、后面还会有击退与承伤来源），而每加一项都要同时改
+    /// 构造函数与 `CreateChild` 两处长参数表，十几个参数之后没人能安全地改它。
+    ///
+    /// 只承载**身份与判定结果**，不承载数值影响：增幅倍率与激化加算已经并入 `Value`，
+    /// 再挂一份倍率会让下游有两个真相来源。
+    /// </summary>
+    public readonly struct DamageFacts
+    {
+        /// <summary>不携带任何伤害语义的默认事实，供治疗、能量等非伤害信号使用。</summary>
+        public static readonly DamageFacts None = new DamageFacts(Cfg.ElementType.Physical, DamageActionType.Effect, null, 0, false, false);
+
+        /// <summary>获取当前伤害经过动作与元素附魔覆盖后使用的唯一元素。</summary>
+        public readonly Cfg.ElementType Element;
+
+        /// <summary>获取产生当前伤害的动作类别。</summary>
+        public readonly DamageActionType ActionType;
+
+        /// <summary>获取本次伤害触发的元素反应标识；未触发反应时为空串。</summary>
+        public readonly string ReactionId;
+
+        /// <summary>
+        /// 获取本次伤害的打断等级（08 第 2.1 节）。
+        ///
+        /// 0 表示不打断（DOT、剧变伤害、部分场域）。它与伤害数值无关：
+        /// 打断是 `打断等级 > 目标抗打断等级` 的整数比较。
+        /// </summary>
+        public readonly int StaggerLevel;
+
+        /// <summary>
+        /// 获取本次伤害是否暴击。
+        ///
+        /// 掷骰在结算时已经发生，结果必须随事实一起发布：飘字样式要用它，
+        /// 「暴击时触发」这类武器与圣遗物被动更是只能靠它。
+        /// </summary>
+        public readonly bool IsCritical;
+
+        /// <summary>获取本次伤害是否首次把目标从存活推进到死亡。</summary>
+        public readonly bool WasFatal;
+
+        /// <summary>
+        /// 获取本次攻击携带的元素附着强度档位。
+        ///
+        /// 它与打断等级一样属于**这一段攻击**而不是结算它的 Effect：
+        /// 同一份直接伤害 Effect 会被普攻、战技、爆发共用，各自的附着量却完全不同。
+        /// </summary>
+        public readonly Cfg.GaugeStrength GaugeStrength;
+
+        /// <summary>获取本次攻击的 ICD 策略。</summary>
+        public readonly Cfg.IcdPolicy IcdPolicy;
+
+        /// <summary>获取 Independent 策略下的独立 ICD 组号。</summary>
+        public readonly int IcdGroupId;
+
+        /// <summary>创建一份伤害事实。</summary>
+        public DamageFacts(Cfg.ElementType element, DamageActionType actionType, string reactionId, int staggerLevel, bool isCritical, bool wasFatal,
+            Cfg.GaugeStrength gaugeStrength = Cfg.GaugeStrength.None, Cfg.IcdPolicy icdPolicy = Cfg.IcdPolicy.Shared, int icdGroupId = 0)
+        {
+            Element = element;
+            ActionType = actionType;
+            ReactionId = reactionId ?? string.Empty;
+            StaggerLevel = staggerLevel > 0 ? staggerLevel : 0;
+            IsCritical = isCritical;
+            WasFatal = wasFatal;
+            GaugeStrength = gaugeStrength;
+            IcdPolicy = icdPolicy;
+            IcdGroupId = icdGroupId;
+        }
+
+        /// <summary>基于当前事实派生一份只改动部分项的新事实，供子信号继承未指定的项。</summary>
+        public DamageFacts With(Cfg.ElementType? element = null, DamageActionType? actionType = null, string reactionId = null, int? staggerLevel = null, bool? isCritical = null, bool? wasFatal = null,
+            Cfg.GaugeStrength? gaugeStrength = null, Cfg.IcdPolicy? icdPolicy = null, int? icdGroupId = null)
+        {
+            return new DamageFacts(element ?? Element, actionType ?? ActionType, reactionId ?? ReactionId, staggerLevel ?? StaggerLevel, isCritical ?? IsCritical, wasFatal ?? WasFatal,
+                gaugeStrength ?? GaugeStrength, icdPolicy ?? IcdPolicy, icdGroupId ?? IcdGroupId);
+        }
     }
 
     /// <summary>
@@ -303,23 +393,26 @@ namespace Xuan.Prometheus.Effects
         /// <summary>获取最终实际数值。</summary>
         public float Value { get; }
 
-        /// <summary>获取伤害配置提供的打断能力；零表示该伤害不能触发韧性打断。</summary>
-        public float InterruptPower { get; }
+        /// <summary>获取本次伤害的全部结算事实；非伤害信号为 <see cref="DamageFacts.None"/>。</summary>
+        public DamageFacts Damage { get; }
+
+        /// <summary>获取本次伤害的打断等级。</summary>
+        public int StaggerLevel => Damage.StaggerLevel;
+
+        /// <summary>获取本次伤害是否暴击。</summary>
+        public bool IsCritical => Damage.IsCritical;
 
         /// <summary>获取本次伤害是否首次把目标从存活推进到死亡。</summary>
-        public bool WasFatal { get; }
+        public bool WasFatal => Damage.WasFatal;
 
-        /// <summary>获取当前伤害经过动作与 Effect 覆盖后使用的唯一属性。</summary>
-        public DamageAttribute DamageAttribute { get; }
+        /// <summary>获取当前伤害经过动作与元素附魔覆盖后使用的唯一元素。</summary>
+        public Cfg.ElementType DamageElement => Damage.Element;
 
         /// <summary>获取产生当前伤害的动作类别。</summary>
-        public DamageActionType DamageActionType { get; }
+        public DamageActionType DamageActionType => Damage.ActionType;
 
-        /// <summary>获取当前伤害属性与目标角色属性之间的最终克制关系。</summary>
-        public DamageAttributeRelation DamageAttributeRelation { get; }
-
-        /// <summary>获取本次属性克制独立乘区倍率。</summary>
-        public float DamageAttributeMultiplier { get; }
+        /// <summary>获取本次伤害触发的元素反应标识；未触发反应时为空串。</summary>
+        public string ReactionId => Damage.ReactionId;
 
         /// <summary>获取信号标签。</summary>
         public EffectTag Tags { get; }
@@ -336,7 +429,7 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建一条战斗信号；SignalChainId 为零时由 EffectRuntime 在因果链开始时自动分配。
         /// </summary>
-        public EffectSignal(EffectSignalType type, Entity caster, Entity target, Entity source, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, long signalChainId = 0L, int chainDepth = 0, float interruptPower = 0f, bool wasFatal = false, DamageAttribute damageAttribute = DamageAttribute.Physical, DamageActionType damageActionType = DamageActionType.Effect, DamageAttributeRelation damageAttributeRelation = DamageAttributeRelation.Neutral, float damageAttributeMultiplier = 1f)
+        public EffectSignal(EffectSignalType type, Entity caster, Entity target, Entity source, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, long signalChainId = 0L, int chainDepth = 0, DamageFacts? damage = null)
         {
             Type = type;
             Caster = caster;
@@ -344,12 +437,7 @@ namespace Xuan.Prometheus.Effects
             Source = source;
             RequestedValue = requestedValue;
             Value = value;
-            InterruptPower = Mathf.Max(0f, interruptPower);
-            WasFatal = wasFatal;
-            DamageAttribute = damageAttribute;
-            DamageActionType = damageActionType;
-            DamageAttributeRelation = damageAttributeRelation;
-            DamageAttributeMultiplier = Mathf.Max(0f, damageAttributeMultiplier);
+            Damage = damage ?? DamageFacts.None;
             Tags = tags;
             AbilityId = abilityId ?? string.Empty;
             OriginEffectInstanceId = originEffectInstanceId;
@@ -371,9 +459,10 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 基于当前信号创建同一事务中的子信号，并自动增加触发链深度。
         /// </summary>
-        public EffectSignal CreateChild(EffectSignalType type, Entity caster, Entity target, Entity source, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, float? interruptPower = null, bool? wasFatal = null, DamageAttribute? damageAttribute = null, DamageActionType? damageActionType = null, DamageAttributeRelation? damageAttributeRelation = null, float? damageAttributeMultiplier = null)
+        /// <param name="damage">子信号的伤害事实；不传则原样继承父信号的事实。</param>
+        public EffectSignal CreateChild(EffectSignalType type, Entity caster, Entity target, Entity source, float requestedValue = 0f, float value = 0f, EffectTag tags = EffectTag.None, string abilityId = null, long originEffectInstanceId = 0L, Vector3 position = default, DamageFacts? damage = null)
         {
-            return new EffectSignal(type, caster, target, source, requestedValue, value, tags, abilityId, originEffectInstanceId, position, SignalChainId, ChainDepth + 1, interruptPower ?? InterruptPower, wasFatal ?? WasFatal, damageAttribute ?? DamageAttribute, damageActionType ?? DamageActionType, damageAttributeRelation ?? DamageAttributeRelation, damageAttributeMultiplier ?? DamageAttributeMultiplier);
+            return new EffectSignal(type, caster, target, source, requestedValue, value, tags, abilityId, originEffectInstanceId, position, SignalChainId, ChainDepth + 1, damage ?? Damage);
         }
     }
 
@@ -507,7 +596,7 @@ namespace Xuan.Prometheus.Effects
                 case EffectPropertyValue.CoreEnergyLimit: return property.CoreEnergyLimit;
                 case EffectPropertyValue.UltEnergy: return property.UltEnergy;
                 case EffectPropertyValue.UltEnergyLimit: return property.UltEnergyLimit;
-                case EffectPropertyValue.Toughness: return property.Toughness;
+                case EffectPropertyValue.Toughness: return property.StaggerResistance;
                 case EffectPropertyValue.DamageBoost: return property.DamageBonus;
                 case EffectPropertyValue.DamageTakenBoost: return property.DamageTakenBonus;
                 default: return 0f;
@@ -572,7 +661,10 @@ namespace Xuan.Prometheus.Effects
         [SerializeField] private EffectConditionType type = EffectConditionType.Always;
         [SerializeField] private EffectTag tags;
         [SerializeField] private float threshold;
-        [SerializeField] private DamageAttribute damageAttribute = DamageAttribute.Physical;
+        [FormerlySerializedAs("damageAttribute")]
+        [SerializeField] private Cfg.ElementType damageElement = Cfg.ElementType.Physical;
+        /// <summary>仅在 DamageReactionEquals 条件下使用的反应标识，对应 ReactionMatrix 的 reactionId。</summary>
+        [SerializeField] private string reactionId = string.Empty;
 
         /// <summary>
         /// 创建一条始终通过的条件。
@@ -625,17 +717,31 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 创建一条要求信号最终伤害属性等于指定属性的条件。
         /// </summary>
-        public static EffectConditionDefinition DamageAttributeEquals(DamageAttribute attribute)
+        public static EffectConditionDefinition DamageElementEquals(Cfg.ElementType element)
         {
-            return new EffectConditionDefinition { type = EffectConditionType.DamageAttributeEquals, damageAttribute = attribute };
+            return new EffectConditionDefinition { type = EffectConditionType.DamageElementEquals, damageElement = element };
         }
 
         /// <summary>
-        /// 创建一条要求信号已经形成伤害属性克制的条件。
+        /// 创建一条要求本次伤害触发了任意元素反应的条件。
         /// </summary>
-        public static EffectConditionDefinition DamageWasAdvantage()
+        public static EffectConditionDefinition DamageTriggeredReaction()
         {
-            return new EffectConditionDefinition { type = EffectConditionType.DamageWasAdvantage };
+            return new EffectConditionDefinition { type = EffectConditionType.DamageTriggeredReaction };
+        }
+
+        /// <summary>
+        /// 创建一条要求本次伤害触发了指定反应的条件；标识对应 ReactionMatrix 的 reactionId。
+        /// </summary>
+        public static EffectConditionDefinition DamageReactionEquals(string reaction)
+        {
+            return new EffectConditionDefinition { type = EffectConditionType.DamageReactionEquals, reactionId = reaction ?? string.Empty };
+        }
+
+        /// <summary>创建一条要求本次伤害为暴击的条件。</summary>
+        public static EffectConditionDefinition DamageWasCritical()
+        {
+            return new EffectConditionDefinition { type = EffectConditionType.DamageWasCritical };
         }
 
         /// <summary>
@@ -654,8 +760,10 @@ namespace Xuan.Prometheus.Effects
                 case EffectConditionType.LacksAnyTags: return (signal.Tags & tags) == 0;
                 case EffectConditionType.ValueGreaterThan: return signal.Value > threshold;
                 case EffectConditionType.ValueGreaterThanOrEqual: return signal.Value >= threshold;
-                case EffectConditionType.DamageAttributeEquals: return signal.DamageAttribute == damageAttribute;
-                case EffectConditionType.DamageWasAdvantage: return signal.DamageAttributeRelation == DamageAttributeRelation.Advantage;
+                case EffectConditionType.DamageElementEquals: return signal.DamageElement == damageElement;
+                case EffectConditionType.DamageTriggeredReaction: return signal.ReactionId.Length > 0;
+                case EffectConditionType.DamageReactionEquals: return signal.ReactionId == reactionId;
+                case EffectConditionType.DamageWasCritical: return signal.IsCritical;
                 default: return false;
             }
         }

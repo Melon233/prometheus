@@ -1,6 +1,8 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Xuan.Prometheus.Elements;
+using Xuan.Prometheus.Shields;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -15,6 +17,10 @@ namespace Xuan.Prometheus.Effects
 
         private readonly int randomSeed;
         private readonly bool logTrace;
+        /// <summary>本次战斗的元素附着与反应权威；伤害结算必须经过它。</summary>
+        private readonly IElementSystem elementSystem;
+        /// <summary>本次战斗的护盾权威；伤害落到生命值之前先经过它。</summary>
+        private readonly IShieldSystem shieldSystem;
         private EffectLibrary defaultLibrary;
         private EffectRuntime runtime;
         private bool isDisposed;
@@ -22,8 +28,12 @@ namespace Xuan.Prometheus.Effects
         /// <summary>创建一个单局效果系统；默认效果库始终由本系统按内部地址加载。</summary>
         /// <param name="randomSeed">EffectRuntime 使用的确定性随机种子。</param>
         /// <param name="traceEnabled">是否把 EffectRuntime 诊断信息转发到 Unity Console。</param>
-        public EffectSystem(int randomSeed = 1977, bool traceEnabled = false)
+        /// <param name="elements">元素系统；伤害结算依赖它判定附着与反应，缺席会让元素反应整体静默失效。</param>
+        /// <param name="shields">护盾系统；伤害在扣血之前先经过它吸收。</param>
+        public EffectSystem(IElementSystem elements, IShieldSystem shields, int randomSeed = 1977, bool traceEnabled = false)
         {
+            elementSystem = elements ?? throw new System.ArgumentNullException(nameof(elements));
+            shieldSystem = shields ?? throw new System.ArgumentNullException(nameof(shields));
             this.randomSeed = randomSeed;
             logTrace = traceEnabled;
         }
@@ -111,7 +121,7 @@ namespace Xuan.Prometheus.Effects
             if (runtime != null)
                 return;
 
-            runtime = new EffectRuntime(randomSeed);
+            runtime = new EffectRuntime(randomSeed, elementSystem, shieldSystem);
             if (logTrace)
                 runtime.Trace += LogTrace;
         }

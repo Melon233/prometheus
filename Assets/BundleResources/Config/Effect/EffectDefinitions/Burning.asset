@@ -40,10 +40,7 @@ MonoBehaviour:
           baseValueSource: 0
           multiplier: 0
           offset: 20
-        interruptPower:
-          baseValueSource: 0
-          multiplier: 0
-          offset: 0
+        staggerLevel: 0
         additionalTags: 48
         damageAttributeSource: 2
         fixedDamageAttribute: 1

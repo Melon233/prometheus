@@ -42,11 +42,12 @@ namespace Xuan.Prometheus.Logic
                 return;
             }
             AnimationPlayback playback = SpineComponent.TryPlay(animationSelection.Semantic, ActionOwner, AnimationPriority.Attack, false, PropertyComponent.AtkSpeed, true);
-            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(hitSelection.ColliderProxy, hitSelection.DamageMultiplier * attackComponent.TalentScale, hitSelection.DamageOffset, EffectTag.Attack | EffectTag.NormalAttack | hitSelection.AdditionalTags, hitSelection.AbilityId, DamageActionType.NormalAttack);
+            PlayerCombatHitContext hitContext = new PlayerCombatHitContext(hitSelection.ColliderProxy, ResolveTalentId("NormalAttack"), stageIndex, EffectTag.Attack | EffectTag.NormalAttack | hitSelection.AdditionalTags, DamageActionType.NormalAttack, attackComponent.TalentScale);
             if (!BeginAction(playback, hitContext, animationSelection.HasVfx, animationSelection.Vfx)) return;
             SpineComponent.SetFaceDir(InputComponent.moveDir);
             attackComponent.nextComboIndex++;
-            int configuredStageCount = Mathf.Min(configuration.Count, Mathf.Min(attackComponent.ConfiguredHitCount, attackComponent.TalentConfig.NormalAttack.StageCount));
+            // 连段长度取动画、碰撞体与段落表三者的最小值：任何一方少配一段，循环就应当在那里回到第一段。
+            int configuredStageCount = Mathf.Min(configuration.Count, Mathf.Min(attackComponent.ConfiguredHitCount, SegmentTable.GetStageCount(ResolveTalentId("NormalAttack"))));
             int configuredMaxIndex = Mathf.Max(0, configuredStageCount - 1);
             if (attackComponent.nextComboIndex > configuredMaxIndex) attackComponent.nextComboIndex = 0;
             attackComponent.elapsedComboTime = 0f;

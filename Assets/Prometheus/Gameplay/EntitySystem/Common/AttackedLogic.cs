@@ -35,7 +35,13 @@ namespace Xuan.Prometheus
             eventComponent.AddListener<DieEvent>(OnDie);
         }
 
-        /// <summary>每次打断能力严格超过韧性的伤害都重播受击表现，受击状态由成功创建的播放会话决定。</summary>
+        /// <summary>
+        /// 每次打断成立的伤害都重播受击表现，受击状态由成功创建的播放会话决定。
+        ///
+        /// 分级判定已经在 `DamageSettlement` 完成：能走到这里的一定是
+        /// 「打断等级 > 抗打断等级」的伤害，因此本方法不再重复比较。
+        /// 打断未成立的伤害走 `StaggerResistedEvent`，由表现层做闪白与命中特效，不进受击动画。
+        /// </summary>
         private void OnStaggered(StaggeredEvent evt)
         {
             if (dead || (teamMemberComponent != null && !teamMemberComponent.IsOnField)) return;

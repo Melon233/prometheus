@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using Xuan.Prometheus.Component;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Effects.Editor
 {
@@ -178,20 +179,27 @@ namespace Xuan.Prometheus.Effects.Editor
         private static void DrawDamageConfiguration(SerializedProperty element)
         {
             SerializedProperty amount = element.FindPropertyRelative("amount");
-            SerializedProperty interruptPower = element.FindPropertyRelative("interruptPower");
+            SerializedProperty staggerLevel = element.FindPropertyRelative("staggerLevel");
             SerializedProperty additionalTags = element.FindPropertyRelative("additionalTags");
-            SerializedProperty damageAttributeSource = element.FindPropertyRelative("damageAttributeSource");
-            SerializedProperty fixedDamageAttribute = element.FindPropertyRelative("fixedDamageAttribute");
-            if (amount == null || interruptPower == null || additionalTags == null || damageAttributeSource == null || fixedDamageAttribute == null)
+            SerializedProperty damageElementSource = element.FindPropertyRelative("damageElementSource");
+            SerializedProperty fixedDamageElement = element.FindPropertyRelative("fixedDamageElement");
+            SerializedProperty gaugeStrength = element.FindPropertyRelative("gaugeStrength");
+            SerializedProperty icdPolicy = element.FindPropertyRelative("icdPolicy");
+            SerializedProperty icdGroupId = element.FindPropertyRelative("icdGroupId");
+            if (amount == null || staggerLevel == null || additionalTags == null || damageElementSource == null || fixedDamageElement == null || gaugeStrength == null || icdPolicy == null || icdGroupId == null)
             {
                 EditorGUILayout.PropertyField(element, GUIContent.none, true);
                 return;
             }
             EditorGUILayout.PropertyField(amount, true);
-            EditorGUILayout.PropertyField(interruptPower, true);
+            EditorGUILayout.PropertyField(staggerLevel);
             EditorGUILayout.PropertyField(additionalTags);
-            EditorGUILayout.PropertyField(damageAttributeSource);
-            if ((DamageAttributeSource)damageAttributeSource.intValue == DamageAttributeSource.Fixed) EditorGUILayout.PropertyField(fixedDamageAttribute);
+            EditorGUILayout.PropertyField(damageElementSource);
+            if ((DamageElementSource)damageElementSource.intValue == DamageElementSource.Fixed) EditorGUILayout.PropertyField(fixedDamageElement);
+            EditorGUILayout.PropertyField(gaugeStrength);
+            EditorGUILayout.PropertyField(icdPolicy);
+            // 独立 ICD 组号只在 Independent 策略下有意义，其余策略下显示会诱导策划误填。
+            if ((Cfg.IcdPolicy)icdPolicy.intValue == Cfg.IcdPolicy.Independent) EditorGUILayout.PropertyField(icdGroupId);
         }
 
         /// <summary>
@@ -203,7 +211,7 @@ namespace Xuan.Prometheus.Effects.Editor
             menu.AddItem(new GUIContent("Damage"), false, () => AddOperation(propertyName, new DamageOperation()));
             menu.AddItem(new GUIContent("Heal"), false, () => AddOperation(propertyName, new HealOperation()));
             menu.AddItem(new GUIContent("Property Modifier"), false, () => AddOperation(propertyName, new PropertyModifierOperation()));
-            menu.AddItem(new GUIContent("Damage Attribute Modifier"), false, () => AddOperation(propertyName, new DamageAttributeModifierOperation()));
+            menu.AddItem(new GUIContent("Element Infusion"), false, () => AddOperation(propertyName, new ElementInfusionOperation()));
             menu.AddItem(new GUIContent("Control State Modifier"), false, () => AddOperation(propertyName, new ControlStateModifierOperation()));
             menu.AddItem(new GUIContent("Apply Effect"), false, () => AddOperation(propertyName, new ApplyEffectOperation()));
             menu.AddItem(new GUIContent("Emit Signal"), false, () => AddOperation(propertyName, new EmitSignalOperation()));
@@ -436,9 +444,9 @@ namespace Xuan.Prometheus.Effects.Editor
             Rect contentRect = EditorGUI.IndentedRect(new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight));
             int previousIndentLevel = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
-            SerializedProperty branchProperty = UsesTags(conditionType) ? property.FindPropertyRelative("tags") : UsesThreshold(conditionType) ? property.FindPropertyRelative("threshold") : UsesDamageAttribute(conditionType) ? property.FindPropertyRelative("damageAttribute") : null;
+            SerializedProperty branchProperty = UsesTags(conditionType) ? property.FindPropertyRelative("tags") : UsesThreshold(conditionType) ? property.FindPropertyRelative("threshold") : UsesDamageElement(conditionType) ? property.FindPropertyRelative("damageElement") : UsesReactionId(conditionType) ? property.FindPropertyRelative("reactionId") : null;
             if (branchProperty == null) DrawCompactField(contentRect, type, new GUIContent("Type"), 34f);
-            else DrawConditionPair(contentRect, type, branchProperty, UsesTags(conditionType) ? new GUIContent("Tags") : UsesThreshold(conditionType) ? new GUIContent("Threshold") : new GUIContent("Attribute"), UsesThreshold(conditionType) ? 62f : UsesDamageAttribute(conditionType) ? 54f : 34f);
+            else DrawConditionPair(contentRect, type, branchProperty, UsesTags(conditionType) ? new GUIContent("Tags") : UsesThreshold(conditionType) ? new GUIContent("Threshold") : UsesDamageElement(conditionType) ? new GUIContent("Element") : new GUIContent("Reaction"), UsesThreshold(conditionType) ? 62f : 54f);
             EditorGUI.indentLevel = previousIndentLevel;
             EditorGUI.EndProperty();
         }
@@ -468,11 +476,19 @@ namespace Xuan.Prometheus.Effects.Editor
         }
 
         /// <summary>
-        /// 判断条件是否读取唯一伤害属性配置。
+        /// 判断条件是否读取唯一伤害元素配置。
         /// </summary>
-        private static bool UsesDamageAttribute(EffectConditionType conditionType)
+        private static bool UsesDamageElement(EffectConditionType conditionType)
         {
-            return conditionType == EffectConditionType.DamageAttributeEquals;
+            return conditionType == EffectConditionType.DamageElementEquals;
+        }
+
+        /// <summary>
+        /// 判断条件是否读取反应标识配置。
+        /// </summary>
+        private static bool UsesReactionId(EffectConditionType conditionType)
+        {
+            return conditionType == EffectConditionType.DamageReactionEquals;
         }
 
         /// <summary>

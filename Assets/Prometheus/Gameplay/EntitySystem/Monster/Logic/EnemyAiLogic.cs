@@ -4,6 +4,7 @@ using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Logic;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Ai
 {
@@ -23,6 +24,8 @@ namespace Xuan.Prometheus.Ai
         private EffectComponent effectComponent;
         private EventComponent eventComponent;
         private EnemyAiBrain brain;
+        /// <summary>段落表索引；敌人与玩家共用同一张表。</summary>
+        private Logic.Talent.AttackSegmentTable segmentTable;
         private AnimationPlayback attackPlayback;
         private Action<bool> attackFinished;
         private bool logicEnabled;
@@ -47,6 +50,7 @@ namespace Xuan.Prometheus.Ai
         public override void AfterNew()
         {
             ControlRequirement = LogicControlRequirement.Act;
+            segmentTable = new Logic.Talent.AttackSegmentTable(Core.Config.Tables);
             RequireComponent(out aiComponent);
             RequireComponent(out propertyComponent);
             RequireComponent(out attackComponent);
@@ -220,9 +224,14 @@ namespace Xuan.Prometheus.Ai
             if (!TryResolveProperty(other, out Entity targetEntity, out PropertyComponent targetProperty) || !IsPropertyTargetValid(targetEntity, targetProperty, aiComponent.Definition.TargetTag)) return;
             int targetId = targetEntity.EntityId;
             if (!hitTargets.Add(targetId)) return;
-            float requestedDamage = propertyComponent.Atk;
-            DamageAttribute damageAttribute = propertyComponent.ResolveDamageAttribute(DamageActionType.NormalAttack);
-            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack, aiComponent.Definition.AttackSignalId, position: other.transform.position, damageAttribute: damageAttribute, damageActionType: DamageActionType.NormalAttack);
+            // 敌人与玩家共用同一张段落表：AttackSignalId 就是它的 talentId，不另建数据通道。
+            // 敌人目前只有单段单窗口，多段攻击属排期第 7 步。
+            Cfg.AttackSegmentRow segment = segmentTable.Get(aiComponent.Definition.AttackSignalId, 0, 0);
+            Cfg.ElementType damageElement = segment.Element == Cfg.ElementType.FollowCharacter ? propertyComponent.ResolveDamageElement(DamageActionType.NormalAttack) : segment.Element;
+            float requestedDamage = Mathf.Max(0f, propertyComponent.Atk * segment.DamageMultiplier + segment.DamageOffset);
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, Entity, targetProperty.Entity, Entity, requestedDamage, requestedDamage,
+                EffectTag.Attack | EffectTag.NormalAttack, aiComponent.Definition.AttackSignalId, position: other.transform.position,
+                damage: new DamageFacts(damageElement, DamageActionType.NormalAttack, null, segment.StaggerLevel, false, false, segment.GaugeStrength, segment.IcdPolicy, segment.IcdGroupId));
             effectComponent.Runtime.Publish(signal);
         }
 
@@ -251,7 +260,8 @@ namespace Xuan.Prometheus.Ai
         }
 
         /// <summary>解释敌人攻击 AnimationLine 的强类型命令并控制命中窗口与特效，不再读取 AnimationLibrary 事件名。</summary>
-        private void OnAttackAnimationCommand(AnimationPlayback source, AnimationLineEventCommand command)
+        /// <param name="argument">动画事件的数值参数；敌人目前只有单段攻击，因此忽略它。敌人分段属排期第 7 步。</param>
+        private void OnAttackAnimationCommand(AnimationPlayback source, AnimationLineEventCommand command, float argument)
         {
             if (!ReferenceEquals(source, attackPlayback)) return;
             if (command == AnimationLineEventCommand.EnableHitbox)

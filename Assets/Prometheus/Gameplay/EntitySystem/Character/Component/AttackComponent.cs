@@ -11,45 +11,29 @@ namespace Xuan.Prometheus.Component
     public sealed class NormalAttackHitBinding
     {
         [SerializeField] private ColliderProxy colliderProxy;
-        [SerializeField] private string abilityId;
 
         /// <summary>获取本段命中窗口启用的独立碰撞代理。</summary>
         public ColliderProxy ColliderProxy => colliderProxy;
-
-        /// <summary>按配置值或稳定连段下标生成本段命中能力编号。</summary>
-        public string ResolveAbilityId(int stageIndex)
-        {
-            return string.IsNullOrWhiteSpace(abilityId) ? $"Player.NormalAttack.{stageIndex + 1}" : abilityId.Trim();
-        }
     }
 
-    /// <summary>表示普通攻击 Logic 合并场景绑定与 TalentConfig 数值后得到的只读命中配置。</summary>
+    /// <summary>
+    /// 表示普通攻击 Logic 合并场景绑定与本段标签后得到的只读命中配置。
+    /// 战斗数值不在这里：它们随段落表在命中窗口打开时查出。
+    /// </summary>
     public readonly struct NormalAttackHitSelection
     {
         /// <summary>创建一份不会再依赖可变序列化列表的普通攻击命中快照。</summary>
-        public NormalAttackHitSelection(ColliderProxy colliderProxy, float damageMultiplier, float damageOffset, EffectTag additionalTags, string abilityId)
+        public NormalAttackHitSelection(ColliderProxy colliderProxy, EffectTag additionalTags)
         {
             ColliderProxy = colliderProxy;
-            DamageMultiplier = Mathf.Max(0f, damageMultiplier);
-            DamageOffset = damageOffset;
             AdditionalTags = additionalTags;
-            AbilityId = abilityId ?? string.Empty;
         }
 
         /// <summary>获取本段使用的碰撞代理。</summary>
         public ColliderProxy ColliderProxy { get; }
 
-        /// <summary>获取本段伤害倍率。</summary>
-        public float DamageMultiplier { get; }
-
-        /// <summary>获取本段伤害固定偏移。</summary>
-        public float DamageOffset { get; }
-
         /// <summary>获取本段追加的效果标签。</summary>
         public EffectTag AdditionalTags { get; }
-
-        /// <summary>获取本段写入 HitConfirmed 的能力编号。</summary>
-        public string AbilityId { get; }
     }
 
     /// <summary>保存普通攻击场景引用和运行态；所有可调数值统一从角色 TalentConfig 读取。</summary>
@@ -134,7 +118,10 @@ namespace Xuan.Prometheus.Component
             return attackHits[stageIndex]?.ColliderProxy;
         }
 
-        /// <summary>按连段下标合并碰撞体与 AbilityId 绑定、TalentConfig 倍率、偏移和标签。</summary>
+        /// <summary>
+        /// 按连段下标合并碰撞体绑定与本段追加标签。
+        /// 倍率、元素、附着档位与打断等级都不在这里——它们随段落表在命中窗口打开时查出。
+        /// </summary>
         public bool TryGetHitSelection(int stageIndex, out NormalAttackHitSelection selection)
         {
             if (attackHits != null && attackHits.Count > 0)
@@ -145,7 +132,7 @@ namespace Xuan.Prometheus.Component
                     return false;
                 }
                 NormalAttackHitBinding binding = attackHits[stageIndex];
-                selection = new NormalAttackHitSelection(binding.ColliderProxy, values.DamageMultiplier, values.DamageOffset, values.AdditionalTags, binding.ResolveAbilityId(stageIndex));
+                selection = new NormalAttackHitSelection(binding.ColliderProxy, values.AdditionalTags);
                 return true;
             }
             selection = default;

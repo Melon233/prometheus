@@ -25,15 +25,15 @@ MonoBehaviour:
     - type: 7
       tags: 0
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     - type: 4
       tags: 1
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     - type: 6
       tags: 16
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     effects:
     - {fileID: 11400000, guid: b24dec1869864ae4faef9c06a48f61c8, type: 2}
   - triggerId: 
@@ -48,11 +48,11 @@ MonoBehaviour:
     - type: 7
       tags: 0
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     - type: 6
       tags: 16
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     effects:
     - {fileID: 11400000, guid: 60afab9c29565f34ca3b2edf32fc138c, type: 2}
   - triggerId: 
@@ -67,7 +67,7 @@ MonoBehaviour:
     - type: 8
       tags: 4096
       threshold: 100
-      damageAttribute: 0
+      damageAttribute: 8
     effects:
     - {fileID: 11400000, guid: b0374dce6e7be8e43bdd43c4397cd66a, type: 2}
     - {fileID: 11400000, guid: cb1fe135013ef354d81cb30ddd00d41f, type: 2}
@@ -83,14 +83,14 @@ MonoBehaviour:
     - type: 7
       tags: 0
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     - type: 4
       tags: 2
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     - type: 6
       tags: 16
       threshold: 0
-      damageAttribute: 0
+      damageAttribute: 8
     effects:
     - {fileID: 11400000, guid: f7b56c2004d34368933ef43782cb7d02, type: 2}

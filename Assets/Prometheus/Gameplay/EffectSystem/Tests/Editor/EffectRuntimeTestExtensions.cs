@@ -1,6 +1,7 @@
 using System;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Effects.Tests
 {
@@ -41,7 +42,8 @@ namespace Xuan.Prometheus.Effects.Tests
             if (runtime == null) throw new ArgumentNullException(nameof(runtime));
             float requestedDamage = 0f;
             if (attacker != null && attacker.TryGetComp(out PropertyComponent property)) requestedDamage = property.Atk;
-            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, attacker, target, attacker, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack, abilityId, damageAttribute: DamageAttribute.Fire, damageActionType: DamageActionType.NormalAttack);
+            EffectSignal signal = new EffectSignal(EffectSignalType.HitConfirmed, attacker, target, attacker, requestedDamage, requestedDamage, EffectTag.Attack | EffectTag.NormalAttack, abilityId, // 打断等级 2 对应段落表里普攻的配置；它属于攻击而不是结算它的 Effect。
+                damage: new DamageFacts(Cfg.ElementType.Pyro, DamageActionType.NormalAttack, null, 2, false, false));
             runtime.Publish(signal);
         }
 

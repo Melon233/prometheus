@@ -14,6 +14,8 @@ namespace Xuan.Prometheus
         private readonly ModifiableProperty revision = new ModifiableProperty();
         /// <summary>保存服务器最近一次下发的当前玩家物品快照。</summary>
         private readonly List<Item> items = new List<Item>();
+        /// <summary>按物品标识聚合的持有量索引；同一标识的不同品质合并计数，每次刷新快照后重建。</summary>
+        private readonly Dictionary<string, int> quantityByItemId = new Dictionary<string, int>();
 
         /// <summary>在系统释放时取消尚未完成的背包请求，阻止响应继续修改已清空的缓存。</summary>
         private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource();
@@ -46,9 +48,34 @@ namespace Xuan.Prometheus
                     if (response == null) return;
                     items.Clear();
                     items.AddRange(response.Items);
+                    RebuildQuantityIndex();
                     revision.SetBaseValue(revision.Value + 1f);
                 }
                 catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested) { }
+            }
+        }
+
+        /// <summary>按材料标识返回当前持有总量；未持有返回 0。</summary>
+        public int GetQuantity(string materialId)
+        {
+            return string.IsNullOrEmpty(materialId) ? 0 : quantityByItemId.TryGetValue(materialId, out int quantity) ? quantity : 0;
+        }
+
+        /// <summary>基于最近一次同步的快照校验一组消耗；只读，不扣除。</summary>
+        public MaterialCostCheck CheckCost(IReadOnlyList<MaterialCost> costs)
+        {
+            return MaterialCostEvaluator.Evaluate(costs, GetQuantity);
+        }
+
+        /// <summary>在每次刷新快照后重建持有量索引，使查询不必每次遍历整个背包。</summary>
+        private void RebuildQuantityIndex()
+        {
+            quantityByItemId.Clear();
+            for (int index = 0; index < items.Count; index++)
+            {
+                Item item = items[index];
+                quantityByItemId.TryGetValue(item.ItemId, out int accumulated);
+                quantityByItemId[item.ItemId] = accumulated + item.Quantity;
             }
         }
 
@@ -57,6 +84,7 @@ namespace Xuan.Prometheus
         {
             lifetimeCancellation.Cancel();
             items.Clear();
+            quantityByItemId.Clear();
         }
     }
 }

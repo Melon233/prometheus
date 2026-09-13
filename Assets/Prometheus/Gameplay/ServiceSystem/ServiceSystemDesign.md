@@ -84,4 +84,4 @@ IPoiGateway.PositionReceived 等强类型领域事件
 - **新增一个领域**：新增 `I<Domain>Gateway` + `<Domain>Gateway`，与该领域同目录，并在组合根中注册在 `ServiceSystem` 之后、该领域消费者之前。
 - **新增一种业务 Push**：在对应 Gateway 的 `OnPushReceived` 中识别 Packet Body，并以强类型事件发布。
 
-`RequestAsync` 只允许由 `*Gateway.cs` 调用，由架构测试 `Sources_DoNotUseRequestChannelOutsideGateways` 执行。项目级硬约束见 `Docs/ArchSpec.md`。
+`RequestAsync` 只允许由 `*Gateway.cs` 调用，由架构测试 `Sources_DoNotUseRequestChannelOutsideGateways` 执行。项目级硬约束见 `Docs/Arch/ArchSpec.md`。

@@ -16,28 +16,20 @@ MonoBehaviour:
     comboInterval: 2
     stages:
     - damageMultiplier: 0.5
-      damageOffset: 0
       additionalTags: 0
     - damageMultiplier: 1
-      damageOffset: 0
       additionalTags: 0
     - damageMultiplier: 1
-      damageOffset: 0
       additionalTags: 0
   specialAttack:
     ability:
-      damageMultiplier: 1
-      damageOffset: 0
       animationSpeed: 1
     chargeDuration: 0.5
   skill:
-    damageMultiplier: 1
-    damageOffset: 0
     animationSpeed: 1
   skillCooldown: 5
+  skillChargeCount: 1
   ultimate:
-    damageMultiplier: 1
-    damageOffset: 0
     animationSpeed: 1
   ultimateCooldown: 10
   talentGrowthCoefficient: 0.1

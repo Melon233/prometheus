@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Xuan.Prometheus.Logic;
+using Xuan.Prometheus.Elements;
+using Xuan.Prometheus.Combat;
+using Xuan.Prometheus.Shields;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -257,11 +261,52 @@ namespace Xuan.Prometheus.Effects
         public event Action<EffectSignal> SignalProcessed;
 
         /// <summary>
+        /// 获取本次战斗的元素附着与反应权威。
+        ///
+        /// 由组合根显式注入而不是从全局取：伤害结算依赖它，
+        /// 如果允许它缺席，元素反应会在没有任何报错的情况下整体失效。
+        /// </summary>
+        public IElementSystem ElementSystem { get; }
+
+        /// <summary>
+        /// 获取本次战斗的护盾权威。
+        ///
+        /// 与元素系统同理由显式注入：允许它缺席，护盾会在没有任何报错的情况下永远不吸收伤害。
+        /// </summary>
+        public IShieldSystem ShieldSystem { get; }
+
+        /// <summary>
         /// 使用确定性随机种子创建效果运行时，便于测试和战斗回放。
         /// </summary>
-        public EffectRuntime(int randomSeed = 1977)
+        public EffectRuntime(int randomSeed, IElementSystem elementSystem, IShieldSystem shieldSystem)
         {
             random = new System.Random(randomSeed);
+            ElementSystem = elementSystem ?? throw new ArgumentNullException(nameof(elementSystem));
+            ShieldSystem = shieldSystem ?? throw new ArgumentNullException(nameof(shieldSystem));
+        }
+
+        /// <summary>
+        /// 把一次伤害的乘区拆解发到诊断通道。
+        ///
+        /// 没有订阅者时直接返回，因此关闭诊断的正式运行不会产生任何字符串拼接。
+        /// 实机校准配表时这是唯一能回答「这一刀为什么是 437」的入口——
+        /// 一次命中要经过附着、反应、六个乘区与护盾吸收，靠断点逐个看代价太高。
+        /// </summary>
+        public void TraceDamage(string sourceId, Entity target, in DamageResolution resolution)
+        {
+            if (Trace == null) return;
+            EmitTrace($"[Damage] {sourceId} -> {(target == null ? "<null>" : target.EntityId.ToString())} {DamageBreakdown.Describe(in resolution)}");
+        }
+
+        /// <summary>
+        /// 掷一次暴击骰，取值 0 到 1。
+        ///
+        /// 走运行时自己的确定性随机源而不是 `UnityEngine.Random`：
+        /// 暴击是伤害结果的一部分，必须能随种子重放。
+        /// </summary>
+        public float NextCriticalRoll()
+        {
+            return (float)random.NextDouble();
         }
 
         /// <summary>
@@ -611,9 +656,13 @@ namespace Xuan.Prometheus.Effects
             int tickCount = instance.Advance(deltaTime, MaxTicksPerUpdate, out bool expired);
             for (int i = 0; i < tickCount && instance.IsActive; i++)
             {
-                DamageAttribute inheritedDamageAttribute = instance.LastSignal == null ? DamageAttribute.Physical : instance.LastSignal.DamageAttribute;
                 Vector3 tickPosition = instance.Owner != null && instance.Owner.bindGo != null ? instance.Owner.bindGo.transform.position : instance.LastSignal == null ? default : instance.LastSignal.Position;
-                EffectSignal tickSignal = new EffectSignal(EffectSignalType.PeriodicTick, instance.Caster, instance.Owner, instance.Source, instance.Stacks, instance.Stacks, instance.Definition.Tags | EffectTag.Periodic, originEffectInstanceId: instance.InstanceId, position: tickPosition, damageAttribute: inheritedDamageAttribute, damageActionType: DamageActionType.Periodic);
+                EffectSignal tickSignal = new EffectSignal(EffectSignalType.PeriodicTick, instance.Caster, instance.Owner, instance.Source, instance.Stacks, instance.Stacks, instance.Definition.Tags | EffectTag.Periodic, originEffectInstanceId: instance.InstanceId, position: tickPosition, damage: instance.LastSignal == null
+                        ? new DamageFacts(Cfg.ElementType.Physical, DamageActionType.Periodic, null, 0, false, false)
+                        // 周期跳是一次新的攻击事件：元素从触发它的那一击继承（燃烧仍是火），
+                        // 但附着档位、ICD 与打断等级必须清零，否则 DOT 会复用原攻击的附着能力。
+                        : instance.LastSignal.Damage.With(actionType: DamageActionType.Periodic, reactionId: string.Empty, staggerLevel: 0, isCritical: false, wasFatal: false,
+                            gaugeStrength: Cfg.GaugeStrength.None, icdPolicy: Cfg.IcdPolicy.Shared, icdGroupId: 0));
                 RunTransaction(() =>
                 {
                     EnqueueSignal(tickSignal);

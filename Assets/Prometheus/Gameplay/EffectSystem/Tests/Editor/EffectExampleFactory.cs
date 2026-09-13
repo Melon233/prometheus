@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Xuan.Prometheus.Component;
+using Cfg = global::Prometheus.Config;
 
 namespace Xuan.Prometheus.Effects
 {
@@ -74,7 +75,7 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private static void ConfigureDirectDamage(EffectDefinition definition)
         {
-            List<EffectOperation> applyOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack, EffectValueFormula.Constant(2f)) };
+            List<EffectOperation> applyOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.SignalRequestedValue(), EffectTag.Attack, 2) };
             definition.ConfigureForTests(DirectDamageId, EffectTag.Attack, EffectDurationType.Instant, 0f, 0f, EffectStackPolicy.Reject, EffectStackKeyPolicy.Definition, 1, EffectExecutionPhase.Apply, 0, applyOperations, null, null, null);
         }
 
@@ -83,7 +84,7 @@ namespace Xuan.Prometheus.Effects
         /// </summary>
         private static void ConfigureBurning(EffectDefinition definition)
         {
-            List<EffectOperation> tickOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Dot | EffectTag.Periodic, EffectValueFormula.Constant(0f), DamageAttributeSource.Fixed, DamageAttribute.Fire) };
+            List<EffectOperation> tickOperations = new List<EffectOperation> { new DamageOperation(EffectValueFormula.Constant(10f), EffectTag.Dot | EffectTag.Periodic, 0, DamageElementSource.Fixed, Cfg.ElementType.Pyro) };
             definition.ConfigureForTests(BurningId, EffectTag.Dot | EffectTag.Debuff, EffectDurationType.Duration, 10f, 1f, EffectStackPolicy.RefreshDuration, EffectStackKeyPolicy.DefinitionAndSource, 1, EffectExecutionPhase.Apply, 20, null, null, tickOperations, null);
         }
 
@@ -122,7 +123,7 @@ namespace Xuan.Prometheus.Effects
             EffectTriggerDefinition damageTrigger = new EffectTriggerDefinition();
             damageTrigger.ConfigureForTests("Example.OnAttackHit.Damage", EffectSignalType.HitConfirmed, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.HasAnyTags(EffectTag.Attack) }, new[] { directDamage });
             EffectTriggerDefinition burningTrigger = new EffectTriggerDefinition();
-            burningTrigger.ConfigureForTests("Example.OnFireDamage.Burning", EffectSignalType.DamageApplied, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.ValueGreaterThan(0f), EffectConditionDefinition.DamageAttributeEquals(DamageAttribute.Fire) }, new[] { burning });
+            burningTrigger.ConfigureForTests("Example.OnFireDamage.Burning", EffectSignalType.DamageApplied, EffectListenScope.Caster, EffectTargetSelector.Target, 1f, 0f, true, 0, new[] { EffectConditionDefinition.TargetExists(), EffectConditionDefinition.ValueGreaterThan(0f), EffectConditionDefinition.DamageElementEquals(Cfg.ElementType.Pyro) }, new[] { burning });
             triggerSet.ConfigureForTests(new[] { damageTrigger, burningTrigger });
         }
 
