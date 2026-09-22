@@ -56,7 +56,7 @@ namespace Xuan.Prometheus.Editor
 
         // 生成快照的 (名称, 组件 InstanceID) -> 生成索引 查找表。没有它时每行状态背景和整份变更说明
         // 都会各自线性扫描整张生成表，N 项绑定即每帧 O(N²) 的 SerializedProperty 遍历，Inspector 一滚动就掉帧。
-        private readonly Dictionary<(string name, int componentId), int> generatedBindingIndexByKey = new Dictionary<(string, int), int>();
+        private readonly Dictionary<(string name, EntityId componentId), int> generatedBindingIndexByKey = new Dictionary<(string, EntityId), int>();
 
         // 派生数据缓存：查找表、变更说明、校验信息都只依赖绑定表 / 生成快照 / 编辑与拖动状态。
         // 每帧只算一个无分配的签名，签名不变就直接复用上一帧结果，避免滚动时每帧重扫全表和 List/string 分配。
@@ -266,7 +266,7 @@ namespace Xuan.Prometheus.Editor
         /// <returns>包含 Binder 实例编号和绑定索引的唯一控件名称。</returns>
         private string GetBindingNameControlName(int bindingIndex)
         {
-            return BindingNameControlPrefix + target.GetInstanceID() + "." + bindingIndex;
+            return BindingNameControlPrefix + target.GetEntityId() + "." + bindingIndex;
         }
 
         /// <summary>
@@ -372,7 +372,7 @@ namespace Xuan.Prometheus.Editor
             if (component == null)
                 return false;
 
-            return generatedBindingIndexByKey.TryGetValue((bindingName ?? string.Empty, component.GetInstanceID()), out generatedIndex);
+            return generatedBindingIndexByKey.TryGetValue((bindingName ?? string.Empty, component.GetEntityId()), out generatedIndex);
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace Xuan.Prometheus.Editor
             for (int index = 0; index < generatedBindingsProperty.arraySize; index++)
             {
                 SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
-                var key = (generatedBindingProperty.FindPropertyRelative("name").stringValue, generatedBindingProperty.FindPropertyRelative("component").objectReferenceInstanceIDValue);
+                var key = (generatedBindingProperty.FindPropertyRelative("name").stringValue, generatedBindingProperty.FindPropertyRelative("component").objectReferenceEntityIdValue);
                 if (!generatedBindingIndexByKey.ContainsKey(key))
                     generatedBindingIndexByKey.Add(key, index);
             }
@@ -433,7 +433,7 @@ namespace Xuan.Prometheus.Editor
                         SerializedProperty bindingProperty = bindingsProperty.GetArrayElementAtIndex(index);
                         string name = bindingProperty.FindPropertyRelative("name").stringValue;
                         hash = hash * 31 + (name == null ? 0 : name.GetHashCode());
-                        hash = hash * 31 + bindingProperty.FindPropertyRelative("component").objectReferenceInstanceIDValue;
+                        hash = hash * 31 + bindingProperty.FindPropertyRelative("component").objectReferenceEntityIdValue.GetHashCode();
                     }
                 }
 
@@ -446,7 +446,7 @@ namespace Xuan.Prometheus.Editor
                         SerializedProperty generatedBindingProperty = generatedBindingsProperty.GetArrayElementAtIndex(index);
                         string name = generatedBindingProperty.FindPropertyRelative("name").stringValue;
                         hash = hash * 31 + (name == null ? 0 : name.GetHashCode());
-                        hash = hash * 31 + generatedBindingProperty.FindPropertyRelative("component").objectReferenceInstanceIDValue;
+                        hash = hash * 31 + generatedBindingProperty.FindPropertyRelative("component").objectReferenceEntityIdValue.GetHashCode();
                     }
                 }
 

@@ -28,14 +28,14 @@ internal static class HierarchyQuickControls
 
     static HierarchyQuickControls()
     {
-        EditorApplication.hierarchyWindowItemOnGUI += DrawHierarchyControls;
+        EditorApplication.hierarchyWindowItemByEntityIdOnGUI += DrawHierarchyControls;
         EditorApplication.update += RepaintWhileHoveringIcon;
     }
 
-    private static void DrawHierarchyControls(int instanceId, Rect rowRect)
+    private static void DrawHierarchyControls(EntityId entityId, Rect rowRect)
     {
-        // Unity 6.3 implicitly converts the hierarchy callback's integer identifier to EntityId, allowing the supported editor lookup to preserve disk-loading behavior.
-        var gameObject = EditorUtility.EntityIdToObject(instanceId) as GameObject;
+        // Unity 6.6 removed the int-based hierarchy callback, so the row is identified by EntityId throughout.
+        var gameObject = EditorUtility.EntityIdToObject(entityId) as GameObject;
         if (gameObject == null || Event.current.type == EventType.Layout)
         {
             return;

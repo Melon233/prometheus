@@ -2,13 +2,13 @@
 
 ## 管线归属
 
-项目在 Unity 6000.3.10f1 与 URP 17.3.0 下维护六份不可变的 URP Asset：PC Forward Low/Mid、PC Deferred Low/Mid、Mobile Forward Low/Mid。平台、渲染路径和画质是三个独立维度；移动端固定使用 Forward，PC 可以通过 `PrometheusRenderQualityController.ApplyRenderPath` 在 Forward 与 Deferred 之间切换，PC 和移动端都只暴露 Low 与 Mid 两档画质。
+项目在 Unity 6000.6.2f1 与 URP 17.6.0 下维护六份不可变的 URP Asset：PC Forward Low/Mid、PC Deferred Low/Mid、Mobile Forward Low/Mid。平台、渲染路径和画质是三个独立维度；移动端固定使用 Forward，PC 可以通过 `PrometheusRenderQualityController.ApplyRenderPath` 在 Forward 与 Deferred 之间切换，PC 和移动端都只暴露 Low 与 Mid 两档画质。
 
 `PrometheusRenderQualityController` 在首个场景加载前读取 `Resources/PrometheusRenderingSettings`，根据 `Application.isMobilePlatform`、外部启动路径和启动画质直接选择对应的序列化 URP Asset。运行时不再克隆并修改共享管线，因此 Low 与 Mid 不会相互污染 RendererData，移动端也不会误用 PC Deferred Renderer。
 
 Low 是严格的最低画质：URP Asset 关闭主光源和附加实时光源、所有实时阴影、HDR、MSAA、Depth Texture、Opaque Texture 与可选 Renderer Feature；相机同步关闭后处理、抖动、实时阴影、HDR 和抗锯齿。PC Low 使用 0.75 Render Scale，Mobile Low 使用 0.65 Render Scale，并分别降低纹理和 LOD 预算。
 
-Mid 是均衡档：PC 使用 1.0 Render Scale、HDR、主光源软阴影、60 米阴影距离、2 级联和最多 4 个附加逐像素光；Forward 使用 2x MSAA，Deferred 使用 SMAA，并仅在 PC Deferred Mid 中启用 MF.SSGI 与可选 Shiny SSR。移动端使用 0.85 Render Scale、无 HDR、2x MSAA、主光源硬阴影、25 米单级联和最多 2 个附加逐像素光，保留常规后处理但不包含桌面屏幕空间 Renderer Feature。
+Mid 是均衡档：PC 使用 1.0 Render Scale、HDR、主光源软阴影、60 米阴影距离、2 级联和最多 4 个附加逐像素光；Forward 使用 2x MSAA，Deferred 使用 SMAA，并仅在 PC Deferred Mid 中启用可选 Shiny SSR。移动端使用 0.85 Render Scale、无 HDR、2x MSAA、主光源硬阴影、25 米单级联和最多 2 个附加逐像素光，保留常规后处理但不包含桌面屏幕空间 Renderer Feature。
 
 ## Asset layout
 
@@ -56,7 +56,7 @@ Shader 从 URP Main Light 读取 Lighting Settings 中 Sun Source 的实时方�
 
 `Prometheus/Rendering/World/Grid Lit` provides a UV-independent, object-anchored triplanar grid for opaque world geometry. `Cell Side Length` and `Line Width` are physical world-unit dimensions; `Base Color` and `Line Color` define the two grid colors. `Grid Offset` adjusts alignment relative to the object pivot, while `Projection Sharpness` controls transitions between the three planar projections. The material remains fully Lit and supports URP shadows, additional lights, baked GI, fog, metallic, smoothness, and optional Prometheus seasonal tinting. Its main-light shadow coordinates follow URP Lit's variant policy: non-cascade variants may interpolate vertex shadow coordinates, while cascade variants select and transform the correct cascade per pixel so large, low-density meshes do not produce triangle-shaped shadow bands.
 
-Grid Lit 同时实现 `UniversalForward` 与 `UniversalGBuffer` Pass，并由两条路径共享同一份程序化网格 SurfaceData。默认 Forward Renderer 使用前者，专用 Deferred SSGI Renderer 使用后者；GBuffer 必须写入网格 Albedo、金属度响应、Occlusion、世界法线、Smoothness 和烘焙 GI，因为 MF.SSGI 的 Deferred 合成直接从 `_GBuffer0` 与 `_GBuffer1` 读取接收面的材质数据。禁止将主 Pass 改为 `UniversalForwardOnly`，否则网格虽然仍能显示直射光，却会因为 GBuffer Albedo 缺失而无法接收间接光。
+Grid Lit 同时实现 `UniversalForward` 与 `UniversalGBuffer` Pass，并由两条路径共享同一份程序化网格 SurfaceData。默认 Forward Renderer 使用前者，专用 Deferred Renderer 使用后者；GBuffer 必须写入网格 Albedo、金属度响应、Occlusion、世界法线、Smoothness 和烘焙 GI，屏幕空间 Renderer Feature 直接从 `_GBuffer0` 与 `_GBuffer1` 读取接收面的材质数据。禁止将主 Pass 改为 `UniversalForwardOnly`，否则网格虽然仍能显示直射光，却会因为 GBuffer Albedo 缺失而无法接收间接光。
 
 ## Material migration rules
 
@@ -69,39 +69,19 @@ The embedded Spine URP package is version 3.8.2 and originally targeted URP 7.1.
 
 The original Hovl source package remains unchanged. Materials that previously depended on Surface Shaders or `GrabPass` are redirected to URP-native replacements under `Assets/Prometheus/Rendering/Shaders/Hovl`. `BlendDistort` and `Distortion` sample `_CameraOpaqueTexture`; all depth-aware replacements sample `_CameraDepthTexture`.
 
-## MF.SSGI 兼容链路
+## 已移除的 SSGI 链路
 
-当前导入的 `Assets/Trd/MF.SSGI` 仍实现为传统 `ScriptableRenderPass.Execute`，因此依赖 `UniversalRenderPipelineGlobalSettings.asset` 中已经启用的 URP Compatibility Mode。Unity 6000.3 还要求当前构建目标定义 `URP_COMPATIBILITY_MODE`；只有资源中的 `m_EnableRenderCompatibilityMode: 1` 而没有该编译符号时，`RenderGraphSettings.enableRenderCompatibilityMode` 会固定返回 `false`，相机继续走 `ExecuteRenderGraph`，MF.SSGI Feature 虽然存在却不会执行。其相机颜色与深度附件必须使用 URP 17 的 `RTHandle` API，并且只能在 `ScriptableRenderPass` 的执行调用链内即时取得；禁止在 `AddRenderPasses`、跨相机字段或跨帧状态中缓存相机附件。若未来关闭 Compatibility Mode，必须先将 MF.SSGI 的绘制、临时纹理和最终合成完整迁移到 `RecordRenderGraph`，不能仅关闭开关后保留当前 Pass。
+Unity 6000.6 的 URP 17.6 删除了 Compatibility Mode 及其 `ScriptableRenderPass.Configure` / `Execute` 入口，只保留 `RecordRenderGraph`。导入的 `Assets/Trd/MF.SSGI` 完全建立在被删除的 API 上，无法在该版本编译，因此已从项目中移除：Renderer 不再挂载 SSGI Feature，Volume Profile 不再包含 `SSGIVolumeComponent`，`CameraSystem` 不再按类型名添加 `SSGICamera`，对应的 `link.xml` 一并删除。PC Deferred Mid 现在只保留可选 Shiny SSR。若要恢复屏幕空间 GI，需要引入一个原生支持 RenderGraph 的方案，而不是恢复当前这套 Pass；静态室内漫反射仍由烘焙 GI 或 Adaptive Probe Volumes 负责。
 
-PC Mid 管线分别使用 `PrometheusPcForwardRenderer` 和 `PrometheusPcDeferredMidRenderer`；前者不挂载 SSGI，后者使用 Deferred 并独占一个启用的 `MF.SSGI.SSGIFeature`。PC Deferred Low 使用没有 Renderer Feature 的 `PrometheusPcDeferredLowRenderer`，移动端则始终使用 `PrometheusMobileForwardRenderer`。SSGI Feature 的 `UseDeferredRendering` 必须与 Renderer 的实际模式一致，因为开启时 Shader 会读取 `_GBuffer0` 与 `_GBuffer1`。
+## Shiny SSR 可选链路
 
-MF.SSGI 的 `showInSceneView` 固定关闭。Scene View 不具备项目游戏相机的完整深度纹理和 SSGI 输入契约，允许插件在该相机执行会产生 `_CameraDepthTexture not found`；游戏相机仍由 `SSGICamera` 和 PC Deferred Mid Renderer 正常启用该效果。
+`PrometheusPcDeferredMidRenderer` 承载 `ShinySSRR.ShinySSRR`。生成器从 Shiny 自带 Renderer 克隆一份 SSR Feature 作为项目 Renderer 的子资源。业务设置调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(bool)` 保存玩家意图；Low、Forward 或 Mobile 会强制关闭有效 SSR Pass，重新进入 PC Deferred Mid 后才恢复玩家选择。
 
-MF.SSGI 的 `DebugScreenCoverage` 固定为 `1`，表示完整屏幕显示最终 SSGI 合成结果。该参数不是布尔开关；小于 `1` 时 FinalBlit Shader 会绘制原始画面与合成画面的调试分割，并在分界位置输出灰白色竖线。
-
-桌面游戏相机保留 `MF.SSGI.SSGICamera`，但始终通过 `SetRenderer(-1)` 继承当前管线唯一的默认 Renderer；只有选择 PC Deferred Mid 时，该 Renderer 才包含 SSGI。业务代码不得再写死 Renderer 下标，因为渲染路径切换现在通过更换完整 URP Asset 完成。
-
-`PrometheusRenderingAssetGenerator` 会创建或修复这两个 Renderer，将导入示例中的 SSGI Feature 克隆为项目 Renderer 的子资源，并重建管线 Renderer 列表。生成器还会为当前构建目标补齐 `URP_COMPATIBILITY_MODE`，并执行插件文档指定的 `Tools/SSGI/Add SSGI to 'Always included shaders'`，确保 `Shader.Find` 使用的运行时 Shader 不会在 Player 构建时被剥离。MF.SSGI 示例 Renderer 是生成输入而不是运行时依赖；如果插件、示例 Feature 或 Shader 安装菜单缺失，生成过程会立即失败并报告缺失资源，不能静默生成一个没有 SSGI 的 Renderer。
-
-示例场景 Play Mode 脚本会把显示分辨率缩放到自身配置的 `renderScale`，SSGI Quality 资源还会再次应用 `SSGIRenderScale`。这两个值只影响测试画面的采样清晰度和稳定速度，不代表 Renderer、Volume 或 Feature 链路缺失；判断功能是否接通应先在 Frame Debugger 确认右相机没有继续走 `ExecuteRenderGraph`，再检查右相机的 Renderer、`SSGICamera`、全局 Volume 和 SSGI Feature。插件文档要求使用 Debug Window 依次观察 `Screen Capture`、`Light Capture`、`SSGI Color` 与 `Final Denoised Color`，先判断中间光照纹理是否产出，再调整 `SSGI Range Min/Max`、`Scan Depth 2D Range Factor`、质量和 Volume 强度。
-
-`YefaScene Postprocess Volume` 面向当前约 10×10×6 米的暗室测试采用纯 Additive 合成：`PreMultiply=0` 保留 URP 直射结果，`FinalIntensity=1` 不再把整个画面压到三分之一，`LightFalloffDistance=4` 让回弹光在房间尺度内传播，`LightIntensity=2` 提供可见的单次回弹，`ShadowIntensity=1` 只阻挡间接光而不额外压暗原始画面。专用 Renderer 的 `ScanDepth2DRangeFactor=0.35`，用于让画面内受光地板的单次回弹覆盖当前 6 米高墙面；默认值 `0.15` 只会覆盖墙面下部。MF.SSGI 仍是屏幕空间方案：相机至少需要保留一小段受光地板或其他反射源，正对墙且把地板完全裁出画面后，蓝色历史采样会在时域重投影中逐渐衰减，搜索半径再大也不能取得屏幕外光源。同一共面区域不会由自身直射亮斑产生物理上不存在的自照明；必须支持任意镜头构图时，静态室内漫反射由烘焙 GI 或 Adaptive Probe Volumes 提供，SSGI 只叠加动态屏幕内反弹，不能继续无上限提高 SSGI 强度或依赖 Reflection Probe 的镜面式 fallback 来伪造。
-
-### 减少 SSGI 拖影
-
-MF.SSGI 的主要拖影来源是 Quality 资源中的跨帧重投影。当前专用 Renderer 使用的质量资源开启了 `MultiFrameCellSize=3`，并以较高的历史能量保留率复用过去帧；相机转动、物体移动或遮挡关系突变时，历史间接光会比当前几何消失得更慢。排查时先把 `MultiFrameCellSize` 临时设为 `0`：若拖影消失，就能确认问题来自多帧复用而不是空间降噪、SSR 或材质。`2` 不是合法的折中值，MF.SSGI 的实现只应使用 `0` 或不小于 `3` 的 Cell Size。
-
-正式配置优先保留 `MultiFrameCellSize=3`，把 `MultiFrameEnergyFalloff` 从接近完全保留历史的配置逐步降低到约 `0.90–0.94`，并把 Advanced 资源中的 `MultiFrameDistanceThreshold` 从宽松值逐步收紧到约 `0.02–0.04`。每次只改一个参数，并在 MF.SSGI Debug Window 中同时观察 Motion Vectors、Reprojection 和 Final Denoised Color：Falloff 越低，错误历史消失越快但噪声越明显；Distance Threshold 越小，重投影越不容易串到相邻表面但历史采样命中率会下降。所有移动 Renderer 必须输出有效 Motion Vector，顶点动画或自定义 Shader 也必须提供与运动一致的 MotionVectors Pass，否则仅调阈值无法彻底消除动态物体拖影。若要求镜头快速运动时完全无历史残留，使用 `MultiFrameCellSize=0` 并通过更高单帧采样或更强空间降噪承担额外成本。
-
-### Shiny SSR 可选链路
-
-`PrometheusPcDeferredMidRenderer` 同时承载 `MF.SSGI.SSGIFeature` 与 `ShinySSRR.ShinySSRR`。生成器从 Shiny 自带 Renderer 克隆一份 SSR Feature 作为项目 Renderer 的子资源，并保证 SSR 排在 SSGI 合成之后。业务设置调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(bool)` 保存玩家意图；Low、Forward 或 Mobile 会强制关闭有效 SSR Pass，重新进入 PC Deferred Mid 后才恢复玩家选择。
-
-生成器会在每个项目自有且已经包含 MF.SSGI 的 Volume Profile 中补充一个启用的 `ShinyScreenSpaceRaytracedReflections` 组件，只在组件缺失时应用 Shiny 的 Medium 初始预设，因此后续手工调整的反射距离、步数、粗糙度和强度不会被重复生成覆盖。Renderer Feature、运行时总开关、相机 Post Processing 条件以及 Volume 的 `reflectionsMultiplier` 和 `reflectionsMaxIntensity` 必须同时允许执行，任一层关闭都会看不到 SSR。当前初始配置关闭 Shiny 的 `temporalFilter`，避免将 SSR 自身的时域拖影误认为 SSGI 拖影；确需开启时，应单独观察反射边缘并调整 Shiny 的时域响应。
+生成器会在每个项目自有的 Volume Profile 中补充一个启用的 `ShinyScreenSpaceRaytracedReflections` 组件，只在组件缺失时应用 Shiny 的 Medium 初始预设，因此后续手工调整的反射距离、步数、粗糙度和强度不会被重复生成覆盖。Renderer Feature、运行时总开关、相机 Post Processing 条件以及 Volume 的 `reflectionsMultiplier` 和 `reflectionsMaxIntensity` 必须同时允许执行，任一层关闭都会看不到 SSR。当前初始配置关闭 Shiny 的 `temporalFilter`，避免 SSR 自身的时域拖影；确需开启时，应单独观察反射边缘并调整 Shiny 的时域响应。
 
 角色与敌人的 Spine Sprite 保持透明队列和 `ZWrite Off`，因此生成器会动态解析当前 `Character`、`Enemy` Layer 并把它们合入 Shiny Renderer Feature 的 Transparency Depth Prepass Layer Mask，使 SSR 射线能够命中角色而不改变正常透明绘制。角色朝向通过 `Skeleton.ScaleX` 正负值切换，会同时反转生成网格的三角形绕序；Shiny 的 Legacy Compatibility 与 RenderGraph 深度路径必须共用 `CullMode.Off` 的透明深度替换材质，否则其中一个朝向会被背面剔除并从反射中消失。该预通道只负责让角色作为反射来源参与射线命中；若未来要求角色表面本身接收 SSR，还必须为 Spine Shader 实现透明 `DepthNormals` Pass 并单独开启透明法线预通道，不能通过打开全部透明层或修改角色主材质的 ZWrite 代替。
 
-Shiny SSR 只计算屏幕内镜面反射，不会为 MF.SSGI 增加第二次漫反射弹射，也不能反射相机外物体。它适合地面、水面、金属和高 Smoothness 材质；室内暗区的稳定多次漫反射仍由烘焙 GI 或 Adaptive Probe Volumes 负责。运行时 UI 的典型绑定只需要在开关回调中调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(toggleValue)`，无需重新选择 Renderer 或替换 URP Asset。
+Shiny SSR 只计算屏幕内镜面反射，不提供漫反射弹射，也不能反射相机外物体。它适合地面、水面、金属和高 Smoothness 材质；室内暗区的稳定多次漫反射仍由烘焙 GI 或 Adaptive Probe Volumes 负责。运行时 UI 的典型绑定只需要在开关回调中调用 `PrometheusRenderQualityController.SetScreenSpaceReflectionsEnabled(toggleValue)`，无需重新选择 Renderer 或替换 URP Asset。
 
 ## UI alpha mask shader
 

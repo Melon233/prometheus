@@ -54,9 +54,9 @@ namespace Xuan.Prometheus.Narrative.Editor
 
         /// <summary>双击图资产时打开本窗口。</summary>
         [OnOpenAsset(1)]
-        private static bool OnOpenAsset(int instanceId, int line)
+        private static bool OnOpenAsset(EntityId entityId, int line)
         {
-            StoryGraph target = EditorUtility.InstanceIDToObject(instanceId) as StoryGraph;
+            StoryGraph target = EditorUtility.EntityIdToObject(entityId) as StoryGraph;
             if (target == null) return false;
             Open(target);
             return true;

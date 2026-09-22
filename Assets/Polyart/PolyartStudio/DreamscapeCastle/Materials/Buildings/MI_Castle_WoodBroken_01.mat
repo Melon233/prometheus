@@ -147,6 +147,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _AOIntensity: 1
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
     - _BUILTIN_AlphaClip: 0
     - _BUILTIN_Blend: 0
     - _BUILTIN_CullMode: 2
@@ -158,15 +160,21 @@ Material:
     - _BUILTIN_ZTest: 4
     - _BUILTIN_ZWrite: 1
     - _BUILTIN_ZWriteControl: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 0
+    - _CastShadows: 1
     - _CoverageMetallicIntensity: 0
     - _CoverageNormalIntensity: 0
     - _CoverageRoughnessIntensity: 0
     - _CoverageSize: 0
+    - _Cull: 2
     - _Dirt_Gradience_Feather: 1
     - _Dirt_Gradience_Height: 1
     - _Dirt_Mask_Contrast: 3.92
     - _Dirt_Mask_Growth: -0.18
     - _Dirt_Roughness: 1
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _EDGEBLENDING: 0
     - _EmissiveIntensity: 0
     - _EmissiveIntensity_1: 0.5
@@ -191,11 +199,15 @@ Material:
     - _POM_Camera_Gradience_Optimization: 2
     - _POM_Height_Ratio: 3
     - _POM_Max_Steps: 32
-    - _QueueControl: -1
+    - _QueueControl: 0
     - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _RoughnessIntensity: 1
     - _SloapContrast: 1
     - _SloapOffset: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
     - _USE_DIRT_MASK: 1
     - _USE_EMISSIVE: 0
     - _USE_LAYER_02: 0
@@ -203,6 +215,11 @@ Material:
     - _UV_Size: 1
     - _Use_Coverage_Gradient: 0
     - _Variation_Noise_Tiling: 1
+    - _WorkflowMode: 1
+    - _XRMotionVectorsPass: 1
+    - _ZTest: 4
+    - _ZWrite: 1
+    - _ZWriteControl: 0
     m_Colors:
     - _ColorTint: {r: 1, g: 1, b: 1, a: 0}
     - _Dirt_Color: {r: 0.48380733, g: 0.554717, b: 0.27107865, a: 1}

@@ -21,8 +21,6 @@ namespace Xuan.Prometheus
         /// <summary>保存旧角色 Prefab 相机相对角色根节点的旋转，用于维持迁移前的俯视角度和角色朝向继承关系。</summary>
         private static readonly Quaternion FollowLocalRotation = new Quaternion(-0.25689107f, 0.0063765603f, -0.0016927216f, -0.96641785f);
 
-        /// <summary>保存 SSGI 相机组件的完整运行时类型名；该插件位于预定义 Assembly-CSharp，运行时程序集不能直接建立编译期引用。</summary>
-        private const string SsgiCameraTypeName = "MF.SSGI.SSGICamera, Assembly-CSharp";
 
         /// <summary>保存玩法入口提供的常驻根节点，使相机对象与当前 Core 生命周期一致。</summary>
 
@@ -176,7 +174,6 @@ namespace Xuan.Prometheus
             outputCameraObject.AddComponent<StudioListener>();
             outputCameraData = outputCameraObject.AddComponent<UniversalAdditionalCameraData>();
             ConfigureUniversalCamera(outputCameraData);
-            // if (PrometheusRenderQualityController.CurrentPlatform == PrometheusRenderPlatform.Pc) AddSsgiCamera(outputCameraObject);
             PrometheusRenderQualityController.ApplyCurrentCameraQuality(outputCamera, outputCameraData);
             brain = outputCameraObject.AddComponent<CinemachineBrain>();
             brain.UpdateMethod = CinemachineBrain.UpdateMethods.LateUpdate;
@@ -253,14 +250,6 @@ namespace Xuan.Prometheus
         private static TrackerSettings CreateTrackerSettings()
         {
             return new TrackerSettings { BindingMode = BindingMode.LockToTarget, PositionDamping = Vector3.zero, AngularDampingMode = AngularDampingMode.Quaternion, RotationDamping = Vector3.zero, QuaternionDamping = 0f };
-        }
-
-        /// <summary>通过完整类型名添加旧相机使用的 SSGI 标记组件，并在插件缺失时立即暴露项目配置错误。</summary>
-        /// <param name="outputCameraObject">需要参与 SSGI 渲染的输出相机对象。</param>
-        private static void AddSsgiCamera(GameObject outputCameraObject)
-        {
-            Type ssgiCameraType = Type.GetType(SsgiCameraTypeName, true);
-            outputCameraObject.AddComponent(ssgiCameraType);
         }
 
         /// <summary>把系统持有的参考节点挂到当前角色根节点，并用 Cinemachine 立即接管等价的世界坐标和旋转。</summary>

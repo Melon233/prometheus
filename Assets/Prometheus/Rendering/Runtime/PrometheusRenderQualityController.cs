@@ -225,7 +225,6 @@ namespace Xuan.Prometheus.Rendering
             pipelineAsset.supportsCameraDepthTexture = profile.PostProcessingEnabled && renderingSettings.RequiresCameraDepthTexture;
             pipelineAsset.supportsCameraOpaqueTexture = profile.PostProcessingEnabled && renderingSettings.RequiresCameraOpaqueTexture;
             pipelineAsset.useSRPBatcher = renderingSettings.UseSrpBatcher;
-            pipelineAsset.supportsDynamicBatching = renderingSettings.SupportsDynamicBatching;
             pipelineAsset.useAdaptivePerformance = renderingSettings.UseAdaptivePerformance;
             pipelineAsset.renderScale = profile.RenderScale;
             pipelineAsset.msaaSampleCount = profile.MsaaSampleCount;

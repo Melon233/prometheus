@@ -21,7 +21,7 @@ namespace Xuan.Prometheus.Rendering.Editor
         private const string SettingsFolderPath = RenderingRootPath + "/Settings";
         private const string ResourcesFolderPath = SettingsFolderPath + "/Resources";
         private const string ForwardRendererDataAssetPath = PipelineFolderPath + "/PrometheusPcForwardRenderer.asset";
-        private const string SsgiRendererDataAssetPath = PipelineFolderPath + "/PrometheusPcDeferredMidRenderer.asset";
+        private const string DeferredMidRendererDataAssetPath = PipelineFolderPath + "/PrometheusPcDeferredMidRenderer.asset";
         private const string PipelineAssetPath = PipelineFolderPath + "/PrometheusPcDeferredMidPipeline.asset";
         private const string PcForwardLowPipelineAssetPath = PipelineFolderPath + "/PrometheusPcForwardLowPipeline.asset";
         private const string PcForwardMidPipelineAssetPath = PipelineFolderPath + "/PrometheusPcForwardMidPipeline.asset";
@@ -30,11 +30,7 @@ namespace Xuan.Prometheus.Rendering.Editor
         private const string MobileForwardMidPipelineAssetPath = PipelineFolderPath + "/PrometheusMobileForwardMidPipeline.asset";
         private const string EnvironmentProfileAssetPath = SettingsFolderPath + "/PrometheusEnvironmentProfile.asset";
         private const string RenderingSettingsAssetPath = ResourcesFolderPath + "/PrometheusRenderingSettings.asset";
-        private const string SsgiExampleRendererDataAssetPath = "Assets/Trd/MF.SSGI/ExampleScene/Renderer/MF.SSGI - Example URP Renderer - SSGI.asset";
         private const string ShinySsrExampleRendererDataAssetPath = "Assets/Trd/ShinySSRR/Pipelines/URP/ForwardRenderer.asset";
-        private const string SsgiFeatureTypeFullName = "MF.SSGI.SSGIFeature";
-        private const string SsgiVolumeComponentTypeFullName = "MF.SSGI.SSGIVolumeComponent";
-        private const string SsgiShaderSetupMenuPath = "Tools/SSGI/Add SSGI to 'Always included shaders'";
         private const string UrpCompatibilityModeDefine = "URP_COMPATIBILITY_MODE";
 
         /// <summary>
@@ -58,8 +54,8 @@ namespace Xuan.Prometheus.Rendering.Editor
             EnsureFolder(ResourcesFolderPath);
             UniversalRenderPipelineAsset sourcePipelineAsset = GetSourcePipelineAsset();
             UniversalRendererData forwardRendererData = GetOrCreateForwardRendererData(sourcePipelineAsset);
-            UniversalRendererData ssgiRendererData = GetOrCreateSsgiRendererData(forwardRendererData);
-            UniversalRenderPipelineAsset pipelineAsset = GetOrCreatePipelineAsset(sourcePipelineAsset, forwardRendererData, ssgiRendererData);
+            UniversalRendererData deferredMidRendererData = GetOrCreateDeferredMidRendererData(forwardRendererData);
+            UniversalRenderPipelineAsset pipelineAsset = GetOrCreatePipelineAsset(sourcePipelineAsset, forwardRendererData, deferredMidRendererData);
             UniversalRenderPipelineAsset pcForwardLowPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(PcForwardLowPipelineAssetPath);
             UniversalRenderPipelineAsset pcForwardMidPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(PcForwardMidPipelineAssetPath);
             UniversalRenderPipelineAsset pcDeferredLowPipelineAsset = LoadRequiredAsset<UniversalRenderPipelineAsset>(PcDeferredLowPipelineAssetPath);
@@ -74,10 +70,9 @@ namespace Xuan.Prometheus.Rendering.Editor
             ConfigurePipelineCapabilities(mobileForwardLowPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Low), PrometheusRenderPath.Forward);
             ConfigurePipelineCapabilities(mobileForwardMidPipelineAsset, renderingSettings, renderingSettings.GetQualityProfile(PrometheusRenderPlatform.Mobile, PrometheusRenderQualityLevel.Mid), PrometheusRenderPath.Forward);
             AssignPipelineToUnitySettings(mobileForwardLowPipelineAsset, mobileForwardMidPipelineAsset);
-            EnsureSsgiShadersAreIncludedInBuild();
             EnsureShinySsrVolumeProfiles();
             EditorUtility.SetDirty(forwardRendererData);
-            EditorUtility.SetDirty(ssgiRendererData);
+            EditorUtility.SetDirty(deferredMidRendererData);
             EditorUtility.SetDirty(pipelineAsset);
             EditorUtility.SetDirty(environmentProfile);
             EditorUtility.SetDirty(renderingSettings);
@@ -112,17 +107,6 @@ namespace Xuan.Prometheus.Rendering.Editor
             }
 
             PlayerSettings.SetScriptingDefineSymbols(activeNamedBuildTarget, string.Join(";", currentDefines.Append(UrpCompatibilityModeDefine)));
-        }
-
-        /// <summary>
-        /// Executes MF.SSGI's documented build setup so every runtime shader resolved through Shader.Find survives player shader stripping.
-        /// </summary>
-        private static void EnsureSsgiShadersAreIncludedInBuild()
-        {
-            if (!EditorApplication.ExecuteMenuItem(SsgiShaderSetupMenuPath))
-            {
-                throw new InvalidOperationException($"MF.SSGI must expose the documented menu item '{SsgiShaderSetupMenuPath}' before Prometheus rendering assets can be generated.");
-            }
         }
 
         /// <summary>
@@ -163,81 +147,35 @@ namespace Xuan.Prometheus.Rendering.Editor
         }
 
         /// <summary>
-        /// Returns the dedicated deferred renderer and guarantees that it owns one MF.SSGI feature followed by one optional Shiny SSR feature.
+        /// Returns the dedicated deferred renderer and guarantees that it owns one optional Shiny SSR feature.
         /// </summary>
-        private static UniversalRendererData GetOrCreateSsgiRendererData(UniversalRendererData forwardRendererData)
+        private static UniversalRendererData GetOrCreateDeferredMidRendererData(UniversalRendererData forwardRendererData)
         {
-            UniversalRendererData ssgiRendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SsgiRendererDataAssetPath);
-            if (ssgiRendererData == null)
+            UniversalRendererData deferredMidRendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(DeferredMidRendererDataAssetPath);
+            if (deferredMidRendererData == null)
             {
-                ssgiRendererData = UnityEngine.Object.Instantiate(forwardRendererData);
-                ssgiRendererData.name = "PrometheusPcDeferredMidRenderer";
-                ssgiRendererData.hideFlags = HideFlags.None;
-                AssetDatabase.CreateAsset(ssgiRendererData, SsgiRendererDataAssetPath);
+                deferredMidRendererData = UnityEngine.Object.Instantiate(forwardRendererData);
+                deferredMidRendererData.name = "PrometheusPcDeferredMidRenderer";
+                deferredMidRendererData.hideFlags = HideFlags.None;
+                AssetDatabase.CreateAsset(deferredMidRendererData, DeferredMidRendererDataAssetPath);
             }
 
-            SerializedObject serializedRendererData = new SerializedObject(ssgiRendererData);
+            SerializedObject serializedRendererData = new SerializedObject(deferredMidRendererData);
             SetIntegerProperty(serializedRendererData, "m_RenderingMode", (int)RenderingMode.Deferred);
             serializedRendererData.ApplyModifiedPropertiesWithoutUndo();
-            ScriptableRendererFeature ssgiFeature = EnsureSsgiFeature(ssgiRendererData);
-            EnsureShinySsrFeature(ssgiRendererData, ssgiFeature);
-            return ssgiRendererData;
+            EnsureShinySsrFeature(deferredMidRendererData);
+            return deferredMidRendererData;
         }
 
         /// <summary>
-        /// Adds the imported MF.SSGI feature as a renderer-owned sub-asset and keeps its GBuffer sampling switch aligned with the dedicated deferred renderer.
+        /// Adds Shiny SSR as a renderer-owned sub-asset and enables its deferred GBuffer path.
         /// </summary>
-        private static ScriptableRendererFeature EnsureSsgiFeature(UniversalRendererData ssgiRendererData)
+        private static void EnsureShinySsrFeature(UniversalRendererData deferredMidRendererData)
         {
-            ScriptableRendererFeature ssgiFeature = ssgiRendererData.rendererFeatures.FirstOrDefault(feature => feature != null && feature.GetType().FullName == SsgiFeatureTypeFullName);
-            if (ssgiFeature == null)
-            {
-                UniversalRendererData exampleRendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(SsgiExampleRendererDataAssetPath);
-                if (exampleRendererData == null)
-                {
-                    throw new InvalidOperationException($"The imported MF.SSGI example renderer is required at '{SsgiExampleRendererDataAssetPath}' before generating the dedicated project renderer.");
-                }
-
-                ScriptableRendererFeature exampleSsgiFeature = exampleRendererData.rendererFeatures.SingleOrDefault(feature => feature != null && feature.GetType().FullName == SsgiFeatureTypeFullName);
-                if (exampleSsgiFeature == null)
-                {
-                    throw new InvalidOperationException($"Renderer '{SsgiExampleRendererDataAssetPath}' must contain exactly one '{SsgiFeatureTypeFullName}' feature to seed the project-owned renderer.");
-                }
-
-                ssgiFeature = UnityEngine.Object.Instantiate(exampleSsgiFeature);
-                ssgiFeature.name = exampleSsgiFeature.name;
-                ssgiFeature.hideFlags = HideFlags.None;
-                AssetDatabase.AddObjectToAsset(ssgiFeature, ssgiRendererData);
-                ssgiRendererData.rendererFeatures.Add(ssgiFeature);
-            }
-
-            SerializedObject serializedFeature = new SerializedObject(ssgiFeature);
-            SerializedProperty showInSceneViewProperty = serializedFeature.FindProperty("showInSceneView");
-            SerializedProperty settingsProperty = serializedFeature.FindProperty("settings");
-            SerializedProperty useDeferredRenderingProperty = settingsProperty?.FindPropertyRelative("UseDeferredRendering");
-            SerializedProperty debugScreenCoverageProperty = settingsProperty?.FindPropertyRelative("DebugScreenCoverage");
-            if (showInSceneViewProperty == null || useDeferredRenderingProperty == null || debugScreenCoverageProperty == null)
-            {
-                throw new InvalidOperationException($"Feature '{ssgiFeature.name}' does not expose the expected Scene View, deferred-rendering, and debug-coverage serialization contract.");
-            }
-
-            showInSceneViewProperty.boolValue = false;
-            useDeferredRenderingProperty.boolValue = true;
-            debugScreenCoverageProperty.floatValue = 1f;
-            serializedFeature.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(ssgiFeature);
-            return ssgiFeature;
-        }
-
-        /// <summary>
-        /// Adds Shiny SSR as a renderer-owned sub-asset, enables its deferred GBuffer path, and schedules it after the current SSGI composition event.
-        /// </summary>
-        private static void EnsureShinySsrFeature(UniversalRendererData ssgiRendererData, ScriptableRendererFeature ssgiFeature)
-        {
-            ShinySsrRendererFeature[] existingShinySsrFeatures = ssgiRendererData.rendererFeatures.OfType<ShinySsrRendererFeature>().ToArray();
+            ShinySsrRendererFeature[] existingShinySsrFeatures = deferredMidRendererData.rendererFeatures.OfType<ShinySsrRendererFeature>().ToArray();
             if (existingShinySsrFeatures.Length > 1)
             {
-                throw new InvalidOperationException($"Renderer '{ssgiRendererData.name}' contains {existingShinySsrFeatures.Length} Shiny SSR features, but the project rendering chain owns exactly one optional SSR pass.");
+                throw new InvalidOperationException($"Renderer '{deferredMidRendererData.name}' contains {existingShinySsrFeatures.Length} Shiny SSR features, but the project rendering chain owns exactly one optional SSR pass.");
             }
 
             ShinySsrRendererFeature shinySsrFeature = existingShinySsrFeatures.SingleOrDefault();
@@ -258,15 +196,8 @@ namespace Xuan.Prometheus.Rendering.Editor
                 shinySsrFeature = UnityEngine.Object.Instantiate(exampleShinySsrFeature);
                 shinySsrFeature.name = exampleShinySsrFeature.name;
                 shinySsrFeature.hideFlags = HideFlags.None;
-                AssetDatabase.AddObjectToAsset(shinySsrFeature, ssgiRendererData);
-                ssgiRendererData.rendererFeatures.Add(shinySsrFeature);
-            }
-
-            SerializedProperty ssgiSettingsProperty = new SerializedObject(ssgiFeature).FindProperty("settings");
-            SerializedProperty ssgiRenderPassEventProperty = ssgiSettingsProperty?.FindPropertyRelative("RenderPassEvent");
-            if (ssgiRenderPassEventProperty == null)
-            {
-                throw new InvalidOperationException($"Feature '{ssgiFeature.name}' does not expose the expected render-pass event serialization contract.");
+                AssetDatabase.AddObjectToAsset(shinySsrFeature, deferredMidRendererData);
+                deferredMidRendererData.rendererFeatures.Add(shinySsrFeature);
             }
 
             SerializedObject serializedShinySsrFeature = new SerializedObject(shinySsrFeature);
@@ -282,11 +213,6 @@ namespace Xuan.Prometheus.Rendering.Editor
             useDeferredProperty.boolValue = true;
             enableTransparencyDepthPrepassProperty.boolValue = true;
             transparencyDepthPrepassLayerMaskProperty.intValue |= GetRequiredShinySsrTransparentDepthLayerMask();
-            if (renderPassEventProperty.intValue <= ssgiRenderPassEventProperty.intValue)
-            {
-                renderPassEventProperty.intValue = ssgiRenderPassEventProperty.intValue + 1;
-            }
-
             serializedShinySsrFeature.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(shinySsrFeature);
         }
@@ -312,17 +238,17 @@ namespace Xuan.Prometheus.Rendering.Editor
         }
 
         /// <summary>
-        /// Adds one active Shiny SSR Volume component to every project rendering profile that already owns MF.SSGI settings while preserving all existing authored values.
+        /// Adds one active Shiny SSR Volume component to every project rendering profile while preserving all existing authored values.
         /// </summary>
         private static void EnsureShinySsrVolumeProfiles()
         {
-            VolumeProfile[] ssgiVolumeProfiles = AssetDatabase.FindAssets("t:VolumeProfile", new[] { SettingsFolderPath }).Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<VolumeProfile>).Where(profile => profile != null && profile.components.Any(component => component != null && component.GetType().FullName == SsgiVolumeComponentTypeFullName)).ToArray();
-            if (ssgiVolumeProfiles.Length == 0)
+            VolumeProfile[] renderingVolumeProfiles = AssetDatabase.FindAssets("t:VolumeProfile", new[] { SettingsFolderPath }).Select(AssetDatabase.GUIDToAssetPath).Select(AssetDatabase.LoadAssetAtPath<VolumeProfile>).Where(profile => profile != null).ToArray();
+            if (renderingVolumeProfiles.Length == 0)
             {
-                throw new InvalidOperationException($"Folder '{SettingsFolderPath}' must contain at least one Volume profile with '{SsgiVolumeComponentTypeFullName}' before Shiny SSR can join the SSGI rendering chain.");
+                throw new InvalidOperationException($"Folder '{SettingsFolderPath}' must contain at least one Volume profile before Shiny SSR can join the rendering chain.");
             }
 
-            foreach (VolumeProfile volumeProfile in ssgiVolumeProfiles)
+            foreach (VolumeProfile volumeProfile in renderingVolumeProfiles)
             {
                 if (volumeProfile.TryGet(out ShinySsrVolumeComponent shinySsrVolumeComponent))
                 {
@@ -342,7 +268,7 @@ namespace Xuan.Prometheus.Rendering.Editor
         /// <summary>
         /// Returns the existing single Prometheus pipeline asset or clones the active URP asset during first-time generation.
         /// </summary>
-        private static UniversalRenderPipelineAsset GetOrCreatePipelineAsset(UniversalRenderPipelineAsset sourcePipelineAsset, UniversalRendererData forwardRendererData, UniversalRendererData ssgiRendererData)
+        private static UniversalRenderPipelineAsset GetOrCreatePipelineAsset(UniversalRenderPipelineAsset sourcePipelineAsset, UniversalRendererData forwardRendererData, UniversalRendererData deferredMidRendererData)
         {
             UniversalRenderPipelineAsset pipelineAsset = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelineAssetPath);
             if (pipelineAsset != null)
@@ -354,7 +280,7 @@ namespace Xuan.Prometheus.Rendering.Editor
             pipelineAsset.name = "PrometheusPcDeferredMidPipeline";
             pipelineAsset.hideFlags = HideFlags.None;
             AssetDatabase.CreateAsset(pipelineAsset, PipelineAssetPath);
-            ConfigurePipelineRenderers(pipelineAsset, forwardRendererData, ssgiRendererData);
+            ConfigurePipelineRenderers(pipelineAsset, forwardRendererData, deferredMidRendererData);
             return pipelineAsset;
         }
 
@@ -410,9 +336,9 @@ namespace Xuan.Prometheus.Rendering.Editor
         }
 
         /// <summary>
-        /// Replaces the pipeline renderer list with the default forward renderer followed by the dedicated deferred SSGI renderer through URP's serialized asset contract.
+        /// Replaces the pipeline renderer list with the default forward renderer followed by the dedicated deferred renderer through URP's serialized asset contract.
         /// </summary>
-        private static void ConfigurePipelineRenderers(UniversalRenderPipelineAsset pipelineAsset, UniversalRendererData forwardRendererData, UniversalRendererData ssgiRendererData)
+        private static void ConfigurePipelineRenderers(UniversalRenderPipelineAsset pipelineAsset, UniversalRendererData forwardRendererData, UniversalRendererData deferredMidRendererData)
         {
             SerializedObject serializedPipeline = new SerializedObject(pipelineAsset);
             SerializedProperty rendererDataList = serializedPipeline.FindProperty("m_RendererDataList");
@@ -424,7 +350,7 @@ namespace Xuan.Prometheus.Rendering.Editor
 
             rendererDataList.arraySize = 2;
             rendererDataList.GetArrayElementAtIndex(0).objectReferenceValue = forwardRendererData;
-            rendererDataList.GetArrayElementAtIndex(1).objectReferenceValue = ssgiRendererData;
+            rendererDataList.GetArrayElementAtIndex(1).objectReferenceValue = deferredMidRendererData;
             defaultRendererIndex.intValue = 0;
             serializedPipeline.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -436,7 +362,6 @@ namespace Xuan.Prometheus.Rendering.Editor
         {
             PrometheusRenderQualityController.ApplyProfileToPipeline(renderingSettings, profile, pipelineAsset);
             pipelineAsset.msaaSampleCount = renderPath == PrometheusRenderPath.Deferred ? 1 : profile.MsaaSampleCount;
-            pipelineAsset.supportsDynamicBatching = profile.Platform == PrometheusRenderPlatform.Mobile;
             SerializedObject serializedPipeline = new SerializedObject(pipelineAsset);
             SetIntegerProperty(serializedPipeline, "m_MainLightRenderingMode", profile.RealtimeLightingEnabled ? (int)renderingSettings.MainLightRenderingMode : (int)LightRenderingMode.Disabled);
             SetBooleanProperty(serializedPipeline, "m_MainLightShadowsSupported", profile.RealtimeShadowsEnabled && renderingSettings.SupportsMainLightShadows);

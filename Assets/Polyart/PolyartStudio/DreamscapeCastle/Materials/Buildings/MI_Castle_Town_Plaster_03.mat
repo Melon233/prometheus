@@ -24,7 +24,9 @@ Material:
   m_Shader: {fileID: -6465566751694194690, guid: 1d79841aac711a14096152a27f862c49, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _USE_LAYER_2
+  - _USE_LAYER_3
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -53,11 +55,23 @@ Material:
         m_Texture: {fileID: 2800000, guid: 156f9e7602a33424a8ddeff95fc166ba, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Layer_02_Color:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Layer_02_Color_A:
         m_Texture: {fileID: 2800000, guid: 1efee07fa7ab2694f861a333559634d7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Layer_02_Emissive:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Layer_02_Emissive_A:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_02_Normal:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -65,8 +79,28 @@ Material:
         m_Texture: {fileID: 2800000, guid: 38100262852536a4eb3def1a64c008b0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Layer_02_ORM:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Layer_02_ORM_A:
         m_Texture: {fileID: 2800000, guid: e2b2f4b3ae3279f4c8ccebbcc955d887, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_Color:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_Emissive:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_Normal:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Layer_03_ORM:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _POM_Height:
@@ -100,20 +134,33 @@ Material:
     - _Dirt_Gradient_Mask_Feather: -0.06
     - _Dirt_Gradient_Mask_Height: 0
     - _Dirt_Mask_Contrast: 4.07
+    - _Dirt_Mask_Feather: 0.1
     - _Dirt_Mask_Growth: 0.43
     - _Dirt_Roughness: 4.38
+    - _Dirt_Smoothness: 0
     - _LayerContrast: 22.56
     - _Layer_01_AO: 0
     - _Layer_01_Emissive_Intensity: 1
     - _Layer_01_Flaten_Normal: 1
     - _Layer_01_Metallic: 1
+    - _Layer_01_Normal_Strength: 1
     - _Layer_01_Roughness: 0.97
+    - _Layer_02_AO: 1
     - _Layer_02_AO_A: 0.37
     - _Layer_02_Emissive_Intensity_A: 13.4
     - _Layer_02_Flaten_Normal_A: 0.31
+    - _Layer_02_Metallic: 1
     - _Layer_02_Metallic_A: 1
+    - _Layer_02_Normal_Strength: 1
+    - _Layer_02_Roughness: 1
     - _Layer_02_Roughness_A: 0.77
     - _Layer_02_Tiling_Multiplier_A: 1
+    - _Layer_03_AO: 1
+    - _Layer_03_Metallic: 1
+    - _Layer_03_Normal_Strength: 1
+    - _Layer_03_Roughness: 1
+    - _Layer_1_2_Contrast: 1
+    - _Layer_2_3_Contrast: 1
     - _POMCameraDistanceOptimization_inMeters: 100
     - _POMCameraGradienceOptimization_inMeters: 2
     - _POM_Height_Ratio: 0.63
@@ -124,15 +171,27 @@ Material:
     - _USE_DIRT_MASK: 0
     - _USE_EMISSIVE: 0
     - _USE_LAYER_02_A: 0
+    - _USE_LAYER_2: 1
+    - _USE_LAYER_3: 1
     - _USE_PARALLAX_OCCLUSION: 0
+    - _USE_TILING_VARIATION: 0
     - _UV_Scale: 1
+    - _Use_Vertex_Paint_for_Tiling_Variation: 0
     - _VariationNoiseTiling: 0.17
+    - _Variation_Mask_Contrast: 1
+    - _Variation_Tiling: 1.5
+    - _XRMotionVectorsPass: 1
     m_Colors:
     - _Dirt_Color: {r: 0.46226418, g: 0.44493183, b: 0.4339178, a: 1}
     - _Layer_01_Emissive_Color: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
     - _Layer_01_Tint: {r: 0.6603774, g: 0.5317284, b: 0.4765931, a: 0}
+    - _Layer_01_Variation_Tint: {r: 1, g: 1, b: 1, a: 0}
+    - _Layer_02_Emissive_Color: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
     - _Layer_02_Emissive_Color_A: {r: 1, g: 1, b: 1, a: 0}
+    - _Layer_02_Tint: {r: 0.9716981, g: 0.9716981, b: 0.9716981, a: 0}
     - _Layer_02_Tint_A: {r: 0.990566, g: 0.990566, b: 0.990566, a: 0}
+    - _Layer_03_Emissive_Color: {r: 0.9811321, g: 0.9765041, b: 0.9765041, a: 0}
+    - _Layer_03_Tint: {r: 0.9716981, g: 0.9716981, b: 0.9716981, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &9154114959897949800

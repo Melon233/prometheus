@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALPHATEST_ON
   - _BUILTIN_ALPHATEST_ON
   - _BUILTIN_AlphaClip
   - _USE_VERTEX_COLOR
@@ -70,6 +71,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaClip: 1
+    - _AlphaToMask: 1
     - _Alpha_Clip: 0.5
     - _BUILTIN_AlphaClip: 1
     - _BUILTIN_Blend: 0
@@ -82,15 +85,25 @@ Material:
     - _BUILTIN_ZTest: 4
     - _BUILTIN_ZWrite: 1
     - _BUILTIN_ZWriteControl: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 1
+    - _CastShadows: 1
+    - _Cull: 2
     - _Dither_Bottom_Level: 0
     - _Dither_Fade: 2
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _Emissive_Intensity: 0
     - _Gradience_Height: 1
     - _Gradience_Power: 1
     - _Normal_Intensity: 1
-    - _QueueControl: -1
+    - _QueueControl: 0
     - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _Smoothness: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _Surface: 0
     - _USE_DITHER: 0
     - _USE_GRADIENT_MAP: 0
     - _USE_GRADIENT_MAP_INSTEAD: 0
@@ -103,6 +116,11 @@ Material:
     - _Wind_Large_Scale: 0
     - _Wind_Small_Intensity: 0.3
     - _Wind_Small_Scale: 5
+    - _WorkflowMode: 1
+    - _XRMotionVectorsPass: 1
+    - _ZTest: 4
+    - _ZWrite: 1
+    - _ZWriteControl: 0
     m_Colors:
     - _Color_Base: {r: 0.2713315, g: 0.4528302, b: 0.1644713, a: 1}
     - _Color_Bottom: {r: 0.27133146, g: 0.45283014, b: 0.16447127, a: 1}

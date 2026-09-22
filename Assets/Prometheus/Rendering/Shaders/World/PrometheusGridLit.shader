@@ -189,7 +189,7 @@ Shader "Prometheus/Rendering/World/Grid Lit"
             return color;
         }
 
-        // Writes procedural albedo, metallic response, occlusion, world normal, smoothness, and baked GI into URP's Deferred buffers so MF.SSGI can light the grid surface.
+        // Writes procedural albedo, metallic response, occlusion, world normal, smoothness, and baked GI into URP's Deferred buffers so deferred lighting and screen-space features can light the grid surface.
         GBufferFragOutput GridLitGBufferFragment(Varyings input)
         {
             UNITY_SETUP_INSTANCE_ID(input);

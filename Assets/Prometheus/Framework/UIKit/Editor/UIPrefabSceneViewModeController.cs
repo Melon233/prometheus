@@ -1,3 +1,4 @@
+using System.Globalization;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -19,6 +20,9 @@ namespace Xuan.Prometheus.Editor
 
         /// <summary>记录进入 UI Prefab Stage 时被切换的 SceneView 实例编号。</summary>
         private const string SceneViewInstanceIdSessionKey = "Prometheus.UIKit.UIPrefabSceneViewMode.SceneViewInstanceId";
+
+        /// <summary>SessionState 只接受基础类型，因此 EntityId 以其原始 ulong 的十进制文本形式存取。</summary>
+        private const string UnrecordedSceneViewEntityId = "";
 
         /// <summary>记录进入 UI Prefab Stage 前 Scene 视图是否已经处于 2D 模式。</summary>
         private const string Original2DModeSessionKey = "Prometheus.UIKit.UIPrefabSceneViewMode.Original2DMode";
@@ -162,10 +166,10 @@ namespace Xuan.Prometheus.Editor
         {
             SceneView sceneView = ResolveActiveSceneView();
             if (sceneView == null) return;
-            int recordedInstanceId = SessionState.GetInt(SceneViewInstanceIdSessionKey, 0);
+            string recordedEntityId = SessionState.GetString(SceneViewInstanceIdSessionKey, UnrecordedSceneViewEntityId);
             bool recorded2DMode = SessionState.GetBool(Original2DModeSessionKey, false);
-            if (SessionState.GetBool(HasRecordedModeSessionKey, false) && recordedInstanceId == sceneView.GetInstanceID() && recorded2DMode == sceneView.in2DMode) return;
-            SessionState.SetInt(SceneViewInstanceIdSessionKey, sceneView.GetInstanceID());
+            if (SessionState.GetBool(HasRecordedModeSessionKey, false) && recordedEntityId == FormatEntityId(sceneView.GetEntityId()) && recorded2DMode == sceneView.in2DMode) return;
+            SessionState.SetString(SceneViewInstanceIdSessionKey, FormatEntityId(sceneView.GetEntityId()));
             SessionState.SetBool(Original2DModeSessionKey, sceneView.in2DMode);
             SessionState.SetBool(HasRecordedModeSessionKey, true);
         }
@@ -185,8 +189,16 @@ namespace Xuan.Prometheus.Editor
         /// <summary>通过编辑器实例编号找回进入 UI Prefab Stage 时实际切换的 Scene 视图。</summary>
         private static SceneView ResolveRecordedSceneView()
         {
-            int instanceId = SessionState.GetInt(SceneViewInstanceIdSessionKey, 0);
-            return instanceId == 0 ? null : EditorUtility.EntityIdToObject(instanceId) as SceneView;
+            string recordedEntityId = SessionState.GetString(SceneViewInstanceIdSessionKey, UnrecordedSceneViewEntityId);
+            if (!ulong.TryParse(recordedEntityId, NumberStyles.None, CultureInfo.InvariantCulture, out ulong rawEntityId)) return null;
+            EntityId entityId = EntityId.FromULong(rawEntityId);
+            return entityId == EntityId.None ? null : EditorUtility.EntityIdToObject(entityId) as SceneView;
+        }
+
+        /// <summary>把 EntityId 编码为可写入 SessionState 的稳定文本。</summary>
+        private static string FormatEntityId(EntityId entityId)
+        {
+            return EntityId.ToULong(entityId).ToString(CultureInfo.InvariantCulture);
         }
     }
 }

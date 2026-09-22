@@ -67,7 +67,7 @@ namespace Xuan.Prometheus.Ai
             attackComponent.PrimaryHitbox.handler = this;
             if (attackComponent.PrimaryHitbox.cod != null) attackComponent.PrimaryHitbox.cod.enabled = false;
             eventComponent.AddListener<DieEvent>(OnDie);
-            brain = new EnemyAiBrain(aiComponent.Definition, this, Entity.bindGo.GetInstanceID());
+            brain = new EnemyAiBrain(aiComponent.Definition, this, Entity.bindGo.GetEntityId().GetHashCode());
         }
 
         /// <summary>只要实体未死亡且行动能力门禁允许，就允许 Entity 调度器启用 AI 宿主。</summary>

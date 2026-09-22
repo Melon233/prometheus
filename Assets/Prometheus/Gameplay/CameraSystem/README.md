@@ -2,7 +2,7 @@
 
 ## 目标
 
-`CameraSystem` 负责当前单局唯一的输出相机与 Cinemachine 跟随镜头。角色 Prefab 只保留角色表现和玩法组件，不再携带 `Camera`、`AudioListener`、FMOD Listener、URP 相机数据或 SSGI 相机组件。
+`CameraSystem` 负责当前单局唯一的输出相机与 Cinemachine 跟随镜头。角色 Prefab 只保留角色表现和玩法组件，不再携带 `Camera`、`AudioListener`、FMOD Listener 或 URP 相机数据。
 
 第一阶段只实现与旧角色子相机一致的坐标跟随：相机保持角色局部坐标 `(0, 3.4884024, -4.0738688)` 和原有局部旋转，不增加位置阻尼、旋转阻尼或切换混合。
 
@@ -17,9 +17,7 @@
 
 ## 画面与监听配置
 
-输出相机继续使用旧 Prefab 的透视参数与裁剪面，但不再写死 HDR、MSAA、Renderer Index、后处理和 Dithering。相机通过 Renderer Index `-1` 继承当前平台管线的唯一默认 Renderer，并订阅 `PrometheusRenderQualityController.QualityChanged`，在 Low/Mid 或 PC Forward/Deferred 切换后同步相机级 HDR、MSAA、阴影、后处理、SMAA 与 Dithering 开关。Unity `AudioListener` 和 FMOD `StudioListener` 始终位于唯一输出相机；`SSGICamera` 只在桌面端创建，实际 SSGI Pass 仅存在于 PC Deferred Mid 管线。
-
-`SSGICamera` 位于预定义 `Assembly-CSharp`，而 `CameraSystem` 位于项目的 `Runtime` 程序集，因此系统通过完整运行时类型名添加该组件，并由同目录 `link.xml` 明确保留它，避免 IL2CPP 构建裁剪。
+输出相机继续使用旧 Prefab 的透视参数与裁剪面，但不再写死 HDR、MSAA、Renderer Index、后处理和 Dithering。相机通过 Renderer Index `-1` 继承当前平台管线的唯一默认 Renderer，并订阅 `PrometheusRenderQualityController.QualityChanged`，在 Low/Mid 或 PC Forward/Deferred 切换后同步相机级 HDR、MSAA、阴影、后处理、SMAA 与 Dithering 开关。Unity `AudioListener` 和 FMOD `StudioListener` 始终位于唯一输出相机。
 
 ## 扩展约束
 

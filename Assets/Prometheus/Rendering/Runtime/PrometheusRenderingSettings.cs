@@ -29,7 +29,6 @@ namespace Xuan.Prometheus.Rendering
         [SerializeField, Tooltip("Keeps the camera depth texture available for soft particles and depth-aware effects.")] private bool requiresCameraDepthTexture = true;
         [SerializeField, Tooltip("Keeps the camera opaque texture available for refraction effects.")] private bool requiresCameraOpaqueTexture = true;
         [SerializeField, Tooltip("Enables the Scriptable Render Pipeline batcher for compatible project shaders.")] private bool useSrpBatcher = true;
-        [SerializeField, Tooltip("Enables Unity dynamic batching in addition to the SRP batcher.")] private bool supportsDynamicBatching;
         [SerializeField, Tooltip("Allows Adaptive Performance to change URP settings outside the project quality controller.")] private bool useAdaptivePerformance;
         [SerializeField, Tooltip("Enables Shiny screen-space reflections when the runtime rendering controller initializes.")] private bool screenSpaceReflectionsEnabledByDefault = true;
         [SerializeField, Tooltip("Keeps the main directional light on per-pixel Lit evaluation for every runtime quality profile.")] private LightRenderingMode mainLightRenderingMode = LightRenderingMode.PerPixel;
@@ -73,11 +72,6 @@ namespace Xuan.Prometheus.Rendering
         /// Gets whether the runtime pipeline enables the SRP batcher.
         /// </summary>
         public bool UseSrpBatcher => useSrpBatcher;
-
-        /// <summary>
-        /// Gets whether the runtime pipeline enables dynamic batching.
-        /// </summary>
-        public bool SupportsDynamicBatching => supportsDynamicBatching;
 
         /// <summary>
         /// Gets whether Adaptive Performance may modify URP configuration independently.
