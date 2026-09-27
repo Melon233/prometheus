@@ -81,7 +81,7 @@ namespace Xuan.Prometheus.Narrative
         /// <summary>获取已选择过的一次性选项路径集合。</summary>
         public IReadOnlyCollection<string> ChosenOptions => chosenOptions;
 
-        /// <summary>由 StoryRunner 写入的节拍进入回调，用于向存档层报告续演位置。</summary>
+        /// <summary>由 StoryRunner 写入的节拍进入回调，用于报告续演位置。</summary>
         internal Action<StoryPath> BeatEnteredCallback { get; set; }
 
         /// <summary>获取当前是否存在尚未被最近的 Seq 消费的提前结束请求。</summary>
@@ -170,7 +170,7 @@ namespace Xuan.Prometheus.Narrative
             return !optionPath.IsEmpty && chosenOptions.Contains(optionPath.Value);
         }
 
-        /// <summary>用快照覆盖已选择的一次性选项集合。</summary>
+        /// <summary>用给定集合覆盖已选择的一次性选项；为空表示清空。用于上下文重建时搬运运行时状态。</summary>
         public void RestoreChosenOptions(IEnumerable<string> paths)
         {
             chosenOptions.Clear();
@@ -198,13 +198,13 @@ namespace Xuan.Prometheus.Narrative
             return false;
         }
 
-        /// <summary>导出全部选择结果的副本，供存档序列化使用。</summary>
+        /// <summary>导出全部选择结果的副本，供上下文重建时搬运运行时状态。</summary>
         public IReadOnlyDictionary<string, int> CaptureChoices()
         {
             return new Dictionary<string, int>(choiceResults, StringComparer.Ordinal);
         }
 
-        /// <summary>用快照覆盖全部选择结果。</summary>
+        /// <summary>用给定结果覆盖全部选择结果；为空表示清空。</summary>
         public void RestoreChoices(IReadOnlyDictionary<string, int> snapshot)
         {
             choiceResults.Clear();

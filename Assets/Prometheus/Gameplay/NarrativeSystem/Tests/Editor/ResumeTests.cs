@@ -120,48 +120,6 @@ namespace Xuan.Prometheus.Narrative.Tests
             }
         }
 
-        /// <summary>验证存档可以完整往返：变量、已选选项、选择结果与已看过剧情都被保留。</summary>
-        [Test]
-        public void Snapshot_RoundTripsAllPersistentState()
-        {
-            RunResult full = RunFull();
-
-            NarrativeSnapshot snapshot = NarrativeSnapshot.Capture(full.Context, new[] { StoryId }, StoryId, new StoryPath(StoryId + "/tail"));
-            string json = snapshot.ToJson();
-
-            FakeDialogueView view = new FakeDialogueView();
-            StoryContext restored = CreateContext(view);
-            NarrativeSnapshot parsed = NarrativeSnapshot.FromJson(json);
-            parsed.RestoreTo(restored);
-
-            AssertVariablesEqual(full.Variables, restored.Variables.Capture(), "snapshot");
-            Assert.That(parsed.seenStories, Does.Contain(StoryId));
-            Assert.That(parsed.HasResumePoint, Is.True);
-            Assert.That(parsed.GetResumePath().Value, Is.EqualTo(StoryId + "/tail"));
-            Assert.That(restored.TryGetChoice(new StoryPath(StoryId + "/choice"), out int option), Is.True);
-            Assert.That(option, Is.EqualTo(0));
-        }
-
-        /// <summary>验证快照能够还原各种类型的变量值。</summary>
-        [Test]
-        public void Snapshot_PreservesValueKinds()
-        {
-            FakeDialogueView view = new FakeDialogueView();
-            StoryContext source = CreateContext(view);
-            source.Variables.SetFlag("done", true);
-            source.Variables.Set("var.count", 42);
-            source.Variables.Set("var.state", "Done");
-
-            NarrativeSnapshot snapshot = NarrativeSnapshot.FromJson(NarrativeSnapshot.Capture(source, null, null, StoryPath.None).ToJson());
-            StoryContext target = CreateContext(new FakeDialogueView());
-            snapshot.RestoreTo(target);
-
-            Assert.That(target.Variables.GetFlag("done"), Is.True);
-            Assert.That(target.Variables.Get("var.count").AsNumber(), Is.EqualTo(42d));
-            Assert.That(target.Variables.Get("var.state").AsText(), Is.EqualTo("Done"));
-            Assert.That(target.EvaluateValue("var.count >= 42").AsBool(), Is.True);
-        }
-
         /// <summary>完整演绎一遍测试剧情。</summary>
         private static RunResult RunFull()
         {

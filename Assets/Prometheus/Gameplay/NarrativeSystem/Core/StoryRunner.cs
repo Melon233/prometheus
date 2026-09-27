@@ -14,7 +14,7 @@ namespace Xuan.Prometheus.Narrative
         /// <summary>控制当前演绎取消与跳过的令牌源；空表示当前没有演绎在进行。</summary>
         private CancellationTokenSource runSource;
 
-        /// <summary>进入一个新节拍时触发，存档层可据此记录续演位置。</summary>
+        /// <summary>进入一个新节拍时触发，NarrativeSystem 据此记录续演位置。</summary>
         public event Action<StoryPath> BeatEntered;
 
         /// <summary>获取当前是否有演绎正在进行。</summary>
@@ -45,7 +45,7 @@ namespace Xuan.Prometheus.Narrative
         /// </para>
         /// </summary>
         /// <param name="root">剧情树根节点。</param>
-        /// <param name="context">本次演绎使用的上下文；续演前应先从存档恢复变量与选择结果。</param>
+        /// <param name="context">本次演绎使用的上下文；续演时上下文中必须已有中断前的变量与选择结果。</param>
         /// <param name="rootId">根节点稳定标识，用于生成节点路径。</param>
         /// <param name="resumeAt">续演点路径；空路径表示从头演绎。</param>
         /// <param name="mode">演绎模式；预览模式下节拍不等待玩家输入。</param>
@@ -74,8 +74,8 @@ namespace Xuan.Prometheus.Narrative
                 await root.PlayAsync(context, runSource.Token);
                 if (context.IsResuming)
                 {
-                    // 快进走完整棵树都没碰到续演点，说明存档记录的分支与当前变量或选择结果不一致。
-                    Debug.LogError($"[Narrative] 剧情 '{rootId}' 未能到达续演点 '{resumeAt}'：存档中的分支与当前状态不一致。");
+                    // 快进走完整棵树都没碰到续演点，说明记录的续演点与当前变量或选择结果不一致。
+                    Debug.LogError($"[Narrative] 剧情 '{rootId}' 未能到达续演点 '{resumeAt}'：续演点所在分支与当前状态不一致。");
                     return StoryResult.Failed;
                 }
                 // 组合子会就地消化跳过引发的取消，因此正常返回并不代表演绎完整；以是否请求过跳过为准。

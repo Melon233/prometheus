@@ -68,7 +68,6 @@
 | `Ports/Scene/` | 端口的场景注册表实现，服务于演示场景与轻量关卡 |
 | `Ports/Runtime/` | 端口的玩法实现，对接 AssetKit / CameraSystem / InputSystem / TeamSystem / PoiSystem |
 | `NarrativePlayback.cs` | 在玩法世界演一段剧情图的统一入口：加载图 → 装配端口 → 开界面 → 进舞台 → 演出 → 逆序还原 |
-| `Core/NarrativeSnapshot.cs` | 存档格式与往返；**不含任何演出播放进度** |
 | `Demo/` | 演示场景、演示剧情、运行时构建的对话视图 |
 | `Definitions/` | `StoryGraph` 图资产、节点模型与编辑期校验 |
 | `Editor/` | 剧情图编辑器窗口与检视面板 |
@@ -163,8 +162,7 @@ Cinematic("seq_altar")
 // 跳过：仅对已完整看过一次的剧情开放
 if (!narrative.RequestSkip()) { /* 尚未看过，被拒绝 */ }
 
-// 断点续演：续演点之前的节点只落终态
-narrative.RestoreSnapshot(json);
+// 断点续演：剧情被中止时系统在内存中记下续演点，续演点之前的节点只落终态
 await narrative.ResumeAsync(root, storyId, narrative.ResumePath);
 
 // 编辑器预览：从任意节拍开始，节拍不等待玩家输入
@@ -175,19 +173,16 @@ await narrative.PreviewAsync(root, storyId, someBeatPath);
 **是其祖先**就向下递归，**其余**一律只 `Settle`。两处特别处理：
 
 - `Par` 的并发子节点没有先后关系，不含续演点的一律落终态。
-- `Choose` **不会替玩家重新选择**，而是沿用存档中记录的结果；缺少记录时直接报错。
+- `Choose` **不会替玩家重新选择**，而是沿用上下文中记录的结果；缺少记录时直接报错。
 
-快进走完整棵树仍未碰到续演点时返回 `Failed` 并报错——通常意味着存档与当前分支状态不一致。
+快进走完整棵树仍未碰到续演点时返回 `Failed` 并报错——通常意味着续演点与当前分支状态不一致。
 
-### 存档
+### 运行时状态（不做存档）
 
-`NarrativeSnapshot` 只记录：变量与旗标、已看过的剧情、一次性选项记录、各选项节点的选择结果、续演点。
-**不记录** Timeline 时间、镜头位置或特效句柄——这些都由 `Settle` 重建。实际存档很小：
-
-```json
-{"variables":[{"path":"var.trust","kind":2,"value":"1"}],"seenStories":[],
- "chosenOptions":[],"choices":[],"resumeStoryId":"demo_altar","resumePath":"demo_altar/elder_first"}
-```
+单机版不做存档，剧情相关的状态只存在于本次运行、随会话销毁清零：变量与旗标、已看过的剧情（决定能否跳过）、
+一次性选项记录、各选项节点的选择结果、续演点（剧情被中止时写入）。
+原 `CaptureSnapshot` / `RestoreSnapshot` 与 `NarrativeSnapshot` 已于 2026-09-27 移除；演示场景用 `internal` 的 `NarrativeSystem.ResetProgress()` 在同一次运行内重播，
+按 Esc 中止后可按 F9 从续演点继续。
 
 ---
 
@@ -293,7 +288,7 @@ public virtual void CollectRequirements(StoryNodeRequirements requirements)  // 
 | `IStoryAction.Children` | 设计文档原稿未列出；路径绑定与全树遍历需要它 |
 | DSL 入口名 | 台词节拍的工厂方法是 `Story.Say` 与 `Story.Narration`（类型仍叫 `Beat`） |
 | `AdvanceKind.VoiceEnd` | 尚无配音服务，当前退化为 `TextDuration`；`Beat.VoiceKey` 仅作数据透传 |
-| 存档合并旗标 | `NarrativeSnapshot` 只有一个 `variables` 列表（旗标即 `flag.*` 布尔变量），不再像设计文档那样单列 `Flags`，避免两份数据分歧；并新增 `choices` 记录各选项节点的选择结果 |
+| 旗标即变量 | 旗标即 `flag.*` 布尔变量，与剧情变量共用一份存储，不再像设计文档那样单列 `Flags`；另有 `choices` 记录各选项节点的选择结果（原存档快照已移除，这些状态只在运行时存在） |
 | 跳过不计入「已看过」 | 只有 `Completed` 才把剧情加入 `seenStories`；跳过一遍不应把没看过的剧情标记成看过 |
 | 对话界面 | 仍用 `Demo/SimpleDialogueView`（运行时构建 uGUI + 系统字体）。工程内 TMP 只有 LiberationSans SDF，**不含中文字形**，正式 `DialoguePanel` 需先导入中文 TMP 字体资产并走 UIKit 预制体流程 |
 

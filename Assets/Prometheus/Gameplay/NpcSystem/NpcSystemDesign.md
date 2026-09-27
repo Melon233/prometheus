@@ -319,6 +319,8 @@ public interface INpcSystem : ISystemContract
 
 ## 8. 存档
 
+> **2026-09-27 状态**：单机版不做存档，每次进入游戏都从全新状态开始。本节是将来引入存档时的设计参考，当前不实现。
+
 只存 `npcId → stage` 的偏离项，沿用工程约定的 `CaptureSnapshot() → JSON 字符串`：
 
 ```csharp

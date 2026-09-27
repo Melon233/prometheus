@@ -1,6 +1,6 @@
 namespace Xuan.Prometheus.World
 {
-    /// <summary>客户端向服务器提交的交互请求类型。数值与协议 PoiOp（Xuan.Prometheus.Protocol）一一对应。</summary>
+    /// <summary>PoiSystem 向网关提交的交互请求类型。数值与协议 PoiOp（Xuan.Prometheus.Protocol）一一对应。</summary>
     public enum PoiOp
     {
         Unlock,        // 解锁类：传送锚点 / 七天神像 / 副本

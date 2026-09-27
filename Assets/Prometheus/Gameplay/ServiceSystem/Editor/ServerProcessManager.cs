@@ -8,13 +8,13 @@ using UnityEditor;
 namespace Xuan.Prometheus.World.Editor
 {
     /// <summary>
-    /// 进入 Play 时自动构建并启动 Go 服务器，退出 Play 时关闭。
+    /// 通过菜单手动构建、启动与停止 Go 服务器，仅供调试联网版（Prometheus.Gameplay.Online）时使用。
+    /// 单机版不依赖服务器，因此进入 Play 时**不再**自动启动；需要联调时先执行菜单「Start POI Server」。
     /// 注意：proto 的拉取/编译是手动步骤（见 Server/gen_proto.ps1），本脚本只负责 go build + run，不生成协议代码。
     /// </summary>
-        [InitializeOnLoad]
     public static class ServerProcessManager
     {
-        /// <summary>服务器监听地址，需与 PoiSystem.ServerHost/ServerPort 及 Server/main.go 默认值一致。</summary>
+        /// <summary>服务器监听地址，需与 ServiceSystem 的默认地址及 Server/main.go 默认值一致。</summary>
         private const string ListenAddr = "127.0.0.1:9000";
 
         /// <summary>项目根目录下 Go 服务器的相对路径。</summary>
@@ -25,9 +25,11 @@ namespace Xuan.Prometheus.World.Editor
 
         private static Process serverProcess;
 
-        static ServerProcessManager()
+        /// <summary>编辑器菜单：构建并启动项目 Go 服务器；端口已被占用时视为已在运行而跳过。</summary>
+        [MenuItem("Prometheus/World/Start POI Server")]
+        private static void StartServerFromMenu()
         {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            StartServer();
         }
 
         /// <summary>编辑器菜单：停止当前项目构建的 Go 服务器，即使服务器不是由本次 Unity 会话启动也可释放端口。</summary>
@@ -57,12 +59,6 @@ namespace Xuan.Prometheus.World.Editor
                     UnityEngine.Debug.LogWarning($"[Server] 停止 POI 服务器失败：{exception.Message}");
                 }
             }
-        }
-
-        private static void OnPlayModeStateChanged(PlayModeStateChange state)
-        {
-            if (state == PlayModeStateChange.ExitingEditMode) StartServer();
-            else if (state == PlayModeStateChange.EnteredEditMode) StopServer();
         }
 
         /// <summary>构建并启动服务器；端口已被占用时视为已在运行而跳过。</summary>
@@ -127,7 +123,7 @@ namespace Xuan.Prometheus.World.Editor
             return true;
         }
 
-        /// <summary>退出 Play 时关闭服务器进程。</summary>
+        /// <summary>关闭由本编辑器会话启动的服务器进程。</summary>
         private static void StopServer()
         {
             if (serverProcess != null && !serverProcess.HasExited)

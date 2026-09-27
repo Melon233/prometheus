@@ -8,7 +8,7 @@ using Xuan.Prometheus.Expression;
 namespace Xuan.Prometheus.Narrative
 {
     /// <summary>
-    /// 单局剧情系统：持有文本表、变量存储与剧情执行器，向业务层提供演绎、跳过、断点续演与存档入口。
+    /// 单局剧情系统：持有文本表、变量存储与剧情执行器，向业务层提供演绎、跳过与断点续演入口。
     /// 舞台接管由调用方用 <c>await using</c> 持有并写入 <see cref="StoryContext.Stage"/>，
     /// 使纯对话剧情不必进入舞台也能演绎。
     /// </summary>
@@ -26,7 +26,7 @@ namespace Xuan.Prometheus.Narrative
         /// <summary>保存尚未构建上下文时暂存的自动播放设置。</summary>
         private bool pendingAutoPlay;
 
-        /// <summary>保存上下文重建期间需要保留的选择结果，避免更换视图导致存档级状态丢失。</summary>
+        /// <summary>保存上下文重建期间需要保留的选择结果，避免更换视图导致选择记录丢失。</summary>
         private IReadOnlyDictionary<string, int> pendingChoices;
 
         /// <summary>保存上下文重建期间需要保留的一次性选项记录。</summary>
@@ -124,7 +124,7 @@ namespace Xuan.Prometheus.Narrative
             if (runner.IsRunning) throw new InvalidOperationException("Narrative view cannot be replaced while a story is playing.");
             this.view = view ?? throw new ArgumentNullException(nameof(view));
             this.view.AutoPlay = pendingAutoPlay;
-            // 更换视图会重建上下文，因此先把属于存档层的选择结果暂存下来，避免随上下文一起丢失。
+            // 更换视图会重建上下文，因此先把选择结果暂存下来，避免随上下文一起丢失。
             CacheContextState();
             context = null;
         }
@@ -166,24 +166,21 @@ namespace Xuan.Prometheus.Narrative
             runner.Abort();
         }
 
-        /// <inheritdoc />
-        public string CaptureSnapshot()
+        /// <summary>
+        /// 把剧情进度复位到「从没演过」：清空剧情变量、一次性选项记录、选择结果与续演点。
+        /// 已看过的剧情记录保留，因此跳过权限不受影响。仅供演示场景在同一次运行内重播使用；
+        /// 单机版不做存档，正式流程中剧情进度随会话销毁自然清零，不需要调用它。
+        /// </summary>
+        internal void ResetProgress()
         {
-            return NarrativeSnapshot.Capture(EnsureContext(), seenStories, ResumeStoryId, ResumePath).ToJson();
-        }
-
-        /// <inheritdoc />
-        public void RestoreSnapshot(string json)
-        {
-            if (runner.IsRunning) throw new InvalidOperationException("Narrative snapshot cannot be restored while a story is playing.");
-            NarrativeSnapshot snapshot = NarrativeSnapshot.FromJson(json);
+            if (runner.IsRunning) throw new InvalidOperationException("Narrative progress cannot be reset while a story is playing.");
+            Variables.Clear();
             StoryContext target = EnsureContext();
-            snapshot.RestoreTo(target);
+            target.RestoreChosenOptions(null);
+            target.RestoreChoices(null);
             CacheContextState();
-            seenStories.Clear();
-            for (int index = 0; index < snapshot.seenStories.Count; index++) seenStories.Add(snapshot.seenStories[index]);
-            ResumeStoryId = snapshot.resumeStoryId;
-            ResumePath = snapshot.GetResumePath();
+            ResumeStoryId = null;
+            ResumePath = StoryPath.None;
         }
 
         /// <summary>释放订阅与运行时引用。</summary>
@@ -244,8 +241,8 @@ namespace Xuan.Prometheus.Narrative
         }
 
         /// <summary>
-        /// 取用上下文；尚未注入视图时用空视图占位，使存档读写不必依赖界面。
-        /// 新建上下文会把暂存的选择结果写回，保证更换视图不丢失存档级状态。
+        /// 取用上下文；尚未注入视图时用空视图占位，使变量与选择记录的读写不必依赖界面。
+        /// 新建上下文会把暂存的选择结果写回，保证更换视图不丢失选择记录。
         /// </summary>
         private StoryContext EnsureContext()
         {
@@ -256,7 +253,7 @@ namespace Xuan.Prometheus.Narrative
             return context;
         }
 
-        /// <summary>把上下文中属于存档层的状态暂存到系统，供上下文重建后写回。</summary>
+        /// <summary>把上下文中的选择记录暂存到系统，供上下文重建后写回。</summary>
         private void CacheContextState()
         {
             if (context == null) return;

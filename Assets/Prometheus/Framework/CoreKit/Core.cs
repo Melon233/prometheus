@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Unity.Scripting.LifecycleManagement;
 using Xuan.Prometheus.Asset;
 
 namespace Xuan.Prometheus
@@ -8,8 +9,10 @@ namespace Xuan.Prometheus
     /// <summary>
     /// 游戏唯一运行时核心，负责注册、查询、初始化、更新和逆序释放全部 Kit。
     /// 业务代码既可以通过实例 GetKit 查询契约，也可以通过静态属性快速访问正式注册的基础模块。
+    /// 声明为 partial 是 AutoStaticsCleanup 源生成器的要求：关闭域重载时，全部静态入口在进入播放模式时回到 null，
+    /// 使上一局 Dispose 中途抛异常留下的残留不会阻止新 Core 构造。
     /// </summary>
-    public sealed class Core : IDisposable
+    public sealed partial class Core : IDisposable
     {
         /// <summary>保存 Kit 契约到实现的唯一映射。</summary>
         private readonly XMap<Type, Kit> kits = new XMap<Type, Kit>();
@@ -21,23 +24,23 @@ namespace Xuan.Prometheus
         private bool isDisposed;
 
         /// <summary>获取当前正式入口创建的唯一 Core 实例。</summary>
-        public static Core Current { get; private set; }
+        [AutoStaticsCleanup] public static Core Current { get; private set; } = null;
         /// <summary>快速访问当前正式注册的资源模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
-        public static IAssetKit Asset { get; internal set; }
+        [AutoStaticsCleanup] public static IAssetKit Asset { get; internal set; }
         /// <summary>快速访问当前正式注册的全局事件模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
-        public static IEventKit Event { get; internal set; }
+        [AutoStaticsCleanup] public static IEventKit Event { get; internal set; }
         /// <summary>快速访问当前正式注册的 UI 模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
-        public static IUIKit UI { get; internal set; }
+        [AutoStaticsCleanup] public static IUIKit UI { get; internal set; }
         /// <summary>快速访问玩法会话工厂；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
-        public static IGameplayKit Gameplay { get; internal set; }
+        [AutoStaticsCleanup] public static IGameplayKit Gameplay { get; internal set; }
         /// <summary>快速访问配表读取模块；写入权限仅开放给同程序集组合根和友元测试程序集。</summary>
-        public static IConfigKit Config { get; internal set; }
+        [AutoStaticsCleanup] public static IConfigKit Config { get; internal set; }
 
         /// <summary>
         /// 创建唯一 Core，并注册四个基础模块。
         /// GameplayKit 在这里就位，但它只是**会话工厂**：本次构造不产生任何玩法 System。
-        /// 具体由哪些 System 组成一局，要等登录之后由 <see cref="IGameplayKit.CreateSessionAsync"/> 决定，
-        /// 因此从启动到登录界面只需要走完 Kit 初始化，不加载任何玩法配置。
+        /// 具体由哪些 System 组成一局，由入口在 Kit 初始化完成后调用 <see cref="IGameplayKit.CreateSessionAsync"/> 决定，
+        /// 因此 Kit 初始化阶段不加载任何玩法配置。
         /// </summary>
         public Core()
         {
@@ -95,23 +98,36 @@ namespace Xuan.Prometheus
             foreach (Kit kit in kitInitializationOrder) kit.OnUpdate(dt);
         }
 
-        /// <summary>按注册顺序逆序释放全部 Kit，并清空当前 Core 的静态快速入口。</summary>
+        /// <summary>
+        /// 按注册顺序逆序释放全部 Kit，并清空当前 Core 的静态快速入口。
+        /// 退出播放模式时 Unity 正在销毁场景对象，某个 Kit 的释放可能抛异常：异常照常向上抛出以暴露问题，
+        /// 但静态入口复位与已释放标记放在 finally 中必然执行。否则 <see cref="Current"/> 会残留，
+        /// 下一次构造 Core 直接失败；AutoStaticsCleanup 生成代码在进出播放模式时对残留实例再次调用本方法，
+        /// 也会因为已释放标记而成为空操作，不会重复抛出同一个异常。
+        /// 抛异常的 Kit 之后的 Kit（注册更早者）不再释放。
+        /// </summary>
         public void Dispose()
         {
             if (isDisposed) return;
             IsReady = false;
-            for (int index = kitInitializationOrder.Count - 1; index >= 0; index--) kitInitializationOrder[index].Dispose();
-            kitInitializationOrder.Clear();
-            kits.Dispose();
-            if (ReferenceEquals(Current, this)) Current = null;
-            Asset = null;
-            Config = null;
-            Event = null;
-            UI = null;
-            Gameplay = null;
-            PersistentRoot.Reset();
-            isInitializing = false;
-            isDisposed = true;
+            try
+            {
+                for (int index = kitInitializationOrder.Count - 1; index >= 0; index--) kitInitializationOrder[index].Dispose();
+            }
+            finally
+            {
+                kitInitializationOrder.Clear();
+                kits.Dispose();
+                if (ReferenceEquals(Current, this)) Current = null;
+                Asset = null;
+                Config = null;
+                Event = null;
+                UI = null;
+                Gameplay = null;
+                PersistentRoot.Reset();
+                isInitializing = false;
+                isDisposed = true;
+            }
         }
 
         /// <summary>以接口契约注册 Kit，并把该实例追加到确定性的生命周期序列。</summary>

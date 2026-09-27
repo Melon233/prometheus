@@ -2,6 +2,10 @@
 
 > 状态：**P0–P3 全部实现并通过验证（EditMode 231/231；Play 模式完整启动链路、世界切换与副本压栈/弹栈零报错）**。
 > 本次重设计**不受既有 ArchSpec 约束**，与之冲突以本文为准；已按第 11 节修订 ArchSpec。
+>
+> **2026-09-27 修订**：P2（`GameFlow` 状态机、开屏、热更占位、`LoginPanel`）与 P3 中的世界栈（`WorldSession`）已移除，
+> 启动改回「入口直接加载模块并进入主世界」的线性链路；三段生命周期、依赖注入、单一变量存储与世界相位保留不变。
+> 第 6、7 节已按现状重写，修订原因与影响见第 13 节。
 
 ## 0. 触发这次重设计的四件事
 
@@ -19,14 +23,16 @@
 | 段 | 内容 | 创建 | 销毁 |
 | --- | --- | --- | --- |
 | **App** | `Core` + 全部 Kit（Asset / Event / UI / Gameplay） | 进程启动 | 进程退出 |
-| **Session** | 全部玩法 System | 登录成功、进入游戏时 | 登出、返回登录界面时 |
+| **Session** | 全部玩法 System | Kit 就绪后由 `Entry` 建立 | 进程退出（`GameplayKit.DestroySession` 也可单独销毁） |
 | **World** | 场景本身 + 场景内 Entity / POI / NPC | 每次进入场景 | 每次离开场景 |
 
-**关键收益：开屏只需要 App 段。** 登录界面是一个 `UIPanel`，只依赖 AssetKit 与 UIKit，不需要任何玩法 System。从启动到看见登录界面因此只走 Kit 初始化——不加载 `EffectLibrary`、不加载 `QuestCatalog`、不注册十几个 System。
+**关键收益：Kit 与玩法 System 的初始化彼此独立。** Kit 就绪之前不加载任何玩法配置；会话由入口在 Kit 就绪后显式建立。
+（原设计借此让登录界面只依赖 App 段，登录界面已随第 13 节的修订移除，但这条分段本身仍然成立。）
 
-**Session 独立于 World**：登录态、背包、任务进度、小队必须跨场景存活；主世界进副本再回来，System 不能重建。所以一个 Session 跨越多个 World。
+**Session 独立于 World**：背包、任务进度、小队必须跨场景存活；换世界时 System 不能重建。所以一个 Session 跨越多个 World。
 
-**"返回登录界面"因此第一次可表达**：销毁 Session，保留 App。旧结构里根本说不出来——`Core.Configure` 只能调一次，`GameplayKit` 在 `IsReady` 之后拒绝注册，登出等于退进程。
+**销毁会话、保留 App 仍然可表达**：`GameplayKit` 是会话工厂而不是会话本身，同一个 Core 上可以销毁并重建会话。
+旧结构里做不到——`Core.Configure` 只能调一次，`GameplayKit` 在 `IsReady` 之后拒绝注册。当前没有调用方使用这项能力。
 
 ## 2. `XSystem` 与 `Kit` 同构
 
@@ -87,19 +93,19 @@ System 是 Session 段的，`GameplayKit` 是 App 段的 Kit，两者生命周�
 
 ```
 GameplayKit（App 段 Kit）
-   └─ 当前会话（登录后创建，登出销毁）
+   └─ 当前会话（Kit 就绪后由 Entry 创建，可单独销毁）
          ├─ 全部 System
          └─ 当前世界（每个场景）
 ```
 
-- `CreateSessionAsync(installer)` —— 登录成功后调用
+- `CreateSessionAsync(installer)` —— `Entry` 在 Kit 就绪、配表加载后调用
 - `DestroySession()` —— 逆序 `Dispose` 全部 System；**不驱动世界退出相位**，理由见 8.3
-- `EnterWorldAsync(WorldContext)` / `ExitWorld()` —— 由 Bootstrap 的 `WorldSession` 驱动
+- `EnterWorldAsync(WorldContext)` / `ExitWorld()` —— 当前只由 `Entry` 在启动时进入主世界（原 `WorldSession` 已移除）
 - `TryGetSystem<T>` —— **无会话时返回 false**
 
-无会话返回 false 正是登录界面该有的语义。场景对象（如 `NpcMarkerMono`）本就可能在会话之外存在，那条"取不到系统就显示无标记"的判断因此继续成立。
+无会话返回 false 覆盖了会话建立之前的那段时间。场景对象（如 `NpcMarkerMono`）本就可能在会话之外存在，那条"取不到系统就显示无标记"的判断因此继续成立。
 
-`GameplayKit` 不认识场景：`WorldSession` 先 `ExitWorld`，再由 `Core.Asset` 加载场景，最后把 `WorldContext` 交给 `EnterWorldAsync`。
+`GameplayKit` 不认识场景：驱动世界的一方（当前是 `Entry`）先 `ExitWorld`（如有），再由 `Core.Asset` 加载场景，最后把 `WorldContext` 交给 `EnterWorldAsync`。
 
 ## 4. System 之间强制依赖注入
 
@@ -271,76 +277,36 @@ public sealed class VariableStore
 
 ## 6. 完整流程
 
+> 本节按 2026-09-27 修订后的现状重写。原 P2 的 `GameFlow` 状态机、开屏、热更占位与登录界面已移除，见第 13 节。
+
 ```
-Boot ─ Splash ─ HotUpdate ─ Login ─┬─ CreateSession ─ EnterWorld(MainWorld)
-                                   │                        ↕
-                                   └──── DestroySession ← EnterWorld(其他)
+Entry.Start ─ Kit 初始化 ─ Config.Load ─ CreateSession ─ LoadScene(MainWorld) ─ EnterWorld ─ 打开 HUD
 ```
 
-`GameFlow` 放在 Bootstrap——它需要同时认识 UI、场景与 System，而 Bootstrap 是唯一允许认识具体实现的装配。
+启动是 `Entry.BootAsync` 里的一条线性链路，每一步都依赖上一步的结果，因此顺序即契约：
 
-| 节点 | 段 | 做法 | 关键约束 |
+| 步骤 | 段 | 做法 | 关键约束 |
 | --- | --- | --- | --- |
-| **启动** | App | `Entry.unity` 建 Core，注册 Kit | 保持 Player Build 唯一入口 |
-| **开屏动画** | App | Entry.unity 内的场景对象或 `Resources` 资源 | **不能用 `UIPanel`**，见 6.1 |
-| **热更（占位）** | App | `AssetKit` 增加播放模式选择与进度回调 | **不是独立步骤**，见 6.2 |
-| **登录界面** | App | `LoginPanel`（本地假登录，点击即进） | 只依赖 Asset/UI Kit；禁止访问任何 System |
-| **模块资源配置** | Session | 各 System 的 `AfterNewAsync` 并行 | 任务数启动前已知，进度不必编造 |
-| **主世界** | World | `WorldSession.EnterAsync(MainWorld)` | HUD 在世界进入时打开，不在 `Entry` |
-| **其他场景** | World | `SceneDefinition` + 世界栈，见 7 节 | |
+| **启动** | App | `Entry.unity` 建 Core，注册全部 Kit | 保持 Player Build 唯一入口 |
+| **Kit 初始化** | App | `UniTask.WhenAll(core.CreateAfterNewTasks())` 后执行同步 `core.AfterNew()` | 资源包在这一步就绪 |
+| **配表** | App | `Core.Config.Load()` | 资源包就绪之后、任何玩法 System 构造之前（`ARCH-CONFIG-001`） |
+| **模块资源配置** | Session | `Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller())`，各 System 的 `AfterNewAsync` 并行 | |
+| **主世界** | World | 按 `WorldCatalog.RequireMainWorld()` 加载场景，再 `Core.Gameplay.EnterWorldAsync(WorldContext)` | 场景与出生位姿由世界目录决定，入口不写死 |
+| **HUD** | World | 世界定义 `ShowsHud` 为真时 `Core.UI.OpenPanel<HudPanel>()` | 必须在世界相位之后，HUD 要读场景内容 |
 
-### 6.0 实现要点（P2）
+### 6.0 实现要点
 
-**阶段是一台真状态机**：`GameFlowStage` 枚举就是状态，`GameFlow.RunAsync` 循环调用 `RunStageAsync(stage)`，
-每个阶段只回答「做完之后去哪」。设计稿原本写「每个 Stage 一个类」，实现时改成了一个类内一阶段一方法——
-四个阶段的方法体都在十行上下，拆成五个文件加一个上下文类只是仪式。等阶段真的长起来（公告、补丁说明、
-真实账号登录、断线重连）再拆，那时拆的依据也更清楚。
+**链路可以被中止**：`Entry` 持有一个生命周期令牌，在 `Entry.OnDestroy` 中**先于** `Core.Dispose` 取消。
+链路里的每个 await 都用 `AttachExternalCancellation` 挂上这个令牌——Kit 初始化、会话建立、场景加载本身都不可取消，
+取消只让链路停止等待，不在 Core 释放之后继续访问 Kit。链路以 `BootAsync(...).Forget()` 启动，
+中止时以取消异常结束，UniTask 默认不上报这类异常。
 
-**开屏与资源初始化是并行的**，这是这一期最实质的收益：`Boot` 阶段只**启动**全部 Kit 的异步初始化而不等待，
-`Splash` 阶段播开屏，直到 `HotUpdate` 阶段才 `await`。开屏因此是用来**覆盖**初始化耗时的，不是叠加在它前面。
+**没有局外相机**：从启动到会话建立之间场景里没有相机，`CameraSystem` 在会话建立时创建玩法相机。
+这段时间没有任何界面需要渲染，因此不再需要一台只负责清屏的相机。
 
-**启动界面由代码创建而不是摆在场景里**。它必须盖住整个启动过程，而这个过程会跨越一次场景加载，
-所以它需要 `DontDestroyOnLoad`；代码创建同样满足「随包体直出」这条真实约束（见 6.1）。
-
-**局外相机**（`OuterCamera`，归 `GameFlow` 所有）：App 段场景里一台相机都没有——`CameraSystem`
-是 Session 段的，玩法相机要等会话建立才出现。开关点因此是**会话边界**而不是世界边界：
-玩法相机挂在 `PersistentRoot` 下、随会话存活，会话内换世界期间它一直在。
-
-它**不是"UI 相机"**：启动与登录界面都是 `ScreenSpaceOverlay` Canvas，实测没有相机也照样渲染，
-所以它唯一的职责是**清屏**。不加它现在画面也正常，靠的是启动界面那张全屏不透明底图替相机清了屏；
-这在启动界面**淡入**时会破——整体 alpha 小于 1，连底图自己都是半透明的，背后是没人清过的 backbuffer，
-编辑器里 Game view 兜底，设备上不保证。
-
-两处刻意的省略：**不打 `MainCamera` 标签**（否则 `Camera.main` 指向它，UIKit 的世界空间 Canvas 会绑错观察相机）；
-**不挂 `AudioListener`**（玩法相机自带一个，两个并存会产生重复监听器警告；局外没有音频播放，没有监听器是正确状态）。
-
-**开屏只显示 logo，不显示任何文字。** logo 从 `Resources/UI/BootLogo` 加载——这正是 6.1 那条约束的直接后果：
-`BundleResources` 下的资产在开屏这一刻还不可达。进度条与状态文字属于**随后的热更阶段**，
-由 `BindProgress` 淡入，开屏期间整个进度分组 alpha 为 0。开屏是品牌画面，不该混进加载信息。
-
-当前 logo 是程序生成的**占位标识**（金色圆环 + 火焰）。美术出图后替换同名资源即可，代码不用动。
-工程里唯一现成的 logo 是 `Art/原神/UI_Img_ChapterLogo.png`——那是参考素材，不能用作本作开屏。
-
-**状态文字走系统字体**：`Font.CreateDynamicFontFromOSFont` 逐个尝试常见中文字体名。
-硬引用 `BundleResources/Font` 下的字体会把 3.1MB 字体复制进 Resources，而且那份资产在这一刻同样还不可达。
-登录界面则正常使用 bundle 里的 `HYWenHei-85W`——它在资源包就绪之后。
-
-### 6.1 开屏与热更界面不能用 UIKit
-
-`UIKit.OpenPanel` 内部走 `Core.Asset.InstantiateSync` 加载面板预制体。开屏与热更发生在资源包就绪**之前**，此时没有可用清单，任何 `OpenPanel` 必然失败。所以这两个界面必须随包体直出：`Entry.unity` 里的场景对象，或 `Resources` 目录下的资源。登录界面则**可以**用 `UIPanel`——它在资源包就绪之后。
-
-### 6.2 热更是资源包初始化的一个阶段
-
-YooAsset 的实际顺序：`InitializePackage → RequestPackageVersion → LoadPackageManifest → 下载 bundle → 可加载`。`AssetKit.AfterNewAsync` 现在做了前三步；热更的"下载"夹在第三步之后、"可加载"之前，在 `AssetKit` 初始化的**内部**，不在它前面。因此热更界面必须从 `AssetKit` 拿进度，不能自己驱动一套下载流程。
-
-实现落点：`AssetBootPhase` 枚举把这条链的五个阶段显式写出来，`IAssetKit.BootProgressChanged` 广播进度，
-`BootScreen` 只订阅、不驱动。下载阶段作为独立的 `DownloadContent` 方法**已经存在于正确的位置**，
-当前两种播放模式下没有任何内容需要下载，因此它只上报一次「无下载量」——留空的是实现，不是位置。
-
-接入热更时只改两处：`CreateInitializeOptions` 换成 `HostPlayModeOptions`，以及在 `DownloadContent` 里
-用 `package.CreateResourceDownloader(...)` 驱动下载并逐帧上报字节数。界面、进度契约与调用顺序都不需要动。
-
-一处需要注意的差异：**下载失败必须可重试**，这与配置错误的直接抛出不同（7.3 说的是后者）。
+**热更**：当前两种播放模式（编辑器模拟 / 内置离线）没有远端内容，`AssetKit` 不再预留下载阶段与进度广播。
+接入热更时需要在 `AssetKit.Initialize` 的「清单就绪」与「可加载」之间加入下载，并同时设计对应的启动界面——
+开屏与热更界面运行在资源包就绪之前，不能使用 `UIPanel`（原 6.1 的结论仍然成立）。
 
 ## 7. 世界会话与场景种类
 
@@ -354,62 +320,30 @@ YooAsset 的实际顺序：`InitializePackage → RequestPackageVersion → Load
 
 现在不出事，只因为场景一辈子只加载一次且在任何 Entity 创建之前——靠巧合成立的时序，不是设计。
 
-### 7.2 世界目录与世界栈
+### 7.2 世界目录
 
-> **命名修订（P3）**：设计稿写作 `SceneDefinition`，实现改名为 `WorldDefinition`。
-> 该类型持有 worldId、场景地址、种类、出生位姿、HUD 档位——描述的是一个**世界**，场景只是它的一个属性。
-> 同一个场景资源可以被多个世界复用（不同出生点、不同 HUD 档位），而 `WorldContext` / `WorldSession` /
-> `WorldKind` 全部以 world 命名，`SceneDefinition` 会是唯一的例外。
+> 本节按 2026-09-27 修订后的现状重写。原 P3 的世界栈（`WorldSession`：平级切换、压栈进副本、弹栈返回）已移除，
+> 当前只有启动时进入主世界这一个入口，见第 13 节。
 
-`WorldDefinition` 与 `WorldCatalog`（ScriptableObject，按地址加载，位于 `Gameplay/WorldCatalog/`）描述：
+`WorldDefinition` 与 `WorldCatalog`（ScriptableObject，按地址 `WorldCatalog` 加载，位于 `Gameplay/WorldCatalog/`）描述：
 世界标识、场景地址、种类、默认出生位姿、HUD 档位。种类为 `MainWorld` / `SubWorld` / `Dungeon` / `Activity`。
 
-**跳转按 worldId 而不是场景地址**：场景地址是实现细节，换了资源不该让每个跳转点跟着改。
+`Entry` 在启动时加载目录并校验：标识非空且唯一、场景地址非空、**有且只有一个主世界**；
+随后用 `RequireMainWorld()` 取出主世界，按它的场景地址加载场景、按它的出生位姿构造 `WorldContext`。
 
-**压栈行为由种类推导，不单独配开关**：副本与活动压栈，主世界与次级世界互相替换。
-两者一旦能各配各的，就会出现「压栈的主世界」这类没有意义却能配出来的组合。
-
-**目录在首次跳转时校验**：标识非空且唯一、场景地址非空、**有且只有一个主世界**——
-最后一条是世界栈的前提，栈底必须唯一确定。
-
-用**栈**而非平铺切换：主世界永远在栈底，副本与活动压上去，结束时弹回进入前的坐标。
-平铺切换的话「回哪去」要每个世界各自记录，必然漂移。
-
-`WorldSession` 的四个入口对应四种语义，互相不能顶替（用错会直接抛）：
-
-| 入口 | 语义 | 对栈的影响 |
-| --- | --- | --- |
-| `EnterMainWorldAsync()` | 建立栈底 | 清空 |
-| `EnterAsync(worldId)` | 平级切换（主世界 ⇄ 次级世界） | 清空 |
-| `PushAsync(worldId)` | 进副本 / 活动 | 压入当前世界与玩家位姿 |
-| `PopAsync()` | 副本结束 | 弹出，按记录的位姿回去 |
-
-平级切换清空栈的理由：从副本里直接传送去另一张大世界地图之后，「回到副本入口」已经没有意义。
-
-**返回点必须在退出当前世界之前记录**——退出相位一走，玩家实体就没了，位置也就读不到了。
-
-**剧情不进栈**：已决策以主世界原地演出为主，`NarrativeSystem` 一行不改。
+**跳转按 worldId 而不是场景地址**这条规则保留：将来重新引入世界切换时，仍然按 `WorldId` 引用世界。
 
 #### 出生位姿为什么走 `WorldContext`
 
-`WorldContext` 原本刻意只带「哪个场景」。P3 给它加了 `WorldId` 与出生位姿，判据是：
-**只装那些「由流程解析、System 自己查不到」的事实**。
+`WorldContext` 只装那些「由流程解析、System 自己查不到」的事实。出生位姿满足这条：
+首次进入用配置的出生点，将来从副本弹回时用记录的返回点，只有驱动世界切换的一方知道该用哪个。
+副本难度、奖励倍率之类**不**满足：关心它们的 System 按 `WorldId` 自行查配置即可。
 
-出生位姿满足这条——同一个世界，首次进入用配置的出生点，从副本弹回时用记录的返回点，
-只有持有世界栈的流程知道该用哪个。副本难度、奖励倍率之类**不**满足：关心它们的 System
-按 `WorldId` 自行查配置即可。这条判据同时挡住了这个类型随场景种类膨胀。
-
-配套改动：`TeamSystem` 不再持有出生坐标常量，改用 `world.SpawnPosition` / `world.SpawnRotation`。
-
-#### 触发跳转的入口（尚未接线）
-
-当前世界跳转只由启动流程与验收脚本触发。等玩法侧需要触发时（例如副本入口 POI），
-再引入一个玩法层端口由 `WorldSession` 实现——Gameplay 不能引用 Bootstrap，这条由 asmdef 强制。
-在那之前不预先造端口：没有调用方的接口无法验证自己是否好用。
+配套改动：`TeamSystem` 不持有出生坐标常量，改用 `world.SpawnPosition` / `world.SpawnRotation`。
 
 ### 7.3 进入世界失败
 
-场景地址错误、资源缺失属于配置错误，直接抛出，不回退登录界面。当前登录是本地假登录，不存在可恢复的网络失败。
+场景地址错误、资源缺失属于配置错误，直接抛出，不做可恢复处理。
 
 ## 8. P0 实施中暴露的三个缺口
 
@@ -428,7 +362,7 @@ if (activeSceneHandle != null && activeSceneHandle.IsValid)
 
 这条在只有一个场景时永远不会触发，因此从未被发现。改为**先释放旧句柄再加载**：场景以 `LoadSceneMode.Single`
 加载，旧场景本来就会被 Unity 卸载，继续持有它的句柄只会让旧场景的资源包永远无法回收。
-世界切换的时序由 `WorldSession` 保证：各 System 先走完 `OnWorldExit`，才轮到这里卸载场景。
+世界切换的时序由驱动世界的一方保证：各 System 先走完 `OnWorldExit`，才轮到这里卸载场景。
 
 ### 8.2 相机的跟随节点随角色一起被销毁
 
@@ -455,7 +389,7 @@ MissingReferenceException ... CameraSystem.BindFollowTarget → OnActiveTeamMemb
 
 | 来路 | 场景状态 | 谁负责退出世界 |
 | --- | --- | --- |
-| 登出返回登录界面 | 仍然存活 | `WorldSession.ExitCurrentWorld()`，由流程显式调用 |
+| 主动销毁会话（当前无调用方，原为登出） | 仍然存活 | 调用方先显式 `Core.Gameplay.ExitWorld()` |
 | 进程 / Play 模式结束 | Unity 已在销毁场景对象 | **没有人**——此时碰它们必然抛异常 |
 
 因此 `DestroySession()` 不再调用 `ExitWorldInternal()`，代价是一条必须成立的约束：
@@ -469,14 +403,19 @@ MissingReferenceException ... CameraSystem.BindFollowTarget → OnActiveTeamMemb
 这一条同样是 `ARCH-META-001` 的样本：一个「对称好看」的实现逼出了一次抛异常的关机路径，
 说明对称的是形式而不是语义。
 
+**后续（Unity 6.6 关闭域重载后）**：以前每次进入 Play 模式都会重载域，残留的 `Core.Current` 会被顺带清掉，所以这个问题只污染 EditMode 测试。关闭域重载后，同样的残留会让下一次进入 Play 直接失败。现在有两层保障：
+
+1. `Core.Dispose` 把静态入口复位和已释放标记放进 `finally`。Kit 释放抛出的异常照常上报，但 `Current` 一定会被清空。
+2. `Core` 的静态入口标注了 `[AutoStaticsCleanup]`，由引擎在进出播放模式时复位，见 `Framework/CoreKit/README.md`「关闭域重载时的静态状态」。生成代码会先对残留实例调用 `Dispose` 再置空。有了第 1 条的已释放标记，这次调用是空操作，不会把同一个异常再抛一次。
+
 ## 9. 分期
 
 | 期 | 内容 | 状态 |
 | --- | --- | --- |
 | **P0** | `XSystem` 相位对齐（2）+ `GameplayKit` 会话化（3）+ 强制依赖注入（4）+ 世界钩子与 `WorldSession`（7.1） | **已实现并验证** |
 | **P1** | 单一变量存储（5）+ 表达式库独立 | **已实现并验证** |
-| **P2** | `GameFlow` + 开屏 + 热更占位 + `LoginPanel` | **已实现并验证** |
-| **P3** | 世界目录 + 世界栈（7.2） | **已实现并验证** |
+| **P2** | `GameFlow` + 开屏 + 热更占位 + `LoginPanel` | 已实现，**2026-09-27 移除** |
+| **P3** | 世界目录 + 世界栈（7.2） | 世界目录保留；世界栈 **2026-09-27 移除** |
 
 ## 10. 元规则
 
@@ -509,9 +448,28 @@ MissingReferenceException ... CameraSystem.BindFollowTarget → OnActiveTeamMemb
 
 | 决策 | 结论 |
 | --- | --- |
-| 登录权威 | 本地假登录，不碰网络层 |
+| 登录 | 已移除登录界面；单机版启动直接进入主世界 |
 | 剧情场景 | 原地演出为主，独立场景后置 |
 | 副本权威 | 纯本地，不新增 Gateway |
 | 进入世界失败 | 直接抛出，不做可恢复处理 |
 
-非目标：不实现 `HostPlayMode` 与真实下载器（只留接缝）；不做真实账号与服务器存档；不做副本服务器建房；不拆分 System 级 asmdef。
+非目标：不实现 `HostPlayMode` 与真实下载器；不做真实账号与服务器存档（单机版不做任何存档，每次进入游戏都重新开始）；不做副本服务器建房；不拆分 System 级 asmdef。
+
+## 13. 2026-09-27 修订：移除启动流程，改为单机直进
+
+**动机**：项目先做单机版。开屏、热更占位与本地假登录在单机版里没有承载任何实际能力，
+却让入口与 `AssetKit` 多了一台状态机、一套进度契约与一台局外相机；世界栈目前也只有验收脚本在用。
+
+**移除**：
+
+- `Bootstrap/GameFlow.cs`（`GameFlowStage` 状态机）、`Bootstrap/BootScreen.cs`（开屏与热更界面）、`Bootstrap/OuterCamera.cs`（局外相机）
+- `Bootstrap/WorldSession.cs`（世界栈）
+- `UI/LoginPanel` 及其预制体 `BundleResources/UI/Login`
+- `AssetKit` 的启动进度（`AssetBootProgress` / `AssetBootPhase` / `BootProgressChanged`）与空的 `DownloadContent` 占位阶段
+- ArchSpec 的 `ARCH-BOOT-001` / `ARCH-BOOT-002`
+
+**保留**：三段生命周期、`GameplayKit` 会话工厂与世界相位、构造注入、单一变量存储、世界目录与 `WorldContext`。
+这些与启动界面无关，System 侧的实现因此一行未改。
+
+**现在的入口**：`Entry.BootAsync` 线性执行第 6 节的步骤。将来要恢复登录或世界切换，在 `Entry` 与 `GameplayKit` 之间
+重新引入编排者即可——`CreateSessionAsync` / `DestroySession` / `EnterWorldAsync` / `ExitWorld` 这几个接缝都还在。

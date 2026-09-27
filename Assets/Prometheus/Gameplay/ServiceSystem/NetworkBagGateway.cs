@@ -6,17 +6,17 @@ using Xuan.Prometheus.Service;
 namespace Xuan.Prometheus
 {
     /// <summary>
-    /// 背包领域网络适配器的正式实现。
+    /// 背包领域网关的联网实现（当前未接入组合根，单机版使用 LocalBagGateway）。
     /// 每个方法只做三件事：组装 Packet、经由通用通道发出、取出本领域关心的响应字段。
     /// </summary>
-    internal sealed class BagGateway : XSystem, IBagGateway
+    internal sealed class NetworkBagGateway : XSystem, IBagGateway
     {
         /// <summary>构造注入的会话通道；依赖写在签名上，注册顺序因此由编译器强制。</summary>
         private readonly IServiceSystem Service;
 
-        /// <summary>创建背包领域网关。</summary>
+        /// <summary>创建背包领域联网网关。</summary>
         /// <param name="serviceSystem">承载本领域请求的唯一会话通道。</param>
-        public BagGateway(IServiceSystem serviceSystem)
+        public NetworkBagGateway(IServiceSystem serviceSystem)
         {
             Service = serviceSystem ?? throw new System.ArgumentNullException(nameof(serviceSystem));
         }

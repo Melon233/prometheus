@@ -6,7 +6,7 @@ namespace Xuan.Prometheus.Narrative
 {
     /// <summary>
     /// 不呈现任何内容的对话视图。
-    /// 仅用于在尚未注入正式视图时构造上下文以读写存档；一旦真的被用于演绎就立即报错，
+    /// 仅用于在尚未注入正式视图时构造上下文以读写变量与选择记录；一旦真的被用于演绎就立即报错，
     /// 避免剧情在无人可见的情况下静默跑完。
     /// </summary>
     public sealed class NullDialogueView : IDialogueView

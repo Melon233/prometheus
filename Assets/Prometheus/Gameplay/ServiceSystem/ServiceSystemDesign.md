@@ -1,5 +1,17 @@
 # ServiceSystem 与领域 Gateway 设计
 
+> **当前状态（2026-09-27，单机版）**：本目录是独立装配 `Prometheus.Gameplay.Online`，**组合根当前不引用它**。
+> 单机版由 `Gameplay/PoiSystem/LocalPoiGateway.cs` 与 `Gameplay/BagSystem/LocalBagGateway.cs` 实现同一组网关契约，
+> 本文描述的是保留下来的联网实现：`ServiceSystem`、`NetworkPoiGateway`（原 `PoiGateway`）、`NetworkBagGateway`（原 `BagGateway`）。
+>
+> 与单机改造同步的两处契约变化：
+> - `IPoiGateway` 新增 `IsAvailable`、`Unavailable`、`EnterWorldAsync`，联网实现把它们直接转发给 `IServiceSystem`。
+>   PoiSystem 因此只依赖 `IPoiGateway`，不再构造注入 `IServiceSystem`。
+> - `Editor/ServerProcessManager` 不再在进入 Play 时自动构建并启动 Go 服务器，改为菜单 `Prometheus/World/Start POI Server` 手动启动。
+>
+> **恢复联网的步骤**：`Assets/Prometheus/Runtime.asmdef` 加入 `Prometheus.Gameplay.Online` 引用；组合根注册 `ServiceSystem`，
+> 用 `NetworkPoiGateway(serviceSystem)` / `NetworkBagGateway(serviceSystem)` 替换两个本地网关；需要联调时先手动启动服务器。
+
 ## 1. 定位
 
 网络职责按**两层**划分：

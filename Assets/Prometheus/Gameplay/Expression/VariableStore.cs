@@ -129,8 +129,8 @@ namespace Xuan.Prometheus.Expression
         }
 
         /// <summary>
-        /// 导出指定所有者名下的全部已写入值，供存档序列化使用。
-        /// 按所有者切片而不是整库导出，因此各系统仍然各存各的档，读一份档而不读另一份时每份仍然自洽。
+        /// 导出指定所有者名下的全部已写入值的只读副本，供调试显示与测试比较使用。
+        /// 单机版不做存档，变量只存在于本次运行。
         /// </summary>
         /// <param name="owner">目标命名空间。</param>
         public IReadOnlyDictionary<string, StoryValue> Capture(IVariableNamespace owner)
@@ -141,21 +141,6 @@ namespace Xuan.Prometheus.Expression
                 if (Owns(owner, pair.Key)) snapshot[pair.Key] = pair.Value;
             }
             return snapshot;
-        }
-
-        /// <summary>用快照覆盖指定所有者名下的全部值；其他命名空间不受影响。</summary>
-        /// <param name="owner">目标命名空间。</param>
-        /// <param name="snapshot">要写入的快照；为空表示只清空。</param>
-        public void Restore(IVariableNamespace owner, IReadOnlyDictionary<string, StoryValue> snapshot)
-        {
-            Clear(owner);
-            if (snapshot == null) return;
-            foreach (KeyValuePair<string, StoryValue> pair in snapshot)
-            {
-                if (!Owns(owner, pair.Key)) throw new InvalidOperationException($"Snapshot path '{pair.Key}' does not belong to the restoring namespace.");
-                values[pair.Key] = pair.Value;
-                Changed?.Invoke(pair.Key);
-            }
         }
 
         /// <summary>清空指定所有者名下的全部值；登记关系保留。</summary>

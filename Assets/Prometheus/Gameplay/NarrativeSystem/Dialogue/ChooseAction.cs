@@ -164,8 +164,8 @@ namespace Xuan.Prometheus.Narrative
 
         /// <summary>
         /// 快进到续演点。
-        /// 续演不会重新向玩家提问，而是沿用存档中记录的选择结果；缺少记录时立即报错，
-        /// 因为凭空替玩家做一次选择会让存档与实际剧情走向产生分歧。
+        /// 续演不会重新向玩家提问，而是沿用上下文中记录的选择结果；缺少记录时立即报错，
+        /// 因为凭空替玩家做一次选择会让记录与实际剧情走向产生分歧。
         /// </summary>
         private async UniTask ResumeAsync(StoryContext context, CancellationToken cancellationToken)
         {

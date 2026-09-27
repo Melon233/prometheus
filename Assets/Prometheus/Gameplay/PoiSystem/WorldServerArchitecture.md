@@ -1,6 +1,6 @@
 # 大世界 POI 服务器架构（Go + protobuf + MongoDB）
 
-> 状态：**现行方案**
+> 状态：**联网版方案，当前未接入**（2026-09-27 起项目先做单机版，POI 权威由 `LocalPoiGateway` 承担，见 [PoiSystem.md](PoiSystem.md) 5.2 节「单机权威」）
 > 适用范围：prometheus 项目大世界 POI（采集物/收集物/交互物）的服务器权威同步。
 > 本文档描述 POI 数据同步链路：语义化 ID + chunk 分区 + Go 服务器 + MongoDB + protobuf 通信。
 > 关联：客户端编排见 [PoiSystem.md](PoiSystem.md)，权威交互流程见 [WorldPersistenceDesign.md](WorldPersistenceDesign.md)，网络分层约束见 [ServiceSystemDesign.md](../ServiceSystem/ServiceSystemDesign.md)。

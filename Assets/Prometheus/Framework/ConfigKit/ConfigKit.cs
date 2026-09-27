@@ -19,7 +19,7 @@ namespace Xuan.Prometheus
 
         /// <summary>
         /// 加载全部配表。必须在资源包就绪之后、玩法会话建立之前调用，且一个 Core 生命周期内只调用一次。
-        /// 调用点由 <c>ARCH-CONFIG-001</c> 固定在 <c>GameFlow.RunHotUpdateAsync</c>。
+        /// 调用点由 <c>ARCH-CONFIG-001</c> 固定在 <c>Entry.BootAsync</c>（Kit 就绪之后、会话建立之前）。
         /// </summary>
         void Load();
     }

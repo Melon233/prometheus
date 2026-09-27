@@ -1,13 +1,17 @@
 # BagSystem
 
-背包是**服务器权威**的：`Item { itemId, quality, quantity }` 由服务器下发，持久化在 MongoDB 的 `backpack` 集合，按 `player_id` 隔离。客户端只持有最近一次同步的快照，不拥有权威数量。
+背包由**网关权威**：`Item { itemId, quality, quantity }` 由 `IBagGateway` 返回，BagSystem 只持有最近一次同步的快照，不拥有权威数量。
+
+- **单机版（当前）**：`LocalBagGateway` 直接读写内存中的背包 `LocalAuthority/LocalInventory`（背包规则与数据都在这里，**不做存档**，每次进入游戏背包从空开始），物品定义在 `LocalAuthority/LocalItemCatalog`（与 `Server/config/items.json` 一致）。POI 交互掉落经同一个 `LocalInventory` 写入，因此背包读到的就是交互发放的物品。
+- **联网版（保留未接入）**：`NetworkBagGateway`（`Gameplay/ServiceSystem/`，装配 `Prometheus.Gameplay.Online`）经 `IServiceSystem` 组包收发，数据持久化在服务器 MongoDB 的 `backpack` 集合。
 
 ## 组成
 
 | 文件 | 职责 |
 | --- | --- |
 | `IBagSystem` / `BagSystem` | 背包快照缓存、修订通知、刷新入口、持有量查询与消耗校验 |
-| `IBagGateway` / `BagGateway` | 本领域的组包解包，经 `IServiceSystem` 收发 |
+| `IBagGateway` | 本领域权威数据契约：取背包快照、抽卡 |
+| `LocalBagGateway` | 单机实现：读写本地存档；抽卡消耗 1 个风神瞳，从其余物品中等概率发放 1 个（移植自服务器 `Service.Gacha`） |
 | `MaterialCost.cs` | 材料消耗的数据类型与纯函数校验器 |
 
 ## 持有量查询
@@ -22,8 +26,8 @@
 
 **它只回答「够不够」，不扣除任何东西。**
 
-- 扣减只能由服务器执行；客户端校验的作用是在发请求前挡掉明显不成立的操作，并给出缺口明细供界面展示。
-- 校验基于最近一次同步的快照，因此结果是**建议而非承诺**：最终成败以服务器响应为准。界面不得因为客户端校验通过就提前播放成功表现。
+- 扣减只能由网关执行；本地校验的作用是在发请求前挡掉明显不成立的操作，并给出缺口明细供界面展示。
+- 校验基于最近一次同步的快照，因此结果是**建议而非承诺**：最终成败以网关响应为准。界面不得因为校验通过就提前播放成功表现。
 - 不满足时返回**全部**缺口而不是第一条，使界面能一次性展示「还缺什么、差多少」。
 - 同一材料在消耗列表中出现多次时按**累计需求**判定。「分两条各自够、合起来不够」是最容易漏判的一种情况。
 
@@ -35,9 +39,9 @@
 
 养成操作（突破、天赋升级、武器突破、圣遗物强化）的材料扣减**尚未接通**。它需要：
 
-1. `Server/proto/game.proto` 新增养成请求与响应；
-2. Go 服务端实现扣减与结果落库，保证「校验—扣除—生效」在服务器侧原子完成；
-3. 客户端 `IBagGateway` 增加对应组包方法，由养成 System 调用。
+1. `IBagGateway` 增加对应的扣减方法，由养成 System 调用；
+2. 单机版在 `LocalBagGateway` 中经 `LocalInventory.Consume` 实现，保证「校验—扣除—生效」在一次调用内完成；
+3. 恢复联网时再在 `Server/proto/game.proto` 与 Go 服务端补齐同一接口，并由 `NetworkBagGateway` 组包。
 
 在此之前，养成侧只能做到「校验通过则允许提交」，不能真正消耗材料。这一段属于 [Growth 差异台账](../../../../Docs/Design/Growth/90_现有实现差异台账.md) 排期的第 3 步后半。
 

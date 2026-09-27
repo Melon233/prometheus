@@ -1,0 +1,20 @@
+{
+    "name": "Prometheus.Gameplay.Online",
+    "rootNamespace": "",
+    "references": [
+        "Prometheus.Framework",
+        "Prometheus.Gameplay",
+        "Prometheus.NetworkKit",
+        "GUID:366adb08e88a4bae8efd5b125e3ccc9f",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -4,10 +4,10 @@ using Cysharp.Threading.Tasks;
 
 namespace Xuan.Prometheus.Narrative
 {
-    /// <summary>定义剧情演绎、跳过、断点续演与存档的公共入口。</summary>
+    /// <summary>定义剧情演绎、跳过与断点续演的公共入口；续演点只存在于本次运行。</summary>
     public interface INarrativeSystem : ISystemContract
     {
-        /// <summary>进入一个新节拍时触发，存档层可据此记录续演位置。</summary>
+        /// <summary>进入一个新节拍时触发，调用方可据此观察续演位置。</summary>
         event Action<StoryPath> BeatEntered;
 
         /// <summary>获取当前是否有剧情正在演绎。</summary>
@@ -19,10 +19,10 @@ namespace Xuan.Prometheus.Narrative
         /// <summary>获取当前正在演绎的剧情标识；没有进行中的剧情时为空。</summary>
         string CurrentStoryId { get; }
 
-        /// <summary>获取存档中记录的续演剧情标识；没有可续演的剧情时为空。</summary>
+        /// <summary>获取本次运行中记录的续演剧情标识（剧情被中止时写入）；没有可续演的剧情时为空。</summary>
         string ResumeStoryId { get; }
 
-        /// <summary>获取存档中记录的续演节拍路径；没有可续演的剧情时为空路径。</summary>
+        /// <summary>获取本次运行中记录的续演节拍路径；没有可续演的剧情时为空路径。</summary>
         StoryPath ResumePath { get; }
 
         /// <summary>获取剧情变量与旗标存储。</summary>
@@ -73,11 +73,5 @@ namespace Xuan.Prometheus.Narrative
 
         /// <summary>中止当前演绎；世界状态可能停在中途。</summary>
         void Abort();
-
-        /// <summary>捕获剧情存档。</summary>
-        string CaptureSnapshot();
-
-        /// <summary>从存档恢复剧情状态；恢复后可用 ResumeStoryId 与 ResumePath 继续上次的剧情。</summary>
-        void RestoreSnapshot(string json);
     }
 }

@@ -1,20 +1,25 @@
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 namespace Xuan.Prometheus
 {
 
     /// <summary>
-    /// 泛型单例基类（继承 MonoBehaviour）
+    /// 泛型单例基类（继承 MonoBehaviour）。
+    /// 声明为 partial 是 AutoStaticsCleanup 源生成器的要求：关闭域重载时由生成代码在进出播放模式时重置静态状态。
     /// </summary>
     /// <typeparam name="T">子类类型</typeparam>
-    public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
+    public abstract partial class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
-        // 静态实例
+        // 静态实例；进入播放模式时回到 null，避免持有上一局已销毁的对象
+        [AutoStaticsCleanup]
         private static T _instance;
 
-        // 锁对象，用于线程安全（虽然Unity主线程用不上，但保留良好习惯）
+        // 锁对象，用于线程安全（虽然Unity主线程用不上，但保留良好习惯）；无状态，无需重置
         private static readonly object _lock = new object();
 
-        // 应用程序是否正在退出
+        // 应用程序是否正在退出；编辑器退出播放模式也会触发 OnApplicationQuit，
+        // 必须在下次进入播放模式时重新求值初始化器回到 false，否则 Ins 永远返回 null
+        [AutoStaticsCleanup]
         private static bool _applicationIsQuitting = false;
 
         /// <summary>

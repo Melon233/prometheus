@@ -7,7 +7,7 @@ namespace Xuan.Prometheus
     /// 定义单局 GameplayKit 独占的公共系统生命周期；同一具体系统类型在一个 GameplayKit 中只能注册一个实例。
     ///
     /// 相位与 <see cref="Kit"/> 逐项同构，并额外补上一对世界级相位。三段生命周期的划分是：
-    /// 构造与 <see cref="AfterNewAsync"/>、<see cref="AfterNew"/> 属于**会话**（登录后建立，登出销毁）；
+    /// 构造与 <see cref="AfterNewAsync"/>、<see cref="AfterNew"/> 属于**会话**（Kit 就绪后建立，会话销毁时释放）；
     /// <see cref="OnWorldEnterAsync"/> 与 <see cref="OnWorldExit"/> 属于**世界**（每次进出场景）。
     /// 一个会话跨越多个世界，因此跨场景存活的状态（背包、任务进度、小队编成）留在会话相位，
     /// 绑定场景 GameObject 的状态（Entity、POI、NPC）必须落在世界相位。

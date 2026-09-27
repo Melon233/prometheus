@@ -1,3 +1,4 @@
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace Xuan.Prometheus
@@ -6,13 +7,18 @@ namespace Xuan.Prometheus
     /// 承载跨场景运行时对象的唯一常驻根节点。
     /// 需要场景锚点的系统按需自取，因此"运行时根节点"不再作为启动参数逐层传递；
     /// 单点持有 DontDestroyOnLoad 也使层级结构保持整洁，便于运行期排查。
+    /// 声明为 partial 是 AutoStaticsCleanup 源生成器的要求。
     /// </summary>
-    public static class PersistentRoot
+    public static partial class PersistentRoot
     {
         /// <summary>常驻根节点在层级中的显示名称。</summary>
         private const string RootName = "[Prometheus]";
 
-        /// <summary>当前常驻根节点；首次访问时创建，Core 释放时销毁。</summary>
+        /// <summary>
+        /// 当前常驻根节点；首次访问时创建，Core 释放时销毁。
+        /// 关闭域重载时，进入播放模式会自动回到 null，不依赖上一局的 Core.Dispose 是否走完。
+        /// </summary>
+        [AutoStaticsCleanup]
         private static Transform shared;
 
         /// <summary>获取常驻根节点；不存在时立即创建并标记为跨场景保留。</summary>

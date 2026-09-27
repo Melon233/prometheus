@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 using Xuan.Prometheus.Expression;
 using Xuan.Prometheus.Narrative;
 
@@ -204,52 +203,6 @@ namespace Xuan.Prometheus.Quest.Tests
             Assert.That(rewards.Count, Is.EqualTo(1), "奖励动作必须恰好执行一次。");
             Assert.That(rewards[0].RewardId, Is.EqualTo("apple"));
             Assert.That(rewards[0].Amount, Is.EqualTo(2));
-        }
-
-        /// <summary>存档只记录偏离默认的任务；版本更新新增的任务在旧存档上自然处于正确状态。</summary>
-        [Test]
-        public void Snapshot_RecordsOnlyDeviationsAndNewQuestsNeedNoMigration()
-        {
-            quest.RegisterDefinition(NewQuest("q_old"));
-            quest.RegisterDefinition(NewQuest("q_untouched", unlock: "flag.never", mode: QuestAcceptMode.Manual));
-            quest.Accept("q_old");
-            quest.TrackedQuestId = "q_old";
-            string json = quest.CaptureSnapshot();
-
-            Assert.That(json, Does.Contain("q_old"));
-            Assert.That(json, Does.Not.Contain("q_untouched"), "从未碰过的任务不应进入存档。");
-
-            // 模拟版本更新：读档时配置里多了一个新任务。
-            QuestSystem restored = new QuestSystem(new VariableStore());
-            _ = new StoryVariables(restored.Variables.Store);
-            restored.RegisterDefinition(NewQuest("q_old"));
-            restored.RegisterDefinition(NewQuest("q_untouched", unlock: "flag.never", mode: QuestAcceptMode.Manual));
-            restored.RegisterDefinition(NewQuest("q_added_in_patch", mode: QuestAcceptMode.Manual));
-            restored.RestoreSnapshot(json);
-
-            Assert.That(restored.GetStatus("q_old"), Is.EqualTo(QuestStatus.Active));
-            Assert.That(restored.GetCurrentStepId("q_old"), Is.EqualTo("s1"));
-            Assert.That(restored.TrackedQuestId, Is.EqualTo("q_old"));
-            Assert.That(restored.GetStatus("q_untouched"), Is.EqualTo(QuestStatus.Locked));
-            Assert.That(restored.GetStatus("q_added_in_patch"), Is.EqualTo(QuestStatus.Available), "新增任务无需迁移脚本即处于正确状态。");
-            restored.Dispose();
-        }
-
-        /// <summary>配置被删除的任务在读档时只记警告并丢弃，不污染整个读档流程。</summary>
-        [Test]
-        public void Snapshot_DropsUnknownQuestWithWarning()
-        {
-            quest.RegisterDefinition(NewQuest("q_gone"));
-            quest.Accept("q_gone");
-            string json = quest.CaptureSnapshot();
-
-            QuestSystem restored = new QuestSystem(new VariableStore());
-            _ = new StoryVariables(restored.Variables.Store);
-            restored.RegisterDefinition(NewQuest("q_kept"));
-            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("q_gone"));
-            Assert.DoesNotThrow(() => restored.RestoreSnapshot(json));
-            Assert.That(restored.GetStatus("q_kept"), Is.EqualTo(QuestStatus.Available));
-            restored.Dispose();
         }
 
         /// <summary>对话解析按优先级降序取胜出者，同优先级时当前追踪的任务优先。</summary>

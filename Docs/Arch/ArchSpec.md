@@ -46,7 +46,7 @@ Runtime（Bootstrap，唯一组合根）
   - 边界：例外只覆盖**导表生成的装配**。框架层引用任何手写的玩法装配仍然禁止。
   - 执行手段：asmdef 引用白名单与代码评审。
 - `ARCH-LAYER-003`：`Runtime`（`Assets/Prometheus/Bootstrap`）是唯一被允许认识具体实现类型的装配。三个下层装配各自通过 `AssemblyInfo.cs` 中的 `InternalsVisibleTo("Runtime")` 只向它开放实现。
-- `ARCH-LAYER-004`：`Prometheus.Rendering.*` 与 `Prometheus.NetworkKit` 是独立边界装配，不参与上述四层顺序。
+- `ARCH-LAYER-004`：`Prometheus.Rendering.*` 与 `Prometheus.NetworkKit` 是独立边界装配，不参与上述四层顺序。联网实现装配 `Prometheus.Gameplay.Online`（`Gameplay/ServiceSystem/`）位于玩法层之上、只被组合根引用；单机版组合根不引用它，见第 8 节。
 
 ## 3. 架构角色
 
@@ -54,12 +54,11 @@ Runtime（Bootstrap，唯一组合根）
 | --- | --- | --- |
 | `Core` | 创建、注册、更新和逆序释放基础 Kit，提供唯一跨模块入口 | `Entry` |
 | `GameplayKit` | **会话工厂**：按组合根的声明建立/销毁玩法会话，并驱动世界相位 | `Core` |
-| `WorldSession` | 世界切换的编排：退出旧世界 → 加载场景 → 进入新世界 | `Entry` |
 | Kit | 提供资源、配表、事件、UI、玩法容器等跨模块基础能力 | `Core` |
 | `IGameplaySystemInstaller` | 回答"这一次会话由哪些 System 组成"；同步、纯构造 | `GameplayKit` |
 | System | 管理单局内一个明确玩法领域的状态和行为 | `GameplayKit` |
-| `ServiceSystem` | 单局唯一网络会话与业务无关的通用请求通道；不认识任何具体业务 | `GameplayKit` |
-| `*Gateway` | 某一领域的网络适配器：组包、解包、Push 分类；不保存领域状态 | `GameplayKit` |
+| `*Gateway` | 某一领域的权威数据适配器；单机版为 `Local*Gateway`（进程内权威规则 + 本地存档），联网版为 `Network*Gateway`（组包、解包、Push 分类）；不保存领域状态 | `GameplayKit` |
+| `ServiceSystem` | **联网版**的单局唯一网络会话与通用请求通道；单机版不注册 | `GameplayKit` |
 | Entity / Logic / Component | 表达运行时对象身份、行为和数据组合 | `EntitySystem` 管理 Entity 生命周期 |
 | Event | 描述已经发生的全局玩法事实 | `IEventKit` |
 | UI | 读取 System 接口并把用户命令转交给玩法层，不拥有权威玩法状态 | `IUIKit` 与对应面板 |
@@ -71,7 +70,7 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-KIT-003`：业务代码必须通过 `Core.Asset`、`Core.Event`、`Core.UI`、`Core.Gameplay` 使用正式 Kit；`Core.GetKit<T>()` 仅供 Core 生命周期管理和诊断。由架构测试 `Sources_DoNotResolveKitsByGetKit` 执行。
 - `ARCH-KIT-004`：Kit 的创建、初始化、更新和释放顺序只允许由 `Core` 控制；释放顺序必须与注册顺序相反。
 - `ARCH-KIT-006`（配表所有权）：`ConfigKit` **直接持有**生成的 `Tables`，并以 `IConfigKit.Tables` 公开。读表统一写作 `Core.Config.Tables.Tb*`。禁止为配表再建第二份加载入口或缓存：一个进程只有一份表数据，它的所有者是 `ConfigKit`。依据见 `ARCH-LAYER-005`。
-- `ARCH-KIT-005`：Kit 的构造函数禁止产生全局副作用。四个静态入口只允许在 `Core.RegisterKit`（`Core.PublishStaticEntry`）中写入、在 `Core.Dispose` 中清空。`new` 一个 Kit 与把它接入当前 Core 必须是两件可以分别发生的事。
+- `ARCH-KIT-005`：Kit 的构造函数禁止产生全局副作用。四个静态入口只允许在 `Core.RegisterKit`（`Core.PublishStaticEntry`）中写入、在 `Core.Dispose` 中清空；此外它们标注了 `[AutoStaticsCleanup]`，编辑器关闭域重载时由 Unity 生成代码在进入播放模式时复位为 `null`，这是引擎层的复位而非业务写入，详见 `Framework/CoreKit/README.md`「关闭域重载时的静态状态」。`new` 一个 Kit 与把它接入当前 Core 必须是两件可以分别发生的事。
 
 ## 5. 组合根约束
 
@@ -110,10 +109,16 @@ Runtime（Bootstrap，唯一组合根）
 
 ## 8. 网络边界约束
 
+> **单机版现状（2026-09-27）**：组合根注册 `LocalPoiGateway` / `LocalBagGateway`，不注册 `ServiceSystem`；玩法层 `Prometheus.Gameplay` 不再引用 `Prometheus.NetworkKit`。
+> `ServiceSystem` 与 `NetworkPoiGateway` / `NetworkBagGateway` 保留在独立装配 `Prometheus.Gameplay.Online` 中，本节 `ARCH-NET-003` ~ `ARCH-NET-011` 约束的是这套联网实现。
+
+- `ARCH-NET-012`（网关可替换）：领域 System 只依赖 `I*Gateway` 契约，禁止依赖 `IServiceSystem` 或任何本地存档类型；单机与联网实现必须能只在组合根互换。可用性与进入世界同样经由网关契约（`IPoiGateway.IsAvailable` / `Unavailable` / `EnterWorldAsync`）表达。
+- `ARCH-NET-013`（单机无存档）：单机版全部玩法数据只存在于内存中，每次进入游戏都从全新状态开始。本地网关共享的背包 `LocalInventory` 由组合根创建并构造注入；任何 System 不得读写本地文件或 `PlayerPrefs` 来保存玩法进度。引入存档时必须先修订本条。
+
 - `ARCH-NET-001`：`INetworkClient` 只允许公开连接、主动断连、重连、通用 Packet 请求关联、通用 Packet Push 和泵送等业务无关能力；禁止增加房间、POI、背包、抽卡、位置或其他具体游戏业务接口。
 - `ARCH-NET-002`：`NetworkClient`、`NetworkSession` 和协议编解码器必须保持内部实现。公开的 `IByteTransport` 仅作为基础设施替换扩展点，Gameplay 业务不得直接依赖。
 - `ARCH-NET-003`：网络职责按两层划分。`IServiceSystem` 只提供业务无关的会话与通用请求通道（`EnterWorldAsync` / `RequestAsync` / `PushReceived`）；每个领域的组包、解包与 Push 分类由该领域自己的 `I*Gateway` 承担。底层客户端只允许由 NetworkKit 自身声明、由 `ServiceSystem` 独占持有（架构测试 `Sources_DoNotUseNetworkClientOutsideServiceSystem`）；`RequestAsync` 只允许由 `*Gateway.cs` 调用（架构测试 `Sources_DoNotUseRequestChannelOutsideGateways`）。
-- `ARCH-NET-003a`：Gateway 必须与它服务的领域同目录（例如 `Gameplay/PoiSystem/PoiGateway.cs`）。新增一个领域网络请求应当只改动该领域自己的文件。
+- `ARCH-NET-003a`：网关契约与本地实现必须与它服务的领域同目录（例如 `Gameplay/PoiSystem/LocalPoiGateway.cs`）；联网实现集中在 `Gameplay/ServiceSystem/`（独立装配，因为它依赖 NetworkKit）。
 - `ARCH-NET-003b`：Gateway 禁止持有连接状态、重试策略或并发原语。会话、并发与断线语义由 `ServiceSystem` 独占；Gateway 只做翻译。
 - `ARCH-NET-004`：注册顺序必须为 `ServiceSystem` → 各 `*Gateway` → 领域消费者，释放按其逆序，保证单局只有一个网络客户端和一条 Push 泵送链，且退订时通道仍然可用。由架构测试 `SystemRegistration_OrdersChannelBeforeGatewaysBeforeConsumers` 执行；消费关系由源码引用推导，不在测试中写死。
 - `ARCH-NET-005`：连接、断连、重连和 `PumpEvents` 属于 NetworkKit 生命周期能力，禁止出现在 `IServiceSystem`。
@@ -130,7 +135,7 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-ENT-002`：驱动实体生命周期跃迁（绑定编号、标记回收、立即释放）必须通过显式接口 `IEntityLifecycleController`。禁止把这类特权操作放宽为普通公开方法。
 - `ARCH-ENT-003`：`OrderTag` 只允许描述与玩法领域无关的通用相位。"背包""任务""编队"之类的领域概念必须通过同一相位内的注册顺序表达，禁止在框架层新增领域枚举值。
 - `ARCH-ENT-004`：`Entity.bindGo` 对外只读。实体子类可在构造阶段绑定既有场景对象，运行期的接管与解绑一律经由 `Entity.BindGameObject`。
-- `ARCH-ENT-005`：ELC 适用于**由运行时创建并拥有表现对象、具备逐帧行为**的对象。场景摆放、数量固定、状态由服务器权威、且没有逐帧逻辑的对象（如 POI）不得使用 ELC——为它们建立实体只会带来生命周期、组件组合与帧驱动三重净负担，应直接以 MonoBehaviour 承载配置、状态与交互入口。
+- `ARCH-ENT-005`：ELC 适用于**由运行时创建并拥有表现对象、具备逐帧行为**的对象。场景摆放、数量固定、状态由网关权威、且没有逐帧逻辑的对象（如 POI）不得使用 ELC——为它们建立实体只会带来生命周期、组件组合与帧驱动三重净负担，应直接以 MonoBehaviour 承载配置、状态与交互入口。
 
 ## 10. 当前允许的主要依赖
 
@@ -138,10 +143,11 @@ Runtime（Bootstrap，唯一组合根）
 | --- | --- | --- |
 | Gameplay/UI 任意模块 | `IAssetKit`、`IConfigKit`、`IEventKit`、`IUIKit`、`IGameplayKit` | 基础模块入口 |
 | `ConfigKit` | `IAssetKit`、`Prometheus.Config.Generated` | 按表名加载 `.bytes` 并构造唯一 `Tables` |
-| `PoiSystem` | `IEntitySystem`、`IServiceSystem`、`IPoiGateway`、`ITeamSystem` | POI Entity 生命周期、会话可用性、世界网络请求、当前上场成员位置 |
+| `PoiSystem` | `IEntitySystem`、`IPoiGateway`、`ITeamSystem` | 营地敌人生命周期、POI 权威状态读写与可用性、当前上场成员位置 |
 | `WorldMapSystem` | 无 | 加载静态地图定义并提供世界坐标换算，不持有任何 POI 或界面状态 |
-| `BagSystem` | `IBagGateway` | 库存请求与本地快照 |
-| `PoiGateway` / `BagGateway` | `IServiceSystem` | 通用请求通道与 Push 流 |
+| `BagSystem` | `IBagGateway` | 库存请求与快照缓存 |
+| `LocalPoiGateway` / `LocalBagGateway` | `LocalInventory`（会话级共享状态） | 单机权威规则与运行时数据 |
+| `NetworkPoiGateway` / `NetworkBagGateway`（联网版） | `IServiceSystem` | 通用请求通道与 Push 流 |
 | `NarrativeSystem` | `ICameraSystem`（规划中） | 叙事演出期间的镜头租约 |
 | `NpcSystem` | 无 | 只发布 `InteractionRequested`，由叙事适配器接管演出 |
 | `TeamSystem` | `IInputSystem` | 上场成员输入切换 |
@@ -157,14 +163,13 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-LIFE-002`（相位隔离）：`XSystem.AfterNewAsync` 并行执行，其中**禁止调用其他 System**——此刻别的系统可能还没加载完自己的配置。需要协作的初始化一律放到同步的 `AfterNew` 及之后。
 - `ARCH-LIFE-003`（三段生命周期）：运行时状态必须落在明确的一段上。
   - **App**：`Core` 与全部 Kit，进程启动时建立、退出时释放。
-  - **Session**：全部玩法 System，登录后建立、登出时释放，**跨越多个世界**。跨场景存活的状态（背包、任务进度、小队编成、网络会话）属于这一段。
+  - **Session**：全部玩法 System，Kit 就绪后由 `Entry` 建立、随 Core 释放（也可由 `DestroySession` 单独销毁），**跨越多个世界**。跨场景存活的状态（背包、任务进度、小队编成、POI 状态）属于这一段；单机版不做存档，这些状态随会话销毁而丢弃。
   - **World**：场景本身与场景内的 Entity / POI / NPC，每次进出场景建立与拆除。**任何绑定场景 GameObject 的状态都必须落在这一段**，否则场景以 `LoadSceneMode.Single` 卸载时会留下指向已销毁对象的引用。
-- `ARCH-WORLD-001`（世界目录）：世界之间的跳转必须按 `WorldDefinition.WorldId` 引用，**禁止**按场景地址跳转——场景地址是实现细节。压栈行为由 `WorldKind` 推导，禁止为它单独配置开关。世界目录必须有且只有一个 `MainWorld`：它是世界栈的栈底，必须唯一确定。
+- `ARCH-WORLD-001`（世界目录）：世界之间的跳转必须按 `WorldDefinition.WorldId` 引用，**禁止**按场景地址跳转——场景地址是实现细节。压栈行为由 `WorldKind` 推导，禁止为它单独配置开关。世界目录必须有且只有一个 `MainWorld`：它是启动时进入的世界（将来引入世界切换时也是栈底），必须唯一确定。
 - `ARCH-WORLD-002`（`WorldContext` 的边界）：`WorldContext` 只允许携带**由流程解析、System 自己查不到**的事实（当前是世界标识、场景与出生位姿）。其余世界级配置由关心它的 System 按 `WorldId` 自行加载，禁止塞进上下文——否则该类型会随场景种类不断膨胀，退化成集中式启动参数对象。
-- `ARCH-BOOT-001`（启动层自持）：开屏与热更界面**禁止**使用 `UIPanel` 或任何经 `Core.Asset` 加载的资源——它们运行在资源包就绪之前。这一层只允许使用随包体直出的东西：启动场景内的对象、`Resources` 资源、代码创建的对象、系统字体。登录界面不在此列，它在资源包就绪之后，是正常的 `UIPanel`。
-- `ARCH-BOOT-002`（热更是阶段而非步骤）：热更下载是资源包初始化**内部**的一段（清单就绪之后、可加载之前），因此界面只能订阅 `IAssetKit.BootProgressChanged` 显示进度，**禁止**自行驱动下载流程或另起一套进度来源。
-- `ARCH-VAR-001`（变量所有权）：跨系统共享的变量必须存在唯一的 `VariableStore` 里，按路径**根段**路由到唯一的 `IVariableNamespace` 所有者。禁止为同一批变量建立第二份存储，也禁止让两个存储互相注册为投影——互投影在图上是一个环，需要重入守卫才不会无限递归。写权限由所有者的门面强制：一个命名空间只允许写自己的根段。存档按所有者切片导出，因此共享存储不影响各系统各存各的档。
-- `ARCH-CONFIG-001`（配表加载时机）：配表必须在**资源包就绪之后、玩法会话建立之前**由 `Core.Config.Load()` 一次性加载，当前落在 `GameFlow.RunHotUpdateAsync` 的 `core.AfterNew()` 之后。它属于 App 段：跨越登录与全部世界，不随会话重建。System 禁止各自加载表数据，也禁止在 `AfterNewAsync` 阶段依赖表已就绪之外的任何时序假设。
+- `ARCH-BOOT-003`（线性启动）：启动链路由 `Entry.BootAsync` 按固定顺序执行：Kit 初始化 → 配表 → 建立会话 → 加载主世界场景 → 世界相位 → HUD。`ARCH-BOOT-001` / `ARCH-BOOT-002`（开屏、热更界面）已随启动流程一并移除（2026-09-27，见 `Docs/Arch/GameFlow.md` 第 13 节）；将来重新引入开屏或热更界面时，它们运行在资源包就绪之前，仍然不得使用 `UIPanel`。
+- `ARCH-VAR-001`（变量所有权）：跨系统共享的变量必须存在唯一的 `VariableStore` 里，按路径**根段**路由到唯一的 `IVariableNamespace` 所有者。禁止为同一批变量建立第二份存储，也禁止让两个存储互相注册为投影——互投影在图上是一个环，需要重入守卫才不会无限递归。写权限由所有者的门面强制：一个命名空间只允许写自己的根段。单机版不做存档；将来引入存档时应按所有者切片导出，使共享存储不影响各系统各存各的档。
+- `ARCH-CONFIG-001`（配表加载时机）：配表必须在**资源包就绪之后、玩法会话建立之前**由 `Core.Config.Load()` 一次性加载，当前落在 `Entry.BootAsync` 的 `runtimeCore.AfterNew()` 之后。它属于 App 段：跨越全部世界，不随会话重建。System 禁止各自加载表数据，也禁止在 `AfterNewAsync` 阶段依赖表已就绪之外的任何时序假设。
 - `ARCH-LIFE-004`（释放自足）：`XSystem.Dispose` **禁止**依赖 `OnWorldExit` 先执行过。`OnWorldExit` 的前提是「场景仍然存活」，只在世界切换时成立；进程结束时 Unity 已在销毁场景对象，`GameplayKit.DestroySession` 因此不驱动世界退出相位。`OnWorldExit` 负责**归还**，`Dispose` 负责**销毁**，两者互不替代。
 - `ARCH-DATA-001`：UI 不得成为权威玩法数据源；UI 只读取接口暴露的只读状态并提交命令。
 - `ARCH-DATA-002`：配置 SO、只读 DTO、事件载荷和生命周期句柄可以跨接口传递，但不得借此泄漏可替换服务实现。
@@ -232,5 +237,5 @@ System 注册顺序同样不再需要测试巡检：原先用正则扫源码推�
 带**触发条件**的结构性待决项记录在 [LoadBearingSeams](LoadBearingSeams.md)：本节列的是「当前不做」的结论，那份台账列的是「什么时候必须改」。没有触发条件的重构意向不写进任何一份。
 
 - 当前不按每个 System 拆分独立 asmdef。四层装配已经把最重要的方向性约束交给了编译器；更细的拆分收益递减。
-- 网络已按领域拆分为 `IPoiGateway` / `IBagGateway`，共享 `IServiceSystem` 提供的同一条连接。新增领域时应新增对应 Gateway，而不是扩大既有接口。
+- 权威数据已按领域拆分为 `IPoiGateway` / `IBagGateway`：单机版各自由本地实现承担并共享 `LocalInventory`，联网版共享 `IServiceSystem` 提供的同一条连接。新增领域时应新增对应 Gateway（本地实现先行），而不是扩大既有接口。
 - `ToolKit` 下的 `MonoSingleton`、UI 辅助类和纯工具不是正式 Kit，不得注册为 `IKitContract` 实现。它们共用 `Kit` 后缀会持续制造误解，建议后续改名。

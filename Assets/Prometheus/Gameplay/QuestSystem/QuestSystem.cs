@@ -7,7 +7,7 @@ using Xuan.Prometheus.Expression;
 namespace Xuan.Prometheus.Quest
 {
     /// <summary>
-    /// 纯逻辑任务系统：配置注册、状态推导、步骤推进、对话解析与存档。
+    /// 纯逻辑任务系统：配置注册、状态推导、步骤推进与对话解析；状态只存在于本次运行。
     ///
     /// 三条贯穿全类的规则：
     /// <list type="number">
@@ -278,44 +278,6 @@ namespace Xuan.Prometheus.Quest
             }
             resolution = new QuestDialogueResolution(best.QuestId, best.Binding.BindingId, best.Binding.StoryLocation, best.Binding.Marker, best.Binding.OffersQuestId);
             return true;
-        }
-
-        /// <inheritdoc />
-        public string CaptureSnapshot()
-        {
-            return JsonUtility.ToJson(new QuestSnapshot(records.Values, variables.Capture(), TrackedQuestId));
-        }
-
-        /// <inheritdoc />
-        public void RestoreSnapshot(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json)) throw new ArgumentException("Quest snapshot JSON cannot be empty.", nameof(json));
-            QuestSnapshot snapshot = JsonUtility.FromJson<QuestSnapshot>(json);
-            if (snapshot == null) throw new InvalidOperationException("Quest snapshot JSON is invalid.");
-            records.Clear();
-            pathIndex.Clear();
-            for (int index = 0; index < snapshot.Quests.Count; index++)
-            {
-                QuestRecord record = snapshot.Quests[index];
-                // 配置被删除的任务只记警告并丢弃：一条陈旧记录不该污染整个读档流程。
-                if (!definitions.ContainsKey(record.QuestId))
-                {
-                    Debug.LogWarning($"[Quest] 存档包含未知任务 '{record.QuestId}'，已忽略。");
-                    continue;
-                }
-                records[record.QuestId] = record;
-            }
-            variables.Restore(snapshot.RestoreVariables());
-            TrackedQuestId = snapshot.TrackedQuestId;
-            // 重建全部索引与脏集合：读档后每个任务都要重新推导一次。
-            foreach (KeyValuePair<string, QuestDefinition> pair in definitions)
-            {
-                IndexUnlockCondition(pair.Value);
-                records.TryGetValue(pair.Key, out QuestRecord record);
-                ReindexQuest(pair.Value, record != null && record.Status == QuestStatus.Active ? pair.Value.FindStep(record.StepId) : null);
-                dirty.Add(pair.Key);
-            }
-            InvalidateAllNpcs();
         }
 
         /// <summary>释放全部配置、运行时状态与外部订阅。</summary>

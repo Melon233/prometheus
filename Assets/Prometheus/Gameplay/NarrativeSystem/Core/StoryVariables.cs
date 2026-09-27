@@ -126,17 +126,10 @@ namespace Xuan.Prometheus.Narrative
             return false;
         }
 
-        /// <summary>导出本命名空间已写入变量的副本，供存档序列化使用。</summary>
+        /// <summary>导出本命名空间已写入变量的只读副本，供调试显示与测试比较使用。</summary>
         public IReadOnlyDictionary<string, StoryValue> Capture()
         {
             return store.Capture(this);
-        }
-
-        /// <summary>用快照覆盖本命名空间的全部变量。</summary>
-        /// <param name="snapshot">要写入的快照；为空表示只清空。</param>
-        public void Restore(IReadOnlyDictionary<string, StoryValue> snapshot)
-        {
-            store.Restore(this, snapshot);
         }
 
         /// <summary>清空本命名空间的全部变量。</summary>

@@ -147,13 +147,13 @@ public interface IConfigKit : IKitContract
 
 ### 5.2 加载时机
 
-加载点在 `GameFlow.RunHotUpdateAsync` 的 `core.AfterNew()` 之后（`ARCH-CONFIG-001`）：
+加载点在 `Entry.BootAsync` 的 `runtimeCore.AfterNew()` 之后（`ARCH-CONFIG-001`）：
 
 ```csharp
 Core.Config.Load();
 ```
 
-选这里的原因是它恰好夹在两个条件之间——资源包刚刚就绪（可以读 `.bytes`），而全部玩法 System 还没有构造（不会有人读到半份配置）。配表属于 App 段，跨越登录与全部世界，不随会话重建。
+选这里的原因是它恰好夹在两个条件之间——资源包刚刚就绪（可以读 `.bytes`），而全部玩法 System 还没有构造（不会有人读到半份配置）。配表属于 App 段，跨越全部世界，不随会话重建。
 
 ### 5.3 读表
 

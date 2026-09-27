@@ -12,7 +12,7 @@ namespace Xuan.Prometheus
     {
         /// <summary>记录背包缓存版本，供界面订阅后按需重绘。</summary>
         private readonly ModifiableProperty revision = new ModifiableProperty();
-        /// <summary>保存服务器最近一次下发的当前玩家物品快照。</summary>
+        /// <summary>保存网关最近一次返回的当前玩家物品快照。</summary>
         private readonly List<Item> items = new List<Item>();
         /// <summary>按物品标识聚合的持有量索引；同一标识的不同品质合并计数，每次刷新快照后重建。</summary>
         private readonly Dictionary<string, int> quantityByItemId = new Dictionary<string, int>();
@@ -20,7 +20,7 @@ namespace Xuan.Prometheus
         /// <summary>在系统释放时取消尚未完成的背包请求，阻止响应继续修改已清空的缓存。</summary>
         private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource();
 
-        /// <summary>本领域的网络适配器；按 ARCH-SYS-005 在使用点解析，不保存或注入公共 System 实例。</summary>
+        /// <summary>本领域的权威数据适配器，构造注入。</summary>
         private readonly IBagGateway Gateway;
 
         /// <summary>创建背包系统。</summary>
@@ -33,10 +33,10 @@ namespace Xuan.Prometheus
         /// <summary>背包物品列表的变化版本；UI 通过 Listen 监听它并在变化时重新读取列表。</summary>
         public ModifiableProperty RevisionProperty => revision;
 
-        /// <summary>当前缓存的全部物品（按服务器下发顺序）。</summary>
+        /// <summary>当前缓存的全部物品（按网关返回顺序）。</summary>
         public IReadOnlyList<Item> Items => items;
 
-        /// <summary>请求服务器全部物品并刷新缓存与修订号。</summary>
+        /// <summary>向网关请求全部物品并刷新缓存与修订号。</summary>
         public async UniTask RequestItemsAsync(CancellationToken cancellationToken = default)
         {
             using (CancellationTokenSource operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetimeCancellation.Token))

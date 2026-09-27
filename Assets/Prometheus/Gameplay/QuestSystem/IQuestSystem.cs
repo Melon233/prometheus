@@ -96,13 +96,6 @@ namespace Xuan.Prometheus.Quest
         /// <param name="npcId">NPC 稳定标识。</param>
         /// <param name="resolution">命中时返回解析结果。</param>
         bool ResolveDialogue(string npcId, out QuestDialogueResolution resolution);
-
-        /// <summary>捕获任务系统快照；只包含偏离默认的记录与已写入的变量。</summary>
-        string CaptureSnapshot();
-
-        /// <summary>从快照恢复任务状态；未知任务的记录记警告并丢弃，不抛异常。</summary>
-        /// <param name="json">快照 JSON。</param>
-        void RestoreSnapshot(string json);
     }
 
     /// <summary>一个目标行的求值结果；纯展示数据，不持有状态。</summary>

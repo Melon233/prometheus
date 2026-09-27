@@ -19,7 +19,7 @@ namespace Xuan.Prometheus
 
         /// <summary>
         /// 按组合根的声明建立一个新的玩法会话：构造并注册全部 System，再依次驱动异步与同步初始化相位。
-        /// 会话在登录成功后建立、登出时销毁，跨越多个世界。
+        /// 会话由入口在 Kit 就绪后建立、随 Core 释放而销毁，可以跨越多个世界。
         /// </summary>
         /// <param name="installer">玩法层提供的会话组合根。</param>
         UniTask CreateSessionAsync(IGameplaySystemInstaller installer);
@@ -27,7 +27,7 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 销毁当前会话：按注册顺序的逆序释放全部 System。
         /// 本方法**不**驱动世界退出相位——需要在场景仍然存活时归还世界级资源的话，
-        /// 调用方必须先自行 <see cref="ExitWorld"/>（登出流程走 WorldSession）。
+        /// 调用方必须先自行 <see cref="ExitWorld"/>。
         /// </summary>
         void DestroySession();
 
@@ -53,8 +53,8 @@ namespace Xuan.Prometheus
     /// 玩法会话的工厂与生命周期驱动器。
     ///
     /// 它自己是 App 段的 Kit（随 Core 创建、随进程结束释放），而 System 是 Session 段的
-    /// （登录后建立、登出销毁），两者生命周期不同，因此本类不**是**会话，而是**造**会话。
-    /// 这也是"返回登录界面"能够表达的原因：销毁会话，保留 Kit。
+    /// （Kit 就绪后建立，可单独销毁），两者生命周期不同，因此本类不**是**会话，而是**造**会话：
+    /// 销毁会话时 Kit 仍然保留，可以在同一个 Core 上重建会话。
     ///
     /// "这一局由哪些 System 组成"完全交给玩法层的 <see cref="IGameplaySystemInstaller"/>，
     /// 因此框架层不持有任何具体玩法 System 的类型依赖。
@@ -119,7 +119,7 @@ namespace Xuan.Prometheus
             isDisposingSession = true;
             IsReady = false;
             // 这里**不**驱动世界退出相位：OnWorldExit 的前提是「场景还活着」，而会话销毁有两种来路——
-            // 登出时场景仍在（由 WorldSession 先退出世界），进程结束时 Unity 已经在销毁场景对象，
+            // 主动销毁会话时场景仍在（调用方先退出世界），进程结束时 Unity 已经在销毁场景对象，
             // 此刻再去碰它们必然抛异常，并连带中断 Core.Dispose 的后续步骤。
             // 因此各 System 的 Dispose 必须自足，不得依赖 OnWorldExit 先跑过一遍。
             HasWorld = false;

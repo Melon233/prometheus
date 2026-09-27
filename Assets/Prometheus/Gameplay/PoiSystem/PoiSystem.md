@@ -2,6 +2,9 @@
 
 > 对应 Spec：`Assets/Prometheus/Gameplay/PoiSystem/WorldSystemSpec.md`
 > 本文档为 `PoiSystem` 的落地设计，描述数据结构、编辑器/烘焙流程、运行时注册与状态同步，以及与现有 `EntitySystem` 的对接方式。
+>
+> **单机版（2026-09-27）**：POI 的权威状态来源从 Go 服务器改为进程内的 `LocalPoiGateway`（见 5.2 节「单机权威」）。
+> PoiSystem 只依赖 `IPoiGateway` 契约，同步与交互链路本身没有变化；下文中「服务器状态 / 服务器确认」在单机版中均指网关返回的状态。
 
 ---
 
@@ -145,7 +148,8 @@ public sealed class PoiMono : MonoBehaviour
 - 配置 `Region Size`（区域边长，默认 `100m`）。
 - 点击**烘焙**：扫描场景中所有 `PoiMono`，按 `Position` 计算归属网格，聚合成 `RegionConfig`，写入（或重建）`WorldRegionsConfig` 资产。
 - 归属规则：`cellX = floor(x / size)`、`cellY = floor(z / size)`；同一格内的 POI 归入该 Region。POI UUID 不参与网格计算，也不会因布局变化而改变。
-- 进入 PlayMode 时 `ServerProcessManager` 自动构建并启动 Go 服务器；服务器异常残留时可使用菜单 `Prometheus/World/Stop POI Server` 停止项目对应的 `Server/bin/server.exe`。
+- 单机版进入 PlayMode 时**不再**启动 Go 服务器；联调联网版时经菜单 `Prometheus/World/Start POI Server` / `Stop POI Server` 手动启停（`Gameplay/ServiceSystem/Editor/ServerProcessManager.cs`）。
+- 导出的 `Assets/Resources/Config/PoiExport.json` 同时是单机版 `LocalPoiGateway` 的静态定义来源：修改场景 POI 后需要重新导出，否则新增的 POI 在单机版中没有状态记录、交互会失败。
 
 ### 4.3 配置字段绘制
 `PoiConfigDrawer` 仅负责 `PoiConfig` 属性的通用折叠和类型字段显示，不再通过 `PoiMonoEditor` 接管 `PoiMono` 的 Inspector。
@@ -166,31 +170,47 @@ public sealed class PoiMono : MonoBehaviour
 ```csharp
 internal sealed class PoiSystem : XSystem, IPoiSystem
 {
-    private readonly List<PoiEntity> allPois = new List<PoiEntity>(); // 保存由场景 PoiMono 组合出的全部 POI Entity。
-    private readonly Dictionary<string, PoiEntity> poisById = new Dictionary<string, PoiEntity>(); // 按语义 Id 查询当前场景 POI。
-    private readonly CancellationTokenSource lifetimeCancellation = new CancellationTokenSource(); // 释放时取消全部世界异步操作。
-    private float tickAccumulator; // 以 0.25 秒间隔执行位置上传与附近 chunk 网络同步。
+    private readonly List<PoiMono> allPois = new List<PoiMono>();                          // 当前世界扫描到的全部场景 POI。
+    private readonly Dictionary<string, PoiMono> poisById = new Dictionary<string, PoiMono>(); // 按 UUID 查询当前场景 POI。
+    private readonly IEntitySystem entitySystem;  // 构造注入：生成与回收营地敌人。
+    private readonly ITeamSystem teamSystem;      // 构造注入：读取当前上场玩家位置。
+    private readonly IPoiGateway Gateway;         // 构造注入：权威状态读写（单机版为 LocalPoiGateway）。
 
-    private static IServiceSystem ServiceSystem => Core.Gameplay.GetSystem<IServiceSystem>(); // 会话状态：是否已进入世界、是否断线。
-    private static IPoiGateway Gateway => Core.Gameplay.GetSystem<IPoiGateway>();          // 世界领域的网络适配器。
+    public PoiSystem(IEntitySystem entitySystem, ITeamSystem teamSystem, IPoiGateway poiGateway) { /* ... */ }
 
     public override void AfterNew()
     {
-        // 基础模块和玩法系统统一从 Core 获取，不保存或注入 IGameplayKit、IAssetKit、IEventKit。
-        Core.Event.AddListener<EntityDiedEvent>(OnEntityDied);
-        Core.Asset.LoadAssetSync<WorldMapDefinition>("WorldMapDefinition");
+        Core.Event.AddListener<EntityDiedEvent>(OnEntityDied);   // 营地敌人死亡补刷。
+        Gateway.Unavailable += OnWorldUnavailable;               // 数据源失效时停止同步与交互（单机版永不触发）。
     }
 
-    public override void OnUpdate(float dt) { /* 低频读取玩家坐标，上传位置并同步附近 3x3 chunk 状态。 */ }
+    public override UniTask OnWorldEnterAsync(WorldContext world) { /* 生成营地敌人，扫描场景 POI，经网关进入世界。 */ }
+    public override void OnUpdate(float dt) { /* 低频上传玩家位置并同步附近 3x3 chunk 状态。 */ }
 }
 ```
 
 要点：
-- 静态地图定义经 `Core.Asset` 加载，场景 POI 由 `LoadFromScene` 扫描 `PoiMono` 建立 Entity 与 Id 索引。
-- 玩家位置在 `OnUpdate` 中取当前上场成员（`Core.Gameplay.GetSystem<ITeamSystem>().ActiveMember`，本文件内封装为私有属性 `ActivePlayer`）的 `bindGo` 坐标。
-- Entity 注册、敌人生成和营地补刷统一通过 `Core.Gameplay.GetSystem<IEntitySystem>()` 完成。
+- 场景 POI 由 `LoadFromScene` 扫描 `PoiMono` 建立 Id 索引，POI 不创建 Entity（`ARCH-ENT-005`）。
+- 玩家位置取当前上场成员（`ITeamSystem.ActiveMember`，本文件内封装为私有属性 `ActivePlayer`）的 `bindGo` 坐标。
+- 营地敌人生成和补刷通过构造注入的 `IEntitySystem` 完成。
 
-> 当前实现的服务器接入流程以场景 `PoiMono` 为静态定义来源：组合根先注册 ServiceSystem 再注册 PoiGateway，PoiSystem 在调用点分别解析二者（会话状态取自 `IServiceSystem`，网络请求走 `IPoiGateway`）；`AfterNew` 注册怪物营地死亡监听并生成初始史莱姆，`InitializeAsync` 首先扫描场景并建立本地 POI 索引，保证地图和交互列表可以独立于网络显示；随后调用业务接口 `EnterWorldAsync`，由 ServiceSystem 内部完成连接与 JoinRoom，再恢复玩家坐标并启用服务器同步。PoiSystem 的全部异步调用都传入自身生命周期令牌，释放后 continuation 不再修改集合或 Unity 对象。ServiceSystem 把 NetworkKit 意外断线转换为世界不可用通知，PoiSystem 随即停止上传、拉取和交互；本地 POI 仍保留。
+> 接入流程：进入世界时先扫描场景并建立本地 POI 索引，保证地图和交互列表不依赖网关即可显示；随后调用 `IPoiGateway.EnterWorldAsync` 取回上次保存的玩家坐标并恢复，再启用状态同步。PoiSystem 的全部异步调用都传入世界级取消令牌，离开世界或释放后 continuation 不再修改集合或 Unity 对象。网关报告不可用（`IsAvailable` 为 false 或触发 `Unavailable`）时，PoiSystem 停止上传、拉取和交互；本地 POI 仍保留。
+
+#### 单机权威：`LocalPoiGateway`
+
+单机版的 POI 规则逐条移植自 `Server/internal/service/service.go`，位于 `Gameplay/PoiSystem/LocalPoiGateway.cs`：
+
+| 环节 | 行为 |
+| --- | --- |
+| 静态定义 | `AfterNew` 从 `Resources/Config/PoiExport` 读取 `Id`、`PoiType`、`ChunkId`（与服务器播种同源），按区块建立索引 |
+| 运行时状态 | 网关内部按导出为每个 POI 建立一条记录（神像从 1 级开始），只保存在内存中；不做存档，每次进入游戏全部回到初始状态 |
+| 一次性操作 | 解锁（神像 / 锚点 / 副本）、开箱、收集神瞳：重复执行返回失败并附带最新状态 |
+| 可刷新操作 | 采集写入 `now + 30s`、击败 Boss 写入 `now + 300s` 的重生时间戳，总是成功 |
+| 掉落 | 开箱：护甲 + 经验书；收集神瞳：风神瞳；采集：苹果（经共享的 `LocalInventory` 写入背包） |
+| 神像供奉 | 消耗全部风神瞳，每个 +1 进度，满 10 升一级并发放一把长剑 |
+| 玩家位置 | 不保存：`UploadPositionAsync` 直接确认，`EnterWorldAsync` 返回空位置，玩家从世界定义的出生点开始 |
+
+交互结果立即反映在内存状态中，会话销毁时全部丢弃。
 
 ### 5.3 注册与显隐
 - **初始化**：`LoadFromScene` 为每个合法 `PoiMono` 创建 `PoiEntity` 或 `NpcEntity`，注册到 EntitySystem 并保留场景 GameObject。

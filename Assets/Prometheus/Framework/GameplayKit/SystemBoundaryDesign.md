@@ -21,8 +21,8 @@
 | `ICameraSystem` | `CameraSystem` | 玩法镜头与演出镜头租约 |
 | `INpcSystem` | `NpcSystem` | NPC 单会话交互协调 |
 | `IQuestSystem` | `QuestSystem` | 任务配置、状态流转与快照 |
-| `IServiceSystem` | `ServiceSystem` | 单局网络会话与业务无关的通用请求通道、通用 Push 主线程分发 |
-| `IPoiGateway` / `IBagGateway` | `PoiGateway` / `BagGateway` | 各领域的组包、解包与 Push 分类 |
+| `IPoiGateway` / `IBagGateway` | `LocalPoiGateway` / `LocalBagGateway` | 各领域的权威数据适配：单机版在进程内执行权威规则并读写本地存档 |
+| `IServiceSystem`（联网版，当前未注册） | `ServiceSystem` | 单局网络会话与业务无关的通用请求通道、通用 Push 主线程分发 |
 | `IPoiSystem` | `PoiSystem` | POI、地图、AOI、玩家位置与世界状态同步 |
 | `IBagSystem` | `BagSystem` | 背包缓存与修订通知 |
 | `ITeamSystem` | `TeamSystem` | 固定容量小队与上场成员切换 |
@@ -45,10 +45,14 @@
 
 ## NetworkKit 边界
 
+> 单机版现状：组合根只注册本地网关（`LocalPoiGateway` / `LocalBagGateway`，共享内存中的 `LocalInventory`），不注册 `ServiceSystem`，
+> 玩法层装配不再引用 NetworkKit。下文描述的是保留在 `Prometheus.Gameplay.Online` 装配中的联网实现
+> （`ServiceSystem`、`NetworkPoiGateway`、`NetworkBagGateway`），恢复联网时只需在组合根替换两个网关的注册。
+
 底层网络只通过 `INetworkClient` 提供连接、断连、重连、通用 Packet 请求关联和通用 Push 能力，实例由 `NetworkClientFactory` 创建。`INetworkClient` 不包含房间、POI、背包、抽卡或位置等业务接口；`NetworkClient`、`NetworkSession`、分帧器和协议编解码器均为程序集内部实现，`IByteTransport` 作为可替换传输扩展点保持公开。
 
-组合根按 `ServiceSystem` → 各领域 Gateway → 领域消费者的顺序注册。各方都不保存对方实例，而是在调用点通过 `Core.Gameplay.GetSystem<IContract>()` 获取接口。只有 ServiceSystem 可以持有 `INetworkClient`、管理连接和调用 `PumpEvents`；组装业务 Packet 是各领域 Gateway 的职责；领域 System 只调用 Gateway 的业务接口、解释结果并维护领域状态。GameplayKit 逆序释放，因此消费者先停止请求，Gateway 再退订，ServiceSystem 最后关闭连接。
+组合根按 `ServiceSystem` → 各领域 Gateway → 领域消费者的顺序注册，依赖以构造注入传递。只有 ServiceSystem 可以持有 `INetworkClient`、管理连接和调用 `PumpEvents`；组装业务 Packet 是各领域 Gateway 的职责；领域 System 只调用 Gateway 的业务接口、解释结果并维护领域状态。GameplayKit 逆序释放，因此消费者先停止请求，Gateway 再退订，ServiceSystem 最后关闭连接。
 
-`IServiceSystem` 与全部 `I*Gateway` 的异步接口都接受 `CancellationToken`。消费方传入自身生命周期令牌，释放时先取消未完成请求；ServiceSystem 同时维护系统级取消源和活动操作计数，最后一个异步调用退出后才释放客户端与同步原语。NetworkKit 的意外断线事件经 `PumpEvents` 回到主线程，ServiceSystem 将其转换为世界不可用状态，PoiSystem 随即停止坐标上传、区块拉取和交互。
+`IServiceSystem` 与全部 `I*Gateway` 的异步接口都接受 `CancellationToken`。消费方传入自身生命周期令牌，释放时先取消未完成请求；ServiceSystem 同时维护系统级取消源和活动操作计数，最后一个异步调用退出后才释放客户端与同步原语。NetworkKit 的意外断线事件经 `PumpEvents` 回到主线程，ServiceSystem 将其转换为世界不可用状态，经 `IPoiGateway.Unavailable` 通知 PoiSystem，PoiSystem 随即停止坐标上传、区块拉取和交互。
 
 项目级硬约束见 `Docs/Arch/ArchSpec.md`。

@@ -234,7 +234,7 @@ suite(group) = 绑定表中按优先级第一条条件成立者的 suiteName
 
 ### 4.3 与 POI 服务器权威的关系
 
-工程里 POI 的可变状态（解锁/开启/收集/击败）是**服务器权威**的（`WorldPersistenceDesign.md`：Go 服务器 + MongoDB，UUID 主键，客户端发请求、服务器确认后才做表现）。
+工程里 POI 的可变状态（解锁/开启/收集/击败）是**网关权威**的（`WorldPersistenceDesign.md`：UUID 主键，PoiSystem 发请求、网关确认后才做表现；单机版网关为本地存档实现 `LocalPoiGateway`，联网版为 Go 服务器 + MongoDB）。下文的「服务器」泛指这一权威方。
 
 **界定：suite 决定「世界里存在哪些对象」，POI 状态决定「这些对象各自是什么状态」。两者正交，互不覆盖。**
 
@@ -418,6 +418,9 @@ public sealed class DialogueBinding
 
 ## 8. 存档
 
+> **2026-09-27 状态**：单机版不做存档，每次进入游戏都从全新状态开始。`IQuestSystem.CaptureSnapshot` / `RestoreSnapshot` 与 `QuestSnapshot` 已移除，
+> 任务记录（`Core/QuestRecord.cs`）只存在于本次运行。本节保留为将来引入存档时的设计参考；铁律 Q5「默认状态可推导，只记录偏离」仍约束运行时记录的形状。
+
 沿用工程约定：系统自身 `CaptureSnapshot()` → JSON 字符串，无中央存档系统。
 
 ```csharp
@@ -481,7 +484,7 @@ public sealed class DialogueBinding
 QuestSystem/
   QuestSystemDesign.md
   IQuestSystem.cs / QuestSystem.cs
-  Core/        QuestStatus / QuestContracts / QuestRuntime / QuestSnapshot
+  Core/        QuestStatus / QuestContracts / QuestRuntime / QuestRecord
                QuestVariables（quest.* 存储 + 互投影桥接）
                QuestConditionIndex（倒排索引 + dirty 集合 + Flush）
   Definitions/ QuestDefinition / QuestStep / QuestObjective / QuestTransition

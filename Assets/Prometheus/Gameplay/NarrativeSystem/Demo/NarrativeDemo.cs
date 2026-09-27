@@ -41,7 +41,6 @@ namespace Xuan.Prometheus.Narrative.Demo
         private StageServices services;
         private Text statusText;
         private Text autoButtonLabel;
-        private string savedSnapshot;
         private StoryResult lastResult = StoryResult.Completed;
         private bool hasResult;
         private bool isBusy;
@@ -82,8 +81,7 @@ namespace Xuan.Prometheus.Narrative.Demo
                 if (keyboard.rKey.wasPressedThisFrame) Replay();
                 if (keyboard.aKey.wasPressedThisFrame) ToggleAutoPlay();
                 if (keyboard.sKey.wasPressedThisFrame) Skip();
-                if (keyboard.f5Key.wasPressedThisFrame) Save();
-                if (keyboard.f9Key.wasPressedThisFrame) LoadAndResume();
+                if (keyboard.f9Key.wasPressedThisFrame) Resume();
                 if (keyboard.escapeKey.wasPressedThisFrame) narrative?.Abort();
             }
             RefreshStatus();
@@ -95,32 +93,25 @@ namespace Xuan.Prometheus.Narrative.Demo
             RunAsync(StoryPath.None, true).Forget();
         }
 
-        /// <summary>捕获一份剧情存档。</summary>
-        public void Save()
+        /// <summary>
+        /// 从本次运行中记录的续演点继续演绎：先按 Esc 中止，系统会记下中断时的节拍。
+        /// 续演点只存在于内存中（单机版不做存档），没有续演点时提示先中断。
+        /// </summary>
+        public void Resume()
         {
             if (narrative == null) return;
-            savedSnapshot = narrative.CaptureSnapshot();
-            hint = narrative.ResumePath.IsEmpty ? "已存档（无续演点：剧情未中断）" : $"已存档，续演点 {narrative.ResumePath}";
-            Debug.Log($"[Narrative] 存档：{savedSnapshot}");
-        }
-
-        /// <summary>读取存档；存档中记录了续演点时从该节拍继续，否则从头演绎。</summary>
-        public void LoadAndResume()
-        {
-            if (narrative == null) return;
-            if (string.IsNullOrEmpty(savedSnapshot))
-            {
-                hint = "还没有存档，先按 F5";
-                return;
-            }
             if (narrative.IsPlaying)
             {
-                hint = "演绎中无法读档，先按 Esc 中止";
+                hint = "演绎中无法续演，先按 Esc 中止";
                 return;
             }
-            narrative.RestoreSnapshot(savedSnapshot);
             StoryPath resumeAt = narrative.ResumePath;
-            hint = resumeAt.IsEmpty ? "存档无续演点，从头演绎" : $"从 {resumeAt} 续演";
+            if (resumeAt.IsEmpty)
+            {
+                hint = "没有续演点：剧情未被中断，先按 Esc 中止一次";
+                return;
+            }
+            hint = $"从 {resumeAt} 续演";
             RunAsync(resumeAt, false).Forget();
         }
 
@@ -214,9 +205,7 @@ namespace Xuan.Prometheus.Narrative.Demo
         /// </summary>
         private void ResetProgress()
         {
-            NarrativeSnapshot fresh = new NarrativeSnapshot();
-            if (narrative.HasSeen(StoryId)) fresh.seenStories.Add(StoryId);
-            narrative.RestoreSnapshot(fresh.ToJson());
+            narrative.ResetProgress();
             // var.* 读取未定义变量会直接报错，因此条件用到的剧情变量必须显式初始化。
             narrative.Variables.Set("var.trust", initialTrust);
         }
@@ -242,7 +231,7 @@ namespace Xuan.Prometheus.Narrative.Demo
             };
         }
 
-        /// <summary>记录节拍进入日志，模拟存档层对续演位置的观察。</summary>
+        /// <summary>记录节拍进入日志，便于观察续演位置。</summary>
         private void OnBeatEntered(StoryPath path)
         {
             Debug.Log($"[Narrative] 进入节拍 {path}");
@@ -260,7 +249,6 @@ namespace Xuan.Prometheus.Narrative.Demo
             builder.AppendLine($"自动播放：{(narrative.AutoPlay ? "开" : "关")}");
             builder.AppendLine($"已看过：{(narrative.HasSeen(StoryId) ? "是" : "否")}　可跳过：{(narrative.CanSkip ? "是" : "否")}");
             builder.AppendLine($"续演点：{(narrative.ResumePath.IsEmpty ? "-" : narrative.ResumePath.Value)}");
-            builder.AppendLine($"存档：{(string.IsNullOrEmpty(savedSnapshot) ? "无" : savedSnapshot.Length + " 字节")}");
             if (!string.IsNullOrEmpty(hint)) builder.AppendLine($"提示：{hint}");
             builder.AppendLine();
             builder.AppendLine("变量：");
@@ -301,8 +289,7 @@ namespace Xuan.Prometheus.Narrative.Demo
             Button autoButton = AddBarButton(bar.transform, font, "自动播放：关 (A)", ToggleAutoPlay);
             autoButtonLabel = autoButton.GetComponentInChildren<Text>();
             AddBarButton(bar.transform, font, "跳过 (S)", Skip);
-            AddBarButton(bar.transform, font, "存档 (F5)", Save);
-            AddBarButton(bar.transform, font, "读档续演 (F9)", LoadAndResume);
+            AddBarButton(bar.transform, font, "续演 (F9)", Resume);
 
             GameObject statusPanel = NarrativeUiFactory.CreateUiObject("StatusPanel", canvas.transform);
             RectTransform statusRect = (RectTransform)statusPanel.transform;

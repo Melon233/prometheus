@@ -8,24 +8,35 @@ using Xuan.Prometheus.Service;
 namespace Xuan.Prometheus.World
 {
     /// <summary>
-    /// 世界领域网络适配器的正式实现。
-    /// 每个方法只做三件事：组装 Packet、经由通用通道发出、取出本领域关心的响应字段。
-    /// 因此新增一个世界请求只需要改动本文件，不再需要扩展任何跨领域的服务接口。
+    /// 世界领域网关的联网实现（当前未接入组合根，单机版使用 LocalPoiGateway）。
+    /// 每个方法只做三件事：组装 Packet、经由通用通道发出、取出本领域关心的响应字段；
+    /// 可用性与进入世界直接转发给唯一会话通道 <see cref="IServiceSystem"/>。
+    /// 恢复联网时只需在组合根注册 ServiceSystem 与本类，替换 LocalPoiGateway。
     /// </summary>
-    internal sealed class PoiGateway : XSystem, IPoiGateway
+    internal sealed class NetworkPoiGateway : XSystem, IPoiGateway
     {
         /// <summary>构造注入的会话通道；依赖写在签名上，注册顺序因此由编译器强制。</summary>
         private readonly IServiceSystem Service;
 
-        /// <summary>创建 POI 领域网关。</summary>
+        /// <summary>创建 POI 领域联网网关。</summary>
         /// <param name="serviceSystem">承载本领域请求的唯一会话通道。</param>
-        public PoiGateway(IServiceSystem serviceSystem)
+        public NetworkPoiGateway(IServiceSystem serviceSystem)
         {
             Service = serviceSystem ?? throw new System.ArgumentNullException(nameof(serviceSystem));
         }
 
         /// <summary>记录是否已经订阅通用 Push 流，保证订阅与退订严格对称。</summary>
         private bool isPushBound;
+
+        /// <inheritdoc />
+        public bool IsAvailable => Service.IsWorldAvailable;
+
+        /// <inheritdoc />
+        public event Action Unavailable
+        {
+            add => Service.WorldUnavailable += value;
+            remove => Service.WorldUnavailable -= value;
+        }
 
         /// <inheritdoc />
         public event Action<PlayerPositionPush> PositionReceived;
@@ -35,6 +46,12 @@ namespace Xuan.Prometheus.World
         {
             Service.PushReceived += OnPushReceived;
             isPushBound = true;
+        }
+
+        /// <inheritdoc />
+        public UniTask<JoinRoomResponse> EnterWorldAsync(CancellationToken cancellationToken = default)
+        {
+            return Service.EnterWorldAsync(cancellationToken);
         }
 
         /// <inheritdoc />

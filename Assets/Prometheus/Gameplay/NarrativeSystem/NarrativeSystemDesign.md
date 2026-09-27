@@ -709,6 +709,9 @@ quest.mondstadt_1.state == Done && !flag.seen_paimon_intro && item.count("sigil"
 
 ## 14. 存档格式
 
+> **2026-09-27 状态**：单机版不做存档，每次进入游戏都从全新状态开始。`INarrativeSystem.CaptureSnapshot` / `RestoreSnapshot` 与 `NarrativeSnapshot` 已移除；
+> 已看过的剧情、选择记录与续演点仍作为运行时状态保留在 `NarrativeSystem` 中。本节保留为将来引入存档时的设计参考。
+
 ```csharp
 /// <summary>剧情系统的可持久化状态；不包含任何演出播放进度。</summary>
 [Serializable]
@@ -778,7 +781,7 @@ FilmSystem 的 `FilmPlaybackSnapshot` 与 `IFilmSystem.SnapshotCaptured` 整体�
 
 1. 表达式求值器、变量存储、`StoryPath` 计算——**零 Unity 依赖**，独立于表现层。
 2. 状态变更走单一入口（`SetVar` 与 `Emit`），不允许叶子直接改任务状态。
-3. `NarrativeSnapshot` 可 JSON 序列化，与 `QuestSystem.CaptureSnapshot` 的风格保持一致。
+3. ~~`NarrativeSnapshot` 可 JSON 序列化，与 `QuestSystem.CaptureSnapshot` 的风格保持一致。~~（2026-09-27 单机版移除存档，快照一并删除）
 
 ---
 

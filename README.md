@@ -26,7 +26,7 @@ Runtime（Bootstrap，唯一组合根：Entry + PrometheusSystemInstaller）
             └─ Prometheus.Framework   Core / Kit / 事件 / 资源 / UI 框架 / ELC 基类
 ```
 
-`Prometheus.NetworkKit` 与 `Prometheus.Rendering.*` 是独立的边界装配。
+`Prometheus.NetworkKit` 与 `Prometheus.Rendering.*` 是独立的边界装配。当前为**单机版**：玩法层不引用 NetworkKit，POI 与背包的权威数据由本地网关保存在内存中，不做存档，每次进入游戏都重新开始；联网实现保留在未接入组合根的 `Prometheus.Gameplay.Online` 装配中（见 [`ServiceSystemDesign.md`](Assets/Prometheus/Gameplay/ServiceSystem/ServiceSystemDesign.md)）。
 
 框架层不认识任何玩法领域概念；"这一局由哪些 System 组成"由唯一组合根 [`Assets/Prometheus/Bootstrap/PrometheusSystemInstaller.cs`](Assets/Prometheus/Bootstrap/PrometheusSystemInstaller.cs) 回答。
 
@@ -34,7 +34,7 @@ Runtime（Bootstrap，唯一组合根：Entry + PrometheusSystemInstaller）
 
 `Assets/Resources/Entry.unity` 是 Player Build 的唯一入口场景，其 `Entry` 组件没有任何序列化字段。
 
-启动链路不传递参数：资源包名由 `AssetKit` 固定，每个资源地址由使用它的系统以常量持有，跨场景运行时对象统一挂在 `PersistentRoot.Shared` 下。
+启动时 `Entry` 直接依次完成 Kit 初始化、配表加载、玩法会话建立与主世界进入，没有开屏或登录界面。启动链路不传递参数：资源包名由 `AssetKit` 固定，每个资源地址由使用它的系统以常量持有，跨场景运行时对象统一挂在 `PersistentRoot.Shared` 下。
 
 ## 构建与验证
 

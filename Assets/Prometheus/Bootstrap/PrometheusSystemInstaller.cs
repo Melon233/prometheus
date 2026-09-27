@@ -2,10 +2,10 @@ using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Expression;
 using Xuan.Prometheus.Input;
+using Xuan.Prometheus.LocalAuthority;
 using Xuan.Prometheus.Narrative;
 using Xuan.Prometheus.Npc;
 using Xuan.Prometheus.Quest;
-using Xuan.Prometheus.Service;
 using Xuan.Prometheus.World;
 using Xuan.Prometheus.Reactions;
 using Xuan.Prometheus.Shields;
@@ -21,7 +21,7 @@ namespace Xuan.Prometheus.Bootstrap
     /// 它只做一件事——按依赖顺序构造并注册。三件事**不再**属于这里：
     /// 配置资产由各 System 在自己的 AfterNewAsync 里加载；
     /// 初始世界内容由各 System 在世界相位建立；
-    /// 玩法场景由 <see cref="WorldSession"/> 加载。
+    /// 玩法场景由 <see cref="Entry"/> 在会话建立后加载。
     ///
     /// 注册顺序不需要靠注释维护：后一个系统要用前一个，就必须先拿到 AddSystem 的返回值，
     /// 因此**顺序由编译器强制**，依赖成环会直接编译不过。
@@ -37,13 +37,17 @@ namespace Xuan.Prometheus.Bootstrap
         /// <param name="registry">GameplayKit 提供的注册端口。</param>
         public void Install(IGameplaySystemRegistry registry)
         {
-            // 实体容器与会话通道位于依赖图最底层：所有人都可以依赖它们，它们不依赖任何人。
+            // 实体容器位于依赖图最底层：所有人都可以依赖它，它不依赖任何人。
             IEntitySystem entitySystem = registry.AddSystem<IEntitySystem>(new EntitySystem());
-            IServiceSystem serviceSystem = registry.AddSystem<IServiceSystem>(new ServiceSystem());
 
-            // 领域网关必须晚于会话通道初始化、早于它释放，这条由构造依赖直接保证。
-            IPoiGateway poiGateway = registry.AddSystem<IPoiGateway>(new PoiGateway(serviceSystem));
-            IBagGateway bagGateway = registry.AddSystem<IBagGateway>(new BagGateway(serviceSystem));
+            // 单机版：领域网关由本地实现承担原服务器的权威规则，两者共享同一个背包，
+            // 因此 POI 交互发放的物品与背包读到的物品天然一致。背包与 VariableStore 一样是会话级共享状态，由组合根创建、构造注入。
+            // 全部数据只存在于内存中（不做存档），每次进入游戏都重新开始。
+            // 恢复联网时只需把下面两个网关的注册换成 ServiceSystem + NetworkPoiGateway / NetworkBagGateway（见 Prometheus.Gameplay.Online），
+            // 依赖网关契约的 PoiSystem 与 BagSystem 无需改动。
+            LocalInventory inventory = new LocalInventory();
+            IPoiGateway poiGateway = registry.AddSystem<IPoiGateway>(new LocalPoiGateway(inventory));
+            IBagGateway bagGateway = registry.AddSystem<IBagGateway>(new LocalBagGateway(inventory));
 
             // 元素系统不依赖任何其它 System：它只读配表、只改附着与 ICD，反应的数值求值在纯函数里。
             IElementSystem elementSystem = registry.AddSystem<IElementSystem>(new ElementSystem());
@@ -71,7 +75,7 @@ namespace Xuan.Prometheus.Bootstrap
             // 对话界面宿主由 UI 层实现、组合根注入：玩法层定义端口，UI 层实现端口，两侧都不认识对方的具体类型。
             registry.AddSystem<INpcSystem>(new NpcSystem(quest, narrative, new DialoguePanelHost()));
             registry.AddSystem<IWorldMapSystem>(new WorldMapSystem());
-            registry.AddSystem<IPoiSystem>(new PoiSystem(entitySystem, teamSystem, poiGateway, serviceSystem));
+            registry.AddSystem<IPoiSystem>(new PoiSystem(entitySystem, teamSystem, poiGateway));
             registry.AddSystem<IBagSystem>(new BagSystem(bagGateway));
         }
     }

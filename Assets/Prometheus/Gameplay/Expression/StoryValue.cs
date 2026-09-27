@@ -135,7 +135,7 @@ namespace Xuan.Prometheus.Expression
 
         /// <summary>
         /// 按类别把文本解析为剧情值。
-        /// 存档反序列化与图资产的常量字段共用该入口，保证两处的解析规则一致。
+        /// 图资产的常量字段经由该入口解析，保证与表达式求值的解析规则一致。
         /// </summary>
         /// <param name="kind">目标值类别。</param>
         /// <param name="text">值的文本形式。</param>

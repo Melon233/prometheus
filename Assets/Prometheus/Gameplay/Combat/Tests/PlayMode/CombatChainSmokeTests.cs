@@ -38,7 +38,7 @@ namespace Xuan.Prometheus.Combat.Tests
         private SlimeEntity target;
 
         /// <summary>
-        /// 按 `GameFlow` 的真实顺序启动 Core 与玩法会话。
+        /// 按 `Entry` 的真实顺序启动 Core 与玩法会话。
         ///
         /// 顺序本身就是被测对象之一：配表必须在任何玩法 System 构造之前加载完（ARCH-CONFIG-001），
         /// 而各 System 的异步配置加载必须全部完成之后才允许任何 `AfterNew` 运行。

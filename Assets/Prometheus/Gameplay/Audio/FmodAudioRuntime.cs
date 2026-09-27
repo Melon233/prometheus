@@ -1,16 +1,25 @@
 using System;
 using System.Collections.Generic;
 using FMODUnity;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace Xuan.Prometheus
 {
-    /// <summary>集中解析 AnimationLine 音效标记并以 FMOD GUID 播放一次性三维事件。</summary>
-    public static class FmodAudioRuntime
+    /// <summary>
+    /// 集中解析 AnimationLine 音效标记并以 FMOD GUID 播放一次性三维事件。
+    /// 声明为 partial 是 AutoStaticsCleanup 源生成器的要求。
+    /// </summary>
+    public static partial class FmodAudioRuntime
     {
         /// <summary>定义注入 Spine EventTimeline 的保留事件名，普通玩法事件不得使用该名称。</summary>
         public const string AnimationMarkerEventName = "__prometheus_fmod_audio";
 
+        /// <summary>
+        /// 已经输出过播放失败警告的事件，用于同一局内去重。
+        /// readonly 集合在进入播放模式时由生成代码调用 Clear()，使每一局都能重新报告失败。
+        /// </summary>
+        [AutoStaticsCleanup]
         private static readonly HashSet<FmodAudioEvent> ReportedFailures = new HashSet<FmodAudioEvent>();
 
         /// <summary>判断并消费一个 AnimationLine FMOD 标记；普通 Spine 事件返回 false 并继续交给玩法订阅者。</summary>
