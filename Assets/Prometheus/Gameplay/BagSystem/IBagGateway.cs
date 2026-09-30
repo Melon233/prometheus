@@ -10,7 +10,7 @@ namespace Xuan.Prometheus
     /// 联网版实现（Prometheus.Gameplay.Online 中的 NetworkBagGateway）把同一组调用翻译成协议 Packet。
     /// Gateway 不保存 BagSystem 的领域状态，缓存归 BagSystem。
     /// </summary>
-    public interface IBagGateway : ISystemContract
+    public interface IBagGateway : ISystem
     {
         /// <summary>获取当前玩家的权威背包快照。</summary>
         /// <param name="cancellationToken">调用方自身生命周期令牌。</param>

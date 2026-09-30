@@ -52,7 +52,7 @@ effectSystem.DefaultLibrary.PublishFireAttack(effectComponent.Runtime, attacker,
 
 ## 伤害结算
 
-`DamageOperation` 自己不做任何数值计算，它把一次伤害交给 `Gameplay/Combat/DamagePipeline`：
+`DamageOperation` 自己不做任何数值计算，它把一次伤害交给 `Gameplay/Common/Combat/DamagePipeline`：
 
 1. 解析最终元素（附魔在此生效）；
 2. 调用 `IElementSystem.Apply` 写入附着并取回命中的反应行；

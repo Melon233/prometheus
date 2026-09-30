@@ -15,7 +15,7 @@ namespace Xuan.Prometheus.Npc
     ///
     /// 依赖是单向的：NpcSystem 依赖 Quest 与 Narrative，后两者既不依赖它，也不互相依赖（铁律 N1）。
     /// </summary>
-    public interface INpcSystem : ISystemContract
+    public interface INpcSystem : ISystem
     {
         /// <summary>NPC 头顶标记可能变化时触发，参数为受影响的 NPC 标识。</summary>
         event Action<string> MarkerChanged;

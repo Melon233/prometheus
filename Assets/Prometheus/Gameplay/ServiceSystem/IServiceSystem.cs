@@ -11,7 +11,7 @@ namespace Xuan.Prometheus.Service
     /// 不认识 POI、背包、抽卡等任何具体玩法概念——那些属于各领域自己的 Gateway。
     /// 连接、断连、重连和 PumpEvents 属于 NetworkKit 生命周期能力，不出现在这里。
     /// </summary>
-    public interface IServiceSystem : ISystemContract
+    public interface IServiceSystem : ISystem
     {
         /// <summary>获取当前是否已经进入世界且底层网络连接仍然有效。</summary>
         bool IsWorldAvailable { get; }

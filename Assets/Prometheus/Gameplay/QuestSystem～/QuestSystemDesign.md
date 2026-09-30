@@ -351,7 +351,7 @@ public abstract class QuestAction
 ```
 失效通知 → 加入 dirty 集合（仅此而已，不求值、不执行动作）
 
-XSystem.OnUpdate 末尾 → Flush():
+ISystem.OnUpdate 末尾 → Flush():
     轮次 = 0
     while dirty 非空 && 轮次 < 16:
         取出 dirty 快照，清空 dirty

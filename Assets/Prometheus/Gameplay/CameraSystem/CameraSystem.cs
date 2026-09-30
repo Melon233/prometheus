@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using FMODUnity;
 using Unity.Cinemachine;
 using Unity.Cinemachine.TargetTracking;
@@ -11,7 +12,7 @@ using Xuan.Prometheus.Rendering;
 namespace Xuan.Prometheus
 {
     /// <summary>集中创建并管理单局唯一的输出相机、Cinemachine 跟随镜头、音频监听器和当前角色跟随目标。</summary>
-    internal sealed class CameraSystem : XSystem, ICameraSystem
+    internal sealed class CameraSystem : ICameraSystem
     {
         /// <summary>普通玩法跟随镜头的默认优先级；演出镜头必须高于该值才能稳定接管输出。</summary>
         private const int GameplayFollowCameraPriority = 100;
@@ -93,7 +94,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>创建完整相机运行时对象并在初始小队成员发布前订阅切换事件。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CameraSystem));
             CreateCameraObjects();
@@ -101,20 +102,20 @@ namespace Xuan.Prometheus
             Core.Event.AddListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
         }
 
-        /// <summary>
-        /// 离开世界前把跟随参考节点收回系统根对象。
-        ///
-        /// 相机本体挂在 PersistentRoot 下，是会话级的；但参考节点在绑定时被挂到了**角色身下**，
-        /// 而角色随场景销毁——不收回的话，下一个世界里 followTarget 就是一个已销毁对象的引用。
-        /// </summary>
-        public override void OnWorldExit()
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
         {
-            if (isDisposed) return;
-            DetachFollowTarget();
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
         }
 
         /// <summary>释放小队事件和全部系统创建的运行时对象；角色 Prefab 不再持有任何相机资源。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed) return;
             activeCutsceneCameraLease?.Dispose();

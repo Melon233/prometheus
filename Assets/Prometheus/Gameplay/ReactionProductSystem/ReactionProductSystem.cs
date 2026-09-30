@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using Xuan.Prometheus.Combat;
@@ -20,7 +21,7 @@ namespace Xuan.Prometheus.Reactions
     /// 产物 Effect 一律配成 `Permanent`：它的存活时间由元素系统的状态决定，
     /// 在资产上再写一份时长会造成两个时钟，一旦不同步就会出现「状态没了但还冻着」。
     /// </summary>
-    internal sealed class ReactionProductSystem : XSystem, IReactionProductSystem
+    internal sealed class ReactionProductSystem : IReactionProductSystem
     {
         /// <summary>状态的权威来源。</summary>
         private readonly IElementSystem elementSystem;
@@ -44,13 +45,25 @@ namespace Xuan.Prometheus.Reactions
         }
 
         /// <summary>订阅状态变化。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             elementSystem.PseudoStateChanged += OnPseudoStateChanged;
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>退订并撤下全部仍挂着的产物。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             elementSystem.PseudoStateChanged -= OnPseudoStateChanged;
             activeProducts.Clear();

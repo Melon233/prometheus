@@ -56,7 +56,7 @@ namespace Xuan.Prometheus.Tests.Architecture
         [Test]
         public void SystemImplementations_AreInternalSealed()
         {
-            string[] violations = ConcreteImplementationsOf(typeof(ISystemContract))
+            string[] violations = ConcreteImplementationsOf(typeof(ISystem))
                 .Where(type => type.IsPublic || !type.IsSealed)
                 .Select(type => $"{type.FullName}（public={type.IsPublic}, sealed={type.IsSealed}）")
                 .ToArray();
@@ -67,7 +67,7 @@ namespace Xuan.Prometheus.Tests.Architecture
         [Test]
         public void KitImplementations_AreInternalSealed()
         {
-            string[] violations = ConcreteImplementationsOf(typeof(IKitContract))
+            string[] violations = ConcreteImplementationsOf(typeof(IKit))
                 .Where(type => type.IsPublic || !type.IsSealed)
                 .Select(type => $"{type.FullName}（public={type.IsPublic}, sealed={type.IsSealed}）")
                 .ToArray();

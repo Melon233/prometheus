@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
@@ -13,7 +14,7 @@ namespace Xuan.Prometheus.Stamina
     ///
     /// 消耗降低读**发起消耗的那个角色**的面板：同一次冲刺由谁发起，就按谁的减免算。
     /// </summary>
-    internal sealed class StaminaSystem : XSystem, IStaminaSystem
+    internal sealed class StaminaSystem : IStaminaSystem
     {
         /// <summary>基础体力上限，来自 02 第 5 节。神像加成在此之上叠加。</summary>
         public const float DefaultMax = 240f;
@@ -47,7 +48,7 @@ namespace Xuan.Prometheus.Stamina
         }
 
         /// <summary>按恢复延迟与速率回复体力。</summary>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             if (dt <= 0f) return;
             secondsSinceLastConsume += dt;
@@ -110,8 +111,19 @@ namespace Xuan.Prometheus.Stamina
             return cost;
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
         /// <summary>释放体力状态。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             Changed = null;
         }

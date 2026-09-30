@@ -1,3 +1,4 @@
+using System;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Expression;
@@ -20,14 +21,24 @@ namespace Xuan.Prometheus.Bootstrap
     ///
     /// 它只做一件事——按依赖顺序构造并注册。三件事**不再**属于这里：
     /// 配置资产由各 System 在自己的 AfterNewAsync 里加载；
-    /// 初始世界内容由各 System 在世界相位建立；
-    /// 玩法场景由 <see cref="Entry"/> 在会话建立后加载。
+    /// 场景内容由各 System 在 AfterNew 里建立；
+    /// 玩法场景由 <see cref="Entry"/> 在会话建立前加载。
     ///
     /// 注册顺序不需要靠注释维护：后一个系统要用前一个，就必须先拿到 AddSystem 的返回值，
     /// 因此**顺序由编译器强制**，依赖成环会直接编译不过。
     /// </summary>
     public sealed class PrometheusSystemInstaller : IGameplaySystemInstaller
     {
+        /// <summary>本局所在的主世界定义，提供小队出生位姿。</summary>
+        private readonly WorldDefinition world;
+
+        /// <summary>创建会话组合根。</summary>
+        /// <param name="world">本局所在的主世界定义；游戏只有一个世界，会话建立前已由入口加载其场景。</param>
+        public PrometheusSystemInstaller(WorldDefinition world)
+        {
+            this.world = world ?? throw new ArgumentNullException(nameof(world));
+        }
+
         /// <summary>
         /// 按依赖顺序构造并注册本会话的全部 System。
         ///
@@ -61,19 +72,19 @@ namespace Xuan.Prometheus.Bootstrap
             registry.AddSystem<ICombatAudioPresentationSystem>(new CombatAudioPresentationSystem(effectSystem));
             registry.AddSystem<ICameraSystem>(new CameraSystem(entitySystem));
 
-            // 小队必须晚于输入系统：它在 BeforeEntityUpdate 里处理的切换要发生在输入采样之后。
-            ITeamSystem teamSystem = registry.AddSystem<ITeamSystem>(new TeamSystem(inputSystem, entitySystem));
+            // 小队必须晚于输入系统：它在 OnUpdate 里处理的切换要发生在同帧输入采样之后。
+            ITeamSystem teamSystem = registry.AddSystem<ITeamSystem>(new TeamSystem(inputSystem, entitySystem, world.SpawnPosition, world.SpawnRotation));
 
             // 任务与剧情共享同一份变量存储，各自只拥有自己的根段（quest / flag、var）。
             // 存储不是 System 而是会话级共享状态，由组合根创建、构造注入——这与注入一个 System 契约形式一致。
             // 两边因此谁都读得到谁，却没有人需要认识谁：所有权只由路径根段决定，
             // 铁律 Q6（任务不解析其他 System）与 R6（剧情不认识任务）都不受影响，而且不再需要任何交叉接线。
             VariableStore variables = new VariableStore();
-            INarrativeSystem narrative = registry.AddSystem<INarrativeSystem>(new NarrativeSystem(variables));
-            IQuestSystem quest = registry.AddSystem<IQuestSystem>(new QuestSystem(variables));
+            // INarrativeSystem narrative = registry.AddSystem<INarrativeSystem>(new NarrativeSystem(variables));
+            // IQuestSystem quest = registry.AddSystem<IQuestSystem>(new QuestSystem(variables));
 
             // 对话界面宿主由 UI 层实现、组合根注入：玩法层定义端口，UI 层实现端口，两侧都不认识对方的具体类型。
-            registry.AddSystem<INpcSystem>(new NpcSystem(quest, narrative, new DialoguePanelHost()));
+            // registry.AddSystem<INpcSystem>(new NpcSystem(quest, narrative, new DialoguePanelHost()));
             registry.AddSystem<IWorldMapSystem>(new WorldMapSystem());
             registry.AddSystem<IPoiSystem>(new PoiSystem(entitySystem, teamSystem, poiGateway));
             registry.AddSystem<IBagSystem>(new BagSystem(bagGateway));

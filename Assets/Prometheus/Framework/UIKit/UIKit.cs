@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,7 +12,7 @@ namespace Xuan.Prometheus
     /// <summary>
     /// 定义业务层访问 UI 系统所需的稳定能力，业务代码不需要接触资源句柄、Prefab 实例或内部面板记录。
     /// </summary>
-    public interface IUIKit : IKitContract
+    public interface IUIKit : IKit
     {
         /// <summary>
         /// 打开指定类型的单例面板；面板已经打开时直接返回当前控制器，已缓存时复用原实例。
@@ -74,7 +75,7 @@ namespace Xuan.Prometheus
     /// 管理 2D 面板类型注册、Prefab 实例、纯 C# 控制器、显示层级，以及多实例世界 UI 的跟随、计时和对象池。
     /// Prefab 资源句柄始终由 AssetKit 缓存和释放，UIKit 只管理使用这些资源创建出来的场景实例。
     /// </summary>
-    internal sealed class UIKit : Kit, IUIKit
+    internal sealed class UIKit : IUIKit
     {
         private const string RootName = "[UIKit]";
         /// <summary>UIKit 在场景未提供事件系统时创建的运行时节点名称。</summary>
@@ -120,7 +121,7 @@ namespace Xuan.Prometheus
         /// <summary>
         /// 扫描全部已加载程序集中的面板配置，并创建跨场景保留的 UI 根节点和显示层级。
         /// </summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             ThrowIfDisposed();
 
@@ -242,7 +243,7 @@ namespace Xuan.Prometheus
         /// 驱动世界 UI 的相机朝向、目标跟随、固定位置和自动回收计时。
         /// </summary>
         /// <param name="dt">当前帧增量时间。</param>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             if (!isInitialized || isDisposed)
                 return;
@@ -254,10 +255,16 @@ namespace Xuan.Prometheus
             UpdateWorldUI(dt);
         }
 
+        /// <summary>UI 模块没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
         /// <summary>
         /// 关闭并释放全部面板实例，随后销毁 UIKit 根节点；AssetKit 会在 Core 的后续逆序释放阶段统一释放资源句柄。
         /// </summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed)
                 return;

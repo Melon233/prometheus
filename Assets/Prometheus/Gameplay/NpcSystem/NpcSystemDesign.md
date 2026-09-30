@@ -283,7 +283,7 @@ public sealed class DialogueBinding
 ## 7. 契约目标形态
 
 ```csharp
-public interface INpcSystem : ISystemContract
+public interface INpcSystem : ISystem
 {
     /// 头顶标记发生变化；参数为 npcId。
     event Action<string> MarkerChanged;

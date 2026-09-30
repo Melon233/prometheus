@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using Cfg = global::Prometheus.Config;
 
@@ -13,7 +14,7 @@ namespace Xuan.Prometheus.Shields
     /// 它不认识伤害怎么算出来的，也不认识护盾能存活多久——前者在 `DamageCalculator`，
     /// 后者在施加护盾的 `EffectDefinition`。本系统只管「有多少、挡多少、什么时候碎」。
     /// </summary>
-    internal sealed class ShieldSystem : XSystem, IShieldSystem
+    internal sealed class ShieldSystem : IShieldSystem
     {
         /// <summary>
         /// 元素亲和护盾对同元素伤害的吸收效率。
@@ -103,8 +104,25 @@ namespace Xuan.Prometheus.Shields
             if (layersByEntity.TryGetValue(entityId, out List<ShieldLayer> layers)) layers.Clear();
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>释放全部护盾状态。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             layersByEntity.Clear();
         }

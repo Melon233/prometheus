@@ -17,14 +17,14 @@ namespace Xuan.Prometheus
         /// <typeparam name="TContract">对外发布的 System 接口契约。</typeparam>
         /// <param name="system">由 GameplayKit 独占并负责释放的 System 实例。</param>
         /// <returns>刚注册的实例，按契约类型返回。</returns>
-        TContract AddSystem<TContract>(XSystem system) where TContract : class, ISystemContract;
+        TContract AddSystem<TContract>(ISystem system) where TContract : class, ISystem;
     }
 
     /// <summary>
     /// 由玩法层实现的会话组合根。
     ///
     /// 它只回答一个问题：**这一局由哪些 System 组成**。
-    /// 配置资产由各 System 在自己的 AfterNewAsync 里加载，世界内容由各 System 在世界相位建立，
+    /// 配置资产由各 System 在自己的 AfterNewAsync 里加载，场景内容由各 System 在 AfterNew 里建立，
     /// 因此本接口是同步的，也不再有"创建初始内容"的步骤。
     /// </summary>
     public interface IGameplaySystemInstaller

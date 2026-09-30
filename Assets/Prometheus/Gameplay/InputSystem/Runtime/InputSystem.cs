@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Xuan.Prometheus.Component;
@@ -7,7 +8,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus.Input
 {
     /// <summary>在单个 GameplayKit 内集中采样输入、按动作仲裁控制权并向 Entity 或普通对象分发输入。</summary>
-    internal sealed class InputSystem : XSystem, IInputSystem
+    internal sealed class InputSystem : IInputSystem
     {
         private static readonly InputActionMask[] AtomicActions = { InputActionMask.Move, InputActionMask.Attack, InputActionMask.Skill, InputActionMask.Ultimate, InputActionMask.Dodge, InputActionMask.Jump, InputActionMask.SpecialAttack, InputActionMask.ToggleSprint, InputActionMask.ToggleWalk, InputActionMask.Navigate, InputActionMask.Submit, InputActionMask.Cancel, InputActionMask.SelectTeamMember1, InputActionMask.SelectTeamMember2, InputActionMask.SelectTeamMember3 };
         private readonly Dictionary<string, IInputSource> sources = new Dictionary<string, IInputSource>(StringComparer.Ordinal);
@@ -101,8 +102,13 @@ namespace Xuan.Prometheus.Input
             else queuedEntityButtonActions.Add(entityId, actions);
         }
 
-        /// <summary>在 Entity Logic 执行前完成一次输入采样、状态清理、动作仲裁和分发。</summary>
-        public override void BeforeEntityUpdate(float dt)
+        /// <summary>
+        /// 完成一次输入采样、状态清理、动作仲裁和分发。
+        /// 本方法在 Entity 更新之后执行，写入各接收者的输入状态由下一帧的 Entity Logic 消费，即输入固定延迟一帧；
+        /// 需要在同帧处理本次采样结果的系统（如 TeamSystem）必须注册在本系统之后。
+        /// </summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
         {
             if (isDisposed) return;
             currentFrameId++;
@@ -131,8 +137,19 @@ namespace Xuan.Prometheus.Input
             }
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
         /// <summary>释放全部绑定和输入源，并让仍存活的非 Entity 接收者清除残留状态。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed) return;
             for (int index = 0; index < bindings.Count; index++)

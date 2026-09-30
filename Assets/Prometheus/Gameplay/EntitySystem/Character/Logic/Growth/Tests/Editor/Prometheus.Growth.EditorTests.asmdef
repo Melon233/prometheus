@@ -6,6 +6,7 @@
         "Prometheus.Gameplay",
         "Prometheus.UI",
         "Luban.Runtime",
+        "UniTask",
         "Prometheus.Config.Generated"
     ],
     "optionalUnityReferences": [

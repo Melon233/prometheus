@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace Xuan.Prometheus
     /// 事件的具体类型是唯一路由键，因此新增事件只需要在所属领域定义载荷类型，不需要修改本模块。
     /// 方法命名与实体内 EventComponent 保持一致，使全局事实与实体内事实的调用形状完全相同。
     /// </summary>
-    public interface IEventKit : IKitContract
+    public interface IEventKit : IKit
     {
         /// <summary>添加一条针对指定事件类型的全局监听；同一委托重复添加会被重复通知。</summary>
         /// <typeparam name="TEvent">监听的事件载荷类型。</typeparam>
@@ -33,7 +34,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>由 Core 托管的全局同步事件总线，按事件具体类型保存监听通道并在释放时统一清理。</summary>
-    internal sealed class EventKit : Kit, IEventKit
+    internal sealed class EventKit : IEventKit
     {
         /// <summary>按事件具体类型保存监听通道；通道数量以项目中的事件类型数为上限，因此不随订阅次数增长。</summary>
         private readonly Dictionary<Type, EventChannel> channels = new Dictionary<Type, EventChannel>();
@@ -64,8 +65,25 @@ namespace Xuan.Prometheus
             ResolveChannel<TEvent>(createIfMissing: false)?.Invoke(eventData);
         }
 
+        /// <summary>事件总线没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>事件总线没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>事件总线不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧的增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>清空全部监听通道，使释放后的总线不再持有任何订阅者引用。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed) return;
             channels.Clear();

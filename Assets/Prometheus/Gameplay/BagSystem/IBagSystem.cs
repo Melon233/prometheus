@@ -7,7 +7,7 @@ using Xuan.Prometheus.Protocol;
 namespace Xuan.Prometheus
 {
     /// <summary>定义背包缓存、修订通知和数据刷新入口。</summary>
-    public interface IBagSystem : ISystemContract
+    public interface IBagSystem : ISystem
     {
         /// <summary>获取背包缓存的变化版本属性。</summary>
         ModifiableProperty RevisionProperty { get; }

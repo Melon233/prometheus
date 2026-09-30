@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using Xuan.Prometheus.Component;
@@ -32,7 +33,7 @@ namespace Xuan.Prometheus
     }
 
     /// <summary>集中管理单局 Entity 的注册、查询、逐帧调度、安全回收和字段监听。</summary>
-    internal sealed class EntitySystem : XSystem, IEntitySystem, IEntityDriver, IEntityOwner
+    internal sealed class EntitySystem : IEntitySystem, IEntityDriver, IEntityOwner
     {
         /// <summary>本系统生成的敌人统一使用的预制体 YooAsset 地址。</summary>
         private const string EnemyAddress = "Slime";
@@ -220,30 +221,25 @@ namespace Xuan.Prometheus
             DrainPendingRemovals();
         }
 
-        /// <summary>
-        /// 离开世界时回收全部实体。
-        ///
-        /// 这一步必须发生在场景卸载**之前**：场景以 LoadSceneMode.Single 加载，
-        /// Unity 会直接销毁旧场景的全部 GameObject，而 Entity 正包着这些 GameObject。
-        /// 不主动回收的话，下一个世界里留下的就是一批指向已销毁对象的实体。
-        /// 系统本身继续存活——它是会话级的，跨世界保留。
-        /// </summary>
-        public override void OnWorldExit()
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
         {
-            if (isDisposed || isDisposing) return;
-            isDisposing = true;
-            try
-            {
-                ReleaseAllEntities();
-            }
-            finally
-            {
-                isDisposing = false;
-            }
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
         }
 
         /// <summary>会话结束时先释放字段监听，再按稳定顺序释放全部 Entity。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed || isDisposing) return;
             isDisposing = true;

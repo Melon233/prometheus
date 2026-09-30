@@ -66,4 +66,4 @@
 
 ## 调用方
 
-`Gameplay/Combat/DamagePipeline` 在每次伤害结算时调用 `Apply`，并把返回的反应行交给 `ReactionFormula` 与 `DamageCalculator` 求值。本系统不参与求值，因此不读取任何属性面板。
+`Gameplay/Common/Combat/DamagePipeline` 在每次伤害结算时调用 `Apply`，并把返回的反应行交给 `ReactionFormula` 与 `DamageCalculator` 求值。本系统不参与求值，因此不读取任何属性面板。

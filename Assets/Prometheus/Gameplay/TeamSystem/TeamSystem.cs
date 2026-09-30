@@ -9,7 +9,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus
 {
     /// <summary>管理三个独立小队 Entity 的固定槽位、上场切换、输入控制权、显隐和 HUD 观察目标。</summary>
-    internal sealed class TeamSystem : XSystem, ITeamSystem, IInputReceiver
+    internal sealed class TeamSystem : ITeamSystem, IInputReceiver
     {
         /// <summary>定义当前本地小队固定支持的上场角色配置数量。</summary>
         public const int Capacity = 3;
@@ -26,6 +26,12 @@ namespace Xuan.Prometheus
 
         /// <summary>构造注入的实体容器，用于创建与回收本小队的成员实体。</summary>
         private readonly IEntitySystem entitySystem;
+
+        /// <summary>构造注入的出生坐标，小队成员在会话初始化时于此处生成。</summary>
+        private readonly Vector3 spawnPosition;
+
+        /// <summary>构造注入的出生朝向。</summary>
+        private readonly Quaternion spawnRotation;
 
         /// <summary>保存数字键一二三的独占输入租约。</summary>
         private ControlLease teamSelectionLease;
@@ -51,13 +57,17 @@ namespace Xuan.Prometheus
         /// <summary>标记当前系统是否已经释放，阻止失效输入接收者继续存活。</summary>
         private bool isDisposed;
 
-        /// <summary>创建小队系统；两个依赖都以契约注入，因此依赖关系写在签名上而不是散落在方法体里。</summary>
+        /// <summary>创建小队系统；依赖与出生位姿都由组合根构造注入，因此依赖关系写在签名上而不是散落在方法体里。</summary>
         /// <param name="inputSystem">提供输入租约的输入系统。</param>
         /// <param name="entitySystem">承载小队成员实体的实体容器。</param>
-        public TeamSystem(IInputSystem inputSystem, IEntitySystem entitySystem)
+        /// <param name="spawnPosition">小队成员的出生坐标，来自主世界定义。</param>
+        /// <param name="spawnRotation">小队成员的出生朝向，来自主世界定义。</param>
+        public TeamSystem(IInputSystem inputSystem, IEntitySystem entitySystem, Vector3 spawnPosition, Quaternion spawnRotation)
         {
             this.inputSystem = inputSystem ?? throw new ArgumentNullException(nameof(inputSystem));
             this.entitySystem = entitySystem ?? throw new ArgumentNullException(nameof(entitySystem));
+            this.spawnPosition = spawnPosition;
+            this.spawnRotation = spawnRotation;
         }
 
         /// <summary>获取当前上场成员的零基槽位；没有可用成员时为负一。</summary>
@@ -72,49 +82,21 @@ namespace Xuan.Prometheus
         /// <inheritdoc />
         public bool IsAlive => !isDisposed;
 
-        /// <summary>绑定数字键选择输入，并订阅实体移除通知；成员实体在进入世界时才创建。</summary>
-        public override void AfterNew()
+        /// <summary>
+        /// 绑定数字键选择输入、订阅实体移除通知，并创建三个固定槽位的成员实体。
+        /// 场景在会话建立前已加载完成，InputSystem 与 EntitySystem 注册在本系统之前、已完成 AfterNew，因此可以直接创建成员。
+        /// </summary>
+        public void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
             teamSelectionLease = inputSystem.AcquireControl(inputSystem.DefaultSourceId, this, InputActionMask.TeamSelection, InputContexts.Gameplay);
             // 订阅而不是被实体容器直接调用：实体容器在依赖图底层，不能反过来认识小队（否则 Team 到 Input 到 Entity 成环）。
             Core.Event.AddListener<EntityRemovedEvent>(OnEntityRemoved);
-        }
-
-        /// <summary>
-        /// 进入世界时创建三个固定槽位的成员实体并完成一次原子初始化。
-        ///
-        /// 小队成员是绑定场景的实体，因此归世界相位而不是会话相位：
-        /// 换场景时旧成员随场景销毁，进入新场景再按同一份配置重建。
-        /// </summary>
-        /// <param name="world">本次进入的世界上下文。</param>
-        public override UniTask OnWorldEnterAsync(WorldContext world)
-        {
-            if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            // 出生位姿由世界上下文给出而不是本系统持有：同一个世界首次进入用配置的出生点，
-            // 从副本弹回时用记录的返回点，只有持有世界栈的流程知道该用哪个。
-            CreateMembers(world.SpawnPosition, world.SpawnRotation);
-            return UniTask.CompletedTask;
-        }
-
-        /// <summary>离开世界时释放成员引用与上场输入租约；成员实体本身由实体容器统一回收。</summary>
-        public override void OnWorldExit()
-        {
-            if (isDisposed) return;
-            activeMemberInputLease?.Dispose();
-            activeMemberInputLease = null;
-            for (int slotIndex = 0; slotIndex < Capacity; slotIndex++) members[slotIndex] = null;
-            activeSlotIndex = -1;
-            pendingSlotIndex = -1;
-            pendingSwitchFrame = default;
-            hasPendingSwitchFrame = false;
-            isInitialized = false;
+            CreateMembers();
         }
 
         /// <summary>从三个固定槽位配置创建独立 PlayerEntity，并在全部成员就绪后原子初始化槽位。</summary>
-        /// <param name="spawnPosition">本次进入世界的出生坐标。</param>
-        /// <param name="spawnRotation">本次进入世界的出生朝向。</param>
-        private void CreateMembers(Vector3 spawnPosition, Quaternion spawnRotation)
+        private void CreateMembers()
         {
             List<Entity> createdMembers = new List<Entity>(Capacity);
             try
@@ -152,7 +134,7 @@ namespace Xuan.Prometheus
         private void InitializeMembers(IReadOnlyList<Entity> teamMembers)
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(TeamSystem));
-            if (isInitialized) throw new InvalidOperationException("TeamSystem members can only be initialized once per world.");
+            if (isInitialized) throw new InvalidOperationException("TeamSystem members can only be initialized once per session.");
             if (teamMembers == null) throw new ArgumentNullException(nameof(teamMembers));
             if (teamMembers.Count != Capacity) throw new ArgumentException($"TeamSystem requires exactly {Capacity} members.", nameof(teamMembers));
             HashSet<int> entityIds = new HashSet<int>();
@@ -231,8 +213,13 @@ namespace Xuan.Prometheus
             PublishActiveMemberTransition(previousEntityId, ActiveEntityId, removedSlotIndex, activeSlotIndex);
         }
 
-        /// <summary>在 InputSystem 完成本帧采样后处理唯一一次数字键切换，确保旧成员输入能在 Entity 更新前清空。</summary>
-        public override void BeforeEntityUpdate(float dt)
+        /// <summary>
+        /// 在 InputSystem 完成本帧采样后处理唯一一次数字键切换。
+        /// 本系统注册在 InputSystem 之后，OnUpdate 按注册顺序执行，因此这里总能读到本帧刚采样的切换请求；
+        /// 切换结果与其余输入一样在下一帧的 Entity 更新中生效。
+        /// </summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
         {
             int requestedSlotIndex = pendingSlotIndex;
             InputFrame switchFrame = pendingSwitchFrame;
@@ -264,8 +251,14 @@ namespace Xuan.Prometheus
             hasPendingSwitchFrame = true;
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
         /// <summary>释放输入租约与运行时引用；成员 Entity 的最终销毁仍由 GameplayKit 统一负责。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed) return;
             Core.Event.RemoveListener<EntityRemovedEvent>(OnEntityRemoved);

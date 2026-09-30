@@ -11,7 +11,7 @@ namespace Xuan.Prometheus.Quest
     /// 与剧情系统的数据面是一份共享的变量存储——两边各拥有自己的根命名空间（<c>quest</c> 与 <c>flag</c>、<c>var</c>），
     /// 因此谁都读得到谁，却没有人需要认识谁；与 NPC 系统的接缝是 <see cref="ResolveDialogue"/> 与 <see cref="Emit"/>。
     /// </summary>
-    public interface IQuestSystem : ISystemContract
+    public interface IQuestSystem : ISystem
     {
         /// <summary>任务状态或当前步骤发生变化时触发；状态、步骤、进度合并成一条通知。</summary>
         event Action<QuestChanged> QuestChanged;

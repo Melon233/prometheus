@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Quest
     /// <item><b>零向外依赖</b>：不解析任何其他 System，外部数据一律经投影读入（Q6）。</item>
     /// </list>
     /// </summary>
-    internal sealed class QuestSystem : XSystem, IQuestSystem
+    internal sealed class QuestSystem : IQuestSystem
     {
         /// <summary>全局任务目录的 YooAsset 地址；由本系统自己在 AfterNewAsync 加载，是私有实现细节。</summary>
         private const string DefaultCatalogAddress = "QuestCatalog";
@@ -227,7 +227,7 @@ namespace Xuan.Prometheus.Quest
         /// 异步相位是并行执行的，此刻别的系统可能还没就位，因此这里只把资产读进来，
         /// 真正的注册留到同步的 AfterNew——那时全部系统与接线都已完成。
         /// </remarks>
-        public override async UniTask AfterNewAsync()
+        public async UniTask AfterNewAsync()
         {
             QuestCatalog loadedCatalog = null;
             await Core.Asset.LoadAssetAsync<QuestCatalog>(DefaultCatalogAddress, asset => loadedCatalog = asset, error => throw new InvalidOperationException(error)).ToUniTask();
@@ -235,7 +235,7 @@ namespace Xuan.Prometheus.Quest
         }
 
         /// <summary>在全部系统与接线就位后注册任务目录，此时校验能读到完整的命名空间集合。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             RegisterCatalog(pendingCatalog);
             pendingCatalog = null;
@@ -243,7 +243,7 @@ namespace Xuan.Prometheus.Quest
 
         /// <summary>帧末统一推进；动作永远在这个明确的阶段执行，不会嵌套在某个变量的写入里。</summary>
         /// <param name="dt">当前帧增量时间。</param>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             Flush();
         }
@@ -281,7 +281,7 @@ namespace Xuan.Prometheus.Quest
         }
 
         /// <summary>释放全部配置、运行时状态与外部订阅。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             variables.Changed -= OnVariableChanged;
             definitions.Clear();

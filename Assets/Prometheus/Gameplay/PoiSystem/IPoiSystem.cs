@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Xuan.Prometheus.World
 {
     /// <summary>定义世界 POI 生命周期、交互和玩家位置能力的公共入口；地图投影由 IWorldMapSystem 负责，权威状态读写由 IPoiGateway 负责。</summary>
-    public interface IPoiSystem : ISystemContract
+    public interface IPoiSystem : ISystem
     {
         /// <summary>获取当前已加载的 POI 数量。</summary>
         int PoiCount { get; }

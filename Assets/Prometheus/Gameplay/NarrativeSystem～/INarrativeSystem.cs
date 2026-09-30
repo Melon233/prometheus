@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 namespace Xuan.Prometheus.Narrative
 {
     /// <summary>定义剧情演绎、跳过与断点续演的公共入口；续演点只存在于本次运行。</summary>
-    public interface INarrativeSystem : ISystemContract
+    public interface INarrativeSystem : ISystem
     {
         /// <summary>进入一个新节拍时触发，调用方可据此观察续演位置。</summary>
         event Action<StoryPath> BeatEntered;

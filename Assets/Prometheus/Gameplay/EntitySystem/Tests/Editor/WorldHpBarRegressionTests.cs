@@ -214,6 +214,23 @@ namespace Xuan.Prometheus.EntitySystem.Tests
                 return null;
             }
 
+            /// <summary>测试实现没有异步初始化工作。</summary>
+            public UniTask AfterNewAsync()
+            {
+                return UniTask.CompletedTask;
+            }
+
+            /// <summary>测试实现没有同步初始化工作。</summary>
+            public void AfterNew()
+            {
+            }
+
+            /// <summary>测试实现不需要逐帧驱动。</summary>
+            /// <param name="dt">当前帧的增量时间。</param>
+            public void OnUpdate(float dt)
+            {
+            }
+
             /// <summary>测试实现不持有外部资源。</summary>
             public void Dispose()
             {

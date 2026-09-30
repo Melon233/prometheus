@@ -1,11 +1,12 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Xuan.Prometheus.Effects;
 
 namespace Xuan.Prometheus
 {
     /// <summary>订阅当前单局已经完成结算的伤害事实并播放命中音效，使命中反馈不再依赖受击或死亡动画是否成功切换。</summary>
-    internal sealed class CombatAudioPresentationSystem : XSystem, ICombatAudioPresentationSystem
+    internal sealed class CombatAudioPresentationSystem : ICombatAudioPresentationSystem
     {
         /// <summary>构造注入的效果系统，本系统只读取它的信号流。</summary>
         private readonly IEffectSystem effectSystem;
@@ -27,7 +28,7 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>在实体创建前订阅当前 GameplayKit 唯一的 EffectRuntime，使本局全部普通、周期和致命伤害共享同一音频入口。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(CombatAudioPresentationSystem));
             if (runtime != null) return;
@@ -35,8 +36,20 @@ namespace Xuan.Prometheus
             runtime.SignalProcessed += OnSignalProcessed;
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>取消只读信号订阅；GameplayKit 按逆注册顺序释放系统，因此该订阅会先于 EffectRuntime 解除。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed) return;
             if (runtime != null) runtime.SignalProcessed -= OnSignalProcessed;

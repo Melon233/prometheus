@@ -85,7 +85,7 @@ namespace Xuan.Prometheus.Elements
     /// 它只修改附着与 ICD 状态并返回命中的反应行，**不结算任何伤害、不施加任何效果**。
     /// 剧变伤害与反应产物由伤害管线在结算阶段统一发起，避免在附着阶段产生递归。
     /// </summary>
-    public interface IElementSystem : ISystemContract
+    public interface IElementSystem : ISystem
     {
         /// <summary>
         /// 施加一次元素附着，并返回本次触发的反应。

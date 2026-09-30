@@ -10,6 +10,7 @@ using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.Shields;
 using Cfg = global::Prometheus.Config;
+using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Combat.Tests
 {
@@ -49,7 +50,7 @@ namespace Xuan.Prometheus.Combat.Tests
             await UniTask.WhenAll(core.CreateAfterNewTasks());
             core.AfterNew();
             Core.Config.Load();
-            await Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller());
+            await Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller(new WorldDefinition()));
         }
 
         [UnitySetUp]

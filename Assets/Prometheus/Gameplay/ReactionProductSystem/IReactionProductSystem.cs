@@ -8,7 +8,7 @@ namespace Xuan.Prometheus.Reactions
     ///
     /// 本接口对外只暴露释放语义：它是一条纯粹的事件消费链路，没有可供外部调用的入口。
     /// </summary>
-    public interface IReactionProductSystem : ISystemContract
+    public interface IReactionProductSystem : ISystem
     {
         /// <summary>获取当前正在维持产物 Effect 的状态数量，供测试与调试确认没有泄漏。</summary>
         int ActiveProductCount { get; }

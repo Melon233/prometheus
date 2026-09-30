@@ -1,16 +1,19 @@
 {
-    "name": "Prometheus.WorldCatalog.EditorTests",
-    "rootNamespace": "Xuan.Prometheus.World.Tests",
+    "name": "Prometheus.Gameplay.PlayModeTests",
+    "rootNamespace": "Xuan.Prometheus.Combat.Tests",
     "references": [
         "Prometheus.Framework",
-        "Prometheus.Gameplay"
+        "Prometheus.Gameplay",
+        "Prometheus.UI",
+        "Runtime",
+        "Prometheus.Config.Generated",
+        "Luban.Runtime",
+        "UniTask"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

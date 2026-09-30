@@ -8,7 +8,7 @@ using Xuan.Prometheus.Protocol;
 namespace Xuan.Prometheus
 {
     /// <summary>封装背包数据请求与缓存，提供可监听的修订号供 UI 响应式更新。</summary>
-    internal sealed class BagSystem : XSystem, IBagSystem
+    internal sealed class BagSystem : IBagSystem
     {
         /// <summary>记录背包缓存版本，供界面订阅后按需重绘。</summary>
         private readonly ModifiableProperty revision = new ModifiableProperty();
@@ -67,6 +67,23 @@ namespace Xuan.Prometheus
             return MaterialCostEvaluator.Evaluate(costs, GetQuantity);
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>在每次刷新快照后重建持有量索引，使查询不必每次遍历整个背包。</summary>
         private void RebuildQuantityIndex()
         {
@@ -80,7 +97,7 @@ namespace Xuan.Prometheus
         }
 
         /// <inheritdoc />
-        public override void Dispose()
+        public void Dispose()
         {
             lifetimeCancellation.Cancel();
             items.Clear();

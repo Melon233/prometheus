@@ -1,7 +1,7 @@
 namespace Xuan.Prometheus.Effects
 {
     /// <summary>定义当前单局效果运行时及默认效果库的只读入口。</summary>
-    public interface IEffectSystem : ISystemContract
+    public interface IEffectSystem : ISystem
     {
         /// <summary>获取系统是否已经释放。</summary>
         bool IsDisposed { get; }

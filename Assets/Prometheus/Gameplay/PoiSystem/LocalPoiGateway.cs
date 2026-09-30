@@ -17,7 +17,7 @@ namespace Xuan.Prometheus.World
     /// 供奉消耗全部风神瞳推进神像进度。响应仍使用协议消息，PoiSystem 因此与联网版共用同一套处理逻辑。
     /// 单机版不做存档：每次进入游戏，全部 POI 都回到初始状态，玩家也从世界定义的出生点开始。
     /// </summary>
-    internal sealed class LocalPoiGateway : XSystem, IPoiGateway
+    internal sealed class LocalPoiGateway : IPoiGateway
     {
         /// <summary>策划导出 POI 定义的 Resources 路径；与服务器 <c>-export</c> 参数指向同一份文件。</summary>
         private const string PoiExportResourcePath = "Config/PoiExport";
@@ -65,7 +65,7 @@ namespace Xuan.Prometheus.World
         }
 
         /// <summary>按导出定义为每个 POI 建立初始状态并按区块索引（对应服务器的 Seed 与玩家模板初始化）。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             TextAsset exportAsset = Resources.Load<TextAsset>(PoiExportResourcePath);
             PoiSeedList export = JsonUtility.FromJson<PoiSeedList>(exportAsset.text);
@@ -128,8 +128,20 @@ namespace Xuan.Prometheus.World
             return UniTask.FromResult(new UpdatePositionResponse { Success = true });
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>会话结束时丢弃全部 POI 状态；下一次会话从导出重新建立初始状态。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             recordsById.Clear();
             recordsByChunk.Clear();

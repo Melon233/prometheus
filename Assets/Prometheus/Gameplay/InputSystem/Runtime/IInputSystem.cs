@@ -1,7 +1,7 @@
 namespace Xuan.Prometheus.Input
 {
     /// <summary>定义输入源注册、控制权租约和实体输入注入的公共能力。</summary>
-    public interface IInputSystem : ISystemContract
+    public interface IInputSystem : ISystem
     {
         /// <summary>获取默认输入源的稳定编号。</summary>
         string DefaultSourceId { get; }

@@ -13,7 +13,7 @@ namespace Xuan.Prometheus.World
     /// 可用性与进入世界直接转发给唯一会话通道 <see cref="IServiceSystem"/>。
     /// 恢复联网时只需在组合根注册 ServiceSystem 与本类，替换 LocalPoiGateway。
     /// </summary>
-    internal sealed class NetworkPoiGateway : XSystem, IPoiGateway
+    internal sealed class NetworkPoiGateway : IPoiGateway
     {
         /// <summary>构造注入的会话通道；依赖写在签名上，注册顺序因此由编译器强制。</summary>
         private readonly IServiceSystem Service;
@@ -42,7 +42,7 @@ namespace Xuan.Prometheus.World
         public event Action<PlayerPositionPush> PositionReceived;
 
         /// <summary>在全部 System 注册完成后订阅通用 Push 流，开始分类本领域关心的推送。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             Service.PushReceived += OnPushReceived;
             isPushBound = true;
@@ -81,8 +81,20 @@ namespace Xuan.Prometheus.World
             return (await Service.RequestAsync(request, cancellationToken)).UpdatePositionResp;
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>退订通用 Push 流并清空本领域订阅者；Gateway 早于 ServiceSystem 释放，因此此时通道仍然可用。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isPushBound)
             {

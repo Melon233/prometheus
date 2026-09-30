@@ -10,6 +10,7 @@ using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Shields;
 using Xuan.Prometheus.Logic;
 using Cfg = global::Prometheus.Config;
+using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Effects.Tests
 {
@@ -1271,7 +1272,7 @@ namespace Xuan.Prometheus.Effects.Tests
         [Test]
         public void EffectSystem_IsPlainGameplaySystemInsteadOfMonoBehaviour()
         {
-            Assert.That(typeof(XSystem).IsAssignableFrom(typeof(EffectSystem)), Is.True);
+            Assert.That(typeof(ISystem).IsAssignableFrom(typeof(EffectSystem)), Is.True);
             Assert.That(typeof(MonoBehaviour).IsAssignableFrom(typeof(EffectSystem)), Is.False);
         }
 
@@ -1328,7 +1329,7 @@ namespace Xuan.Prometheus.Effects.Tests
             Core.Gameplay = gameplayKit;
             try
             {
-                new PrometheusSystemInstaller().Install(gameplayKit);
+                new PrometheusSystemInstaller(new WorldDefinition()).Install(gameplayKit);
                 Assert.That(gameplayKit.GetSystem<IEffectSystem>(), Is.Not.Null, "正式玩法组合根必须注册单局效果系统。");
                 Assert.That(gameplayKit.GetSystem<ICombatAudioPresentationSystem>(), Is.Not.Null, "正式玩法组合根必须注册单局伤害音频表现系统。");
             }

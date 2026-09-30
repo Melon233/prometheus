@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using Xuan.Prometheus.Asset;
 using Xuan.Prometheus.Component;
 using UnityInputSystem = UnityEngine.InputSystem.InputSystem;
+using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Input.Tests
 {
@@ -19,7 +20,7 @@ namespace Xuan.Prometheus.Input.Tests
         [Test]
         public void InputSystem_IsPlainGameplaySystemInsteadOfMonoBehaviour()
         {
-            Assert.That(typeof(XSystem).IsAssignableFrom(typeof(InputSystem)), Is.True);
+            Assert.That(typeof(ISystem).IsAssignableFrom(typeof(InputSystem)), Is.True);
             Assert.That(typeof(MonoBehaviour).IsAssignableFrom(typeof(InputSystem)), Is.False);
         }
 
@@ -37,7 +38,7 @@ namespace Xuan.Prometheus.Input.Tests
             Core.Gameplay = gameplayKit;
             try
             {
-                new PrometheusSystemInstaller().Install(gameplayKit);
+                new PrometheusSystemInstaller(new WorldDefinition()).Install(gameplayKit);
                 IInputSystem inputSystem = gameplayKit.GetSystem<IInputSystem>();
                 Assert.That(inputSystem, Is.Not.Null);
                 Assert.That(inputSystem.DefaultSourceId, Is.EqualTo(UnityInputActionSource.LocalSourceId));
@@ -56,7 +57,7 @@ namespace Xuan.Prometheus.Input.Tests
 
         /// <summary>验证一个输入源每帧只采样一次，并能把不同动作分别交给多个非 Entity 接收者。</summary>
         [Test]
-        public void BeforeEntityUpdate_SamplesOnceAndRoutesSplitActions()
+        public void OnUpdate_SamplesOnceAndRoutesSplitActions()
         {
             FakeInputSource source = new FakeInputSource("Test", new Vector2(0.75f, -0.25f), true, true);
             RecordingReceiver movementReceiver = new RecordingReceiver();
@@ -65,7 +66,7 @@ namespace Xuan.Prometheus.Input.Tests
             {
                 inputSystem.AcquireControl(source.SourceId, movementReceiver, InputActionMask.Move, InputContexts.Gameplay);
                 inputSystem.AcquireControl(source.SourceId, attackReceiver, InputActionMask.Attack, InputContexts.Gameplay);
-                inputSystem.BeforeEntityUpdate(0.016f);
+                inputSystem.OnUpdate(0.016f);
                 Assert.That(source.SampleCount, Is.EqualTo(1));
                 Assert.That(inputSystem.CurrentFrameId, Is.EqualTo(1));
                 Assert.That(movementReceiver.LastActions, Is.EqualTo(InputActionMask.Move));
@@ -88,11 +89,11 @@ namespace Xuan.Prometheus.Input.Tests
             {
                 inputSystem.AcquireControl(source.SourceId, defaultReceiver, InputActionMask.Gameplay, InputContexts.Gameplay);
                 ControlLease takeoverLease = inputSystem.AcquireControl(source.SourceId, takeoverReceiver, InputActionMask.Move, InputContexts.Gameplay, 10);
-                inputSystem.BeforeEntityUpdate(0.016f);
+                inputSystem.OnUpdate(0.016f);
                 Assert.That(defaultReceiver.LastActions, Is.EqualTo(InputActionMask.Gameplay & ~InputActionMask.Move));
                 Assert.That(takeoverReceiver.LastActions, Is.EqualTo(InputActionMask.Move));
                 takeoverLease.Dispose();
-                inputSystem.BeforeEntityUpdate(0.016f);
+                inputSystem.OnUpdate(0.016f);
                 Assert.That(defaultReceiver.LastActions, Is.EqualTo(InputActionMask.Gameplay));
                 Assert.That(takeoverReceiver.LastActions, Is.EqualTo(InputActionMask.None));
                 Assert.That(inputSystem.BindingCount, Is.EqualTo(1));
@@ -123,7 +124,7 @@ namespace Xuan.Prometheus.Input.Tests
             {
                 inputSystem.AcquireControl(source.SourceId, first, InputActionMask.Move, InputContexts.Gameplay, 0, InputDeliveryMode.Shared);
                 inputSystem.AcquireControl(source.SourceId, second, InputActionMask.Move, InputContexts.Gameplay, 0, InputDeliveryMode.Shared);
-                inputSystem.BeforeEntityUpdate(0.016f);
+                inputSystem.OnUpdate(0.016f);
                 Assert.That(first.LastActions, Is.EqualTo(InputActionMask.Move));
                 Assert.That(second.LastActions, Is.EqualTo(InputActionMask.Move));
             }
@@ -140,7 +141,7 @@ namespace Xuan.Prometheus.Input.Tests
             {
                 inputSystem.AcquireControl(source.SourceId, owner, InputActionMask.Attack, InputContexts.Gameplay);
                 inputSystem.AcquireControl(source.SourceId, observer, InputActionMask.Attack, InputContexts.Debug, 0, InputDeliveryMode.Observe);
-                inputSystem.BeforeEntityUpdate(0.016f);
+                inputSystem.OnUpdate(0.016f);
                 Assert.That(owner.LastActions, Is.EqualTo(InputActionMask.Attack));
                 Assert.That(observer.LastActions, Is.EqualTo(InputActionMask.Attack));
             }

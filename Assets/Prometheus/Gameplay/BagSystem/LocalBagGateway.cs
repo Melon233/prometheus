@@ -12,7 +12,7 @@ namespace Xuan.Prometheus
     /// 背包领域网关的单机实现：直接读写内存中的背包，抽卡规则移植自服务器 <c>Service.Gacha</c>。
     /// 响应仍使用协议消息，BagSystem 与联网版共用同一套处理逻辑。单机版不做存档，每次进入游戏背包都从空开始。
     /// </summary>
-    internal sealed class LocalBagGateway : XSystem, IBagGateway
+    internal sealed class LocalBagGateway : IBagGateway
     {
         /// <summary>与 POI 网关共享的背包。</summary>
         private readonly LocalInventory inventory;
@@ -71,6 +71,28 @@ namespace Xuan.Prometheus
         private void AppendItems(ICollection<Item> target)
         {
             foreach (LocalItemStack stack in inventory.Stacks) target.Add(new Item { ItemId = stack.ItemId, Quality = stack.Quality, Quantity = stack.Quantity });
+        }
+
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
+        /// <summary>本系统不持有需要释放的资源。</summary>
+        public void Dispose()
+        {
         }
     }
 }

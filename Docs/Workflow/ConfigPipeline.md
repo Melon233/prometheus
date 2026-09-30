@@ -131,7 +131,7 @@ Assets/Gen/Config/
 配表由 `IConfigKit` 管理，静态入口 `Core.Config`，注册顺序紧随 `AssetKit`（表数据来自资源包）。
 
 ```csharp
-public interface IConfigKit : IKitContract
+public interface IConfigKit : IKit
 {
     bool IsLoaded { get; }
     Prometheus.Config.Tables Tables { get; }

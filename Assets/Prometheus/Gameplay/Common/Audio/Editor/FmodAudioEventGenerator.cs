@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Editor
     /// <summary>从 FMOD Unity 编辑器缓存生成稳定音频事件枚举和 GUID 运行时映射。</summary>
     public static class FmodAudioEventGenerator
     {
-        private const string GeneratedAssetPath = "Assets/Prometheus/Gameplay/Audio/FmodAudioEvent.Generated.cs";
+        private const string GeneratedAssetPath = "Assets/Prometheus/Gameplay/Common/Audio/FmodAudioEvent.Generated.cs";
         private const string EventPathPrefix = "event:/";
 
         private static readonly HashSet<string> ReservedIdentifiers = new HashSet<string>(StringComparer.Ordinal) { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while" };

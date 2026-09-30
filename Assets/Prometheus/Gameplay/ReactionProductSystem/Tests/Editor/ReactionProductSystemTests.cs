@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
@@ -305,9 +306,26 @@ namespace Xuan.Prometheus.Reactions.Tests
         // ---------- 测试替身 ----------
 
         /// <summary>按编号查实体的最小替身；本用例不需要实体系统的生成与回收能力。</summary>
-        private sealed class StubEntitySystem : XSystem, IEntitySystem, IEntityOwner
+        private sealed class StubEntitySystem : IEntitySystem, IEntityOwner
         {
             private readonly Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
+
+            /// <summary>测试替身没有异步初始化工作，直接返回已完成任务。</summary>
+            public UniTask AfterNewAsync()
+            {
+                return UniTask.CompletedTask;
+            }
+
+            /// <summary>测试替身没有同步初始化工作。</summary>
+            public void AfterNew()
+            {
+            }
+
+            /// <summary>测试替身不需要逐帧驱动。</summary>
+            /// <param name="dt">当前帧增量时间。</param>
+            public void OnUpdate(float dt)
+            {
+            }
 
             /// <summary>按指定编号登记一个实体，并以自身作为宿主写入运行时编号。</summary>
             public void Register(int entityId, Entity entity)
@@ -327,11 +345,11 @@ namespace Xuan.Prometheus.Reactions.Tests
             public bool RequestRemoveEntity(int entityId, float destroyDelay = 0f) => entities.Remove(entityId);
             public ListenHandle Listen<TComponent>(int entityId, Func<TComponent, ModifiableProperty> fieldSelector, Action<TComponent> onDirty, bool invokeImmediately = true) where TComponent : IComponent => throw new NotSupportedException();
 
-            public override void Dispose() => IsDisposed = true;
+            public void Dispose() => IsDisposed = true;
         }
 
         /// <summary>持有真实 EffectRuntime 与真实效果库的最小替身，跳过异步资源加载。</summary>
-        private sealed class StubEffectSystem : XSystem, IEffectSystem
+        private sealed class StubEffectSystem : IEffectSystem
         {
             public StubEffectSystem(EffectLibrary library, EffectRuntime runtime)
             {
@@ -343,7 +361,24 @@ namespace Xuan.Prometheus.Reactions.Tests
             public EffectRuntime Runtime { get; }
             public EffectLibrary DefaultLibrary { get; }
 
-            public override void Dispose()
+            /// <summary>测试替身没有异步初始化工作，直接返回已完成任务。</summary>
+            public UniTask AfterNewAsync()
+            {
+                return UniTask.CompletedTask;
+            }
+
+            /// <summary>测试替身没有同步初始化工作。</summary>
+            public void AfterNew()
+            {
+            }
+
+            /// <summary>测试替身不需要逐帧驱动。</summary>
+            /// <param name="dt">当前帧增量时间。</param>
+            public void OnUpdate(float dt)
+            {
+            }
+
+            public void Dispose()
             {
                 Runtime?.Dispose();
                 IsDisposed = true;

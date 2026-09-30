@@ -29,7 +29,7 @@ namespace Xuan.Prometheus.Stamina
     ///
     /// 它是攀爬、游泳、滑翔、冲刺与重击的公共约束，因此先于这些动作落地。
     /// </summary>
-    public interface IStaminaSystem : ISystemContract
+    public interface IStaminaSystem : ISystem
     {
         /// <summary>获取当前体力。</summary>
         float Current { get; }

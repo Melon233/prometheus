@@ -22,7 +22,7 @@
 ### 1.3 对接的现有架构
 | 现有组件 | 位置 | 在本系统中的角色 |
 |----------|------|-----------------|
-| `XSystem` | `Assets/Prometheus/Framework/GameplayKit/XSystem.cs` | `PoiSystem` 的基类，通过 `GameplayKit.AddSystem` 注册 |
+| `ISystem` | `Assets/Prometheus/Framework/GameplayKit/ISystem.cs` | `IPoiSystem` 的基接口，定义会话生命周期；`PoiSystem` 通过 `GameplayKit.AddSystem` 注册 |
 | `IGameplayKit` | `Assets/Prometheus/Framework/GameplayKit/GameplayKit.cs` | 提供 `GetSystem<T>()` / `TryGetSystem<T>()` 供系统间协作 |
 | `EntitySystem` | `Assets/Prometheus/Gameplay/EntitySystem/EntitySystem.cs` | 托管 POI 实体（注册/逐帧调度/回收） |
 | `Entity` | `Assets/Prometheus/Framework/GameplayKit/Entity.cs` | POI 实体基类（直接继承 `Entity`） |
@@ -168,7 +168,7 @@ public sealed class PoiMono : MonoBehaviour
 ### 5.2 PoiSystem（核心，已实现于 `Gameplay/PoiSystem/PoiSystem.cs`）
 
 ```csharp
-internal sealed class PoiSystem : XSystem, IPoiSystem
+internal sealed class PoiSystem : IPoiSystem
 {
     private readonly List<PoiMono> allPois = new List<PoiMono>();                          // 当前世界扫描到的全部场景 POI。
     private readonly Dictionary<string, PoiMono> poisById = new Dictionary<string, PoiMono>(); // 按 UUID 查询当前场景 POI。
@@ -178,14 +178,16 @@ internal sealed class PoiSystem : XSystem, IPoiSystem
 
     public PoiSystem(IEntitySystem entitySystem, ITeamSystem teamSystem, IPoiGateway poiGateway) { /* ... */ }
 
-    public override void AfterNew()
+    public void AfterNew()
     {
         Core.Event.AddListener<EntityDiedEvent>(OnEntityDied);   // 营地敌人死亡补刷。
         Gateway.Unavailable += OnWorldUnavailable;               // 数据源失效时停止同步与交互（单机版永不触发）。
+        SpawnMonsterCampEnemies();                               // 场景已在会话建立前加载，直接生成营地敌人。
+        InitializeAsync(lifetimeCancellation.Token).Forget();    // 扫描场景 POI，经网关进入世界。
     }
 
-    public override UniTask OnWorldEnterAsync(WorldContext world) { /* 生成营地敌人，扫描场景 POI，经网关进入世界。 */ }
-    public override void OnUpdate(float dt) { /* 低频上传玩家位置并同步附近 3x3 chunk 状态。 */ }
+    public void OnUpdate(float dt) { /* 低频上传玩家位置并同步附近 3x3 chunk 状态。 */ }
+    // AfterNewAsync / Dispose 省略
 }
 ```
 
@@ -194,7 +196,7 @@ internal sealed class PoiSystem : XSystem, IPoiSystem
 - 玩家位置取当前上场成员（`ITeamSystem.ActiveMember`，本文件内封装为私有属性 `ActivePlayer`）的 `bindGo` 坐标。
 - 营地敌人生成和补刷通过构造注入的 `IEntitySystem` 完成。
 
-> 接入流程：进入世界时先扫描场景并建立本地 POI 索引，保证地图和交互列表不依赖网关即可显示；随后调用 `IPoiGateway.EnterWorldAsync` 取回上次保存的玩家坐标并恢复，再启用状态同步。PoiSystem 的全部异步调用都传入世界级取消令牌，离开世界或释放后 continuation 不再修改集合或 Unity 对象。网关报告不可用（`IsAvailable` 为 false 或触发 `Unavailable`）时，PoiSystem 停止上传、拉取和交互；本地 POI 仍保留。
+> 接入流程：`AfterNew` 中先扫描场景并建立本地 POI 索引，保证地图和交互列表不依赖网关即可显示；随后调用 `IPoiGateway.EnterWorldAsync` 取回上次保存的玩家坐标并恢复，再启用状态同步。PoiSystem 的全部异步调用都传入会话级取消令牌，系统释放后 continuation 不再修改集合或 Unity 对象。网关报告不可用（`IsAvailable` 为 false 或触发 `Unavailable`）时，PoiSystem 停止上传、拉取和交互；本地 POI 仍保留。
 
 #### 单机权威：`LocalPoiGateway`
 

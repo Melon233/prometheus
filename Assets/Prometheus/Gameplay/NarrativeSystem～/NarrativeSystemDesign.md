@@ -760,7 +760,7 @@ FilmSystem 的 `FilmPlaybackSnapshot` 与 `IFilmSystem.SnapshotCaptured` 整体�
 | `IAssetKit` | 全部剧情资源按 location 异步加载，禁止在定义资产里硬引用大资源 |
 | `IServiceSystem` | 预留：条件求值与变量写入为纯函数，将来可整体搬到服务端 |
 
-`NarrativeSystem` 继承 `XSystem`，以 `INarrativeSystem` 契约由 `GameplayKit` 注册，遵循项目既有系统边界约定。
+`NarrativeSystem` 实现 `INarrativeSystem`（继承 `ISystem`），以 `INarrativeSystem` 契约由 `GameplayKit` 注册，遵循项目既有系统边界约定。
 
 ---
 

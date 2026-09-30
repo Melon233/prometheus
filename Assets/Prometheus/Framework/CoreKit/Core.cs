@@ -15,9 +15,9 @@ namespace Xuan.Prometheus
     public sealed partial class Core : IDisposable
     {
         /// <summary>保存 Kit 契约到实现的唯一映射。</summary>
-        private readonly XMap<Type, Kit> kits = new XMap<Type, Kit>();
+        private readonly XMap<Type, IKit> kits = new XMap<Type, IKit>();
         /// <summary>保存确定性的初始化顺序，并在释放时按相反顺序遍历。</summary>
-        private readonly List<Kit> kitInitializationOrder = new List<Kit>();
+        private readonly List<IKit> kitInitializationOrder = new List<IKit>();
         /// <summary>标记异步资源初始化正在进行，禁止重复启动入口流程。</summary>
         private bool isInitializing;
         /// <summary>标记当前 Core 已完成释放，阻止失效上下文继续被访问。</summary>
@@ -75,7 +75,7 @@ namespace Xuan.Prometheus
         {
             ThrowIfDisposed();
             if (!isInitializing) throw new InvalidOperationException("Core must start and await AfterNewAsync tasks before AfterNew.");
-            foreach (Kit kit in kitInitializationOrder) kit.AfterNew();
+            foreach (IKit kit in kitInitializationOrder) kit.AfterNew();
             IsReady = true;
             isInitializing = false;
         }
@@ -83,10 +83,10 @@ namespace Xuan.Prometheus
         /// <summary>获取指定契约对应的 Kit，使调用方不需要依赖内部注册容器。</summary>
         /// <typeparam name="TKit">注册 Kit 使用的接口类型。</typeparam>
         /// <returns>与接口类型对应的唯一 Kit 实例。</returns>
-        public TKit GetKit<TKit>() where TKit : class, IKitContract
+        public TKit GetKit<TKit>() where TKit : class, IKit
         {
             ThrowIfDisposed();
-            if (!kits.TryGet(typeof(TKit), out Kit kit)) throw new InvalidOperationException($"Core does not contain a kit registered as '{typeof(TKit).FullName}'.");
+            if (!kits.TryGet(typeof(TKit), out IKit kit)) throw new InvalidOperationException($"Core does not contain a kit registered as '{typeof(TKit).FullName}'.");
             return kit as TKit ?? throw new InvalidCastException($"Registered kit '{kit.GetType().FullName}' does not implement '{typeof(TKit).FullName}'.");
         }
 
@@ -95,7 +95,7 @@ namespace Xuan.Prometheus
         public void OnUpdate(float dt)
         {
             if (!IsReady || isDisposed) return;
-            foreach (Kit kit in kitInitializationOrder) kit.OnUpdate(dt);
+            foreach (IKit kit in kitInitializationOrder) kit.OnUpdate(dt);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Xuan.Prometheus
         /// <summary>以接口契约注册 Kit，并把该实例追加到确定性的生命周期序列。</summary>
         /// <typeparam name="TContract">外部查询该 Kit 时使用的接口契约。</typeparam>
         /// <param name="kit">由当前 Core 独占并负责释放的 Kit 实例。</param>
-        private void RegisterKit<TContract>(Kit kit) where TContract : class, IKitContract
+        private void RegisterKit<TContract>(IKit kit) where TContract : class, IKit
         {
             if (kit == null) throw new ArgumentNullException(nameof(kit));
             if (!(kit is TContract)) throw new ArgumentException($"Kit '{kit.GetType().FullName}' does not implement '{typeof(TContract).FullName}'.", nameof(kit));
@@ -149,7 +149,7 @@ namespace Xuan.Prometheus
         /// 因此 new 一个 Kit 与把它接入当前 Core 是两件可以分别发生的事。
         /// </summary>
         /// <param name="kit">已经通过契约校验并加入生命周期序列的 Kit 实例。</param>
-        private static void PublishStaticEntry(Kit kit)
+        private static void PublishStaticEntry(IKit kit)
         {
             if (kit is IAssetKit assetEntry) Asset = assetEntry;
             if (kit is IConfigKit configEntry) Config = configEntry;

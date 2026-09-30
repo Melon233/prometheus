@@ -5,7 +5,8 @@
         "Prometheus.Framework",
         "Prometheus.Gameplay",
         "Prometheus.Config.Generated",
-        "Luban.Runtime"
+        "Luban.Runtime",
+        "UniTask"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

@@ -10,7 +10,7 @@ namespace Xuan.Prometheus.Effects
     /// EffectSystem 是单局 GameplayKit 独占的公共效果系统，负责持有并推进唯一的 EffectRuntime。
     /// 它是普通 C# System，不依赖 MonoBehaviour、场景对象或进程级单例，因此多个战斗上下文可以彼此隔离。
     /// </summary>
-    internal sealed class EffectSystem : XSystem, IEffectSystem
+    internal sealed class EffectSystem : IEffectSystem
     {
         /// <summary>本系统默认效果配置库的 YooAsset 地址；由本系统自己在 AfterNewAsync 加载，不外泄。</summary>
         private const string DefaultLibraryAddress = "EffectLibrary";
@@ -42,7 +42,7 @@ namespace Xuan.Prometheus.Effects
         /// 按地址加载本系统自己的配置库。
         /// 资源地址是本系统的私有实现细节，因此由本系统自己加载而不是让组合根代劳。
         /// </summary>
-        public override async UniTask AfterNewAsync()
+        public async UniTask AfterNewAsync()
         {
             EffectLibrary loadedLibrary = null;
             await Core.Asset.LoadAssetAsync<EffectLibrary>(DefaultLibraryAddress, library => loadedLibrary = library, error => throw new InvalidOperationException(error)).ToUniTask();
@@ -82,7 +82,7 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 在 Entity 初始化前准备 EffectRuntime，保证 EffectLogic 可以立即注册规则。
         /// </summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             ThrowIfDisposed();
             EnsureRuntime();
@@ -92,7 +92,7 @@ namespace Xuan.Prometheus.Effects
         /// 在 Entity 完成当帧更新和信号发布后推进触发冷却、持续时间与周期效果。
         /// </summary>
         /// <param name="dt">当前帧增量时间。</param>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             if (isDisposed || runtime == null)
                 return;
@@ -103,7 +103,7 @@ namespace Xuan.Prometheus.Effects
         /// <summary>
         /// 释放当前单局全部效果和触发注册；持久化配置资产仍由 Unity 管理。
         /// </summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed)
                 return;

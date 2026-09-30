@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Service
     /// 封装单局唯一网络客户端，在内部管理连接、并发与断线语义，并向各领域 Gateway 提供业务无关的通用请求通道与 Push 流。
     /// 本类不认识任何具体玩法业务：组包与解包由对应领域的 Gateway 负责。
     /// </summary>
-    internal sealed class ServiceSystem : XSystem, IServiceSystem
+    internal sealed class ServiceSystem : IServiceSystem
     {
         /// <summary>本地开发服务器的默认回环地址。</summary>
         private const string DefaultHost = "127.0.0.1";
@@ -109,13 +109,24 @@ namespace Xuan.Prometheus.Service
         }
 
         /// <summary>在 ServiceSystem 更新阶段统一把 NetworkKit Push 分发到 Unity 主线程订阅者。</summary>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             if (!isDisposed) networkClient.PumpEvents();
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
         /// <summary>解除底层 Push 监听并释放本局唯一网络客户端。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             lock (lifecycleGate)
             {

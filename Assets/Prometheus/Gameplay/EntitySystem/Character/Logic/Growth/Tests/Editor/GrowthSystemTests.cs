@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -375,7 +376,7 @@ namespace Xuan.Prometheus.Growth.Tests
         }
 
         /// <summary>为养成规则测试提供内存 EffectRuntime 与指定只读配置，不改变正式 EffectSystem 的资源边界。</summary>
-        private sealed class TestEffectSystem : XSystem, IEffectSystem
+        private sealed class TestEffectSystem : IEffectSystem
         {
             /// <summary>创建测试独占的效果运行时，并保存测试要验证的正式效果配置。</summary>
             /// <param name="defaultLibrary">测试实体注册触发规则时使用的只读效果配置库。</param>
@@ -395,8 +396,25 @@ namespace Xuan.Prometheus.Growth.Tests
             /// <summary>获取测试指定的只读效果配置库。</summary>
             public EffectLibrary DefaultLibrary { get; }
 
+            /// <summary>测试替身没有异步初始化工作，直接返回已完成任务。</summary>
+            public UniTask AfterNewAsync()
+            {
+                return UniTask.CompletedTask;
+            }
+
+            /// <summary>测试替身没有同步初始化工作。</summary>
+            public void AfterNew()
+            {
+            }
+
+            /// <summary>测试替身不需要逐帧驱动。</summary>
+            /// <param name="dt">当前帧增量时间。</param>
+            public void OnUpdate(float dt)
+            {
+            }
+
             /// <summary>释放测试运行时持有的效果实例和注册句柄。</summary>
-            public override void Dispose()
+            public void Dispose()
             {
                 if (IsDisposed) return;
                 Runtime.Dispose();

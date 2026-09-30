@@ -14,7 +14,7 @@ namespace Xuan.Prometheus.Elements
     /// 它不读取任何属性面板，也不结算伤害：反应的数值求值交给 `ReactionFormula` 与 `DamageCalculator`
     /// 这两个纯函数，反应产物的施加交给伤害管线。这样元素规则与数值公式各自独立可测。
     /// </summary>
-    internal sealed class ElementSystem : XSystem, IElementSystem
+    internal sealed class ElementSystem : IElementSystem
     {
         /// <summary>按目标实体编号保存附着集合。</summary>
         private readonly Dictionary<int, ElementAuraSet> auraRegistry = new Dictionary<int, ElementAuraSet>();
@@ -45,7 +45,7 @@ namespace Xuan.Prometheus.Elements
         private const string DefaultIcdGroupId = "Default";
 
         /// <summary>建立反应矩阵索引与配表缓存。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             Cfg.Tables tables = Core.Config.Tables;
             reactionMatrix = new ReactionMatrixIndex(tables);
@@ -60,7 +60,7 @@ namespace Xuan.Prometheus.Elements
         /// 广播放在全部目标衰减完之后：监听方可能会修改附着（例如草原核引爆继续施加草元素），
         /// 在遍历过程中广播会让字典在枚举中被修改。
         /// </summary>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             if (dt <= 0f) return;
             elapsedSeconds += dt;
@@ -251,8 +251,14 @@ namespace Xuan.Prometheus.Elements
             icdRegistry.RemoveSource(entityId);
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
         /// <summary>释放全部附着与 ICD 状态。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             auraRegistry.Clear();
             icdRegistry.Clear();

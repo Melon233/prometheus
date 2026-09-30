@@ -6,7 +6,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus
 {
     /// <summary>定义实体注册、查询、回收和属性监听的公共能力，隐藏实体调度与初始化实现。</summary>
-    public interface IEntitySystem : ISystemContract
+    public interface IEntitySystem : ISystem
     {
         /// <summary>获取当前仍由系统托管的实体数量。</summary>
         int Count { get; }

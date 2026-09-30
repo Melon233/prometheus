@@ -6,11 +6,11 @@
 
 ## Kit 边界
 
-`Core` 只允许注册和查询继承 `IKitContract` 的接口，并通过 `IAssetKit`、`IEventKit`、`IUIKit` 和 `IGameplayKit` 暴露正式入口。`AssetKit`、`EventKit`、`UIKit` 与 `GameplayKit` 均为 `internal` 实现，业务程序集不能实例化、向下转换或替换 `Core` 的正式实现。
+`Core` 只允许注册和查询继承 `IKit` 的接口，并通过 `IAssetKit`、`IEventKit`、`IUIKit` 和 `IGameplayKit` 暴露正式入口。`AssetKit`、`EventKit`、`UIKit` 与 `GameplayKit` 均为 `internal` 实现，业务程序集不能实例化、向下转换或替换 `Core` 的正式实现。
 
 ## System 边界
 
-所有可由 `GameplayKit` 注册的系统接口都继承 `ISystemContract`。`GameplayKit.AddSystem<TContract>` 只在程序集内部开放，注册键必须是接口类型；`IGameplayKit.GetSystem<TContract>` 与 `TryGetSystem<TContract>` 只能查询接口契约，不能按实现类型定位系统。
+所有可由 `GameplayKit` 注册的系统接口都继承 `ISystem`，`ISystem` 同时定义会话内生命周期（`AfterNewAsync` / `AfterNew` / `OnUpdate` / `Dispose`），实现类只实现自己的领域契约。`GameplayKit.AddSystem<TContract>` 只在程序集内部开放，注册键必须是接口类型；`IGameplayKit.GetSystem<TContract>` 与 `TryGetSystem<TContract>` 只能查询接口契约，不能按实现类型定位系统。
 
 | 公开契约 | 内部实现 | 主要职责 |
 | --- | --- | --- |
@@ -33,7 +33,7 @@
 2. System 不公开其内部子服务、会话或传输对象；需要跨系统使用的动作应提升为所属系统接口的方法。
 3. 公共适配器只能接收接口，例如 `QuestEventAdapters` 接收 `IQuestSystem`；禁止在公共方法签名中泄漏内部实现。
 4. `CutsceneCameraLease`、`ControlLease`、`ListenHandle`、配置 SO、领域 DTO 和只读运行时数据可以作为接口返回值，它们表达一次操作或数据事实，不是可替换服务。
-5. 新增 System 时必须先定义最小 `I*System : ISystemContract`，再由 `GameplayKit` 以该接口注册；实现类保持 `internal sealed`。
+5. 新增 System 时必须先定义最小 `I*System : ISystem`，再由 `GameplayKit` 以该接口注册；实现类保持 `internal sealed`。
 
 ## 事件边界
 

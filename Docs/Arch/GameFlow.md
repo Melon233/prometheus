@@ -6,6 +6,10 @@
 > **2026-09-27 修订**：P2（`GameFlow` 状态机、开屏、热更占位、`LoginPanel`）与 P3 中的世界栈（`WorldSession`）已移除，
 > 启动改回「入口直接加载模块并进入主世界」的线性链路；三段生命周期、依赖注入、单一变量存储与世界相位保留不变。
 > 第 6、7 节已按现状重写，修订原因与影响见第 13 节。
+>
+> **2026-09-30 修订**：游戏按单世界设计，世界相位（`OnWorldEnterAsync` / `OnWorldExit`、`WorldContext`、
+> `EnterWorldAsync` / `ExitWorld`）与 `BeforeEntityUpdate` 已删除，`XSystem` 抽象类改为 `ISystem` 接口并取代 `ISystemContract`。
+> 第 1、2、3、6、7 节已按现状修订，第 8 节保留为历史记录，详见第 14 节。
 
 ## 0. 触发这次重设计的四件事
 
@@ -24,32 +28,31 @@
 | --- | --- | --- | --- |
 | **App** | `Core` + 全部 Kit（Asset / Event / UI / Gameplay） | 进程启动 | 进程退出 |
 | **Session** | 全部玩法 System | Kit 就绪后由 `Entry` 建立 | 进程退出（`GameplayKit.DestroySession` 也可单独销毁） |
-| **World** | 场景本身 + 场景内 Entity / POI / NPC | 每次进入场景 | 每次离开场景 |
+| **World** | 场景本身 + 场景内 Entity / POI / NPC | 会话建立前由 `Entry` 加载唯一的主世界场景 | 进程退出 |
 
 **关键收益：Kit 与玩法 System 的初始化彼此独立。** Kit 就绪之前不加载任何玩法配置；会话由入口在 Kit 就绪后显式建立。
 （原设计借此让登录界面只依赖 App 段，登录界面已随第 13 节的修订移除，但这条分段本身仍然成立。）
 
-**Session 独立于 World**：背包、任务进度、小队必须跨场景存活；换世界时 System 不能重建。所以一个 Session 跨越多个 World。
+**单世界**（2026-09-30 起）：游戏只有一个世界，场景在会话建立前加载完成，与会话同生共死。
+System 不再区分会话级与世界级内容，依赖场景的内容直接在 `AfterNew` 中建立，见第 14 节。
 
 **销毁会话、保留 App 仍然可表达**：`GameplayKit` 是会话工厂而不是会话本身，同一个 Core 上可以销毁并重建会话。
 旧结构里做不到——`Core.Configure` 只能调一次，`GameplayKit` 在 `IsReady` 之后拒绝注册。当前没有调用方使用这项能力。
 
-## 2. `XSystem` 与 `Kit` 同构
+## 2. `ISystem` 与 `IKit` 同构
 
-`Kit` 有 `AfterNewAsync` / `AfterNew` / `OnUpdate` / `Dispose`，`XSystem` 却只有同步的 `AfterNew`。这个不对称是很多问题的根源：需要异步加载配置的系统无法自给自足，只能让组合根代劳。
+`Kit` 有 `AfterNewAsync` / `AfterNew` / `OnUpdate` / `Dispose`，旧 System 基类却只有同步的 `AfterNew`。这个不对称是很多问题的根源：需要异步加载配置的系统无法自给自足，只能让组合根代劳。
 
-重设计后逐项对齐，并补上世界级相位：
+重设计后逐项对齐。2026-09-30 起两者都是接口（`IKit` / `ISystem`），各领域契约直接继承它们，接口不提供默认实现，
+没有对应工作的实现写空方法：
 
 ```csharp
-public abstract class XSystem : IDisposable
+public interface ISystem : IDisposable
 {
-    public virtual UniTask AfterNewAsync();                       // 并行；只加载自己的配置
-    public virtual void AfterNew();                               // 正序；自身初始化
-    public virtual UniTask OnWorldEnterAsync(WorldContext world); // 正序；建立世界级内容
-    public virtual void OnWorldExit();                            // 逆序；释放世界级内容
-    public virtual void BeforeEntityUpdate(float dt);
-    public virtual void OnUpdate(float dt);
-    public virtual void Dispose();                                // 逆序
+    UniTask AfterNewAsync();   // 并行；只加载自己的配置
+    void AfterNew();           // 正序；自身初始化、建立场景内容
+    void OnUpdate(float dt);   // 正序；Entity 更新之后
+    // Dispose 来自 IDisposable，逆序
 }
 ```
 
@@ -59,13 +62,14 @@ public abstract class XSystem : IDisposable
 | --- | --- | --- | --- |
 | 构造函数 | 同步，拓扑序 | 保存注入的依赖、登记自己的命名空间 | 加载资源、调用依赖的方法 |
 | `AfterNewAsync` | **并行** | 加载自己的配置资产 | 调用其他 System |
-| `AfterNew` | 同步，正序 | 调用注入的依赖、校验配置 | —— |
-| `OnWorldEnterAsync` | 异步，正序 | 生成世界内容 | —— |
-| `OnWorldExit` | 同步，逆序 | 释放引用 | 任何耗时操作 |
+| `AfterNew` | 同步，正序 | 调用注入的依赖、校验配置、扫描场景、生成实体 | —— |
+| `OnUpdate` | 同步，正序，Entity 更新之后 | 推进公共状态、采样输入 | —— |
 
 `AfterNewAsync` 里禁止调用其他 System 是并行安全的全部理由：没有跨系统读取就没有竞态。
 
-**进入异步、退出同步**是有意的不对称：进入世界要加载预制体、生成实体，可以慢、可以显示进度；退出时场景下一刻就被 Unity 销毁，不存在"慢慢退出"，能做的只有释放引用。
+**帧内顺序**：`GameplayKit.OnUpdate` 先更新全部 Entity，再按注册顺序调用各 System 的 `OnUpdate`。
+输入采样在 `InputSystem.OnUpdate` 中完成，写入的输入状态由下一帧的 Entity 消费，即**输入固定延迟一帧**；
+需要同帧处理本次采样结果的 System（如 `TeamSystem` 的数字键切换）注册在 `InputSystem` 之后即可。
 
 ## 3. `GameplayKit` 接管系统装配
 
@@ -76,12 +80,12 @@ public abstract class XSystem : IDisposable
 ```csharp
 public interface IGameplaySystemInstaller
 {
-    /// 同步、纯构造。资源加载在各 System 的 AfterNewAsync，世界内容在 OnWorldEnterAsync。
+    /// 同步、纯构造。资源加载在各 System 的 AfterNewAsync，场景内容在 AfterNew。
     void Install(IGameplaySystemRegistry registry);
 }
 ```
 
-`CreateInitialContent` 整个删除（并入世界相位）。装配的驱动完全由 `GameplayKit` 负责，节奏与 `Core` 驱动 Kit 逐字相同：
+`CreateInitialContent` 整个删除（并入各 System 的 `AfterNew`）。装配的驱动完全由 `GameplayKit` 负责，节奏与 `Core` 驱动 Kit 逐字相同：
 
 ```
 installer.Install(registry)  →  await WhenAll(每个 System 的 AfterNewAsync)  →  正序 AfterNew()
@@ -94,18 +98,16 @@ System 是 Session 段的，`GameplayKit` 是 App 段的 Kit，两者生命周�
 ```
 GameplayKit（App 段 Kit）
    └─ 当前会话（Kit 就绪后由 Entry 创建，可单独销毁）
-         ├─ 全部 System
-         └─ 当前世界（每个场景）
+         └─ 全部 System
 ```
 
 - `CreateSessionAsync(installer)` —— `Entry` 在 Kit 就绪、配表加载后调用
-- `DestroySession()` —— 逆序 `Dispose` 全部 System；**不驱动世界退出相位**，理由见 8.3
-- `EnterWorldAsync(WorldContext)` / `ExitWorld()` —— 当前只由 `Entry` 在启动时进入主世界（原 `WorldSession` 已移除）
+- `DestroySession()` —— 先释放实体驱动，再逆序 `Dispose` 全部 System；各 System 的 `Dispose` 必须自足
 - `TryGetSystem<T>` —— **无会话时返回 false**
 
 无会话返回 false 覆盖了会话建立之前的那段时间。场景对象（如 `NpcMarkerMono`）本就可能在会话之外存在，那条"取不到系统就显示无标记"的判断因此继续成立。
 
-`GameplayKit` 不认识场景：驱动世界的一方（当前是 `Entry`）先 `ExitWorld`（如有），再由 `Core.Asset` 加载场景，最后把 `WorldContext` 交给 `EnterWorldAsync`。
+`GameplayKit` 不认识场景：`Entry` 在建立会话之前用 `Core.Asset` 加载主世界场景，出生位姿由组合根构造注入给 `TeamSystem`。
 
 ## 4. System 之间强制依赖注入
 
@@ -150,11 +152,10 @@ TeamSystem → IInputSystem → IEntitySystem
 
 `EntitySystem.CreateInitialTeam(TeamSystem)` 是同一个环的另一条腿：实体容器反过来认识小队。
 
-把小队创建移到 `TeamSystem.OnWorldEnterAsync`——TeamSystem 通过注入的 `IEntitySystem` 创建自己的三个成员、填自己的槽位。一次改动解决四件事：
+把小队创建移到 TeamSystem 自身（最初是世界相位，2026-09-30 起在 `TeamSystem.AfterNew`）——TeamSystem 通过注入的 `IEntitySystem` 创建自己的三个成员、填自己的槽位。一次改动解决四件事：
 
 - `EntitySystem` 不再需要认识 `TeamSystem`
 - `TeamSystem.MemberAddresses` 从 `public static` 收回 `private`（"小队成员是谁"本就是 TeamSystem 的领域知识）
-- 小队创建变成世界级的——实体本来就是世界级的
 - `IGameplaySystemInstaller.CreateInitialContent` 整个删除
 
 ### 4.6 服务定位保留给谁
@@ -271,7 +272,7 @@ public sealed class VariableStore
 
 ### 5.5 表达式语言独立成库
 
-`StoryValue`、`StoryExpression*`、`VariableStore`、`IVariableNamespace` 从 `NarrativeSystem/` 移到 `Gameplay/Expression/`，命名空间改为 `Xuan.Prometheus.Expression`。这样 `QuestSystem` 依赖的是共享表达式库而不是 `Xuan.Prometheus.Narrative`，"任务与剧情互不认识"在**两个方向上**才第一次都成立。
+`StoryValue`、`StoryExpression*`、`VariableStore`、`IVariableNamespace` 从 `NarrativeSystem/` 移到 `Gameplay/Common/Expression/`，命名空间改为 `Xuan.Prometheus.Expression`。这样 `QuestSystem` 依赖的是共享表达式库而不是 `Xuan.Prometheus.Narrative`，"任务与剧情互不认识"在**两个方向上**才第一次都成立。
 
 **迁移风险已核实**：`[SerializeReference]` 只用在 `StoryNode` / `EffectOperation` / `QuestAction` 三族子类上，它们全部留在原命名空间；`StoryValue` 是 struct，不可能被 `SerializeReference` 引用。因此这次移动不触及 `ARCH-UNITY-002` 的资产损坏风险，Gameplay 是单一装配，`asm:` 字段也不变。
 
@@ -280,7 +281,7 @@ public sealed class VariableStore
 > 本节按 2026-09-27 修订后的现状重写。原 P2 的 `GameFlow` 状态机、开屏、热更占位与登录界面已移除，见第 13 节。
 
 ```
-Entry.Start ─ Kit 初始化 ─ Config.Load ─ CreateSession ─ LoadScene(MainWorld) ─ EnterWorld ─ 打开 HUD
+Entry.Start ─ Kit 初始化 ─ Config.Load ─ LoadScene(MainWorld) ─ CreateSession ─ 打开 HUD
 ```
 
 启动是 `Entry.BootAsync` 里的一条线性链路，每一步都依赖上一步的结果，因此顺序即契约：
@@ -290,9 +291,9 @@ Entry.Start ─ Kit 初始化 ─ Config.Load ─ CreateSession ─ LoadScene(Ma
 | **启动** | App | `Entry.unity` 建 Core，注册全部 Kit | 保持 Player Build 唯一入口 |
 | **Kit 初始化** | App | `UniTask.WhenAll(core.CreateAfterNewTasks())` 后执行同步 `core.AfterNew()` | 资源包在这一步就绪 |
 | **配表** | App | `Core.Config.Load()` | 资源包就绪之后、任何玩法 System 构造之前（`ARCH-CONFIG-001`） |
-| **模块资源配置** | Session | `Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller())`，各 System 的 `AfterNewAsync` 并行 | |
-| **主世界** | World | 按 `WorldCatalog.RequireMainWorld()` 加载场景，再 `Core.Gameplay.EnterWorldAsync(WorldContext)` | 场景与出生位姿由世界目录决定，入口不写死 |
-| **HUD** | World | 世界定义 `ShowsHud` 为真时 `Core.UI.OpenPanel<HudPanel>()` | 必须在世界相位之后，HUD 要读场景内容 |
+| **主世界场景** | World | 按 `WorldCatalog.RequireMainWorld()` 加载场景 | 必须早于会话建立，System 在 `AfterNew` 中直接使用场景内容 |
+| **会话** | Session | `Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller(mainWorld))`，各 System 的 `AfterNewAsync` 并行，随后正序 `AfterNew` 建立小队、营地敌人、POI 索引 | 出生位姿由世界定义经组合根注入 `TeamSystem` |
+| **HUD** | Session | 世界定义 `ShowsHud` 为真时 `Core.UI.OpenPanel<HudPanel>()` | 必须在会话建立之后，HUD 要读小队状态 |
 
 ### 6.0 实现要点
 
@@ -310,42 +311,40 @@ Entry.Start ─ Kit 初始化 ─ Config.Load ─ CreateSession ─ LoadScene(Ma
 
 ## 7. 世界会话与场景种类
 
-### 7.1 切换世界的三步
+### 7.1 单世界
 
-```
-逆序 OnWorldExit()  →  LoadSceneAsync(address)  →  正序 OnWorldEnterAsync(context)
-```
+> 2026-09-30 起游戏按单世界设计，原「逆序 `OnWorldExit` → 加载场景 → 正序 `OnWorldEnterAsync`」的世界切换流程已删除，见第 14 节。
 
-第一步是关键：`AssetKit.LoadSceneAsync` 用 `LoadSceneMode.Single`，Unity 会直接销毁旧场景全部 GameObject，而 `EntitySystem` 持有的 Entity 包着这些 GameObject。必须抢在销毁之前让系统主动释放，否则加载第二个场景的那一刻就是一片空引用。
-
-现在不出事，只因为场景一辈子只加载一次且在任何 Entity 创建之前——靠巧合成立的时序，不是设计。
+场景一辈子只加载一次，且在会话建立、任何 Entity 创建之前完成——这现在是**设计约定**而不是巧合。
+将来若要支持世界切换，必须重新设计场景级内容的归还时机：`AssetKit.LoadSceneAsync` 用 `LoadSceneMode.Single`，
+Unity 会直接销毁旧场景全部 GameObject，而 `EntitySystem` 持有的 Entity 包着这些 GameObject。
 
 ### 7.2 世界目录
 
 > 本节按 2026-09-27 修订后的现状重写。原 P3 的世界栈（`WorldSession`：平级切换、压栈进副本、弹栈返回）已移除，
 > 当前只有启动时进入主世界这一个入口，见第 13 节。
 
-`WorldDefinition` 与 `WorldCatalog`（ScriptableObject，按地址 `WorldCatalog` 加载，位于 `Gameplay/WorldCatalog/`）描述：
+`WorldDefinition` 与 `WorldCatalog`（ScriptableObject，按地址 `WorldCatalog` 加载，位于 `Bootstrap/WorldCatalog/`）描述：
 世界标识、场景地址、种类、默认出生位姿、HUD 档位。种类为 `MainWorld` / `SubWorld` / `Dungeon` / `Activity`。
 
 `Entry` 在启动时加载目录并校验：标识非空且唯一、场景地址非空、**有且只有一个主世界**；
-随后用 `RequireMainWorld()` 取出主世界，按它的场景地址加载场景、按它的出生位姿构造 `WorldContext`。
+随后用 `RequireMainWorld()` 取出主世界，按它的场景地址加载场景，再把它交给 `PrometheusSystemInstaller`，由组合根把出生位姿注入 `TeamSystem`。
 
 **跳转按 worldId 而不是场景地址**这条规则保留：将来重新引入世界切换时，仍然按 `WorldId` 引用世界。
 
-#### 出生位姿为什么走 `WorldContext`
+#### 出生位姿为什么构造注入
 
-`WorldContext` 只装那些「由流程解析、System 自己查不到」的事实。出生位姿满足这条：
-首次进入用配置的出生点，将来从副本弹回时用记录的返回点，只有驱动世界切换的一方知道该用哪个。
-副本难度、奖励倍率之类**不**满足：关心它们的 System 按 `WorldId` 自行查配置即可。
-
-配套改动：`TeamSystem` 不持有出生坐标常量，改用 `world.SpawnPosition` / `world.SpawnRotation`。
+出生位姿来自世界定义，`TeamSystem` 自己不持有出生坐标常量。单世界下它在会话建立时就已确定，
+因此由组合根作为构造参数传给 `TeamSystem`，不需要单独的世界上下文类型（原 `WorldContext` 已删除）。
 
 ### 7.3 进入世界失败
 
 场景地址错误、资源缺失属于配置错误，直接抛出，不做可恢复处理。
 
 ## 8. P0 实施中暴露的三个缺口
+
+> 本节为历史记录：2026-09-30 起世界相位已删除（第 14 节），8.2、8.3 描述的 `OnWorldExit` 已不存在，
+> 但「`Dispose` 必须自足」这条约束仍然成立。
 
 前两个不是重构引入的 bug，而是**「一辈子只加载一次场景」的假设留下的地雷**，在第一次真正切换世界时同时引爆。
 它们正是 P0 存在的理由——不做这一期，做第一个副本时才会撞上。第三个是我自己在这一期写出来的，
@@ -473,3 +472,29 @@ MissingReferenceException ... CameraSystem.BindFollowTarget → OnActiveTeamMemb
 
 **现在的入口**：`Entry.BootAsync` 线性执行第 6 节的步骤。将来要恢复登录或世界切换，在 `Entry` 与 `GameplayKit` 之间
 重新引入编排者即可——`CreateSessionAsync` / `DestroySession` / `EnterWorldAsync` / `ExitWorld` 这几个接缝都还在。
+
+## 14. 2026-09-30 修订：单世界与 `ISystem` 接口
+
+**动机**：世界栈在第 13 节已移除，世界相位只剩启动时进入一次主世界这一个用途，`OnWorldExit` 在生产代码中从不触发；
+`BeforeEntityUpdate` 只有两个使用方，却让每个 System 都背着一个额外的虚方法。
+同时 `XSystem` 抽象类与空标记接口 `ISystemContract` 的组合，使每个实现都要写 `: XSystem, IXxxSystem`，与 Kit 已修正的问题相同。
+
+**删除**：
+
+- `XSystem` 抽象类、`ISystemContract` 标记接口，改为 `ISystem` 接口（`AfterNewAsync` / `AfterNew` / `OnUpdate` / `Dispose`），领域契约直接继承 `ISystem`，接口不提供默认实现
+- 世界相位：`OnWorldEnterAsync` / `OnWorldExit`、`WorldContext`、`IGameplayKit.EnterWorldAsync` / `ExitWorld` / `HasWorld`
+- `BeforeEntityUpdate` 相位
+
+**迁移**：
+
+| 原位置 | 现位置 |
+| --- | --- |
+| `TeamSystem.OnWorldEnterAsync` 创建小队 | `TeamSystem.AfterNew`；出生位姿由 `PrometheusSystemInstaller(WorldDefinition)` 构造注入 |
+| `PoiSystem.OnWorldEnterAsync` 生成营地敌人、扫描 POI、进入网关 | `PoiSystem.AfterNew`；世界级取消源并入会话级取消源 |
+| `TeamSystem` / `PoiSystem` / `CameraSystem` / `EntitySystem` 的 `OnWorldExit` | 删除；各自的 `Dispose` 本就自足 |
+| `InputSystem.BeforeEntityUpdate` 输入采样 | `InputSystem.OnUpdate`，输入延迟一帧生效 |
+| `TeamSystem.BeforeEntityUpdate` 数字键切换 | `TeamSystem.OnUpdate`，注册在 `InputSystem` 之后，同帧读到采样结果 |
+
+**入口顺序变化**：`Entry` 改为先加载主世界场景、再建立会话，使 System 在 `AfterNew` 中即可使用场景内容。
+
+**代价**：放弃会话内切换世界的能力。将来要做副本或世界切换，需要重新设计场景级内容的归还时机（参考第 7.1、8 节）。

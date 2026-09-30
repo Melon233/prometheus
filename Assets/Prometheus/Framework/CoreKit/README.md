@@ -44,13 +44,26 @@ Runtime（Bootstrap，唯一组合根）
 2. `Entry.Start` 创建唯一 `Core`，不携带任何参数；`Core` 构造时依次注册 `AssetKit`、`ConfigKit`、`EventKit`、`UIKit`、`GameplayKit`，每个 Kit 在**注册**时由 `Core` 统一发布对应静态入口。`GameplayKit` 只是会话工厂，此时不产生任何玩法 System。
 3. `Entry` 通过 `UniTask.WhenAll(core.CreateAfterNewTasks())` 并发等待全部 Kit 的 `AfterNewAsync`（资源包在这一步就绪），再调用 `Core.AfterNew` 执行同步初始化。
 4. `Core.Config.Load()` 一次性加载全部配表（`ARCH-CONFIG-001`）。
-5. `Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller())`：安装器按依赖顺序构造并注册全部 System，GameplayKit 并行驱动各 System 的 `AfterNewAsync`（各自加载私有配置），再按注册顺序执行 `AfterNew`。
-6. `Entry` 加载 `WorldCatalog`，按主世界定义加载场景，再以 `WorldContext`（世界标识、场景、出生位姿）调用 `Core.Gameplay.EnterWorldAsync`，各 System 按注册顺序建立世界内容（小队、营地敌人、POI 索引等）。
+5. `Entry` 加载 `WorldCatalog`，按主世界定义加载场景。游戏只有一个世界，场景必须在会话建立前加载完成。
+6. `Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller(mainWorld))`：安装器按依赖顺序构造并注册全部 System（出生位姿注入 `TeamSystem`），GameplayKit 并行驱动各 System 的 `AfterNewAsync`（各自加载私有配置），再按注册顺序执行 `AfterNew`，建立小队、营地敌人、POI 索引等场景内容。
 7. 主世界定义 `ShowsHud` 为真时，`Entry` 通过 `Core.UI` 打开 `HudPanel`。此后 `Entry.Update` 每帧驱动 `Core.OnUpdate`。
 
 `Entry` 持有一个生命周期令牌，`OnDestroy` 中先取消它再释放 Core：尚未走完的启动步骤停在当前 await，不会在 Core 释放后继续访问 Kit。
 
 `Core.Dispose` 按注册顺序逆序释放，因此最后注册的 `GameplayKit` 最先释放，`AssetKit` 最后释放其资源和场景句柄。
+
+## Kit 契约与生命周期
+
+每个 Kit 只对外暴露一个模块契约（`IAssetKit`、`IConfigKit`、`IEventKit`、`IUIKit`、`IGameplayKit`），这些契约全部继承 `IKit`（`CoreKit/IKit.cs`）。`IKit` 既是 `Core` 注册与查询的类型约束，也定义了 `Core` 托管的统一生命周期：
+
+| 方法 | 调用时机 |
+| --- | --- |
+| `AfterNewAsync` | 入口通过 `Core.CreateAfterNewTasks` 并发等待 |
+| `AfterNew` | 全部 `AfterNewAsync` 完成后按注册顺序调用 |
+| `OnUpdate` | `Core.OnUpdate` 每帧按注册顺序调用 |
+| `Dispose` | `Core.Dispose` 按注册顺序逆序调用（来自 `IDisposable`） |
+
+实现类形如 `internal sealed class EventKit : IEventKit`，必须以 `public` 方法实现全部生命周期方法；`IKit` 不提供默认接口实现，没有对应工作的 Kit 写空实现（`AfterNewAsync` 返回 `UniTask.CompletedTask`）。生命周期方法随模块契约一起公开，但只应由 `Core` 调用，业务代码不得直接驱动 Kit 的生命周期（`ARCH-KIT-004`）。
 
 ## 静态入口的唯一写入点
 
@@ -67,7 +80,7 @@ Runtime（Bootstrap，唯一组合根）
 
 `Core.GetKit<TKit>()` 只保留给 Core 自身管理和诊断查询，不作为业务模块之间的依赖传递方式（该禁令由架构测试 `Sources_DoNotResolveKitsByGetKit` 执行）。System 之间通过 `Core.Gameplay.GetSystem<IContract>()` 在使用点互相访问，不长期保存对方实例。
 
-该约定依赖固定初始化顺序：`Core.Asset` 先于 UIKit 建立，`Core.Event` 和 `Core.UI` 先于 GameplayKit 建立，`Core.Gameplay` 先于所有 XSystem 与 Entity 初始化建立。因此正常业务链路不对这些入口增加空值兜底；生命周期外调用属于入口时序错误。手工搭建 Core 的测试必须提供同样完整的入口集合。
+该约定依赖固定初始化顺序：`Core.Asset` 先于 UIKit 建立，`Core.Event` 和 `Core.UI` 先于 GameplayKit 建立，`Core.Gameplay` 先于所有 System 与 Entity 初始化建立。因此正常业务链路不对这些入口增加空值兜底；生命周期外调用属于入口时序错误。手工搭建 Core 的测试必须提供同样完整的入口集合。
 
 输入源等单局领域数据仍通过构造参数或方法参数显式传入。它们不是基础 Kit，也不属于本条跨模块访问规则。
 

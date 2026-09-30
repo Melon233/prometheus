@@ -9,7 +9,7 @@ namespace Xuan.Prometheus.World
     /// 该系统只做一件事：把地图配置资产变成可查询的只读投影，并在就绪时广播一次全局事实。
     /// 地图资源缺失不是错误：世界仍可正常运行，面板显示空白地图区域。
     /// </summary>
-    internal sealed class WorldMapSystem : XSystem, IWorldMapSystem
+    internal sealed class WorldMapSystem : IWorldMapSystem
     {
         /// <summary>地图定义的 YooAsset 地址；地图拍摄工具会在 Config/Global 下生成同名资产。</summary>
         private const string MapDefinitionAddress = "WorldMapDefinition";
@@ -35,7 +35,7 @@ namespace Xuan.Prometheus.World
         /// 地图定义由拍摄工具离线生成，工程里可能尚未生成过——这不是时序错误而是一种正常的中间状态，
         /// 因此缺失时降级为空白地图并给出提示，而不是让整个会话装配失败。
         /// </summary>
-        public override async UniTask AfterNewAsync()
+        public async UniTask AfterNewAsync()
         {
             WorldMapDefinition loadedDefinition = null;
             string loadError = null;
@@ -45,7 +45,7 @@ namespace Xuan.Prometheus.World
         }
 
         /// <summary>广播一次就绪事实供面板绑定纹理。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             Core.Event.Invoke(new WorldMapReadyEvent(Definition));
         }
@@ -57,8 +57,14 @@ namespace Xuan.Prometheus.World
             return Definition.WorldToNormalized(worldPosition);
         }
 
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>释放地图定义引用；资产句柄由 AssetKit 统一回收。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             Definition = null;
         }

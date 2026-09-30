@@ -14,7 +14,7 @@ namespace Xuan.Prometheus.World
     /// 契约沿用协议消息作为数据载体，因此两种实现可以直接互换，PoiSystem 无需改动。
     /// Gateway 不保存 PoiSystem 的领域状态：响应的解释与场景表现仍归 PoiSystem。
     /// </summary>
-    public interface IPoiGateway : ISystemContract
+    public interface IPoiGateway : ISystem
     {
         /// <summary>获取权威数据源当前是否可用；单机实现恒为 true，联网实现在断线后变为 false。</summary>
         bool IsAvailable { get; }

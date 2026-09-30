@@ -6,7 +6,7 @@ namespace Xuan.Prometheus.World
     /// 世界地图的只读投影：加载静态地图定义，并提供世界坐标到地图归一化坐标的换算。
     /// 它不持有任何 POI 状态，也不保存任何界面视图状态（缩放档位属于面板自身）。
     /// </summary>
-    public interface IWorldMapSystem : ISystemContract
+    public interface IWorldMapSystem : ISystem
     {
         /// <summary>获取地图静态定义；地图资源尚未拍摄时为空。</summary>
         WorldMapDefinition Definition { get; }

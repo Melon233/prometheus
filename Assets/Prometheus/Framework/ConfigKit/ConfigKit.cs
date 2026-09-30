@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using Luban;
 using UnityEngine;
 using Cfg = global::Prometheus.Config;
@@ -9,7 +10,7 @@ namespace Xuan.Prometheus
     /// 配表读取入口：持有 Luban 生成的唯一表管理器，并负责把表名解析为资源地址、加载字节流。
     /// 读表统一写作 <c>Core.Config.Tables.Tb*</c>，不需要类型参数，也不需要各系统自行缓存。
     /// </summary>
-    public interface IConfigKit : IKitContract
+    public interface IConfigKit : IKit
     {
         /// <summary>表数据是否已经加载完成；未加载时访问 <see cref="Tables"/> 是时序错误。</summary>
         bool IsLoaded { get; }
@@ -29,7 +30,7 @@ namespace Xuan.Prometheus
     /// 表数据是 Luban 导出的 <c>.bytes</c>，位于 <c>Assets/BundleResources/Table</c>，
     /// 资源地址规则为 AddressByFileName，因此 Luban 的表名就是资源地址，无需额外映射。
     /// </summary>
-    internal sealed class ConfigKit : Kit, IConfigKit
+    internal sealed class ConfigKit : IConfigKit
     {
         /// <summary>保存本次加载构造的唯一表管理器。</summary>
         private Cfg.Tables tables;
@@ -60,8 +61,25 @@ namespace Xuan.Prometheus
             tables = new Cfg.Tables(loader);
         }
 
+        /// <summary>配表模块没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>配表模块没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>配表模块不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧的增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>释放表管理器引用；表字节流的资源句柄由 AssetKit 统一归还。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             tables = null;
         }

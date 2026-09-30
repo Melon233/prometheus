@@ -7,46 +7,32 @@ namespace Xuan.Prometheus
     /// <summary>
     /// 对外暴露玩法会话的只读状态和公共 System 查询能力。
     /// 该契约不包含任何具体玩法领域概念：当前上场角色、背包、任务等状态一律由对应 System 自己发布。
-    /// 会话与世界的生命周期是框架级组合概念（不是玩法领域概念），因此可以公开。
+    /// 会话的生命周期是框架级组合概念（不是玩法领域概念），因此可以公开。
     /// </summary>
-    public interface IGameplayKit : IKitContract
+    public interface IGameplayKit : IKit
     {
         /// <summary>当前是否存在已完成初始化的玩法会话。</summary>
         bool IsReady { get; }
 
-        /// <summary>当前会话内是否已经进入某个世界。</summary>
-        bool HasWorld { get; }
-
         /// <summary>
         /// 按组合根的声明建立一个新的玩法会话：构造并注册全部 System，再依次驱动异步与同步初始化相位。
-        /// 会话由入口在 Kit 就绪后建立、随 Core 释放而销毁，可以跨越多个世界。
+        /// 会话由入口在 Kit 就绪且场景加载完成后建立，随 Core 释放而销毁。
         /// </summary>
         /// <param name="installer">玩法层提供的会话组合根。</param>
         UniTask CreateSessionAsync(IGameplaySystemInstaller installer);
 
-        /// <summary>
-        /// 销毁当前会话：按注册顺序的逆序释放全部 System。
-        /// 本方法**不**驱动世界退出相位——需要在场景仍然存活时归还世界级资源的话，
-        /// 调用方必须先自行 <see cref="ExitWorld"/>。
-        /// </summary>
+        /// <summary>销毁当前会话：先回收全部实体，再按注册顺序的逆序释放全部 System。</summary>
         void DestroySession();
-
-        /// <summary>在场景加载完成后按注册顺序驱动全部 System 建立世界级内容。</summary>
-        /// <param name="world">本次进入的世界上下文。</param>
-        UniTask EnterWorldAsync(WorldContext world);
-
-        /// <summary>在场景被卸载之前按注册顺序的逆序驱动全部 System 释放世界级内容。</summary>
-        void ExitWorld();
 
         /// <summary>获取当前会话中指定契约对应的唯一公共 System；未注册时抛出异常。</summary>
         /// <typeparam name="TContract">注册该 System 时使用的接口契约。</typeparam>
-        TContract GetSystem<TContract>() where TContract : class, ISystemContract;
+        TContract GetSystem<TContract>() where TContract : class, ISystem;
 
         /// <summary>尝试获取当前会话中指定契约对应的唯一公共 System；没有会话时返回 false。</summary>
         /// <typeparam name="TContract">注册该 System 时使用的接口契约。</typeparam>
         /// <param name="system">已注册时返回对应实例，否则返回空。</param>
         /// <returns>存在会话且存在该契约的注册记录时返回 true。</returns>
-        bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystemContract;
+        bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystem;
     }
 
     /// <summary>
@@ -59,13 +45,13 @@ namespace Xuan.Prometheus
     /// "这一局由哪些 System 组成"完全交给玩法层的 <see cref="IGameplaySystemInstaller"/>，
     /// 因此框架层不持有任何具体玩法 System 的类型依赖。
     /// </summary>
-    internal sealed class GameplayKit : Kit, IGameplayKit, IGameplaySystemRegistry
+    internal sealed class GameplayKit : IGameplayKit, IGameplaySystemRegistry
     {
         /// <summary>保存 System 契约到实例的唯一映射。</summary>
-        private readonly XMap<Type, XSystem> systems = new XMap<Type, XSystem>();
+        private readonly XMap<Type, ISystem> systems = new XMap<Type, ISystem>();
 
         /// <summary>保存确定性的初始化顺序，并在释放时按相反顺序遍历。</summary>
-        private readonly List<XSystem> systemInitializationOrder = new List<XSystem>();
+        private readonly List<ISystem> systemInitializationOrder = new List<ISystem>();
 
         /// <summary>
         /// 当前会话唯一的实体驱动端口，在注册阶段由实现了该端口的 System 自动认领。
@@ -81,9 +67,6 @@ namespace Xuan.Prometheus
 
         /// <inheritdoc />
         public bool IsReady { get; private set; }
-
-        /// <inheritdoc />
-        public bool HasWorld { get; private set; }
 
         /// <inheritdoc />
         public async UniTask CreateSessionAsync(IGameplaySystemInstaller installer)
@@ -107,7 +90,7 @@ namespace Xuan.Prometheus
             }
 
             // AfterNew 必须在全部 AfterNewAsync 之后：前者允许调用注入的依赖，而依赖的配置在后者里才就位。
-            foreach (XSystem system in systemInitializationOrder) system.AfterNew();
+            foreach (ISystem system in systemInitializationOrder) system.AfterNew();
             IsReady = true;
         }
 
@@ -118,18 +101,13 @@ namespace Xuan.Prometheus
             if (isDisposed || isDisposingSession || systemInitializationOrder.Count == 0) return;
             isDisposingSession = true;
             IsReady = false;
-            // 这里**不**驱动世界退出相位：OnWorldExit 的前提是「场景还活着」，而会话销毁有两种来路——
-            // 主动销毁会话时场景仍在（调用方先退出世界），进程结束时 Unity 已经在销毁场景对象，
-            // 此刻再去碰它们必然抛异常，并连带中断 Core.Dispose 的后续步骤。
-            // 因此各 System 的 Dispose 必须自足，不得依赖 OnWorldExit 先跑过一遍。
-            HasWorld = false;
             try
             {
                 // 先释放实体驱动，使全部 Entity 早于依赖其数据的 System 完成回收。
                 if (entityDriver is IDisposable disposableDriver) disposableDriver.Dispose();
                 for (int index = systemInitializationOrder.Count - 1; index >= 0; index--)
                 {
-                    XSystem system = systemInitializationOrder[index];
+                    ISystem system = systemInitializationOrder[index];
                     if (!ReferenceEquals(system, entityDriver)) system.Dispose();
                 }
             }
@@ -144,25 +122,7 @@ namespace Xuan.Prometheus
         }
 
         /// <inheritdoc />
-        public async UniTask EnterWorldAsync(WorldContext world)
-        {
-            ThrowIfDisposed();
-            if (!IsReady) throw new InvalidOperationException("A gameplay session must exist before entering a world.");
-            if (HasWorld) throw new InvalidOperationException("The current world must be exited before entering another one.");
-            // 正序进入：被依赖方先建立世界内容，依赖方随后才能读到它。
-            foreach (XSystem system in systemInitializationOrder) await system.OnWorldEnterAsync(world);
-            HasWorld = true;
-        }
-
-        /// <inheritdoc />
-        public void ExitWorld()
-        {
-            ThrowIfDisposed();
-            ExitWorldInternal();
-        }
-
-        /// <inheritdoc />
-        public TContract AddSystem<TContract>(XSystem system) where TContract : class, ISystemContract
+        public TContract AddSystem<TContract>(ISystem system) where TContract : class, ISystem
         {
             ThrowIfDisposed();
             if (IsReady) throw new InvalidOperationException("GameplayKit cannot register a system after the session is ready.");
@@ -182,18 +142,18 @@ namespace Xuan.Prometheus
         }
 
         /// <inheritdoc />
-        public TContract GetSystem<TContract>() where TContract : class, ISystemContract
+        public TContract GetSystem<TContract>() where TContract : class, ISystem
         {
             ThrowIfDisposed();
-            if (!systems.TryGet(typeof(TContract), out XSystem system)) throw new InvalidOperationException($"GameplayKit does not contain a system registered as '{typeof(TContract).FullName}'.");
+            if (!systems.TryGet(typeof(TContract), out ISystem system)) throw new InvalidOperationException($"GameplayKit does not contain a system registered as '{typeof(TContract).FullName}'.");
             return system as TContract ?? throw new InvalidCastException($"Registered system '{system.GetType().FullName}' cannot be cast to '{typeof(TContract).FullName}'.");
         }
 
         /// <inheritdoc />
-        public bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystemContract
+        public bool TryGetSystem<TContract>(out TContract system) where TContract : class, ISystem
         {
             ThrowIfDisposed();
-            if (systems.TryGet(typeof(TContract), out XSystem registeredSystem) && registeredSystem is TContract typedSystem)
+            if (systems.TryGet(typeof(TContract), out ISystem registeredSystem) && registeredSystem is TContract typedSystem)
             {
                 system = typedSystem;
                 return true;
@@ -204,45 +164,43 @@ namespace Xuan.Prometheus
         }
 
         /// <summary>
-        /// 按系统相位驱动当前玩法世界。
-        /// 实体更新固定夹在前置与后置 System 之间，且帧首帧尾各执行一次安全回收，
-        /// 使实体在任何 System 观察它的时刻都处于确定状态。
+        /// 按系统相位驱动当前玩法会话。
+        /// 先更新实体，再按注册顺序更新全部 System（输入采样也在其中，因此输入延迟一帧生效），
+        /// 且帧首帧尾各执行一次安全回收，使实体在任何 System 观察它的时刻都处于确定状态。
         /// </summary>
         /// <param name="dt">当前帧增量时间。</param>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             if (isDisposed) return;
             // 安全回收先于就绪判断：待回收队列必须清空，否则失效实体会跨会话残留。
             entityDriver?.DrainPendingRemovals();
             if (!IsReady) return;
 
-            foreach (XSystem system in systemInitializationOrder) system.BeforeEntityUpdate(dt);
-
             entityDriver?.UpdateEntities(dt);
 
-            foreach (XSystem system in systemInitializationOrder) system.OnUpdate(dt);
+            foreach (ISystem system in systemInitializationOrder) system.OnUpdate(dt);
 
             entityDriver?.DrainPendingRemovals();
         }
 
+        /// <summary>玩法会话工厂没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>玩法会话工厂没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
         /// <summary>进程结束时销毁尚存的会话；会话本身的释放顺序由 DestroySession 保证。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed) return;
             DestroySession();
             systems.Dispose();
             isDisposed = true;
-        }
-
-        /// <summary>按注册顺序的逆序退出当前世界；没有进入过世界时是空操作。</summary>
-        private void ExitWorldInternal()
-        {
-            if (!HasWorld) return;
-            HasWorld = false;
-            // 逆序退出：依赖方先放手，被依赖方后放手，与释放顺序规则一致。
-            for (int index = systemInitializationOrder.Count - 1; index >= 0; index--) systemInitializationOrder[index].OnWorldExit();
-            // 世界内容释放后立刻结算实体回收请求，避免场景销毁时仍有实体停留在待移除队列里。
-            entityDriver?.DrainPendingRemovals();
         }
 
         /// <summary>阻止已释放 Kit 被再次使用，避免静默写入已经清空的 System 容器。</summary>

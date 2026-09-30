@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Asset
     /// <summary>
     /// 定义 Core 向其他 Kit 提供的资源能力，调用方不需要直接依赖 ResourcePackage、AssetHandle 或 SceneHandle。
     /// </summary>
-    public interface IAssetKit : IDisposable, IKitContract
+    public interface IAssetKit : IKit
     {
         /// <summary>
         /// 默认资源包是否已经可以加载资源。
@@ -80,7 +80,7 @@ namespace Xuan.Prometheus.Asset
     /// 提供基于 YooAsset 的实例资源入口，负责默认资源包初始化、资源加载、预制体实例化和句柄释放。
     /// 每个 Core 持有自己的 AssetKit 和句柄缓存，跨模块资源访问统一通过 Core.Asset。
     /// </summary>
-    internal sealed class AssetKit : Kit, IAssetKit
+    internal sealed class AssetKit : IAssetKit
     {
         /// <summary>
         /// 项目默认资源包名称。
@@ -106,7 +106,7 @@ namespace Xuan.Prometheus.Asset
         public bool IsReady => !isDisposed && defaultPackage != null && defaultPackage.InitializeStatus == EOperationStatus.Succeeded && defaultPackage.PackageValid;
 
         /// <summary>异步初始化项目唯一的 YooAsset 资源包，并向所有依赖 Kit 传播完成或失败结果。</summary>
-        public override async UniTask AfterNewAsync()
+        public async UniTask AfterNewAsync()
         {
             try
             {
@@ -407,11 +407,22 @@ namespace Xuan.Prometheus.Asset
             return GetReadyPackage().UnloadUnusedAssetsAsync();
         }
 
+        /// <summary>资源模块没有同步初始化工作。</summary>
+        public void AfterNew()
+        {
+        }
+
+        /// <summary>资源模块不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧的增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>
         /// 释放全部缓存句柄并清除当前资源包引用。
         /// YooAssets 是第三方全局子系统，可能被其他上下文使用，因此这里不销毁 YooAssets 本身。
         /// </summary>
-        public override void Dispose()
+        public void Dispose()
         {
             if (isDisposed)
                 return;

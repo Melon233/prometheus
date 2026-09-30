@@ -3,7 +3,7 @@ using Xuan.Prometheus.Logic;
 namespace Xuan.Prometheus
 {
     /// <summary>定义固定容量小队的成员查询和上场成员切换入口。</summary>
-    public interface ITeamSystem : ISystemContract
+    public interface ITeamSystem : ISystem
     {
         /// <summary>获取当前上场槽位。</summary>
         int ActiveSlotIndex { get; }

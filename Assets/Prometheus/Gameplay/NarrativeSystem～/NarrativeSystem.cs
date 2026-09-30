@@ -12,7 +12,7 @@ namespace Xuan.Prometheus.Narrative
     /// 舞台接管由调用方用 <c>await using</c> 持有并写入 <see cref="StoryContext.Stage"/>，
     /// 使纯对话剧情不必进入舞台也能演绎。
     /// </summary>
-    internal sealed class NarrativeSystem : XSystem, INarrativeSystem
+    internal sealed class NarrativeSystem : INarrativeSystem
     {
         /// <summary>全局剧情文案表的 YooAsset 地址；由本系统自己在 AfterNewAsync 加载，是私有实现细节。</summary>
         private const string DefaultTextMapAddress = "NarrativeText";
@@ -99,7 +99,7 @@ namespace Xuan.Prometheus.Narrative
         /// 文案是**全局**资源而不是某一段剧情的资源，因此在这里一次性载入，
         /// 而不是每次演出各自加载；剧情图本身仍然按地址随用随载。
         /// </summary>
-        public override async UniTask AfterNewAsync()
+        public async UniTask AfterNewAsync()
         {
             TextMapAsset textMapAsset = null;
             await Core.Asset.LoadAssetAsync<TextMapAsset>(DefaultTextMapAddress, asset => textMapAsset = asset, error => throw new InvalidOperationException(error)).ToUniTask();
@@ -107,7 +107,7 @@ namespace Xuan.Prometheus.Narrative
         }
 
         /// <summary>订阅执行器的节拍通知。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             runner.BeatEntered += OnBeatEntered;
         }
@@ -183,8 +183,14 @@ namespace Xuan.Prometheus.Narrative
             ResumePath = StoryPath.None;
         }
 
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>释放订阅与运行时引用。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             runner.Abort();
             runner.BeatEntered -= OnBeatEntered;

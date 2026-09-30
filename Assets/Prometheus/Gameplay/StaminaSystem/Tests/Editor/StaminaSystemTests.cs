@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
@@ -218,7 +219,7 @@ namespace Xuan.Prometheus.Stamina.Tests
         // ---------- 测试替身 ----------
 
         /// <summary>按编号查实体的最小替身。</summary>
-        private sealed class StubEntitySystem : XSystem, IEntitySystem, IEntityOwner
+        private sealed class StubEntitySystem : IEntitySystem, IEntityOwner
         {
             private readonly Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
 
@@ -239,7 +240,24 @@ namespace Xuan.Prometheus.Stamina.Tests
             public bool RequestRemoveEntity(int entityId, float destroyDelay = 0f) => entities.Remove(entityId);
             public ListenHandle Listen<TComponent>(int entityId, Func<TComponent, ModifiableProperty> fieldSelector, Action<TComponent> onDirty, bool invokeImmediately = true) where TComponent : IComponent => throw new NotSupportedException();
 
-            public override void Dispose() => IsDisposed = true;
+            /// <summary>测试替身没有异步初始化工作，直接返回已完成任务。</summary>
+            public UniTask AfterNewAsync()
+            {
+                return UniTask.CompletedTask;
+            }
+
+            /// <summary>测试替身没有同步初始化工作。</summary>
+            public void AfterNew()
+            {
+            }
+
+            /// <summary>测试替身不需要逐帧驱动。</summary>
+            /// <param name="dt">当前帧增量时间。</param>
+            public void OnUpdate(float dt)
+            {
+            }
+
+            public void Dispose() => IsDisposed = true;
         }
 
         /// <summary>只带属性面板的测试实体。</summary>

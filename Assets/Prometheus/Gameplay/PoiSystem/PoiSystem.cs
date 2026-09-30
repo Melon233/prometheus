@@ -15,7 +15,7 @@ namespace Xuan.Prometheus.World
     /// 网关权威（单机版为 LocalPoiGateway）：按需拉取玩家附近 chunk 的状态，交互经网关确认（返回 true）后才做表现；
     /// POI 不再按玩家距离统一显隐，消费和重生显示由各类型自身状态逻辑负责。
     /// </summary>
-    internal sealed class PoiSystem : XSystem, IPoiSystem
+    internal sealed class PoiSystem : IPoiSystem
     {
         /// <summary>获取当前上场的小队成员；小队尚未建立时为空。</summary>
         private Entity ActivePlayer => teamSystem.ActiveMember;
@@ -57,13 +57,6 @@ namespace Xuan.Prometheus.World
         /// <summary>构造注入的小队系统，用于读取当前上场玩家的位置。</summary>
         private readonly ITeamSystem teamSystem;
 
-        /// <summary>
-        /// 世界级取消源：进入世界时与会话级取消源级联建立，离开世界时取消。
-        /// 它保证上一个世界的在途请求不会把状态写进下一个世界——POI 状态是按场景加载的，
-        /// 只用会话级令牌的话，跨场景同名 POI 会收到属于旧世界的响应。
-        /// </summary>
-        private CancellationTokenSource worldCancellation;
-
         /// <summary>创建 POI 系统；三个依赖都以契约注入，依赖关系因此写在签名上。</summary>
         /// <param name="entitySystem">承载营地敌人的实体容器。</param>
         /// <param name="teamSystem">提供当前上场玩家的小队系统。</param>
@@ -98,45 +91,17 @@ namespace Xuan.Prometheus.World
             return false;
         }
 
-        /// <summary>建立会话级订阅；POI 与营地敌人都来自场景，因此留到世界相位再建立。</summary>
-        public override void AfterNew()
+        /// <summary>
+        /// 建立订阅、扫描场景 POI、生成营地敌人，并向网关进入世界。
+        /// 游戏只有一个世界，场景在会话建立前已由入口加载完成，因此场景相关的初始化直接在这里完成。
+        /// 营地敌人需要 EntitySystem 已完成初始化，它注册在本系统之前，AfterNew 按注册顺序执行即可保证。
+        /// </summary>
+        public void AfterNew()
         {
             Core.Event.AddListener<EntityDiedEvent>(OnEntityDied);
             Gateway.Unavailable += OnWorldUnavailable;
-        }
-
-        /// <summary>
-        /// 进入世界时扫描场景 POI、生成营地敌人，并向网关进入世界。
-        ///
-        /// 这些全部依赖当前场景里摆了什么，因此属于世界相位而不是会话相位。
-        /// 写在 AfterNew 里时它能工作，只是因为场景一辈子只加载一次且恰好早于 AfterNew——那是巧合，不是设计。
-        /// </summary>
-        /// <param name="world">本次进入的世界上下文。</param>
-        public override UniTask OnWorldEnterAsync(WorldContext world)
-        {
-            worldCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token);
             SpawnMonsterCampEnemies();
-            InitializeAsync(worldCancellation.Token).Forget();
-            return UniTask.CompletedTask;
-        }
-
-        /// <summary>离开世界时取消在途请求并丢弃全部场景状态；营地敌人随实体容器统一回收。</summary>
-        public override void OnWorldExit()
-        {
-            worldCancellation?.Cancel();
-            worldCancellation?.Dispose();
-            worldCancellation = null;
-            allPois.Clear();
-            poisById.Clear();
-            syncedChunks.Clear();
-            nearbyChunks.Clear();
-            departedChunks.Clear();
-            monsterCampByEntityId.Clear();
-            pendingMonsterCampRespawns.Clear();
-            pendingRestoredPosition = null;
-            tickAccumulator = 0f;
-            positionUploadAccumulator = 0f;
-            isAvailable = false;
+            InitializeAsync(lifetimeCancellation.Token).Forget();
         }
 
         /// <summary>按场景中的怪物营地实例各生成一只史莱姆；该一次性本地行为不依赖 POI 网关或语义 Id 唯一性。</summary>
@@ -213,7 +178,7 @@ namespace Xuan.Prometheus.World
         }
 
         /// <summary>低频驱动世界同步：上传玩家位置并拉取附近 chunk 状态，不按距离切换 POI 显隐。</summary>
-        public override void OnUpdate(float dt)
+        public void OnUpdate(float dt)
         {
             // 先处理死亡期间排队的营地补刷，避免在 EntitySystem 遍历期间修改实体集合。
             RespawnPendingMonsterCampEnemies();
@@ -232,7 +197,7 @@ namespace Xuan.Prometheus.World
             if (positionUploadAccumulator >= PositionUploadInterval)
             {
                 positionUploadAccumulator = 0f;
-                UploadPlayerPositionAsync(playerPos, worldCancellation.Token).Forget();
+                UploadPlayerPositionAsync(playerPos, lifetimeCancellation.Token).Forget();
             }
             SyncNearbyChunks(playerPos);
         }
@@ -302,7 +267,7 @@ namespace Xuan.Prometheus.World
             foreach (int chunkId in nearbyChunks)
             {
                 if (!syncedChunks.Add(chunkId)) continue;
-                PullChunkAsync(chunkId, worldCancellation.Token).Forget();
+                PullChunkAsync(chunkId, lifetimeCancellation.Token).Forget();
             }
         }
 
@@ -343,8 +308,8 @@ namespace Xuan.Prometheus.World
             Debug.Log($"[交互] 请求网关 {poi.Config.Id} op={op}");
             try
             {
-                InteractResponse response = await Gateway.InteractAsync(poi.Config.Id, op, worldCancellation.Token);
-                worldCancellation.Token.ThrowIfCancellationRequested();
+                InteractResponse response = await Gateway.InteractAsync(poi.Config.Id, op, lifetimeCancellation.Token);
+                lifetimeCancellation.Token.ThrowIfCancellationRequested();
                 Debug.Log($"[交互] 网关响应 {poi.Config.Id} => success={response.Success}");
                 if (response.State != null)
                 {
@@ -438,12 +403,16 @@ namespace Xuan.Prometheus.World
             poiRoot.tag = PoiTag;
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
         /// <summary>释放世界事件和单局缓存；网关由 GameplayKit 在本系统之后独立释放。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             lifetimeCancellation.Cancel();
-            worldCancellation?.Dispose();
-            worldCancellation = null;
             Gateway.Unavailable -= OnWorldUnavailable;
             Core.Event.RemoveListener<EntityDiedEvent>(OnEntityDied);
             monsterCampByEntityId.Clear();

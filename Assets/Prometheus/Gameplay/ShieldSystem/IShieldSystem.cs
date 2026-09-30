@@ -43,7 +43,7 @@ namespace Xuan.Prometheus.Shields
     /// 本系统**不持有时长**：护盾的存活时间由施加它的 `EffectDefinition` 决定，
     /// Effect 实例结束时通过资源句柄撤下自己那一层。
     /// </summary>
-    public interface IShieldSystem : ISystemContract
+    public interface IShieldSystem : ISystem
     {
         /// <summary>
         /// 为目标添加一层护盾并返回只能按对象身份移除的句柄。

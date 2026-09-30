@@ -3,14 +3,13 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Bootstrap
 {
     /// <summary>
     /// 游戏的正式场景入口：创建 Core，按固定顺序直接加载全部模块并进入主世界，随后驱动 Core 帧循环。
-    /// 启动是一条线性链路（Kit 初始化 → 配表 → 玩法会话 → 主世界场景 → 世界相位 → HUD），
+    /// 启动是一条线性链路（Kit 初始化 → 配表 → 主世界场景 → 玩法会话 → HUD），
     /// 不经过开屏、热更或登录界面；跨场景运行时对象统一挂在 PersistentRoot 下。
     /// 场景中应只存在一个 Entry，运行时跨场景保留它所在的独立根对象。
     /// 声明为 partial 是 AutoStaticsCleanup 源生成器的要求。
@@ -68,7 +67,7 @@ namespace Xuan.Prometheus.Bootstrap
         /// 按固定顺序加载全部模块并进入主世界。
         /// 每一步都依赖上一步的结果，因此顺序即契约：
         /// 配表必须在资源包就绪后、任何玩法 System 构造前加载（ARCH-CONFIG-001）；
-        /// 世界相位必须在场景加载完成后驱动，System 才能扫描到场景内容。
+        /// 游戏只有一个世界，主世界场景必须在会话建立前加载完成，System 才能在 AfterNew 中扫描到场景内容。
         /// </summary>
         /// <param name="cancellationToken">入口生命周期令牌；各步骤本身不可取消，取消只让链路在当前 await 处停止，不在 Core 释放后继续访问 Kit。</param>
         private async UniTaskVoid BootAsync(CancellationToken cancellationToken)
@@ -78,13 +77,12 @@ namespace Xuan.Prometheus.Bootstrap
             runtimeCore.AfterNew();
             Core.Config.Load();
 
-            // Session 段：构造全部 System，各自加载自己的配置。
-            await Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller()).AttachExternalCancellation(cancellationToken);
-
-            // World 段：加载主世界场景后驱动世界相位，最后按世界定义决定是否打开 HUD。
+            // 场景段：先加载主世界场景，会话里的 System 在 AfterNew 中直接使用场景内容。
             WorldDefinition mainWorld = (await LoadWorldCatalogAsync().AttachExternalCancellation(cancellationToken)).RequireMainWorld();
-            Scene scene = await Core.Asset.LoadSceneAsync(mainWorld.SceneAddress).AttachExternalCancellation(cancellationToken);
-            await Core.Gameplay.EnterWorldAsync(new WorldContext(mainWorld.WorldId, mainWorld.SceneAddress, scene, mainWorld.SpawnPosition, mainWorld.SpawnRotation)).AttachExternalCancellation(cancellationToken);
+            await Core.Asset.LoadSceneAsync(mainWorld.SceneAddress).AttachExternalCancellation(cancellationToken);
+
+            // Session 段：构造全部 System，各自加载配置后建立场景内容；最后按世界定义决定是否打开 HUD。
+            await Core.Gameplay.CreateSessionAsync(new PrometheusSystemInstaller(mainWorld)).AttachExternalCancellation(cancellationToken);
             if (mainWorld.ShowsHud) Core.UI.OpenPanel<HudPanel>();
         }
 

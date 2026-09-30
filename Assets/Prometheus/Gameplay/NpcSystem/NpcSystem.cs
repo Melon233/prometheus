@@ -16,7 +16,7 @@ namespace Xuan.Prometheus.Npc
     /// 这是闭环里唯一同时认识任务系统与剧情系统的地方。它把三次跨系统调用收在一个方法里，
     /// 因此「必须成对调用开闭会话」「必须在演出后上报事件」这类义务不会散落到调用方身上。
     /// </summary>
-    internal sealed class NpcSystem : XSystem, INpcSystem
+    internal sealed class NpcSystem : INpcSystem
     {
         /// <summary>
         /// 剧情用来表达「玩家在本次对话里接受了委托」的变量路径。
@@ -59,7 +59,7 @@ namespace Xuan.Prometheus.Npc
         public bool HasActiveInteraction => sessionCancellation != null;
 
         /// <summary>订阅任务系统的对话绑定失效通知，使标记缓存由通知驱动而不是轮询。</summary>
-        public override void AfterNew()
+        public void AfterNew()
         {
             questSystem.DialogueBindingsInvalidated += OnDialogueBindingsInvalidated;
         }
@@ -121,8 +121,20 @@ namespace Xuan.Prometheus.Npc
             sessionCancellation?.Cancel();
         }
 
+        /// <summary>本系统没有异步初始化工作，直接返回已完成任务。</summary>
+        public UniTask AfterNewAsync()
+        {
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>本系统不需要逐帧驱动。</summary>
+        /// <param name="dt">当前帧增量时间。</param>
+        public void OnUpdate(float dt)
+        {
+        }
+
         /// <summary>释放活动会话与全部外部订阅。</summary>
-        public override void Dispose()
+        public void Dispose()
         {
             CancelInteraction();
             sessionCancellation?.Dispose();
