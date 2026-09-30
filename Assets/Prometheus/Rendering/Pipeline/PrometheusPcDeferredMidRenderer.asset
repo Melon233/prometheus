@@ -25,10 +25,8 @@ MonoBehaviour:
     probeSamplingDebugTexture: {fileID: 0}
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
-  - {fileID: 1151136595599155081}
   - {fileID: 9192176714029460181}
-  m_RendererFeatureMap: 89dfa37ca2a8f90f
-  m_UseNativeRenderPass: 0
+  m_RendererFeatureMap: d5ea57e8042c917fl
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -56,42 +54,10 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
---- !u!114 &1151136595599155081
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c5eb7abbe3b1ab4e8a41436b1c51f1a, type: 3}
-  m_Name: SSGIFeature
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  showInSceneView: 0
-  showToggleIconInSceneView: 1
-  settings:
-    UseDeferredRendering: 1
-    RenderPassEvent: 450
-    SSGIRangeMin: 10
-    SSGIRangeMax: 25
-    ShadowMinDistace: 5
-    ShadowMaxDistace: 15
-    ScanDepth2DRangeFactor: 0.5
-    Orthographic2DRangeFactor: 0.15
-    Quality: {fileID: 11400000, guid: eebfd7413cfac6c4cbe43f5a0b1f27b1, type: 2}
-    Lighting: {fileID: 11400000, guid: 87a3603b30103244b85aa87abba306d3, type: 2}
-    Advanced: {fileID: 11400000, guid: e3eaae48796cb794287872d89fae0cfd, type: 2}
-    Raymarch: {fileID: 11400000, guid: 331462db27454714d9c0f2058a8e42b1, type: 2}
-    Fallback: {fileID: 11400000, guid: c1c032d085a45e7448f20146375b3565, type: 2}
-    DebugScreenCoverage: 1
-    DebugMotionVectors: 0
-    DebugReprojection: 0
-    DebugAlbedo: 0
+  m_TileOnlyMode: 0
 --- !u!114 &9192176714029460181
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
