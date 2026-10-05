@@ -1,12 +1,8 @@
 using System;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Elements;
-using Xuan.Prometheus.Expression;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.LocalAuthority;
-using Xuan.Prometheus.Narrative;
-using Xuan.Prometheus.Npc;
-using Xuan.Prometheus.Quest;
 using Xuan.Prometheus.World;
 using Xuan.Prometheus.Reactions;
 using Xuan.Prometheus.Shields;
@@ -52,7 +48,7 @@ namespace Xuan.Prometheus.Bootstrap
             IEntitySystem entitySystem = registry.AddSystem<IEntitySystem>(new EntitySystem());
 
             // 单机版：领域网关由本地实现承担原服务器的权威规则，两者共享同一个背包，
-            // 因此 POI 交互发放的物品与背包读到的物品天然一致。背包与 VariableStore 一样是会话级共享状态，由组合根创建、构造注入。
+            // 因此 POI 交互发放的物品与背包读到的物品天然一致。背包是会话级共享状态，由组合根创建、构造注入。
             // 全部数据只存在于内存中（不做存档），每次进入游戏都重新开始。
             // 恢复联网时只需把下面两个网关的注册换成 ServiceSystem + NetworkPoiGateway / NetworkBagGateway（见 Prometheus.Gameplay.Online），
             // 依赖网关契约的 PoiSystem 与 BagSystem 无需改动。
@@ -75,16 +71,6 @@ namespace Xuan.Prometheus.Bootstrap
             // 小队必须晚于输入系统：它在 OnUpdate 里处理的切换要发生在同帧输入采样之后。
             ITeamSystem teamSystem = registry.AddSystem<ITeamSystem>(new TeamSystem(inputSystem, entitySystem, world.SpawnPosition, world.SpawnRotation));
 
-            // 任务与剧情共享同一份变量存储，各自只拥有自己的根段（quest / flag、var）。
-            // 存储不是 System 而是会话级共享状态，由组合根创建、构造注入——这与注入一个 System 契约形式一致。
-            // 两边因此谁都读得到谁，却没有人需要认识谁：所有权只由路径根段决定，
-            // 铁律 Q6（任务不解析其他 System）与 R6（剧情不认识任务）都不受影响，而且不再需要任何交叉接线。
-            VariableStore variables = new VariableStore();
-            // INarrativeSystem narrative = registry.AddSystem<INarrativeSystem>(new NarrativeSystem(variables));
-            // IQuestSystem quest = registry.AddSystem<IQuestSystem>(new QuestSystem(variables));
-
-            // 对话界面宿主由 UI 层实现、组合根注入：玩法层定义端口，UI 层实现端口，两侧都不认识对方的具体类型。
-            // registry.AddSystem<INpcSystem>(new NpcSystem(quest, narrative, new DialoguePanelHost()));
             registry.AddSystem<IWorldMapSystem>(new WorldMapSystem());
             registry.AddSystem<IPoiSystem>(new PoiSystem(entitySystem, teamSystem, poiGateway));
             registry.AddSystem<IBagSystem>(new BagSystem(bagGateway));

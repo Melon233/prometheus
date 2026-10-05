@@ -5,7 +5,7 @@ namespace Xuan.Prometheus.LocalAuthority
     /// <summary>
     /// 单机版背包的权威规则与运行时数据，规则移植自服务器 <c>internal/service/inventory.go</c>。
     ///
-    /// 它不是 System 而是会话级共享状态（与 VariableStore 同类）：由组合根创建一次，
+    /// 它不是 System 而是会话级共享状态：由组合根创建一次，
     /// 构造注入给两个本地网关，因此 POI 交互发放的物品与背包读到的物品天然是同一份数据。
     /// 数据只存在于内存中：单机版不做存档，每次进入游戏背包都从空开始。
     /// </summary>

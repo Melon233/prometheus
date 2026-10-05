@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Xuan.Prometheus.Npc;
 
 namespace Xuan.Prometheus.World
 {
@@ -68,18 +67,13 @@ namespace Xuan.Prometheus.World
         /// <summary>
         /// 外部交互入口：按 POI 类型执行该类型的交互行为。
         /// 网关权威类型统一提交一次交互请求，由网关响应回写状态；
-        /// 纯客户端类型（副本入口）直接打开界面，NPC 交由 NpcSystem 串行化会话。
+        /// 纯客户端类型（副本入口）直接打开界面。
         /// </summary>
         public void OnInteract()
         {
             if (Config == null) return;
             switch (Config.PoiType)
             {
-                case PoiType.Npc:
-                    // NPC 的可交互性由 NpcSystem 的会话串行化决定，POI 侧不再重复判定解锁。
-                    // 整个交互（查绑定、加载剧情、进舞台、演出、上报、还原）都在 InteractAsync 内部完成。
-                    if (Core.Gameplay.TryGetSystem(out INpcSystem npcSystem)) npcSystem.InteractAsync(this).Forget();
-                    return;
                 case PoiType.Dungeon:
                     // 副本入口是纯客户端行为，不请求网关；当前尚无副本面板。
                     Debug.Log($"[交互] 打开副本 UI {Config.Id}");

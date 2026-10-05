@@ -10,6 +10,9 @@
 > **2026-09-30 修订**：游戏按单世界设计，世界相位（`OnWorldEnterAsync` / `OnWorldExit`、`WorldContext`、
 > `EnterWorldAsync` / `ExitWorld`）与 `BeforeEntityUpdate` 已删除，`XSystem` 抽象类改为 `ISystem` 接口并取代 `ISystemContract`。
 > 第 1、2、3、6、7 节已按现状修订，第 8 节保留为历史记录，详见第 14 节。
+>
+> **2026-09-30 再修订**：旧任务、剧情、NPC 系统与第 5 节的单一变量存储（`VariableStore`、表达式库）已整体删除，
+> 第 4、5 节中涉及它们的内容仅为历史记录。
 
 ## 0. 触发这次重设计的四件事
 

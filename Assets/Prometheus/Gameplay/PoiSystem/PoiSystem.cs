@@ -6,7 +6,6 @@ using UnityEngine;
 using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Logic;
 using Xuan.Prometheus.Protocol;
-using Xuan.Prometheus.Npc;
 
 namespace Xuan.Prometheus.World
 {

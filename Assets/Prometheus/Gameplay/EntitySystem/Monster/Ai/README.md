@@ -4,7 +4,7 @@
 
 本目录是一个**纯 C# 状态机库**：不引用 `Entity`、`Component`、`Logic`，也不依赖 Unity 生命周期函数，因此可以完全脱离实体模型单独测试。
 
-它与 NarrativeSystem 的 `Core/` + `Ports/` 采用同一种结构：
+它采用 `Core/` + `Ports/` 的结构：
 
 | 角色 | 类型 | 位置 |
 | --- | --- | --- |

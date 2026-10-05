@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Xuan.Prometheus.Quest;
 using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus
@@ -185,29 +184,10 @@ namespace Xuan.Prometheus
             {
                 PoiMono poi = worldSystem.AllPois[index];
                 if (poi == null || poi.Config == null || poi.IsConsumed) continue;
-                // NPC 不作为通用 POI 图标出现在地图上，理由同 HudPanel 小地图。
-                if (poi.Config.PoiType == PoiType.Npc) continue;
                 bool teleportable = poi.Config.PoiType == PoiType.Statue || poi.Config.PoiType == PoiType.TeleAnchor;
                 // POI 根节点可能挂在带有场景偏移的父节点下；运行时实际 Transform 才是静态地图拍摄所使用的权威世界坐标。
                 CreateMarker(poi.Config.Id, WorldMapIconCatalog.LoadPoiIcon(poi.Config.PoiType), worldMapSystem.WorldToNormalized(poi.transform.position), new Vector2(36f, 36f), teleportable, poi.Config.Id);
             }
-            CreateQuestGuideMarker();
-        }
-
-        /// <summary>
-        /// 在大地图上画出当前追踪任务的指引点。
-        /// 与 HUD 小地图共用 <see cref="QuestGuideLocator"/> 做坐标换算，两处不可能指向不同的地方。
-        /// </summary>
-        private void CreateQuestGuideMarker()
-        {
-            if (!Core.Gameplay.TryGetSystem(out IQuestSystem questSystem)) return;
-            if (!questSystem.TryGetTrackedSummary(out QuestTrackSummary summary)) return;
-            if (!QuestGuideLocator.TryResolve(summary.Guide, out Vector3 guidePosition)) return;
-            Image marker = CreateMarker($"Guide_{summary.QuestId}", WorldMapIconCatalog.LoadQuestGuideIcon(), worldMapSystem.WorldToNormalized(guidePosition), new Vector2(18f, 18f), false, null);
-            if (marker == null) return;
-            marker.color = WorldMapIconCatalog.QuestGuideColor;
-            // 占位图是正方形，旋转成菱形才读得出是地图标记；缩放仍由 CreateMarker 按当前缩放档位写好。
-            marker.rectTransform.localRotation = Quaternion.Euler(0f, 0f, WorldMapIconCatalog.QuestGuideRotation);
         }
 
         /// <summary>创建一个使用归一化锚点定位的地图标记；神像和传送锚点额外绑定传送点击回调。</summary>

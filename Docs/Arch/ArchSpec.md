@@ -148,8 +148,6 @@ Runtime（Bootstrap，唯一组合根）
 | `BagSystem` | `IBagGateway` | 库存请求与快照缓存 |
 | `LocalPoiGateway` / `LocalBagGateway` | `LocalInventory`（会话级共享状态） | 单机权威规则与运行时数据 |
 | `NetworkPoiGateway` / `NetworkBagGateway`（联网版） | `IServiceSystem` | 通用请求通道与 Push 流 |
-| `NarrativeSystem` | `ICameraSystem`（规划中） | 叙事演出期间的镜头租约 |
-| `NpcSystem` | 无 | 只发布 `InteractionRequested`，由叙事适配器接管演出 |
 | `TeamSystem` | `IInputSystem` | 上场成员输入切换 |
 | `CameraSystem` | `IEntitySystem` | 跟随目标解析 |
 | `CombatAudioPresentationSystem` | `IEffectSystem` | 战斗效果信号到音频表现 |
@@ -168,7 +166,7 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-WORLD-001`（世界目录）：世界之间的跳转必须按 `WorldDefinition.WorldId` 引用，**禁止**按场景地址跳转——场景地址是实现细节。压栈行为由 `WorldKind` 推导，禁止为它单独配置开关。世界目录必须有且只有一个 `MainWorld`：它是启动时进入的世界（将来引入世界切换时也是栈底），必须唯一确定。
 - `ARCH-WORLD-002`（世界配置的传递）：只有**由入口解析、System 自己查不到**的世界事实（当前只有出生位姿）才由组合根构造注入给需要它的 System；其余世界级配置由关心它的 System 按 `WorldId` 自行加载，禁止汇总成集中式启动参数对象。原 `WorldContext` 已随世界相位删除（2026-09-30）。
 - `ARCH-BOOT-003`（线性启动）：启动链路由 `Entry.BootAsync` 按固定顺序执行：Kit 初始化 → 配表 → 加载主世界场景 → 建立会话 → HUD。`ARCH-BOOT-001` / `ARCH-BOOT-002`（开屏、热更界面）已随启动流程一并移除（2026-09-27，见 `Docs/Arch/GameFlow.md` 第 13 节）；将来重新引入开屏或热更界面时，它们运行在资源包就绪之前，仍然不得使用 `UIPanel`。
-- `ARCH-VAR-001`（变量所有权）：跨系统共享的变量必须存在唯一的 `VariableStore` 里，按路径**根段**路由到唯一的 `IVariableNamespace` 所有者。禁止为同一批变量建立第二份存储，也禁止让两个存储互相注册为投影——互投影在图上是一个环，需要重入守卫才不会无限递归。写权限由所有者的门面强制：一个命名空间只允许写自己的根段。单机版不做存档；将来引入存档时应按所有者切片导出，使共享存储不影响各系统各存各的档。
+- `ARCH-VAR-001`：已删除（2026-09-30）。共享变量存储 `VariableStore` 随旧任务/剧情系统一并移除。
 - `ARCH-CONFIG-001`（配表加载时机）：配表必须在**资源包就绪之后、玩法会话建立之前**由 `Core.Config.Load()` 一次性加载，当前落在 `Entry.BootAsync` 的 `runtimeCore.AfterNew()` 之后。它属于 App 段：跨越全部世界，不随会话重建。System 禁止各自加载表数据，也禁止在 `AfterNewAsync` 阶段依赖表已就绪之外的任何时序假设。
 - `ARCH-LIFE-004`（释放自足）：`ISystem.Dispose` 必须自足地释放本系统持有的全部状态，不得假设场景仍然存活——进程结束时 Unity 已在销毁场景对象。
 - `ARCH-LIFE-005`（帧内顺序）：`GameplayKit.OnUpdate` 先更新全部 Entity，再按注册顺序调用各 System 的 `OnUpdate`；不存在 Entity 更新之前的 System 相位。输入采样在 `InputSystem.OnUpdate` 中完成，输入对 Entity 的影响固定延迟一帧；需要同帧处理另一 System 本帧结果的 System 必须注册在其之后。
@@ -185,7 +183,7 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-CODE-001`：新增代码必须带有解释意图、关键参数和边界情况的清晰注释；代码优先保持紧凑，但不得以单行为由牺牲可读性。
 - `ARCH-NAME-001`：`Gameplay` 顶层目录只有三类：
   - **System 目录**：每个目录对应一个 System，目录名必须与该 System 的类名**完全相同**（例如 `CombatAudioPresentationSystem/`）。只被这一个 System 使用的库、Logic、Component、配置与编辑器工具放在它的子目录中（例如 `EntitySystem/Animation/`、`EntitySystem/Monster/Ai/`）。
-  - **`Common/`**：被多个 System 共用、自身不是 System 的纯领域库（当前为 `Combat`、`Expression`、`Audio`、`LocalAuthority`）。子目录不得使用 `System` 后缀；共享库不得寄居在某个 System 的目录下。某个库的使用方收敛到只剩一个 System 时，应并入该 System 的目录。
+  - **`Common/`**：被多个 System 共用、自身不是 System 的纯领域库（当前为 `Combat`、`Audio`、`LocalAuthority`）。子目录不得使用 `System` 后缀；共享库不得寄居在某个 System 的目录下。某个库的使用方收敛到只剩一个 System 时，应并入该 System 的目录。
   - **`Tests/`**：跨多个 System 的集成测试（当前为 `Tests/PlayMode` 的战斗全链路冒烟测试，程序集 `Prometheus.Gameplay.PlayModeTests`）；只覆盖单个 System 或单个共享库的测试放在其自身目录下。
   - 只被组合根消费的配置（例如世界目录 `WorldCatalog`）不属于玩法层，放在 `Bootstrap/` 下。
 - `ARCH-NAME-002`：`Assets/Prometheus/UI` 下每个界面独占一个以面板类型命名的目录，界面的业务脚本、生成基类和该界面专属 Mono 全部放在其中；跨界面共用的表现脚本单独成目录（如 `WorldMap`、`FloatingDmgText`）。UIKit 代码生成器按面板名输出到对应目录。

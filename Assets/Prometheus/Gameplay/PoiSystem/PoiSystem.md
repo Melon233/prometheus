@@ -276,7 +276,7 @@ public class PoiComponent : IComponent
 
 > 业务数据（奖励表、战斗、传送目标、副本场景）依赖尚未存在的奖励/战斗/传送系统，此处仅实现**生命周期状态、幂等切换、重生计时与事件广播**；真实业务在 `ChestLogic.Open()` 等公开方法处接入。
 
-宝箱开启和采集物采集由服务器确认成功后，`PoiSystem` 先通过叙事系统播放同一套运行时镜头序列：演出镜头从当前构图平滑靠近并对准目标 POI，再恢复原构图；演出在整个时段屏蔽玩法输入、快捷键、HUD 点击和 UI 导航。该链路随 FilmSystem 移除后尚未在 NarrativeSystem 上重新接入。演出自然结束后才应用服务器返回的宝箱已开启状态或采集物冷却状态，避免特写期间目标提前消失。
+宝箱开启和采集物采集由服务器确认成功后，`PoiSystem` 先通过叙事系统播放同一套运行时镜头序列：演出镜头从当前构图平滑靠近并对准目标 POI，再恢复原构图；演出在整个时段屏蔽玩法输入、快捷键、HUD 点击和 UI 导航。该链路随 FilmSystem 移除后尚未重新接入，待演出系统重新设计后再接。演出自然结束后才应用服务器返回的宝箱已开启状态或采集物冷却状态，避免特写期间目标提前消失。
 
 > 与现有 `EntitySystem.CreateEnemies` 的套路一致：构造 `Entity` → `AddComp` → `AddLogic` → `AddEntity` → `AfterNew`。`PoiEntity` 复用同样的生命周期，天然获得 EntitySystem 的逐帧调度与安全回收。
 
@@ -353,6 +353,6 @@ public class PoiComponent : IComponent
 地图相关变化通过 `Core.Event` 发布：`WorldMapReady` 表示地图资源已解析，`WorldMapPoiChanged` 表示 POI 集合或状态变化。玩家坐标不通过高频事件传递，HUD 和 `MapPanel` 各自逐帧读取当前玩家实体的 `bindGo.transform.position`；位置上传和网络 chunk 同步仍按低频 tick 执行。大地图滚轮缩放以屏幕中心为锚点。地图纹理由编辑器菜单 `Prometheus/World/Map Capture` 生成，运行时不再创建俯拍相机和 RenderTexture。
 
 大地图的传送请求也由 `PoiSystem.TryTeleportToPoi` 统一处理。该接口只接受当前已加载且类型为 `Statue` 或 `TeleAnchor` 的 POI；传送时暂时停用玩家 `CharacterController`、写入目标位置并清空移动速度与 Root Motion，避免下一帧运动逻辑覆盖传送结果。随后 HUD 和大地图直接读取同一份实体 Transform，保证两个视图继续使用同一份世界坐标事实。
-### NPC POI（第一阶段）
+### NPC 不是 POI
 
-当 `PoiConfig.PoiType` 为 `Npc` 时，PoiSystem 使用 `PoiConfig.Npc` 创建 `NpcEntity` 并常驻注册到 EntitySystem，不再依据玩家距离激活或回收。NPC 身份与行为由 NpcSystem 的 `NpcDefinition`、`NpcComponent` 和 `NpcLogic` 提供；PoiSystem 不直接控制对话、镜头或任务推进。
+NPC 不再作为 POI 类型（`PoiType.Npc` 已随旧 NPC 系统删除），NPC 方案待重新设计。

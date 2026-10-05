@@ -19,8 +19,6 @@
 | `IEffectSystem` | `EffectSystem` | 效果运行时与默认配置库 |
 | `ICombatAudioPresentationSystem` | `CombatAudioPresentationSystem` | 战斗伤害音频表现订阅 |
 | `ICameraSystem` | `CameraSystem` | 玩法镜头与演出镜头租约 |
-| `INpcSystem` | `NpcSystem` | NPC 单会话交互协调 |
-| `IQuestSystem` | `QuestSystem` | 任务配置、状态流转与快照 |
 | `IPoiGateway` / `IBagGateway` | `LocalPoiGateway` / `LocalBagGateway` | 各领域的权威数据适配：单机版在进程内执行权威规则并读写本地存档 |
 | `IServiceSystem`（联网版，当前未注册） | `ServiceSystem` | 单局网络会话与业务无关的通用请求通道、通用 Push 主线程分发 |
 | `IPoiSystem` | `PoiSystem` | POI、地图、AOI、玩家位置与世界状态同步 |
@@ -31,7 +29,7 @@
 
 1. 业务代码通过 `Core.Gameplay.GetSystem<IContract>()` 或 `TryGetSystem(out IContract)` 获取公共 System；System 之间禁止构造注入或长期保存另一 System 实例，构造参数只用于当前 System 独占的内部策略、适配器和配置。
 2. System 不公开其内部子服务、会话或传输对象；需要跨系统使用的动作应提升为所属系统接口的方法。
-3. 公共适配器只能接收接口，例如 `QuestEventAdapters` 接收 `IQuestSystem`；禁止在公共方法签名中泄漏内部实现。
+3. 公共适配器只能接收接口；禁止在公共方法签名中泄漏内部实现。
 4. `CutsceneCameraLease`、`ControlLease`、`ListenHandle`、配置 SO、领域 DTO 和只读运行时数据可以作为接口返回值，它们表达一次操作或数据事实，不是可替换服务。
 5. 新增 System 时必须先定义最小 `I*System : ISystem`，再由 `GameplayKit` 以该接口注册；实现类保持 `internal sealed`。
 
