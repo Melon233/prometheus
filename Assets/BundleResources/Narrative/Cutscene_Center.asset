@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bcc3420edf8f2942a23f17d6d859616, type: 3}
+  m_Name: Cutscene_Center
+  m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.Cutscene.CutsceneDefinition
+  anchorId: anchor_square
+  skippable: 1
+  actors:
+  - key: player
+    source: 0
+    anchorId: 
+    spawnPrefab: {fileID: 0}
+    spawnPosition: {x: 0, y: 0, z: 0}
+    spawnFaceRight: 0
+  steps:
+  - duration: 1.5
+    actions:
+    - rid: 2402871889756422243
+    - rid: 2402871889756422244
+    - rid: 2402871889756422245
+  - duration: 0
+    actions:
+    - rid: 2402871889756422246
+  references:
+    version: 2
+    RefIds:
+    - rid: 2402871889756422243
+      type: {class: CameraAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        startFromCurrent: 1
+        fromPosition: {x: 0, y: 0, z: 0}
+        fromEuler: {x: 0, y: 0, z: 0}
+        toPosition: {x: 1.5, y: 2.2, z: 4}
+        toEuler: {x: 0, y: 0, z: 0}
+        duration: 1.5
+        curve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        lookAtActor: player
+        lookAtOffset: {x: 0, y: 1, z: 0}
+    - rid: 2402871889756422244
+      type: {class: VfxAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        prefab: {fileID: 5902143773153862722, guid: f754b1f3e2461984596808535b8987f4, type: 3}
+        attachActor: player
+        offset: {x: 0, y: 1, z: 0}
+        lifetime: 3
+    - rid: 2402871889756422245
+      type: {class: AudioAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        audioEvent:
+          Guid:
+            Data1: 2122149723
+            Data2: 1327854158
+            Data3: -1897755755
+            Data4: 1570643694
+          Path: event:/Combat/Library/Sword_Whoosh
+        attachActor: player
+    - rid: 2402871889756422246
+      type: {class: DialogAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        speakerTextId: 0
+        lineTextId: 30006
+        optionTextIds: 

@@ -13,9 +13,15 @@ MonoBehaviour:
   m_Name: WorldCatalog
   m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.World.WorldCatalog
   definitions:
+  - worldId: w_cutscene_test
+    sceneAddress: CutsceneTest
+    kind: 0
+    spawnPosition: {x: 0, y: 1, z: 0}
+    spawnYaw: 0
+    showsHud: 1
   - worldId: w_mondstadt
     sceneAddress: MainWorld
-    kind: 0
+    kind: 1
     spawnPosition: {x: 277, y: 0.95, z: 1068}
     spawnYaw: 0
     showsHud: 1

@@ -9,8 +9,9 @@
 | --- | --- | --- | --- |
 | 战斗 | [Combat/](Combat/README.md) | 动作、元素、伤害、队伍、敌人、硬直、表现 | 案组完成，两张配表已落地 |
 | 角色养成 | [Growth/](Growth/README.md) | 等级突破、天赋命座、武器、圣遗物、材料、冒险等阶、好感 | 案组完成，配表待建 |
+| 任务与演出 | 程序文档：[QuestSystem](../../Assets/Prometheus/Gameplay/QuestSystem/README.md)、[CutsceneSystem](../../Assets/Prometheus/Gameplay/CutsceneSystem/README.md) | 线性主线任务、节点触发器与目标、步骤式演出与对话 | 运行时已落地，策划案未开案；结构走 SO、文本走 `TbText`（`ARCH-CONFIG-002`） |
 
-后续模块（探索、任务与叙事、抽卡与商业化、家园、联机）尚未开案。
+后续模块（探索、抽卡与商业化、家园、联机）尚未开案；任务与叙事已有运行时实现，策划案尚未开案。
 
 ## 跨模块约定
 

@@ -1,11 +1,10 @@
 using UnityEngine;
 using Xuan.Prometheus.Component;
-using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus.Logic
 {
     /// <summary>
-    /// 玩家交互感应逻辑：通过交互 ColliderProxy 的触发进入/离开，维护 InteractComponent 中交互半径内的可交互 POI 配置列表。
+    /// 玩家交互感应逻辑：通过交互 ColliderProxy 的触发进入/离开，维护 InteractComponent 中交互半径内的可交互对象列表。
     /// 感应属于基础设施，不受控制状态暂停；交互动作由 UI 层按 Id 解析实体后提交。
     /// </summary>
     public sealed class InteractLogic : Logic, ITriggerHandler
@@ -47,24 +46,24 @@ namespace Xuan.Prometheus.Logic
             interactComponent = null;
         }
 
-        /// <summary>交互触发进入：识别碰撞体所属 POI 配置并加入附近交互物列表。</summary>
+        /// <summary>交互触发进入：识别碰撞体所属的可交互对象（POI、任务交互点等）并加入附近交互物列表。</summary>
         public void OnTriggerEnter(ColliderProxy source, Collider other)
         {
             if (interactComponent == null || other == null) return;
-            PoiMono mono = other.GetComponentInParent<PoiMono>();
-            if (mono == null || mono.Config == null) return;
-            Debug.Log($"[交互] 感应进入 {mono.Config.Id} ({mono.Config.PoiType})");
-            interactComponent.AddNearby(mono.Config);
+            IInteractable interactable = other.GetComponentInParent<IInteractable>();
+            if (interactable == null) return;
+            Debug.Log($"[交互] 感应进入 {interactable.InteractLabel}");
+            interactComponent.AddNearby(interactable);
         }
 
-        /// <summary>交互触发离开：识别碰撞体所属 POI 配置并从附近交互物列表移除。</summary>
+        /// <summary>交互触发离开：识别碰撞体所属的可交互对象并从附近交互物列表移除。</summary>
         public void OnTriggerExit(ColliderProxy source, Collider other)
         {
             if (interactComponent == null || other == null) return;
-            PoiMono mono = other.GetComponentInParent<PoiMono>();
-            if (mono == null || mono.Config == null) return;
-            Debug.Log($"[交互] 感应离开 {mono.Config.Id}");
-            interactComponent.RemoveNearby(mono.Config);
+            IInteractable interactable = other.GetComponentInParent<IInteractable>();
+            if (interactable == null) return;
+            Debug.Log($"[交互] 感应离开 {interactable.InteractLabel}");
+            interactComponent.RemoveNearby(interactable);
         }
 
         /// <summary>在玩家身上创建（或复用）交互感应 ColliderProxy：球形 trigger + 运动学刚体，保证触发事件可靠触发。</summary>

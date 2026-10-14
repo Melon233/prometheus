@@ -335,7 +335,7 @@ namespace Xuan.Prometheus.World
             if (ActivePlayer == null) return;
             if (ActivePlayer.TryGetComp(out InteractComponent interact))
             {
-                interact.RemoveNearby(poi.Config);
+                interact.RemoveNearby(poi);
                 Debug.Log($"[交互] 移出交互列表 {poi.Config.Id}");
             }
         }

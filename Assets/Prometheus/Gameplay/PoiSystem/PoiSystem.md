@@ -343,6 +343,14 @@ public class PoiComponent : IComponent
 - `PoiSystem` 已接入玩法组合根 `PrometheusSystemInstaller.RegisterSystems`（`Bootstrap/PrometheusSystemInstaller.cs`），随玩法开局自动注册。烘焙资产需纳入 YooAsset 包内地址 `Assets/Prometheus/Gameplay/PoiSystem/Data/WorldRegionsConfig.asset`；缺失时降级为空世界并告警。
 - 各类型真实业务（奖励、战斗、传送目标、副本场景）在对应 `Logic` 公开方法处接入，依赖奖励/战斗/传送系统就绪。
 - 交互触发入口（玩家接近/按键/射线检测调 `Open()`/`Collect()`/`Gather()` 等）不在本 Spec 范围，待交互层接入。
+
+### 交互栏链路（2026-10 起）
+
+玩家身上的 `InteractLogic` 用一个半径 3 米的触发球感应附近碰撞体，按 `GetComponentInParent<IInteractable>()` 识别可交互对象并写入 `InteractComponent`；HUD 交互栏读取该列表显示 `InteractLabel`，点击时调用 `IInteractable.Interact()`。
+
+- `PoiMono` 实现 `IInteractable`：文案为 POI 类型名，`Interact()` 转交 `OnInteract()` 按类型分派。
+- 任务交互点 `QuestInteractMono` 同样实现 `IInteractable`，见 `QuestSystem/README.md`。
+- 感应逻辑与 HUD 只认识 `IInteractable` 端口，不依赖 `PoiSystem` 或 `QuestSystem`。POI 被消费后由 `PoiSystem.RemoveFromNearby` 主动移出交互栏。
 - `WorldRegionsConfig` 的 YooAsset 地址（`location`）命名，随烘焙工具的资产输出约定确定。
 - 8 个类型 Logic 的业务细节（奖励、战斗、传送、副本进入）在各自实现中展开，不在本文档范围。
 

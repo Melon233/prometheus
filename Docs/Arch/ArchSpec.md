@@ -95,7 +95,7 @@ Runtime（Bootstrap，唯一组合根）
   - 旧规则的代价见 `Docs/Arch/GameFlow.md` 第 4.2 节。
 - `ARCH-SYS-006`：Entity 的注册、查询、监听和回收必须经 `IEntitySystem`；单局至多存在一个 `IEntityDriver` 实现。由架构测试 `EntityDriver_IsUnique` 执行。
 - `ARCH-SYS-007`：`IGameplayKit` 禁止公开任何玩法领域概念。"当前上场角色"之类的状态由对应 System 自己发布（`ITeamSystem.ActiveMember`），不由框架层容器代理。会话的生命周期（`CreateSessionAsync` / `DestroySession`）是框架级组合概念而非玩法领域概念，允许公开。
-- `ARCH-SYS-008`：System 允许由 UI 层拥有。它仍由组合根统一注册，并只能向下依赖 Gameplay 与 Framework。当前 UI 层没有注册任何 System。
+- `ARCH-SYS-008`：System 允许由 UI 层拥有。它仍由组合根统一注册，并只能向下依赖 Gameplay 与 Framework。当前 UI 层注册了 `CutsceneUISystem`：它跟随演出开始与结束切换 HUD 与对话面板，避免玩法层引用 UI、也避免面板之间互相开关。
 
 ## 7. 事件约束
 
@@ -151,6 +151,10 @@ Runtime（Bootstrap，唯一组合根）
 | `TeamSystem` | `IInputSystem` | 上场成员输入切换 |
 | `CameraSystem` | `IEntitySystem` | 跟随目标解析 |
 | `CombatAudioPresentationSystem` | `IEffectSystem` | 战斗效果信号到音频表现 |
+| `WorldAnchorSystem` | 无 | 按 id 索引场景中的 `WorldAnchor`（NPC、地标等世界内容） |
+| `CutsceneSystem` | `ICameraSystem`、`IInputSystem`、`ITeamSystem`、`IWorldAnchorSystem` | 演出镜头租约、演出期间输入独占、玩家演员、坐标原点与场景演员 |
+| `QuestSystem` | `ICutsceneSystem`、`ITeamSystem`、`IWorldAnchorSystem` | 按节点触发器播放演出；读取玩家位置与交互组件；区域与交互点挂在锚点上（写在任务资产里、运行时生成）。演出结束经 `CutsceneFinishedEvent` 回流，演出系统不认识任务 |
+| `CutsceneUISystem`（UI 层） | 无（只监听演出事件） | 演出期间收起 HUD、打开对话面板 |
 | UI 面板 | 对应 `I*System` 和 `Core.Event` | 展示状态、提交命令、监听全局事实 |
 
 未列出的跨 System 依赖必须先确认职责归属并更新本文；禁止为了复用一个方法临时扩大 System 接口。
@@ -167,6 +171,10 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-WORLD-002`（世界配置的传递）：只有**由入口解析、System 自己查不到**的世界事实（当前只有出生位姿）才由组合根构造注入给需要它的 System；其余世界级配置由关心它的 System 按 `WorldId` 自行加载，禁止汇总成集中式启动参数对象。原 `WorldContext` 已随世界相位删除（2026-09-30）。
 - `ARCH-BOOT-003`（线性启动）：启动链路由 `Entry.BootAsync` 按固定顺序执行：Kit 初始化 → 配表 → 加载主世界场景 → 建立会话 → HUD。`ARCH-BOOT-001` / `ARCH-BOOT-002`（开屏、热更界面）已随启动流程一并移除（2026-09-27，见 `Docs/Arch/GameFlow.md` 第 13 节）；将来重新引入开屏或热更界面时，它们运行在资源包就绪之前，仍然不得使用 `UIPanel`。
 - `ARCH-VAR-001`：已删除（2026-09-30）。共享变量存储 `VariableStore` 随旧任务/剧情系统一并移除。
+- `ARCH-CONFIG-002`（叙事配置例外，2026-10 确立）：演出（`CutsceneDefinition`）与任务（`QuestDefinition` / `QuestCatalog`）的**结构**使用 ScriptableObject 配置，不走 Luban；其中的**文本**（台词、说话人、选项、任务文案）一律是 Luban 表 `TbText` 的整数 id，经 `NarrativeText.Get` 读取。
+  - 理由：演出需要引用 Vector3、Spine 动画名、FMOD 事件、特效 prefab 与其他资产，任务需要多态的触发器与目标并直接引用演出资产，这些都是 Luban 表达不了或表达代价极高的；文本留在 Luban 是为了本地化只换表、不动资产。
+  - 边界：例外只覆盖叙事结构。数值类配置仍必须走 Luban；SO 中禁止写入任何面向玩家的文案字符串。
+  - 执行手段：代码评审；SO 的结构校验由 `CutsceneDefinition.Validate` / `QuestDefinition.Validate` 在运行时与编辑器菜单 `Prometheus/Narrative/校验全部演出与任务` 中执行。
 - `ARCH-CONFIG-001`（配表加载时机）：配表必须在**资源包就绪之后、玩法会话建立之前**由 `Core.Config.Load()` 一次性加载，当前落在 `Entry.BootAsync` 的 `runtimeCore.AfterNew()` 之后。它属于 App 段：跨越全部世界，不随会话重建。System 禁止各自加载表数据，也禁止在 `AfterNewAsync` 阶段依赖表已就绪之外的任何时序假设。
 - `ARCH-LIFE-004`（释放自足）：`ISystem.Dispose` 必须自足地释放本系统持有的全部状态，不得假设场景仍然存活——进程结束时 Unity 已在销毁场景对象。
 - `ARCH-LIFE-005`（帧内顺序）：`GameplayKit.OnUpdate` 先更新全部 Entity，再按注册顺序调用各 System 的 `OnUpdate`；不存在 Entity 更新之前的 System 相位。输入采样在 `InputSystem.OnUpdate` 中完成，输入对 Entity 的影响固定延迟一帧；需要同帧处理另一 System 本帧结果的 System 必须注册在其之后。
@@ -183,7 +191,7 @@ Runtime（Bootstrap，唯一组合根）
 - `ARCH-CODE-001`：新增代码必须带有解释意图、关键参数和边界情况的清晰注释；代码优先保持紧凑，但不得以单行为由牺牲可读性。
 - `ARCH-NAME-001`：`Gameplay` 顶层目录只有三类：
   - **System 目录**：每个目录对应一个 System，目录名必须与该 System 的类名**完全相同**（例如 `CombatAudioPresentationSystem/`）。只被这一个 System 使用的库、Logic、Component、配置与编辑器工具放在它的子目录中（例如 `EntitySystem/Animation/`、`EntitySystem/Monster/Ai/`）。
-  - **`Common/`**：被多个 System 共用、自身不是 System 的纯领域库（当前为 `Combat`、`Audio`、`LocalAuthority`）。子目录不得使用 `System` 后缀；共享库不得寄居在某个 System 的目录下。某个库的使用方收敛到只剩一个 System 时，应并入该 System 的目录。
+  - **`Common/`**：被多个 System 共用、自身不是 System 的纯领域库（当前为 `Combat`、`Audio`、`LocalAuthority`、`Interaction`、`NarrativeText`、`SerializeReferencePicker`）。子目录不得使用 `System` 后缀；共享库不得寄居在某个 System 的目录下。某个库的使用方收敛到只剩一个 System 时，应并入该 System 的目录。
   - **`Tests/`**：跨多个 System 的集成测试（当前为 `Tests/PlayMode` 的战斗全链路冒烟测试，程序集 `Prometheus.Gameplay.PlayModeTests`）；只覆盖单个 System 或单个共享库的测试放在其自身目录下。
   - 只被组合根消费的配置（例如世界目录 `WorldCatalog`）不属于玩法层，放在 `Bootstrap/` 下。
 - `ARCH-NAME-002`：`Assets/Prometheus/UI` 下每个界面独占一个以面板类型命名的目录，界面的业务脚本、生成基类和该界面专属 Mono 全部放在其中；跨界面共用的表现脚本单独成目录（如 `WorldMap`、`FloatingDmgText`）。UIKit 代码生成器按面板名输出到对应目录。

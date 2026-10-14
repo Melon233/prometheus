@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Xuan.Prometheus.Component;
+using Xuan.Prometheus.Cutscene;
 using Xuan.Prometheus.Effects;
+using Xuan.Prometheus.Quest;
 
 namespace Xuan.Prometheus.Tests.Architecture
 {
@@ -68,6 +70,24 @@ namespace Xuan.Prometheus.Tests.Architecture
             "ValueGreaterThanOrEqual", "DamageElementEquals", "DamageTriggeredReaction", "DamageReactionEquals",
             "DamageWasCritical",
         };
+
+        /// <summary>`CutsceneActorSource` 的声明顺序；演出资产的演员表存的是它的下标。</summary>
+        private static readonly string[] CutsceneActorSourceLayout = { "Player", "Scene", "Spawn" };
+
+        /// <summary>`QuestType` 的声明顺序；任务资产存的是它的下标。</summary>
+        private static readonly string[] QuestTypeLayout = { "Main" };
+
+        [Test]
+        public void CutsceneActorSource_LayoutIsStable()
+        {
+            AssertDeclarationOrder<CutsceneActorSource>(CutsceneActorSourceLayout);
+        }
+
+        [Test]
+        public void QuestType_LayoutIsStable()
+        {
+            AssertDeclarationOrder<QuestType>(QuestTypeLayout);
+        }
 
         [Test]
         public void PropertyType_LayoutIsStable()

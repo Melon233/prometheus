@@ -1,0 +1,194 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bcc3420edf8f2942a23f17d6d859616, type: 3}
+  m_Name: Cutscene_Intro
+  m_EditorClassIdentifier: Prometheus.Gameplay::Xuan.Prometheus.Cutscene.CutsceneDefinition
+  anchorId: anchor_square
+  skippable: 1
+  actors:
+  - key: player
+    source: 0
+    anchorId: 
+    spawnPrefab: {fileID: 0}
+    spawnPosition: {x: 0, y: 0, z: 0}
+    spawnFaceRight: 0
+  - key: npc
+    source: 1
+    anchorId: npc_barbarossa
+    spawnPrefab: {fileID: 0}
+    spawnPosition: {x: 0, y: 0, z: 0}
+    spawnFaceRight: 0
+  steps:
+  - duration: 1.2
+    actions:
+    - rid: 2402871889756422234
+    - rid: 2402871889756422235
+  - duration: 0
+    actions:
+    - rid: 2402871889756422236
+    - rid: 2402871889756422237
+  - duration: 0
+    actions:
+    - rid: 2402871889756422238
+    - rid: 2402871889756422239
+  - duration: 0
+    actions:
+    - rid: 2402871889756422240
+    - rid: 2402871889756422241
+  - duration: 0.8
+    actions:
+    - rid: 2402871889756422242
+  references:
+    version: 2
+    RefIds:
+    - rid: 2402871889756422234
+      type: {class: CameraAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        startFromCurrent: 1
+        fromPosition: {x: 0, y: 0, z: 0}
+        fromEuler: {x: 0, y: 0, z: 0}
+        toPosition: {x: 1.5, y: 2.2, z: -9.5}
+        toEuler: {x: 8, y: 0, z: 0}
+        duration: 1.2
+        curve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        lookAtActor: 
+        lookAtOffset: {x: 0, y: 1, z: 0}
+    - rid: 2402871889756422235
+      type: {class: ActorFaceAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        actor: player
+        faceRight: 1
+    - rid: 2402871889756422236
+      type: {class: DialogAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        speakerTextId: 20001
+        lineTextId: 30001
+        optionTextIds: 
+    - rid: 2402871889756422237
+      type: {class: ActorAnimationAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        actor: npc
+        animation: common/talk1
+        loop: 0
+        thenLoopAnimation: idle
+    - rid: 2402871889756422238
+      type: {class: DialogAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        speakerTextId: 20002
+        lineTextId: 30002
+        optionTextIds: 
+    - rid: 2402871889756422239
+      type: {class: CameraAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        startFromCurrent: 1
+        fromPosition: {x: 0, y: 0, z: 0}
+        fromEuler: {x: 0, y: 0, z: 0}
+        toPosition: {x: 0.6, y: 2, z: -8.5}
+        toEuler: {x: 6, y: 6, z: 0}
+        duration: 0.6
+        curve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        lookAtActor: 
+        lookAtOffset: {x: 0, y: 1, z: 0}
+    - rid: 2402871889756422240
+      type: {class: DialogAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        speakerTextId: 20001
+        lineTextId: 30003
+        optionTextIds: 
+    - rid: 2402871889756422241
+      type: {class: ActorAnimationAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        actor: npc
+        animation: common/yes
+        loop: 0
+        thenLoopAnimation: idle
+    - rid: 2402871889756422242
+      type: {class: CameraAction, ns: Xuan.Prometheus.Cutscene, asm: Prometheus.Gameplay}
+      data:
+        startFromCurrent: 1
+        fromPosition: {x: 0, y: 0, z: 0}
+        fromEuler: {x: 0, y: 0, z: 0}
+        toPosition: {x: 0, y: 3.5, z: -8.1}
+        toEuler: {x: 30, y: 0, z: 0}
+        duration: 0.8
+        curve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        lookAtActor: 
+        lookAtOffset: {x: 0, y: 1, z: 0}

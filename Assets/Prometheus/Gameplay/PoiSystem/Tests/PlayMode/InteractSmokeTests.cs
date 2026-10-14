@@ -23,7 +23,7 @@ namespace Xuan.Prometheus.World.Tests
             }
         }
 
-        /// <summary>验证交互逻辑在触发进入时加入、重复进入去重、触发离开时移除附近交互物配置。</summary>
+        /// <summary>验证交互逻辑在触发进入时加入、重复进入去重、触发离开时移除附近交互物。</summary>
         [UnityTest]
         public IEnumerator InteractLogic_SensesPoiTrigger_AddsAndRemovesConfig()
         {
@@ -39,10 +39,10 @@ namespace Xuan.Prometheus.World.Tests
             interactLogic.AfterNew();
 
             interactLogic.OnTriggerEnter(null, poiCollider);
-            List<PoiConfig> buffer = new List<PoiConfig>();
+            List<IInteractable> buffer = new List<IInteractable>();
             interactComponent.CopyNearby(buffer);
             Assert.That(buffer.Count, Is.EqualTo(1), "触发进入后应加入一个交互物。");
-            Assert.That(buffer[0].Id, Is.EqualTo("Mond_Chest_Smoke"));
+            Assert.That(buffer[0], Is.SameAs(mono));
 
             interactLogic.OnTriggerEnter(null, poiCollider);
             interactComponent.CopyNearby(buffer);

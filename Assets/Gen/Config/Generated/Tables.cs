@@ -53,6 +53,10 @@ public partial class Tables
     /// 养成材料静态定义：分类、品阶、合成链、经验值
     /// </summary>
     public TbMaterial TbMaterial {get; }
+    /// <summary>
+    /// 叙事文本：对话台词、说话人、选项与任务文案，按整数 id 引用
+    /// </summary>
+    public TbText TbText {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
@@ -66,6 +70,7 @@ public partial class Tables
         TbCharacterLevelCurve = new TbCharacterLevelCurve(loader("tbcharacterlevelcurve"));
         TbCharacterAscension = new TbCharacterAscension(loader("tbcharacterascension"));
         TbMaterial = new TbMaterial(loader("tbmaterial"));
+        TbText = new TbText(loader("tbtext"));
         ResolveRef();
     }
     
@@ -81,6 +86,7 @@ public partial class Tables
         TbCharacterLevelCurve.ResolveRef(this);
         TbCharacterAscension.ResolveRef(this);
         TbMaterial.ResolveRef(this);
+        TbText.ResolveRef(this);
     }
 }
 

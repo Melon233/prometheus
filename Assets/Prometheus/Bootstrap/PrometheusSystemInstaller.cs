@@ -1,8 +1,10 @@
 using System;
+using Xuan.Prometheus.Cutscene;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Elements;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.LocalAuthority;
+using Xuan.Prometheus.Quest;
 using Xuan.Prometheus.World;
 using Xuan.Prometheus.Reactions;
 using Xuan.Prometheus.Shields;
@@ -66,7 +68,7 @@ namespace Xuan.Prometheus.Bootstrap
             IEffectSystem effectSystem = registry.AddSystem<IEffectSystem>(new EffectSystem(elementSystem, shieldSystem, traceEnabled: true));
             registry.AddSystem<IReactionProductSystem>(new ReactionProductSystem(elementSystem, entitySystem, effectSystem));
             registry.AddSystem<ICombatAudioPresentationSystem>(new CombatAudioPresentationSystem(effectSystem));
-            registry.AddSystem<ICameraSystem>(new CameraSystem(entitySystem));
+            ICameraSystem cameraSystem = registry.AddSystem<ICameraSystem>(new CameraSystem(entitySystem));
 
             // 小队必须晚于输入系统：它在 OnUpdate 里处理的切换要发生在同帧输入采样之后。
             ITeamSystem teamSystem = registry.AddSystem<ITeamSystem>(new TeamSystem(inputSystem, entitySystem, world.SpawnPosition, world.SpawnRotation));
@@ -74,6 +76,15 @@ namespace Xuan.Prometheus.Bootstrap
             registry.AddSystem<IWorldMapSystem>(new WorldMapSystem());
             registry.AddSystem<IPoiSystem>(new PoiSystem(entitySystem, teamSystem, poiGateway));
             registry.AddSystem<IBagSystem>(new BagSystem(bagGateway));
+
+            // 世界锚点：NPC、地标等场景内容的 id 索引，演出与任务都按 id 引用它们，必须先于两者注册。
+            IWorldAnchorSystem anchorSystem = registry.AddSystem<IWorldAnchorSystem>(new WorldAnchorSystem());
+            // 演出与任务：依赖只有「任务 → 演出」一个方向，演出不认识任务，任务通过 CutsceneFinishedEvent 得知演出结束。
+            // 演出需要镜头租约、输入独占、当前上场角色与锚点；任务需要播放演出、读取玩家位置与锚点。
+            ICutsceneSystem cutsceneSystem = registry.AddSystem<ICutsceneSystem>(new CutsceneSystem(cameraSystem, inputSystem, teamSystem, anchorSystem));
+            registry.AddSystem<IQuestSystem>(new QuestSystem(cutsceneSystem, teamSystem, anchorSystem));
+            // UI 层拥有的系统（ARCH-SYS-008）：跟随演出开始与结束切换 HUD 与对话面板。
+            registry.AddSystem<ICutsceneUISystem>(new CutsceneUISystem());
         }
     }
 }

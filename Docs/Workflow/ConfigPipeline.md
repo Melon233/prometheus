@@ -204,6 +204,15 @@ foreach (ReactionMatrixRow r in Core.Config.Tables.TbReactionMatrix.DataList) { 
 
 字段语义见 [Growth/01 角色等级与突破](../Design/Growth/01_角色等级与突破.md) 第 5 节。
 
+### 6.3 叙事
+
+| 表 | 数据文件 | mode | 行数 | 状态 |
+| --- | --- | --- | --- | --- |
+| `TbText` | `Narrative/text.xlsx` | map | 16 | 演出台词、说话人、选项与任务文案；当前为 `CutsceneTest` 测试任务的样例文本 |
+
+演出与任务的**结构**不走 Luban，而是 ScriptableObject（`ARCH-CONFIG-002`）；SO 只保存 `TbText` 的整数 id，经 `NarrativeText.Get(id)` 读取，`0` 表示无文本。
+id 按段位分配：`1xxxx` 任务文案、`2xxxx` 说话人、`3xxxx` 台词、`4xxxx` 选项。`#usage` 列是策划备注，不导出。
+
 ## 7. 新增一张表的步骤
 
 1. 在 `Data/Excel/Datas/<业务域>/` 新建数据表 `.xlsx`，按 3.2 写好三行表头与数据。

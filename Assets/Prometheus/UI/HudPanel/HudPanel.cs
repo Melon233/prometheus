@@ -8,6 +8,7 @@ using Xuan.Prometheus.Component;
 using Xuan.Prometheus.Effects;
 using Xuan.Prometheus.Input;
 using Xuan.Prometheus.Logic.Talent;
+using Xuan.Prometheus.Quest;
 using Xuan.Prometheus.World;
 
 namespace Xuan.Prometheus
@@ -39,7 +40,7 @@ namespace Xuan.Prometheus
         private readonly List<EffectInstance> observedBuffs = new List<EffectInstance>();
 
         /// <summary>复用当前上场成员的附近交互物快照，供交互栏列表刷新。</summary>
-        private readonly List<PoiConfig> observedInteracts = new List<PoiConfig>();
+        private readonly List<IInteractable> observedInteracts = new List<IInteractable>();
 
         /// <summary>标记当前缓存面板是否正在显示，关闭期间只记录目标编号而不持有字段监听。</summary>
         private bool isObserving;
@@ -55,6 +56,9 @@ namespace Xuan.Prometheus
         /// <summary>保存当前单局的大世界 POI 系统，交互点击由它向服务器提交请求。</summary>
         private IPoiSystem worldSystem;
         private IWorldMapSystem worldMapSystem;
+
+        /// <summary>任务追踪条读取进度的任务系统；面板打开期间有效。</summary>
+        private IQuestSystem questSystem;
 
         /// <summary>保存运行时创建在 MiniMapButton 内的地图 RawImage。</summary>
         private RawImage minimapImage;
@@ -124,8 +128,10 @@ namespace Xuan.Prometheus
             if (!Core.Gameplay.TryGetSystem(out inputSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IInputSystem)}.");
             if (!Core.Gameplay.TryGetSystem(out worldSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IPoiSystem)}.");
             if (!Core.Gameplay.TryGetSystem(out worldMapSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IWorldMapSystem)}.");
-            // 任务追踪条等待新任务系统接入，接入前保持隐藏。
-            QuestTrackerRoot.gameObject.SetActive(false);
+            if (!Core.Gameplay.TryGetSystem(out questSystem)) throw new InvalidOperationException($"{nameof(HudPanel)} requires {nameof(IQuestSystem)}.");
+            Core.Event.AddListener<QuestNodeChangedEvent>(OnQuestNodeChanged);
+            Core.Event.AddListener<QuestCompletedEvent>(OnQuestCompleted);
+            RefreshQuestTracker();
             SubscribeMinimapEvents();
             if (worldSystem.TryGetPlayerPosition(out Vector3 currentPosition))
             {
@@ -141,6 +147,7 @@ namespace Xuan.Prometheus
         protected override void OnClose()
         {
             UnsubscribeMinimapEvents();
+            UnsubscribeQuestEvents();
             isObserving = false;
             ReleaseValueListeners();
         }
@@ -421,12 +428,34 @@ namespace Xuan.Prometheus
             return item;
         }
 
-        /// <summary>交互栏点击：按交互物类型映射操作，解析实体后向大世界系统提交交互请求。</summary>
-        private void OnInteractClick(PoiConfig config)
+        /// <summary>交互栏点击：交给交互物自己决定行为（POI 向大世界系统提交交互，任务交互点触发演出）。</summary>
+        private void OnInteractClick(IInteractable interactable)
         {
-            if (worldSystem == null || config == null) return;
-            Debug.Log($"[交互] 点击交互 {config.Id} ({config.PoiType})");
-            if (worldSystem.TryGetPoi(config.Id, out PoiMono poi)) poi.OnInteract();
+            Debug.Log($"[交互] 点击交互 {interactable.InteractLabel}");
+            interactable.Interact();
+        }
+
+        /// <summary>任务进入新节点：刷新追踪条。</summary>
+        private void OnQuestNodeChanged(QuestNodeChangedEvent eventData) => RefreshQuestTracker();
+
+        /// <summary>任务完成：刷新追踪条（可能切换到下一个任务或隐藏）。</summary>
+        private void OnQuestCompleted(QuestCompletedEvent eventData) => RefreshQuestTracker();
+
+        /// <summary>退订任务事件；关闭与最终释放都会调用，退订未订阅的监听是空操作。</summary>
+        private void UnsubscribeQuestEvents()
+        {
+            Core.Event.RemoveListener<QuestNodeChangedEvent>(OnQuestNodeChanged);
+            Core.Event.RemoveListener<QuestCompletedEvent>(OnQuestCompleted);
+        }
+
+        /// <summary>按任务系统的追踪任务刷新追踪条：标题为任务名，副标题为当前节点标题；没有任务时隐藏。</summary>
+        private void RefreshQuestTracker()
+        {
+            QuestProgress tracked = questSystem.TrackedQuest;
+            QuestTrackerRoot.gameObject.SetActive(tracked != null);
+            if (tracked == null) return;
+            QuestTitleText.text = NarrativeText.Get(tracked.Definition.NameTextId);
+            QuestStepText.text = NarrativeText.Get(tracked.CurrentNode.TitleTextId);
         }
 
         /// <summary>幂等释放当前成员的全部字段监听，防止缓存面板和旧角色继续互相持有。</summary>
@@ -448,6 +477,7 @@ namespace Xuan.Prometheus
         {
             ReleaseValueListeners();
             UnsubscribeMinimapEvents();
+            UnsubscribeQuestEvents();
             Core.Event.RemoveListener<ActiveTeamMemberChangedEvent>(OnActiveTeamMemberChanged);
             DestroyUiResource(minimapHitArea);
             DestroyUiResource(minimapMaskMaterial);
@@ -455,6 +485,7 @@ namespace Xuan.Prometheus
             teamSystem = null;
             worldSystem = null;
             worldMapSystem = null;
+            questSystem = null;
             entitySystem = null;
             minimapImage = null;
             minimapMaskMaterial = null;

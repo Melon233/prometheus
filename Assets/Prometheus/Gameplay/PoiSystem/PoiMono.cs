@@ -11,7 +11,7 @@ namespace Xuan.Prometheus.World
     /// 对它全是净负担。类型之间的差异只有三点：交互发哪个 PoiOp、读网关状态的哪个字段、
     /// 消费判定用布尔还是重生时间戳，因此按 PoiType 分派即可，不需要继承层次。
     /// </summary>
-    public class PoiMono : MonoBehaviour
+    public class PoiMono : MonoBehaviour, IInteractable
     {
         /// <summary>该 POI 的配置数据，由烘焙工具写入，PoiSystem 扫描读取。</summary>
         public PoiConfig Config;
@@ -24,6 +24,12 @@ namespace Xuan.Prometheus.World
 
         /// <summary>可刷新类的下次重生 Unix 毫秒时间戳；零表示当前可用。</summary>
         private long respawnAtMs;
+
+        /// <summary>交互栏文案：当前直接显示 POI 类型名。</summary>
+        public string InteractLabel => Config.PoiType.ToString();
+
+        /// <summary>交互栏点击入口，转交 <see cref="OnInteract"/> 按类型分派。</summary>
+        public void Interact() => OnInteract();
 
         /// <summary>该 POI 的稳定语义 Id；配置缺失时为空。</summary>
         public string PoiId => Config != null ? Config.Id : null;
