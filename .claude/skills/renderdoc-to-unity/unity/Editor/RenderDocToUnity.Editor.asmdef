@@ -1,0 +1,7 @@
+{
+    "name": "RenderDocToUnity.Editor",
+    "rootNamespace": "RenderDocToUnity",
+    "references": ["RenderDocToUnity.Runtime"],
+    "includePlatforms": ["Editor"],
+    "autoReferenced": false
+}
